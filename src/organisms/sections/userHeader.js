@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Box, Button, Text } from "../../atoms";
 import { Colors } from "../layout/Colors";
-import zIndex from "@mui/material/styles/zIndex";
 import { Avatar } from "@mui/material";
 
 export const UserHeader = (props) => {
