@@ -25,10 +25,10 @@ export const LeftMenu = ({ menuItems = [] }) => {
          <Box sx={{ ...styles.leftMenuMainContainer, ...(showMenuMobile && { display: 'flex' }) }}>
             <Box sx={{
                ...styles.icon,
-               backgroundImage: `url('/vercel.svg')`,
+               backgroundImage: `url('/favicon.svg')`,
                backgroundSize: 'contain',
                width: 1,
-               height: 30,
+               height: 40,
                marginTop: 1,
                "&:hover": {
                   cursor: 'pointer', opacity: 0.8
@@ -36,59 +36,31 @@ export const LeftMenu = ({ menuItems = [] }) => {
             }} onClick={() => router.push('/')} />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                {menuItems.map((group, index) =>
-                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4 }}>
-                        {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px` }} />}
-                        <Text small='true' style={{ paddingLeft: '16px', color: Colors.backgroundPrimary + 'aa' }}>
-                           {group.text}
-                        </Text>
-                        {group.items.map((item, index) => {
-                              return (
-                                 <MenuItem
-                                    currentPage={item.to === pathname}
-                                    key={`${index}_${item.to}`}
-                                    to={item.to}
-                                    text={item.text}
-                                    icon={item.icon}
-                                    onClick={() => setShowMenuMobile(false)}
-                                 />)
-                           }
-                           )}
-                     </Box>
-                  )}
-            </Box>
-            <Box sx={{ ...styles.userBox, ...(!showMenuUser && { "&:hover": { backgroundColor: '#00000010', } }) }} onClick={() => setShowMenuUser(!showMenuUser)}>
-               <Box
-                  sx={{
-                     display: 'flex',
-                     borderColor: Colors.background,
-                     justifyContent: 'center',
-                     alignItems: 'center',
-                     cursor: 'pointer',
-                     gap: 1
-                  }}
-               >
-                  <Text bold='true' small='true' style={{ color: '#999' }}>{userName}</Text>
-                  <Box sx={styles.icon} />
-               </Box>
-               {showMenuUser &&
-                  <>
-                     <Box sx={{ width: '100%', height: '1px', backgroundColor: '#ccc' }} />
-                     <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 0.2 }}>
-                        <Box sx={styles.userButtonContainer} onClick={() => setShowChangePassword(true)}>
-                           <Text style={{ color: '#999' }}>Alterar senha</Text>
-                        </Box>
-                        <Box sx={styles.userButtonContainer} onClick={logout}>
-                           <Text style={{ color: '#999' }}>Sair</Text>
-                        </Box>
-                     </Box>
-                  </>
-               }
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, color: '#f0f0f0' + '77' }}>
+                     {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />}
+                     <Text small='true' style={{ paddingLeft: '16px', color: '#fff' + 'aa' }}>
+                        {group.text}
+                     </Text>
+                     {group.items.map((item, index) => {
+                        return (
+                           <MenuItem
+                              currentPage={item.to === pathname}
+                              key={`${index}_${item.to}`}
+                              to={item.to}
+                              text={item.text}
+                              icon={item.icon}
+                              onClick={() => setShowMenuMobile(false)}
+                           />)
+                     }
+                     )}
+                  </Box>
+               )}
             </Box>
          </Box >
          <Box sx={styles.menuResponsive}>
             <Box sx={{
                ...styles.icon,
-               backgroundImage: `url('/vercel.svg')`,
+               backgroundImage: `url('/favicon.svg')`,
                backgroundSize: 'contain',
                backgroundPosition: 'left',
                width: 1,
@@ -139,16 +111,16 @@ const MenuItem = (props) => {
                borderRadius: 2,
                color: Colors.textPrimary,
                ...(currentPage ?
-                  { backgroundColor: Colors.backgroundPrimary + '22' }
+                  { backgroundColor: Colors.orange }
                   :
                   {
                      "&:hover": {
-                        backgroundColor: Colors.backgroundPrimary + '22',
+                        backgroundColor: Colors.orange + '22',
                      }
                   }),
             }}>
                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
-                  <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon}.png)`, width: 18, height: 18 }} />
+                  <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
                   <Text style={{ color: 'inherit' }}>
                      {text}
                   </Text>
@@ -165,11 +137,12 @@ const styles = {
       display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex' },
       flexDirection: 'column',
       minHeight: '100vh',
-      backgroundColor: '#f9f9f9',
+      // backgroundColor: '#f9f9f9',
+      backgroundColor: Colors.backgroundSecundary,
       borderRight: `1px solid #00000010`,
       padding: `40px 20px`,
       gap: 6,
-      zIndex: { xs: 100000, sm: 100000, md: 'auto', lg: 'auto' },
+      zIndex: 100000,
       position: { xs: 'absolute', sm: 'absolute', md: 'relative', lg: 'relative' },
       width: { xs: '50%', sm: 200, md: 200, lg: 200 },
    },
@@ -206,7 +179,7 @@ const styles = {
       width: '15px',
       height: '15px',
       marginRight: '0px',
-      backgroundImage: `url('/vercel.svg')`,
+      backgroundImage: `url('/favicon.svg')`,
    },
    menuResponsive: {
       position: 'fixed',
