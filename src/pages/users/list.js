@@ -1,87 +1,95 @@
 import { useTheme } from "@mui/system"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { api } from '../../api/api'
 import { Box, ContentContainer, Text } from "../../atoms"
 import { Forbidden } from "../../forbiddenPage/forbiddenPage"
 import { Colors, SearchBar, SectionHeader, Table_V1 } from "../../organisms"
+import { api } from "../../api/api"
 
 export default function ListUsers(props) {
 
-   // const [users, setUsers] = useState([])
+   const [usersList, setUsers] = useState([])
    const [filterData, setFilterData] = useState('')
-   
-   const filter = (item) => item?.name?.toLowerCase().includes(filterData?.toLowerCase());
 
+   const router = useRouter()
+   const filter = (item) => item?.NOME?.toLowerCase().includes(filterData?.toLowerCase());
    const theme = useTheme()
 
-   // useEffect(() => {
-   //    getUsers()
-   // }, [])
+   const getUsers = async () => {
+      try {
+         const response = await api.get('/users')
 
-   // const getUsers = async () => {
-   //    setLoading(true)
-   //    await api.get(`/users`)
-   //       .then(response => {
-   //          const { data } = response
-   //          setUsers(data)
-   //       })
-   //       .catch(error => {
-   //          console.log(error)
-   //       })
-   //       .finally(() => setLoading(false));
-   // }
+         console.log(response)
+         // setUsers(data)
+      } catch (error) {
+         console.log(error)
+      }
+   }
+
+   useEffect(() => {
+      getUsers()
+   }, [])
+
 
    const users = [
       {
-         id: '01',
-         name: 'Marcus Silva',
-         email: 'marcus.silva@melies.com',
-         birthDate: '13/11/2000',
-         perfil: 'Funcionario'
+         ID: '1',
+         LOGIN: "marcus.silva",
+         NOME: "Marcus Silva",
+         EMAIL: "marcus.silva@outlook.com",
+         NASCIMENTO: Date("2000-01-01T02:00:00.000Z"),
+         TELEFONE: "11961819664",
+         PERFIL: "funcionario",
+         CPF: "48028447864",
+         NACIONALIDADE: "Brasileiro",
+         ESTADO_CIVIL: "casado",
+         CONJUGE: "Dallila-Almeida",
+         EMAIL_CORPORATIVO: "marcus.silva@melies.com.br",
+         DEPENDENTE: 1,
       },
       {
-         id: '02',
-         name: 'fulano Silva',
-         email: 'fulano.silva@melies.com',
-         birthDate: '13/11/2000',
-         perfil: 'Funcionario'
-      },
-      {
-         id: '03',
-         name: 'cicrano Silva',
-         email: 'cicrano.silva@melies.com',
-         birthDate: '12/10/2000',
-         perfil: 'Aluno'
-      },
-      {
-         id: '04',
-         name: 'beltrano Silva',
-         email: 'beltrano.silva@melies.com',
-         birthDate: '13/11/2000',
-         perfil: 'Funcionario'
-      },
+         ID: '2',
+         LOGIN: "joao.silva",
+         NOME: "João Silva",
+         EMAIL: "joao.silva@outlook.com",
+         NASCIMENTO: Date('1995-11-01T02:00:00.000Z'),
+         TELEFONE: "11961819668",
+         PERFIL: "aluno",
+         CPF: "50028447852",
+         NACIONALIDADE: "Brasileiro",
+         ESTADO_CIVIL: "Soleiro",
+         CONJUGE: "",
+         EMAIL_CORPORATIVO: "joao.silva@melies.com.br",
+         DEPENDENTE: 0,
+      }
    ]
 
    const column = [
-      { key: 'id', label: 'ID' },
-      { key: 'name', label: 'Nome' },
-      { key: 'email', label: 'E-mail' },
-      { key: 'birthDate', label: 'Nascimento' },
-      { key: 'perfil', label: 'Perfil' },
+      { key: 'ID', label: 'ID' },
+      { key: 'NOME', label: 'Nome' },
+      { key: 'EMAIL', label: 'E-mail' },
+      { key: 'TELEFONE', label: 'Telefone' },
+      { key: 'PERFIL', label: 'Perfil' },
+      { key: 'CPF', label: 'CPF' },
+      { key: 'NASCIMENTO', label: 'Nascimento' },
+      { key: 'NACIONALIDADE', label: 'Nascionalidade' },
+      { key: 'ESTADO_CIVIL', label: 'Estado Civil' },
+      { key: 'CONJUGE', label: 'Conjuge' },
+      { key: 'EMAIL_CORPORATIVO', label: 'Email Meliés' },
+      { key: 'DEPENDENTE', label: 'Dependente' },
 
    ];
 
    return (
       <>
          <SectionHeader
-            title={`Usuários (1)`}
+            title={`Usuários (${users.length})`}
             newButton
             newButtonAction={() => router.push(`/users/new`)}
          />
          <Box>
-            <Text secundary bold style={{margin:'0px 5px 5px 5px',}}>Buscar por usuario: </Text>
-            <SearchBar placeholder='João, Robert, Renato, etc.' style={{padding: '15px'}} onChange={setFilterData}/>
+            <Text secundary bold style={{ margin: '0px 5px 5px 5px', }}>Buscar por usuario: </Text>
+            <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px' }} onChange={setFilterData} />
          </Box>
          <Table_V1 data={users?.filter(filter)} columns={column} />
       </>

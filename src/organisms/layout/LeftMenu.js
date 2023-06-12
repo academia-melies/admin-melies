@@ -23,38 +23,41 @@ export const LeftMenu = ({ menuItems = [] }) => {
    return (
       <>
          <Box sx={{ ...styles.leftMenuMainContainer, ...(showMenuMobile && { display: 'flex' }) }}>
-            <Box sx={{
-               ...styles.icon,
-               backgroundImage: `url('/favicon.svg')`,
-               backgroundSize: 'contain',
-               width: 1,
-               height: 40,
-               marginTop: 1,
-               "&:hover": {
-                  cursor: 'pointer', opacity: 0.8
-               }
-            }} onClick={() => router.push('/')} />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-               {menuItems.map((group, index) =>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, color: '#f0f0f0' + '77' }}>
-                     {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />}
-                     <Text small='true' style={{ paddingLeft: '16px', color: '#fff' + 'aa' }}>
-                        {group.text}
-                     </Text>
-                     {group.items.map((item, index) => {
-                        return (
-                           <MenuItem
-                              currentPage={item.to === pathname}
-                              key={`${index}_${item.to}`}
-                              to={item.to}
-                              text={item.text}
-                              icon={item.icon}
-                              onClick={() => setShowMenuMobile(false)}
-                           />)
-                     }
-                     )}
-                  </Box>
-               )}
+            <Box sx={{position: 'fixed', height: '100%', width: '160px', }}>
+               <Box sx={{
+                  ...styles.icon,
+                  backgroundImage: `url('/favicon.svg')`,
+                  backgroundSize: 'contain',
+                  width: 140,
+                  height: 40,
+                  marginTop: 1,
+                  "&:hover": {
+                     cursor: 'pointer', opacity: 0.8
+                  }
+               }} onClick={() => router.push('/')} />
+
+               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 7 }}>
+                  {menuItems.map((group, index) =>
+                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, color: '#f0f0f0' + '77' }}>
+                        {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />}
+                        <Text small='true' style={{ paddingLeft: '16px', color: '#fff' + 'aa' }}>
+                           {group.text}
+                        </Text>
+                        {group.items.map((item, index) => {
+                           return (
+                              <MenuItem
+                                 currentPage={item.to === pathname}
+                                 key={`${index}_${item.to}`}
+                                 to={item.to}
+                                 text={item.text}
+                                 icon={item.icon}
+                                 onClick={() => setShowMenuMobile(false)}
+                              />)
+                        }
+                        )}
+                     </Box>
+                  )}
+               </Box>
             </Box>
          </Box >
          <Box sx={styles.menuResponsive}>
@@ -142,7 +145,7 @@ const styles = {
       borderRight: `1px solid #00000010`,
       padding: `40px 20px`,
       gap: 6,
-      zIndex: 100000,
+      zIndex: 999999999,
       position: { xs: 'absolute', sm: 'absolute', md: 'relative', lg: 'relative' },
       width: { xs: '50%', sm: 200, md: 200, lg: 200 },
    },
@@ -191,7 +194,7 @@ const styles = {
       alignItems: 'center',
       justifyContent: 'right',
       display: 'flex',
-      zIndex: 99999,
+      zIndex: 99999999,
       display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none' },
    },
    menuMobileContainer: {
