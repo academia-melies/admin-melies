@@ -65,7 +65,7 @@ const styles = {
         justifyContent: 'flex-end',
         boxSizing: 'border-box',
         gap: 1,
-        position: 'fixed',
+        position: 'absolute',
         backgroundColor: Colors.backgroundPrimary + '05',
         borderBottom: `1px solid ${Colors.backgroundPrimary + '11'}`,
     },

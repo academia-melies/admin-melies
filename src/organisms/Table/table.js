@@ -3,6 +3,7 @@ import React from "react";
 import { Colors } from "../layout/Colors";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { formatTimeStamp } from "../../helpers";
 
 export const Table_V1 = (props) => {
 
@@ -20,7 +21,7 @@ export const Table_V1 = (props) => {
     return (
         <>
             <Paper>
-                <TableContainer sx={{ borderRadius: '8px' }}>
+                <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
                             <TableRow style={{ backgroundColor: Colors.backgroundSecundary }}>
@@ -31,12 +32,20 @@ export const Table_V1 = (props) => {
                         </TableHead>
                         <TableBody>
                             {data?.map((row) => (
-                                <TableRow key={row.id} onClick={() => handleRowClick(row.id)}
+                                <TableRow key={row.id} onClick={() => handleRowClick(row.ID)}
                                     sx={styles.bodyRow}>
                                     {columns.map((column) => (
+                                        row[column?.key] ? 
                                         <TableCell key={`${row.id}-${column.key}`} sx={styles.bodyCell}>
-                                            {row[column.key]}
+                                            {typeof row[column.key] === 'object' &&
+                                                row[column?.key || '-'] instanceof Date ? (
+                                                formatTimeStamp(row[column?.key || '-'])
+                                            ) : (
+                                                row[column?.key || '-']
+                                            )}
                                         </TableCell>
+                                        :
+                                        <TableCell sx={styles.bodyCell}>---</TableCell>
                                     ))}
                                 </TableRow>
                             ))}
