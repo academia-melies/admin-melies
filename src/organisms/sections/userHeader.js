@@ -28,7 +28,9 @@ export const UserHeader = (props) => {
                         <Text secundary style={{}}>{name}</Text>
                         <Box sx={{
                             ...styles.menuIcon,
-                            backgroundImage: showUserOptions ? `url('/icons/gray_arrow_up.PNG')` : `url('/icons/gray_arrow_down.PNG')`,
+                            backgroundImage: !showUserOptions ? `url('/icons/gray_arrow_down.PNG')` : `url('/icons/gray_close.PNG')`,
+                            width: !showUserOptions ? 20 : 17,
+                            height: !showUserOptions ? 20 : 17,
                             "&:hover": {
                                 opacity: 0.8,
                                 cursor: 'pointer'
