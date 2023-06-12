@@ -1,13 +1,13 @@
 export const menuItems = [
    {
-      text: 'Usuarios',
-      permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
+      text: 'Administrativo',
+      // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
             to: '/users/list',
-            text: 'Usuario',
-            icon: '',
-            permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+            text: 'Usuarios',
+            icon: 'user_icon.png',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
       ]
    },

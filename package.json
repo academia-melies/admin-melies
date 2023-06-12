@@ -30,6 +30,6 @@
     "react-router-dom": "^6.8.2"
   },
   "devDependencies": {
-    "raw-loader": "^4.0.2"
+  
   }
 }

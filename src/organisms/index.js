@@ -3,4 +3,7 @@ export { Colors } from "./layout/Colors";
 export { LeftMenu } from "./layout/LeftMenu";
 export { SearchBar } from "./searchBar/searchBar";
 export { SectionHeader } from "./sections/sectionHeader";
+export { UserHeader } from "./sections/userHeader";
+export { Table_V1 } from "./Table/table";
+
 

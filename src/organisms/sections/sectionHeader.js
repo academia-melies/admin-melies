@@ -24,23 +24,23 @@ export const SectionHeader = (props) => {
             alignItems: 'center',
          }}>
             <Box sx={{ display: 'flex', flex: 1, height: '100%', maxWidth: '100%', gap: 3, overflow: 'hidden', position: 'relative', alignItems: 'center' }}>
-               <Text
+               <Text secu
                   title='true'
                   bold='true'
                   style={{
                      whiteSpace: 'nowrap',
                      textAlign: { xs: `center`, sm: 'start', md: 'start', lg: 'start' },
+                     color: Colors.backgroundPrimary
                   }}>{title}</Text>
                <Box sx={{ display: { xs: 'none', sm: 'flex', md: 'flex', lg: 'flex' }, position: 'absolute', top: 0, right: 0, height: '100%' }}>
                   <Box sx={{
                      width: { sm: 100, md: 100, lg: 200 }, height: '100%',
-                     backgroundImage: `linear-gradient(to right, transparent, ${Colors.background})`,
                   }} />
                </Box>
             </Box>
             <Box sx={{
                display: 'flex',
-               position: { xs: 'fixed', sm: 'relative', md: 'relative', lg: 'relative' },
+               // position: { xs: 'fixed', sm: 'relative', md: 'relative', lg: 'relative' },
                justifyContent: { xs: 'center' },
                bottom: { xs: 0 },
                left: { xs: 0 },
