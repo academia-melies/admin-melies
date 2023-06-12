@@ -1,4 +1,4 @@
-.main {
+/* .main {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -104,10 +104,53 @@
   transform: translateZ(0);
 }
 
-.logo {
+.logo,
+.thirteen {
   position: relative;
 }
-/* Enable hover only on non-touch devices */
+
+.thirteen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 75px;
+  height: 75px;
+  padding: 25px 10px;
+  margin-left: 16px;
+  transform: translateZ(0);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0px 2px 8px -1px #0000001a;
+}
+
+.thirteen::before,
+.thirteen::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+}
+
+
+.thirteen::before {
+  animation: 6s rotate linear infinite;
+  width: 200%;
+  height: 200%;
+  background: var(--tile-border);
+}
+
+
+.thirteen::after {
+  inset: 0;
+  padding: 1px;
+  border-radius: var(--border-radius);
+  background: linear-gradient(
+    to bottom right,
+    rgba(var(--tile-start-rgb), 1),
+    rgba(var(--tile-end-rgb), 1)
+  );
+  background-clip: content-box;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
     background: rgba(var(--card-rgb), 0.1);
@@ -120,12 +163,15 @@
 }
 
 @media (prefers-reduced-motion) {
+  .thirteen::before {
+    animation: none;
+  }
+
   .card:hover span {
     transform: none;
   }
 }
 
-/* Mobile */
 @media (max-width: 700px) {
   .content {
     padding: 4rem;
@@ -202,7 +248,7 @@
   }
 }
 
-/* Tablet and Smaller Desktop */
+
 @media (min-width: 701px) and (max-width: 1120px) {
   .grid {
     grid-template-columns: repeat(2, 50%);
@@ -214,7 +260,8 @@
     filter: invert(1);
   }
 
-  .logo {
+  .logo,
+  .thirteen img {
     filter: invert(1) drop-shadow(0 0 0.3rem #ffffff70);
   }
 }
@@ -226,4 +273,5 @@
   to {
     transform: rotate(0deg);
   }
-}
+} */
+
