@@ -199,7 +199,8 @@ const MenuItem = (props) => {
                transition: '.2s',
                ...(currentPage ?
                   {
-                     border: `1px solid ${Colors.orange}`,
+                     // border: `1px solid ${Colors.orange}`,
+                     backgroundColor: Colors.orange,
                      color: Colors.textPrimary,
                   }
                   :

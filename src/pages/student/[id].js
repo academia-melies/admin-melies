@@ -47,7 +47,7 @@ export default function EditUser(props) {
       <>
          <SectionHeader
             perfil={userData?.perfil}
-            title={userData?.nome || `Novo Usuario`}
+            title={userData?.nome || `Novo Aluno`}
             saveButton
             // saveButtonAction={newUser ? handleCreateUser : handleEditUser}
             resetButton={!newUser}

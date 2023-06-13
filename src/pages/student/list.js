@@ -49,7 +49,7 @@ export default function ListUsers(props) {
          <SectionHeader
             title={`Alunos (${usersList?.length})`}
             newButton
-            newButtonAction={() => router.push(`/employee/new`)}
+            newButtonAction={() => router.push(`/student/new`)}
          />
          <Box>
             <Text secundary bold style={{ margin: '0px 5px 5px 5px', }}>Buscar por aluno: </Text>

@@ -83,84 +83,12 @@ export default function EditUser(props) {
       }))
    }
 
-   // const checkRequiredFields = () => {
-   //    if (!userData.name) { return alert.error('Usuário precisa de nome') }
-   //    if (!userData?.email) { return alert.error('Usuário precisa de email') }
-   //    if (!userData?.companyId) { return alert.error('Usuário precisa de empresa') }
-   //    if (!userData?.permissions || userData?.permissions?.length === 0) { return alert.error('Usuário precisa de permissões') }
-   //    if (!emailValidator(userData.email)) { return alert.error('O e-mail inserido parece estar incorreto.') }
-   //    return true
-   // }
-
-   // const handleCreateUser = async () => {
-   //    if (checkRequiredFields()) {
-   //       try {
-   //          const response = await createUser(userData);
-   //          if (response?.status === 201) {
-   //             alert('Usuário cadastrado com sucesso.');
-   //             router.push(`/users/${response?.data._id}`)
-   //          }
-   //       } catch (error) {
-   //          alert.error('Tivemos um problema ao cadastrar usuário.');
-   //          console.log(error)
-   //       } 
-   //    }
-   // }
-
-   // const handleDeleteUser = async () => {
-   //    try {
-   //       const response = await deleteUser(id)
-   //       if (response?.data?._id) {
-   //          alert('Usuário excluído com sucesso.');
-   //          router.push('/users/list')
-   //       }
-   //    } catch (error) {
-   //       alert('Tivemos um problema ao excluir usuário.');
-   //       console.log(error)
-   //    }
-   // }
-
-   // const handleEditUser = async () => {
-   //    if (checkRequiredFields()) {
-   //       try {
-   //          const response = await editeUser({ id, userData })
-   //          if (response?.status === 200) {
-   //             alert('Usuário atualizado com sucesso.');
-   //             getUserData()
-   //             return
-   //          }
-   //          alert.error('Tivemos um problema ao atualizar usuário.');
-   //       } catch (error) {
-   //          alert.error('Tivemos um problema ao atualizar usuário.');
-   //          console.log(error)
-   //       } finally {
-   //          setLoading(false)
-   //       }
-   //    }
-   // }
-
-   // const handleResetPassword = async () => {
-   //    try {
-   //       setLoading(true)
-   //       const response = await resetPasswordUser({ id, userData })
-   //       if (response?.data?._id) {
-   //          alert('Senha resetada com sucesso. Nova senha enviada por email');
-   //       }
-   //    } catch (error) {
-   //       alert.error('Tivemos um problema ao resetar a senha do usuário.');
-   //       console.log(error)
-   //    } finally {
-   //       setLoading(false)
-   //    }
-
-   // }
-
 
    return (
       <>
          <SectionHeader
             perfil={userData?.perfil}
-            title={userData?.nome || `Novo Usuario`}
+            title={userData?.nome || `Novo Funcionario`}
             saveButton
             // saveButtonAction={newUser ? handleCreateUser : handleEditUser}
             resetButton={!newUser}
