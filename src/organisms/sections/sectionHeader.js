@@ -2,7 +2,9 @@ import { Box, Button, Text } from "../../atoms";
 import { Colors } from "../layout/Colors";
 
 export const SectionHeader = (props) => {
-   const { title = '',
+   const {
+      perfil = '',
+      title = '',
       newButton = false,
       newButtonAction = () => { },
       saveButton = false,
@@ -23,8 +25,13 @@ export const SectionHeader = (props) => {
             width: '100%',
             alignItems: 'center',
          }}>
-            <Box sx={{ display: 'flex', flex: 1, height: '100%', maxWidth: '100%', gap: 3, overflow: 'hidden', position: 'relative', alignItems: 'center' }}>
-               <Text secu
+            {perfil &&
+               <Box sx={{position: 'absolute', top: 55, backgroundColor: Colors.orange, borderRadius: 2, padding: '2px 12px 2px 12px'}}>
+                  <Text small bold style={{color: Colors.textPrimary}}>{perfil}</Text>
+               </Box>
+            }
+            <Box sx={{ display: 'flex', flex: 1, height: '100%', maxWidth: '100%', gap: 3, overflow: 'hidden', position: 'relative', alignItems: 'center', }}>
+               <Text
                   title='true'
                   bold='true'
                   style={{
@@ -40,7 +47,7 @@ export const SectionHeader = (props) => {
             </Box>
             <Box sx={{
                display: 'flex',
-               // position: { xs: 'fixed', sm: 'relative', md: 'relative', lg: 'relative' },
+               position: { xs: 'fixed', sm: 'relative', md: 'relative', lg: 'relative' },
                justifyContent: { xs: 'center' },
                bottom: { xs: 0 },
                left: { xs: 0 },
@@ -52,9 +59,9 @@ export const SectionHeader = (props) => {
                gap: 1
             }}>
                {newButton && <Button text='Novo' style={{ width: 150 }} onClick={newButtonAction} />}
-               {saveButton && <Button text='Salvar' style={{ width: 150 }} onClick={saveButtonAction} />}
-               {resetButton && <Button  text='Resetar senha' style={{ width: 150 }} onClick={resetButtonAction} />}
-               {deleteButton && <Button  text='Excluir' style={{ width: 150 }} onClick={deleteButtonAction} />}
+               {saveButton && <Button  text='Salvar' style={{ width: 150 }} onClick={saveButtonAction} />}
+               {resetButton && <Button secondary text='Resetar senha' style={{ width: 150 }} onClick={resetButtonAction} />}
+               {deleteButton && <Button secondary text='Excluir' style={{ width: 150 }} onClick={deleteButtonAction} />}
                {customButton && <Button tertiary text={customButtonText} style={{ width: 150 }} onClick={customButtonAction} />}
             </Box>
          </Box>

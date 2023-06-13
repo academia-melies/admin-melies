@@ -34,11 +34,11 @@ export const Button = (props) => {
          sx={{
             ...styles.buttonContainer,
             ...(secondary && {
-               backgroundColor: 'transparent',
+               backgroundColor: Colors.backgroundSecundary + '55',
                color: '#fff',
-               border: `1px solid #fff`,
+               boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                "&:hover": {
-                  backgroundColor: '#d1d9dd',
+                  backgroundColor: Colors.backgroundSecundary + '44',
                   cursor: 'pointer'
                }
             }),

@@ -16,8 +16,10 @@ export default function EditUser(props) {
    const [dados_pessoais, setDadosPessoais] = useState({})
    const [usuario, setUsuario] = useState({})
    const [dados_titulo, setDadosTitulo] = useState({})
-   const [dados_rg, setDadosRg] = useState({}) 
-   const [endereco, setEndereco] = useState({})   
+   const [dados_rg, setDadosRg] = useState({})
+   const [endereco, setEndereco] = useState({})
+   const [contrato, setContract] = useState({})
+
 
    const getUserData = async () => {
       try {
@@ -37,7 +39,7 @@ export default function EditUser(props) {
          await getUserData();
       })();
    }, [])
-   
+
    const handleChangeUsuario = (value) => {
       setUsuario((prevValues) => ({
          ...prevValues,
@@ -69,6 +71,13 @@ export default function EditUser(props) {
 
    const handleChangeEndereco = (value) => {
       setEndereco((prevValues) => ({
+         ...prevValues,
+         [value.target.name]: value.target.value,
+      }))
+   }
+
+   const handleChangeContract = (value) => {
+      setContract((prevValues) => ({
          ...prevValues,
          [value.target.name]: value.target.value,
       }))
@@ -150,6 +159,7 @@ export default function EditUser(props) {
    return (
       <>
          <SectionHeader
+            perfil={userData?.perfil}
             title={userData?.nome || `Novo Usuario`}
             saveButton
             // saveButtonAction={newUser ? handleCreateUser : handleEditUser}
@@ -158,24 +168,26 @@ export default function EditUser(props) {
             deleteButton={!newUser}
          // deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteUser })}
          />
-         <ContentContainer>
+         <ContentContainer style={{ backgroundColor: 'none', boxShadow: 'none' }}>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5 }}>
+            <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5 }}>
                <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Contato</Text>
                <TextInput placeholder='Nome' name='nome' onChange={handleChangeUsuario} value={userData?.nome || ''} label='Nome' />
                <TextInput placeholder='E-mail' name='email' onChange={handleChangeUsuario} value={userData?.email || ''} label='E-mail' />
                <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChangeUsuario} value={userData?.nascimento ? formatTimeStamp(userData?.nascimento) : ''} label='Nascimento' />
                <TextInput placeholder='Telefone' name='telefone' onChange={handleChangeUsuario} value={userData?.telefone || ''} label='Telefone' />
                <TextInput placeholder='Perfil' name='perfil' onChange={handleChangeUsuario} value={userData?.perfil || ''} label='Perfil' />
-            </Box>
+            </ContentContainer>
 
 
-            <Box sx={{...styles.containerRegister, marginBottom: showRegistration ? 5 : 0}}>
-               <Box sx={{ display: 'flex', alignItems: 'center', padding: '0px 0px 20px 0px', gap: 1 }}>
+            <ContentContainer style={{ ...styles.containerRegister, padding: showRegistration ? '40px' : '25px' }}>
+               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, padding: showRegistration ? '0px 0px 20px 0px' : '0px' }}>
                   <Text title bold >Cadastro Completo</Text>
                   <Box sx={{
                      ...styles.menuIcon,
-                     backgroundImage: !showRegistration ? `url('/icons/gray_arrow_down.PNG')` : `url('/icons/gray_arrow_up.PNG')`,
+                     backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                     transform: showRegistration ? 'rotate(0deg)' : 'rotate(-90deg)',
+                     transition: '.3s',
                      "&:hover": {
                         opacity: 0.8,
                         cursor: 'pointer'
@@ -196,33 +208,35 @@ export default function EditUser(props) {
                      <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChangeDadosPessoais} value={userData?.escolaridade || ''} label='Escolaridade' />
                   </>
                }
-            </Box>
+            </ContentContainer>
 
             {userData?.perfil?.includes('funcionario') &&
-            <Box sx={{...styles.containerContract, marginBottom: showRegistration ? 5 : 0}}>
-               <Box sx={{ display: 'flex', alignItems: 'center', padding: '0px 0px 20px 0px', gap: 1 }}>
-                  <Text title bold >Contrato</Text>
-                  <Box sx={{
-                     ...styles.menuIcon,
-                     backgroundImage: !showContract ? `url('/icons/gray_arrow_down.PNG')` : `url('/icons/gray_arrow_up.PNG')`,
-                     "&:hover": {
-                        opacity: 0.8,
-                        cursor: 'pointer'
-                     }
-                  }} onClick={() => setShowContract(!showContract)} />
-               </Box>
-               {showContract &&
-                  <>
-                     <TextInput placeholder='Função' name='funcao' onChange={handleChange} value={userData?.funcao || ''} label='Função' />
-                     <TextInput placeholder='Horário' name='horario' onChange={handleChange} value={userData?.horario || ''} label='Horário' />
-                     <TextInput placeholder='Admissão' name='admissao' onChange={handleChange} value={userData?.admissao ? formatTimeStamp(userData?.admissao) : ''} label='Admissão' />
-                     <TextInput placeholder='Desligamento' name='desligamento' onChange={handleChange} value={userData?.desligamento ? formatTimeStamp(userData?.desligamento) : ''} label='Desligamento' />
-                     <TextInput placeholder='CTPS' name='ctps' onChange={handleChange} value={userData?.ctps || ''} label='CTPS' />
-                     <TextInput placeholder='Serie' name='serie' onChange={handleChange} value={userData?.serie || ''} label='Serie' />
-                     <TextInput placeholder='PIS' name='pis' onChange={handleChange} value={userData?.pis || ''} label='PIS' />
-                  </>
-               }
-            </Box>}
+               <ContentContainer style={{ ...styles.containerContract, padding: showContract ? '40px' : '25px' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', padding: showContract ? '0px 0px 20px 0px' : '0px', gap: 1 }}>
+                     <Text title bold >Contrato</Text>
+                     <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                        transform: showContract ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: '.3s',
+                        "&:hover": {
+                           opacity: 0.8,
+                           cursor: 'pointer'
+                        }
+                     }} onClick={() => setShowContract(!showContract)} />
+                  </Box>
+                  {showContract &&
+                     <>
+                        <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={userData?.funcao || ''} label='Função' />
+                        <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={userData?.horario || ''} label='Horário' />
+                        <TextInput placeholder='Admissão' name='admissao' onChange={handleChangeContract} value={userData?.admissao ? formatTimeStamp(userData?.admissao) : ''} label='Admissão' />
+                        <TextInput placeholder='Desligamento' name='desligamento' onChange={handleChangeContract} value={userData?.desligamento ? formatTimeStamp(userData?.desligamento) : ''} label='Desligamento' />
+                        <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={userData?.ctps || ''} label='CTPS' />
+                        <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={userData?.serie || ''} label='Serie' />
+                        <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={userData?.pis || ''} label='PIS' />
+                     </>
+                  }
+               </ContentContainer>}
 
          </ContentContainer>
          <Box sx={{ position: 'fixed', bottom: 0, left: 0, width: '100%', padding: 2, gap: 2, display: { xs: 'flex', sm: 'none', md: 'none', lg: 'none' } }}>
@@ -240,14 +254,13 @@ const styles = {
       flexDirection: 'column',
       justifyContent: 'space-between',
       gap: 1.5,
-      padding: '0px 40px 0px 40px'
+      padding: '40px'
    },
    containerContract: {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
       gap: 1.5,
-      padding: '0px 40px 0px 40px'
    },
    menuIcon: {
       backgroundSize: 'cover',

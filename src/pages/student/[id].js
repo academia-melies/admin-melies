@@ -46,6 +46,7 @@ export default function EditUser(props) {
    return (
       <>
          <SectionHeader
+            perfil={userData?.perfil}
             title={userData?.nome || `Novo Usuario`}
             saveButton
             // saveButtonAction={newUser ? handleCreateUser : handleEditUser}
@@ -54,24 +55,26 @@ export default function EditUser(props) {
             deleteButton={!newUser}
          // deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteUser })}
          />
-         <ContentContainer>
+         <ContentContainer style={{ backgroundColor: 'none', boxShadow: 'none' }}>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5 }}>
+            <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5 }}>
                <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Contato</Text>
                <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome' />
                <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail' />
                <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} value={userData?.nascimento ? formatTimeStamp(userData?.nascimento) : ''} label='Nascimento' />
                <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone' />
                <TextInput placeholder='Perfil' name='perfil' onChange={handleChange} value={userData?.perfil || ''} label='Perfil' />
-            </Box>
+            </ContentContainer>
 
 
-            <Box sx={{...styles.containerRegister, marginBottom: showRegistration ? 5 : 0}}>
-               <Box sx={{ display: 'flex', alignItems: 'center', padding: '0px 0px 20px 0px', gap: 1 }}>
+            <ContentContainer style={{ ...styles.containerRegister, padding: showRegistration ? '40px' : '25px' }}>
+               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, padding: showRegistration ? '0px 0px 20px 0px' : '0px' }}>
                   <Text title bold >Cadastro Completo</Text>
                   <Box sx={{
                      ...styles.menuIcon,
-                     backgroundImage: !showRegistration ? `url('/icons/gray_arrow_down.PNG')` : `url('/icons/gray_arrow_up.PNG')`,
+                     backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                     transform: showRegistration ? 'rotate(0deg)' : 'rotate(-90deg)',
+                     transition: '.3s',
                      "&:hover": {
                         opacity: 0.8,
                         cursor: 'pointer'
@@ -92,14 +95,16 @@ export default function EditUser(props) {
                      <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' />
                   </>
                }
-            </Box>
+            </ContentContainer>
 
-            <Box sx={{...styles.containerErollment, marginBottom: showRegistration ? 5 : 0}}>
-               <Box sx={{ display: 'flex', alignItems: 'center', padding: '0px 0px 20px 0px', gap: 1 }}>
-                  <Text title bold >Matricula</Text>
+            <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>
+               <Box sx={{ display: 'flex', alignItems: 'center', padding: showEnrollment ? '0px 0px 20px 0px' : '0px', gap: 1 }}>
+                  <Text title bold >Matrícula</Text>
                   <Box sx={{
                      ...styles.menuIcon,
-                     backgroundImage: !showEnrollment ? `url('/icons/gray_arrow_down.PNG')` : `url('/icons/gray_arrow_up.PNG')`,
+                     backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                     transform: showEnrollment ? 'rotate(0deg)' : 'rotate(-90deg)',
+                     transition: '.3s',
                      "&:hover": {
                         opacity: 0.8,
                         cursor: 'pointer'
@@ -113,7 +118,7 @@ export default function EditUser(props) {
                      <TextInput placeholder='Periodo' name='periodo' onChange={handleChange} value={userData?.periodo || ''} label='Periodo' />
                   </>
                }
-            </Box>
+            </ContentContainer>
 
          </ContentContainer>
          <Box sx={{ position: 'fixed', bottom: 0, left: 0, width: '100%', padding: 2, gap: 2, display: { xs: 'flex', sm: 'none', md: 'none', lg: 'none' } }}>
@@ -131,14 +136,12 @@ const styles = {
       flexDirection: 'column',
       justifyContent: 'space-between',
       gap: 2,
-      padding: '0px 40px 0px 40px'
    },
    containerErollment: {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
       gap: 2,
-      padding: '0px 40px 0px 40px'
    },
    menuIcon: {
       backgroundSize: 'cover',

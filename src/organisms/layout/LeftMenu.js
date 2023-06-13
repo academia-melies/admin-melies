@@ -33,7 +33,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
    return (
       <>
          <Box sx={{ ...styles.leftMenuMainContainer, ...(showMenuMobile && { display: 'flex' }) }}>
-            <Box sx={{ position: 'fixed', height: '100%', width: '160px', }}>
+            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: 200, md: 200, lg: 200 }, padding: '10px 15px'}}>
 
                <Box sx={styles.userBadgeContainer}>
                   <Box sx={{
@@ -82,11 +82,10 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            display: 'flex',
                            alignItems: 'center',
                            justifyContent: 'space-between',
-                           gap: 0.8,
-                           padding: `5px 8px`,
+                           gap: 0.5,
+                           padding: `5px 5px`,
                            width: '100%',
                            borderRadius: 2,
-                           backgroundColor: groupStates[index] && '#f0f0f0' + '22',
                            opacity: 0.8,
                            "&:hover": {
                               opacity: 0.8,
@@ -94,12 +93,17 @@ export const LeftMenu = ({ menuItems = [] }) => {
                               backgroundColor: '#f0f0f0' + '22'
                            }
                         }} onClick={() => handleGroupClick(index)}>
-                           <Text style={{ paddingLeft: '5px', color: '#f0f0f0' }}>
-                              {group.text}
-                           </Text>
+                           <Box sx={{display: 'flex', justifyContent: 'flex-start', gap: 1.5}}>
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
+                              <Text style={{ color: '#f0f0f0' }}>
+                                 {group.text}
+                              </Text>
+                           </Box>
                            <Box sx={{
                               ...styles.menuIcon,
-                              backgroundImage: groupStates[index] ? `url('/icons/gray_arrow_up.PNG')` : `url('/icons/gray_arrow_down.PNG')`,
+                              backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                              transform: groupStates[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
+                              transition: '.3s',
                               width: 17,
                               height: 17,
                               "&:hover": {
@@ -188,10 +192,11 @@ const MenuItem = (props) => {
          >
             <Box sx={{
                display: 'flex',
-               padding: `8px 16px`,
+               padding: `8px 30px`,
                width: '100%',
                borderRadius: 2,
                color: 'inherit',
+               transition: '.2s',
                ...(currentPage ?
                   {
                      border: `1px solid ${Colors.orange}`,
@@ -207,7 +212,7 @@ const MenuItem = (props) => {
                   }),
             }}>
                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
-                  <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
+                  {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
                   <Text small style={{ color: 'inherit' }}>
                      {text}
                   </Text>
@@ -221,14 +226,15 @@ const MenuItem = (props) => {
 const styles = {
    leftMenuMainContainer: {
       position: 'relative',
+      alignItems: 'center',
       display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex' },
       flexDirection: 'column',
       minHeight: '100vh',
       // backgroundColor: '#f9f9f9',
       backgroundColor: Colors.backgroundSecundary,
       borderRight: `1px solid #00000010`,
-      padding: `40px 20px`,
-      gap: 6,
+      padding: `40px 5px 40px 5px`,
+      gap: 1,
       zIndex: 999999999,
       position: { xs: 'absolute', sm: 'absolute', md: 'relative', lg: 'relative' },
       width: { xs: '50%', sm: 200, md: 200, lg: 200 },
