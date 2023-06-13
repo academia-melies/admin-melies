@@ -3,10 +3,10 @@ import { Colors } from "../organisms";
 
 export const TextInput = (props) => {
 
-   const { InputProps = {} } = props;
+   const { InputProps = {}, label = '' } = props;
 
    return (
-      <TextField
+      <TextField label={label}
          {...props}
          InputProps={{
             sx: { borderRadius: 2, fontSize: { xs: '12px', xm: '15px', md: '15px', lg: '15px' }, fontFamily: 'InterRegular', ...InputProps?.style }

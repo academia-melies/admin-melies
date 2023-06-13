@@ -19,15 +19,23 @@ export const getDialogPosition = (event, maxDialogWidth) => {
 
 export const formatTimeStamp = (timestamp) => {
    const date = new Date(timestamp);
- 
    const day = String(date.getDate()).padStart(2, '0');
    const month = String(date.getMonth() + 1).padStart(2, '0');
    const year = String(date.getFullYear());
- 
+
    return `${day}/${month}/${year}`;
- };
+};
 
 export const emailValidator = (email) => {
    const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&*'+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
    return EMAIL_REGEX.test(email)
+}
+
+export const formatCPF = (cpf) => {
+   
+   const cleanedCPF = cpf.replace(/\D/g, '');
+   const cpfRegex = /^(\d{3})(\d{3})(\d{3})(\d{2})$/;
+   const formattedCPF = cleanedCPF.replace(cpfRegex, '$1.$2.$3-$4');
+
+   return formattedCPF;
 }

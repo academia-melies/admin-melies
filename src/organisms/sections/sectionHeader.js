@@ -53,8 +53,8 @@ export const SectionHeader = (props) => {
             }}>
                {newButton && <Button text='Novo' style={{ width: 150 }} onClick={newButtonAction} />}
                {saveButton && <Button text='Salvar' style={{ width: 150 }} onClick={saveButtonAction} />}
-               {resetButton && <Button secondary text='Resetar senha' style={{ width: 150 }} onClick={resetButtonAction} />}
-               {deleteButton && <Button secondary text='Excluir' style={{ width: 150 }} onClick={deleteButtonAction} />}
+               {resetButton && <Button  text='Resetar senha' style={{ width: 150 }} onClick={resetButtonAction} />}
+               {deleteButton && <Button  text='Excluir' style={{ width: 150 }} onClick={deleteButtonAction} />}
                {customButton && <Button tertiary text={customButtonText} style={{ width: 150 }} onClick={customButtonAction} />}
             </Box>
          </Box>

@@ -1,4 +1,4 @@
-import { useMediaQuery, useTheme } from "@mui/material"
+import { Avatar, useMediaQuery, useTheme } from "@mui/material"
 import Hamburger from "hamburger-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
@@ -10,12 +10,22 @@ export const LeftMenu = ({ menuItems = [] }) => {
 
    const router = useRouter()
 
-   let userName = 'Marcus Silva'
+   let name = 'Marcus Silva';
+   let photo = '/icons/perfil.jpg';
    const pathname = router.pathname === '/' ? null : router.asPath
+
+   const [showUserOptions, setShowUserOptions] = useState(false)
 
    const [showMenuMobile, setShowMenuMobile] = useState(false)
    const [showChangePassword, setShowChangePassword] = useState(false)
    const [showMenuUser, setShowMenuUser] = useState(false)
+   const [groupStates, setGroupStates] = useState(menuItems.map(() => false));
+
+   const handleGroupClick = (index) => {
+      const newGroupStates = [...groupStates];
+      newGroupStates[index] = !newGroupStates[index];
+      setGroupStates(newGroupStates);
+   };
 
    const theme = useTheme()
    const navBar = useMediaQuery(theme.breakpoints.down('md'))
@@ -23,43 +33,112 @@ export const LeftMenu = ({ menuItems = [] }) => {
    return (
       <>
          <Box sx={{ ...styles.leftMenuMainContainer, ...(showMenuMobile && { display: 'flex' }) }}>
-            <Box sx={{position: 'fixed', height: '100%', width: '160px', }}>
+            <Box sx={{ position: 'fixed', height: '100%', width: '160px', }}>
+
+               <Box sx={styles.userBadgeContainer}>
+                  <Box sx={{
+                     display: 'flex',
+                     justifyContent: 'center',
+                     alignItems: 'center',
+                     gap: 1,
+                     borderRadius: 1.5,
+                     boxSizing: 'border-box',
+                  }}>
+                     <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={photo} />
+                     <Text style={{ color: Colors.textPrimary }}>{name}</Text>
+                     <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: !showUserOptions ? `url('/icons/gray_arrow_down.PNG')` : `url('/icons/gray_close.PNG')`,
+                        width: 17,
+                        height: 17,
+                        "&:hover": {
+                           opacity: 0.8,
+                           cursor: 'pointer'
+                        }
+                     }} onClick={() => setShowUserOptions(!showUserOptions)} />
+                  </Box>
+                  <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />
+                  {showUserOptions &&
+                     <>
+                        <Box sx={styles.containerUserOpitions}>
+                           <Box onClick={() => {
+                              setShowUserOptions(!showUserOptions)
+                           }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.backgroundPrimary + '22', cursor: 'pointer' }, }}>
+                              <Text style={{ ...styles.text, textAlign: 'center', }}>Alterar Senha</Text>
+                           </Box>
+                           <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.backgroundPrimary + '22', cursor: 'pointer' } }}>
+                              <Text style={{ ...styles.text, textAlign: 'center' }}>Sair</Text>
+                           </Box>
+                        </Box>
+                     </>
+                  }
+               </Box>
+
+               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 5 }}>
+                  {menuItems.map((group, index) =>
+                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}>
+                        {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
+                        <Box sx={{
+                           display: 'flex',
+                           alignItems: 'center',
+                           justifyContent: 'space-between',
+                           gap: 0.8,
+                           padding: `5px 8px`,
+                           width: '100%',
+                           borderRadius: 2,
+                           backgroundColor: groupStates[index] && '#f0f0f0' + '22',
+                           opacity: 0.8,
+                           "&:hover": {
+                              opacity: 0.8,
+                              cursor: 'pointer',
+                              backgroundColor: '#f0f0f0' + '22'
+                           }
+                        }} onClick={() => handleGroupClick(index)}>
+                           <Text style={{ paddingLeft: '5px', color: '#f0f0f0' }}>
+                              {group.text}
+                           </Text>
+                           <Box sx={{
+                              ...styles.menuIcon,
+                              backgroundImage: groupStates[index] ? `url('/icons/gray_arrow_up.PNG')` : `url('/icons/gray_arrow_down.PNG')`,
+                              width: 17,
+                              height: 17,
+                              "&:hover": {
+                                 opacity: 0.8,
+                                 cursor: 'pointer'
+                              }
+                           }} />
+                        </Box>
+                        {groupStates[index] && (
+                           group.items.map((item, index) => {
+                              return (
+                                 <MenuItem
+                                    currentPage={item.to === pathname}
+                                    key={`${index}_${item.to}`}
+                                    to={item.to}
+                                    text={item.text}
+                                    icon={item.icon}
+                                    onClick={() => setShowMenuMobile(false)}
+                                 />)
+                           }
+                           ))}
+                     </Box>
+                  )}
+               </Box>
                <Box sx={{
                   ...styles.icon,
                   backgroundImage: `url('/favicon.svg')`,
                   backgroundSize: 'contain',
                   width: 140,
                   height: 40,
-                  marginTop: 1,
+                  bottom: 60,
+                  position: 'absolute',
                   "&:hover": {
                      cursor: 'pointer', opacity: 0.8
                   }
                }} onClick={() => router.push('/')} />
-
-               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 7 }}>
-                  {menuItems.map((group, index) =>
-                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, color: '#f0f0f0' + '77' }}>
-                        {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />}
-                        <Text small='true' style={{ paddingLeft: '16px', color: '#fff' + 'aa' }}>
-                           {group.text}
-                        </Text>
-                        {group.items.map((item, index) => {
-                           return (
-                              <MenuItem
-                                 currentPage={item.to === pathname}
-                                 key={`${index}_${item.to}`}
-                                 to={item.to}
-                                 text={item.text}
-                                 icon={item.icon}
-                                 onClick={() => setShowMenuMobile(false)}
-                              />)
-                        }
-                        )}
-                     </Box>
-                  )}
-               </Box>
             </Box>
          </Box >
+
          <Box sx={styles.menuResponsive}>
             <Box sx={{
                ...styles.icon,
@@ -112,19 +191,24 @@ const MenuItem = (props) => {
                padding: `8px 16px`,
                width: '100%',
                borderRadius: 2,
-               color: Colors.textPrimary,
+               color: 'inherit',
                ...(currentPage ?
-                  { backgroundColor: Colors.orange }
+                  {
+                     border: `1px solid ${Colors.orange}`,
+                     color: Colors.textPrimary,
+                  }
                   :
                   {
                      "&:hover": {
                         backgroundColor: Colors.orange + '22',
+
+
                      }
                   }),
             }}>
                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
                   <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
-                  <Text style={{ color: 'inherit' }}>
+                  <Text small style={{ color: 'inherit' }}>
                      {text}
                   </Text>
                </Box>
@@ -209,4 +293,38 @@ const styles = {
       gap: 4,
       zIndex: 99999999,
    },
+   menuIcon: {
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      width: 20,
+      height: 20,
+
+   },
+   containerUserOpitions: {
+      backgroundColor: Colors.background,
+      boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+      borderRadius: 2,
+      padding: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'absolute',
+      top: 48,
+      width: '100%',
+      boxSizing: 'border-box',
+      zIndex: 9999999
+
+   },
+   userBadgeContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minWidth: 130,
+      gap: 1,
+      position: 'relative',
+      borderRadius: 1.5,
+      zIndex: 9999999,
+      marginTop: 5
+   }
 }

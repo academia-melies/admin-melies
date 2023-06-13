@@ -8,51 +8,20 @@ export const UserHeader = (props) => {
         title = '',
     } = props;
 
-    const [showUserOptions, setShowUserOptions] = useState(false)
-
-    let name = 'Marcus';
 
     return (
         <>
             <Box sx={styles.header}>
-                <Box sx={styles.userBadgeContainer}>
-                    <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: 1,
-                        borderRadius: 1.5,
-                        boxSizing: 'border-box',
-                    }}>
-                        <Avatar sx={{ width: 27, height: 27, fontSize: 14 }}>M</Avatar>
-                        <Text secundary style={{}}>{name}</Text>
-                        <Box sx={{
-                            ...styles.menuIcon,
-                            backgroundImage: !showUserOptions ? `url('/icons/gray_arrow_down.PNG')` : `url('/icons/gray_close.PNG')`,
-                            width: !showUserOptions ? 20 : 17,
-                            height: !showUserOptions ? 20 : 17,
-                            "&:hover": {
-                                opacity: 0.8,
-                                cursor: 'pointer'
-                            }
-                        }} onClick={() => setShowUserOptions(!showUserOptions)} />
-                    </Box>
-
-                    {showUserOptions &&
-                        <>
-                            <Box sx={styles.containerUserOpitions}>
-                                <Box onClick={() => {
-                                    setShowUserOptions(!showUserOptions)
-                                }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.background + '77' }, }}>
-                                    <Text style={{ ...styles.text, textAlign: 'center', }}>Alterar Senha</Text>
-                                </Box>
-                                <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.background + '77' } }}>
-                                    <Text style={{ ...styles.text, textAlign: 'center' }}>Sair</Text>
-                                </Box>
-                            </Box>
-                        </>
+                <Box sx={{
+                    ...styles.menuIcon,
+                    backgroundImage: `url('/icons/notification_icon.PNG')`,
+                    width: 15,
+                    height: 17,
+                    "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
                     }
-                </Box>
+                }} />
             </Box>
         </>
     )

@@ -13,9 +13,10 @@ export const Table_V1 = (props) => {
     } = props;
 
     const router = useRouter();
+    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[1]
 
     const handleRowClick = (id) => {
-        router.push(`/users/${id}`);
+        router.push(`/${pathname}/${id}`);
     };
 
     return (
@@ -32,7 +33,7 @@ export const Table_V1 = (props) => {
                         </TableHead>
                         <TableBody>
                             {data?.map((row) => (
-                                <TableRow key={row.id} onClick={() => handleRowClick(row.ID)}
+                                <TableRow key={row.id} onClick={() => handleRowClick(row.id)}
                                     sx={styles.bodyRow}>
                                     {columns.map((column) => (
                                         row[column?.key] ? 
