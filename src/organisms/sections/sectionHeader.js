@@ -26,9 +26,9 @@ export const SectionHeader = (props) => {
             alignItems: 'center',
          }}>
 
-            <Box sx={{ display: 'flex', flex: 1, height: '100%', maxWidth: '100%', gap: 3, overflow: 'hidden', position: 'relative', alignItems: 'center', }}>
+            <Box sx={{ display: 'flex', flex: 1, height: '100%', maxWidth: '100%', gap: 2, overflow: 'hidden', position: 'relative', alignItems: 'center'}}>
                <Text
-                  title='true'
+                  veryLarge='true'
                   bold='true'
                   style={{
                      whiteSpace: 'nowrap',

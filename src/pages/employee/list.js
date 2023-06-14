@@ -14,7 +14,7 @@ export default function ListUsers(props) {
    const [perfil, setPerfil] = useState('funcionario')
 
    const router = useRouter()
-   const filter = (item) => item?.nome?.toLowerCase().includes(filterData?.toLowerCase());
+   const filter = (item) => (item?.nome?.toLowerCase().includes(filterData?.toLowerCase())) || (item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
    const theme = useTheme()
 
    const getUsers = async () => {

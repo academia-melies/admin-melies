@@ -14,8 +14,8 @@ export const UserHeader = (props) => {
             <Box sx={styles.header}>
                 <Box sx={{
                     ...styles.menuIcon,
-                    backgroundImage: `url('/icons/notification_icon.PNG')`,
-                    width: 15,
+                    backgroundImage: `url('/icons/notification_icon.png')`,
+                    width: 20,
                     height: 17,
                     "&:hover": {
                         opacity: 0.8,

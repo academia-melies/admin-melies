@@ -1,6 +1,7 @@
 import { TextField } from "@mui/material";
 import { Colors } from "../organisms";
 
+
 export const TextInput = (props) => {
 
    const { InputProps = {}, label = '' } = props;

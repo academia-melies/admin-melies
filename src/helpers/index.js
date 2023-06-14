@@ -32,10 +32,17 @@ export const emailValidator = (email) => {
 }
 
 export const formatCPF = (cpf) => {
-   
+
    const cleanedCPF = cpf.replace(/\D/g, '');
    const cpfRegex = /^(\d{3})(\d{3})(\d{3})(\d{2})$/;
    const formattedCPF = cleanedCPF.replace(cpfRegex, '$1.$2.$3-$4');
 
    return formattedCPF;
 }
+
+export const formatDate = (date) => {
+   const newDate = new Date(date)
+   const formattedDate = new Intl.DateTimeFormat("pt-BR")?.format(newDate);
+   return formattedDate;
+};
+
