@@ -46,3 +46,21 @@ export const formatDate = (date) => {
    return formattedDate;
 };
 
+
+export const formatRg = (rg) => {
+
+   const cleanedRG = rg.replace(/\D/g, '');
+   const rgRegex = /^(\d{2})(\d{3})(\d{3})(\d{1})$/;
+   const formattedRG = cleanedRG.replace(rgRegex, '$1.$2.$3-$4');
+
+   return formattedRG;
+}
+
+export const formatCEP = (cep) => {
+
+   const cleanedCEP = cep.replace(/\D/g, '');
+   const cepRegex = /^(\d{5})(\d{3})$/;
+   const formattedCEP = cleanedCEP.replace(cepRegex, '$1-$2');
+
+   return formattedCEP;
+}

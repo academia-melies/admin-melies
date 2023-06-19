@@ -3,8 +3,11 @@ import { useEffect, useState } from "react"
 import { api } from "../../api/api"
 import { Box, Button, ContentContainer, Text, TextInput } from "../../atoms"
 import { SectionHeader } from "../../organisms"
-import { formatCPF, formatTimeStamp } from "../../helpers"
-import { createUser, deleteUser, editeUser } from "../../validators/api-requests"
+import { emailValidator, formatCEP, formatCPF, formatRg, formatTimeStamp } from "../../helpers"
+import { createEnrollment, createUser, deleteUser, editeEnrollment, editeUser } from "../../validators/api-requests"
+import axios from "axios"
+
+
 export default function EditUser(props) {
    const router = useRouter()
 
@@ -12,6 +15,7 @@ export default function EditUser(props) {
    const newUser = id === 'new';
 
    const [userData, setUserData] = useState({})
+   const [enrollmentData, setEnrollmentData] = useState({})
    const [showRegistration, setShowRegistration] = useState(false)
    const [showEnrollment, setShowEnrollment] = useState(false)
 
@@ -26,14 +30,51 @@ export default function EditUser(props) {
       }
    }
 
+   const getEnrollment = async () => {
+      try {
+         const response = await api.get(`/enrollment/${id}`)
+         const { data } = response
+         setEnrollmentData(data)
+      } catch (error) {
+         console.log(error)
+      }
+   }
+
    useEffect(() => {
       (async () => {
          if (newUser) {
             return
          }
-         await getUserData();
+         await handleItems();
       })();
    }, [])
+
+   async function findCEP(cep) {
+
+      try {
+         const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+         const { data } = response;
+
+         setUserData((prevValues) => ({
+            ...prevValues,
+            rua: data.logradouro,
+            cidade: data.localidade,
+            uf: data.uf,
+            bairro: data.bairro,
+         }))
+      } catch (error) {
+         console.log(error)
+      }
+   }
+
+   const handleBlurCEP = (event) => {
+      findCEP(event.target.value);
+   };
+
+   const handleItems = async () => {
+      await getUserData()
+      await getEnrollment()
+   }
 
 
    const handleChange = (value) => {
@@ -43,7 +84,30 @@ export default function EditUser(props) {
          value.target.value = str.replace(regex, "($1) $2-$3")
       }
 
+      if (value.target.name == 'cpf') {
+         let str = value.target.value;
+         value.target.value = formatCPF(str)
+      }
+
+      if (value.target.name == 'rg') {
+         let str = value.target.value;
+         value.target.value = formatRg(str)
+      }
+
+      if (value.target.name == 'cep') {
+         let str = value.target.value;
+         value.target.value = formatCEP(str)
+      }
+
       setUserData((prevValues) => ({
+         ...prevValues,
+         [value.target.name]: value.target.value,
+      }))
+   }
+
+   const handleChangeEnrollment = (value) => {
+
+      setEnrollmentData((prevValues) => ({
          ...prevValues,
          [value.target.name]: value.target.value,
       }))
@@ -62,6 +126,14 @@ export default function EditUser(props) {
          alert('O e-mail inserido parece estar incorreto.')
          return false
       }
+      if (!userData?.senha || userData?.senha.length < 4) {
+         alert('Por favor, insira uma senha valida.')
+         return false
+      }
+      if (!emailValidator(userData.email)) {
+         alert('O e-mail inserido parece estar incorreto.')
+         return false
+      }
       return true
    }
 
@@ -69,9 +141,11 @@ export default function EditUser(props) {
       if (checkRequiredFields()) {
          try {
             const response = await createUser(userData);
+            const { data } = response;
+            const responseEnrollment = await createEnrollment(data?.userId, enrollmentData);
             if (response?.status === 201) {
                alert('Usuário cadastrado com sucesso.');
-               router.push(`/student/list`)
+               router.push(`/student/${data?.userId}`)
             }
          } catch (error) {
             alert('Tivemos um problema ao cadastrar usuário.');
@@ -99,18 +173,21 @@ export default function EditUser(props) {
       if (checkRequiredFields()) {
          try {
             const response = await editeUser({ id, userData })
-            if (response?.status === 200) {
+            const enrollmentResponse = await editeEnrollment({ id, enrollmentData })
+            if (response?.status === 201 && enrollmentResponse?.status === 201) {
                alert('Usuário atualizado com sucesso.');
-               getUserData()
+               handleItems()
                return
             }
-            alert.error('Tivemos um problema ao atualizar usuário.');
+            alert('Tivemos um problema ao atualizar usuário.');
          } catch (error) {
             alert('Tivemos um problema ao atualizar usuário.');
             console.log(error)
          }
       }
    }
+
+
 
 
    return (
@@ -120,8 +197,6 @@ export default function EditUser(props) {
             title={userData?.nome || `Novo Aluno`}
             saveButton
             saveButtonAction={newUser ? handleCreateUser : handleEditUser}
-            resetButton={!newUser}
-            // resetButtonAction={handleResetPassword}
             deleteButton={!newUser}
             deleteButtonAction={() => handleDeleteUser()}
          />
@@ -136,7 +211,7 @@ export default function EditUser(props) {
             <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login' />
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                <TextInput placeholder='Senha' name='senha' onChange={handleChange} value={userData?.senha || ''} label='Senha' sx={{ flex: 1, }} type="password" />
-               <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} label='Nova senha' sx={{ flex: 1, }} />
+               <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
             </Box>
          </ContentContainer>
 
@@ -167,10 +242,10 @@ export default function EditUser(props) {
                   <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' />
                   <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe' />
                   <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' />
+                  <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP' onBlur={handleBlurCEP} />
                   <TextInput placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço' />
                   <TextInput placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade' />
                   <TextInput placeholder='UF' name='uf' onChange={handleChange} value={userData?.uf || ''} label='UF' />
-                  <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP' />
                   <TextInput placeholder='Bairro' name='bairro' onChange={handleChange} value={userData?.bairro || ''} label='Bairro' />
                   <TextInput placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' />
                   <TextInput placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG' />
@@ -201,16 +276,15 @@ export default function EditUser(props) {
             </Box>
             {showEnrollment &&
                <>
-                  <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChange} value={userData?.financeiro || ''} label='Financeiro' />
-                  <TextInput placeholder='Situação' name='situacao' onChange={handleChange} value={userData?.situacao || ''} label='Situação' />
-                  <TextInput placeholder='Periodo' name='periodo' onChange={handleChange} value={userData?.periodo || ''} label='Periodo' />
+                  <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChangeEnrollment} value={enrollmentData?.financeiro || ''} label='Financeiro' />
+                  <TextInput placeholder='Situação' name='situacao' onChange={handleChangeEnrollment} value={enrollmentData?.situacao || ''} label='Situação' />
+                  <TextInput placeholder='Periodo' name='periodo' onChange={handleChangeEnrollment} value={enrollmentData?.periodo || ''} label='Periodo' />
                </>
             }
          </ContentContainer>
          <Box sx={{ position: 'fixed', bottom: 0, left: 0, width: '100%', padding: 2, gap: 2, display: { xs: 'flex', sm: 'none', md: 'none', lg: 'none' } }}>
-            <Button text='Salvar' style={{ flex: 1 }} onClick={() => console.log('Salvar')} />
-            <Button text='Resetar senha' style={{ flex: 1 }} onClick={() => console.log('Resetar')} />
-            <Button text='Excluir' style={{ flex: 1 }} onClick={() => console.log('Excluir')} />
+            <Button text='Salvar' style={{ flex: 1 }} onClick={newUser ? handleCreateUser : handleEditUser} />
+            <Button text='Excluir' style={{ flex: 1 }} onClick={() => handleDeleteUser()} />
          </Box>
       </>
    )

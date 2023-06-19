@@ -3,20 +3,19 @@ import { useEffect, useState } from "react"
 import { api } from "../../api/api"
 import { Box, Button, ContentContainer, Text, TextInput } from "../../atoms"
 import { SectionHeader } from "../../organisms"
-import { emailValidator, formatTimeStamp } from "../../helpers"
-import { createUser, deleteUser, editeUser } from "../../validators/api-requests"
+import { emailValidator, formatCEP, formatCPF, formatRg, formatTimeStamp } from "../../helpers"
+import { createContract, createUser, deleteUser, editContract, editeUser } from "../../validators/api-requests"
+import axios from "axios"
 
 export default function EditUser(props) {
-   const router = useRouter()
 
+   const router = useRouter()
    const { id } = router.query;
    const newUser = id === 'new';
-
    const [userData, setUserData] = useState({})
    const [contract, setContract] = useState({})
    const [showRegistration, setShowRegistration] = useState(false)
    const [showContract, setShowContract] = useState(false)
-
 
    const getUserData = async () => {
       try {
@@ -28,23 +27,75 @@ export default function EditUser(props) {
       }
    }
 
+   const getContract = async () => {
+      try {
+         const response = await api.get(`/contract/${id}`)
+         const { data } = response
+         setContract(data)
+      } catch (error) {
+         console.log(error)
+      }
+   }
+
    useEffect(() => {
       (async () => {
          if (newUser) {
             return
          }
-         await getUserData();
+         await handleItems();
       })();
    }, [])
 
-   
+   async function findCEP(cep) {
+
+      try {
+         const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+         const { data } = response;
+
+         setUserData((prevValues) => ({
+            ...prevValues,
+            rua: data.logradouro,
+            cidade: data.localidade,
+            uf: data.uf,
+            bairro: data.bairro,
+         }))
+      } catch (error) {
+
+      }
+   }
+
+   const handleBlurCEP = (event) => {
+      const { value } = event.target;
+      findCEP(value);
+   };
+
+   const handleItems = async () => {
+      await getUserData()
+      await getContract()
+   }
 
    const handleChange = (value) => {
       if (value.target.name == 'telefone') {
          const regex = /^\(?([0-9]{2})\)?([0-9]{4,5})\-?([0-9]{4})$/mg;
          let str = value.target.value.replace(/[^0-9]/g, "").slice(0, 11);
-         value.target.value = str.replace(regex, "($1)$2-$3")
+         value.target.value = str.replace(regex, "($1) $2-$3")
       }
+
+      if (value.target.name == 'cpf') {
+         let str = value.target.value;
+         value.target.value = formatCPF(str)
+      }
+
+      if (value.target.name == 'rg') {
+         let str = value.target.value;
+         value.target.value = formatRg(str)
+      }
+
+      if (value.target.name == 'cep') {
+         let str = value.target.value;
+         value.target.value = formatCEP(str)
+      }
+
 
       setUserData((prevValues) => ({
          ...prevValues,
@@ -79,9 +130,11 @@ export default function EditUser(props) {
       if (checkRequiredFields()) {
          try {
             const response = await createUser(userData);
+            const { data } = response
+            const responseContract = await createContract(data?.userId, contract);
             if (response?.status === 201) {
                alert('Usuário cadastrado com sucesso.');
-               router.push(`/employee/${response?.data.id}`)
+               router.push(`/employee/${data?.userId}`)
             }
 
          } catch (error) {
@@ -110,12 +163,14 @@ export default function EditUser(props) {
       if (checkRequiredFields()) {
          try {
             const response = await editeUser({ id, userData })
-            if (response?.status === 200) {
+            const contractResponse = await editContract({ id, contract })
+            if (response?.status === 201 && contractResponse?.status === 201) {
                alert('Usuário atualizado com sucesso.');
                getUserData()
+               router.push(`/employee/list`)
                return
             }
-            alert.error('Tivemos um problema ao atualizar usuário.');
+            alert('Tivemos um problema ao atualizar usuário.');
          } catch (error) {
             alert('Tivemos um problema ao atualizar usuário.');
             console.log(error)
@@ -131,8 +186,6 @@ export default function EditUser(props) {
             title={userData?.nome || `Novo Funcionario`}
             saveButton
             saveButtonAction={newUser ? handleCreateUser : handleEditUser}
-            resetButton={!newUser}
-            // resetButtonAction={handleResetPassword}
             deleteButton={!newUser}
             deleteButtonAction={() => handleDeleteUser()}
          />
@@ -148,7 +201,7 @@ export default function EditUser(props) {
             <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login' />
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                <TextInput placeholder='Senha' name='senha' onChange={handleChange} value={userData?.senha || ''} label='Senha' sx={{ flex: 1, }} type="password" />
-               <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} label='Nova senha' sx={{ flex: 1, }} />
+               <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
             </Box>
          </ContentContainer>
 
@@ -180,10 +233,10 @@ export default function EditUser(props) {
                   <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' />
                   <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe' />
                   <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' />
+                  <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP' onBlur={handleBlurCEP} />
                   <TextInput placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço' />
                   <TextInput placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade' />
                   <TextInput placeholder='UF' name='uf' onChange={handleChange} value={userData?.uf || ''} label='UF' />
-                  <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP' />
                   <TextInput placeholder='Bairro' name='bairro' onChange={handleChange} value={userData?.bairro || ''} label='Bairro' />
                   <TextInput placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' />
                   <TextInput placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG' />
@@ -215,13 +268,13 @@ export default function EditUser(props) {
             </Box>
             {showContract &&
                <>
-                  <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={userData?.funcao || ''} label='Função' />
-                  <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={userData?.horario || ''} label='Horário' />
-                  <TextInput placeholder='Admissão' name='admissao' onChange={handleChangeContract} value={userData?.admissao ? formatTimeStamp(userData?.admissao) : ''} label='Admissão' />
-                  <TextInput placeholder='Desligamento' name='desligamento' onChange={handleChangeContract} value={userData?.desligamento ? formatTimeStamp(userData?.desligamento) : ''} label='Desligamento' />
-                  <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={userData?.ctps || ''} label='CTPS' />
-                  <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={userData?.serie || ''} label='Serie' />
-                  <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={userData?.pis || ''} label='PIS' />
+                  <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' />
+                  <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' />
+                  <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' />
+                  <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={(contract?.desligamento)?.split('T')[0] || ''} label='Desligamento' />
+                  <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' />
+                  <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Serie' />
+                  <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' />
                </>
             }
          </ContentContainer>

@@ -33,9 +33,47 @@ export const deleteUser = async (id) => {
 
 export const editeUser = async ({ id, userData }) => {
    try {
-      const response = await api.patch(`/user/${id}`, { userData })
+      const response = await api.patch(`/user/update/${id}`, { userData })
       return response
    } catch (error) {
       return error?.response
+   }
+}
+
+export const editeEnrollment = async ({ id, enrollmentData }) => {
+
+   try {
+      const response = await api.patch(`/enrollment/update/${id}`, { enrollmentData })
+      return response
+   } catch (error) {
+      return error?.response
+   }
+}
+
+export const editContract = async ({ id, contract }) => {
+
+   try {
+      const response = await api.patch(`/contract/update/${id}`, { contract })
+      return response
+   } catch (error) {
+      return error?.response
+   }
+}
+
+export const createContract = async (id, contract) => {
+   try {
+      const response = await api.post(`/contract/create/${id}`, { contract })
+      return response
+   } catch (error) {
+      return error
+   }
+}
+
+export const createEnrollment = async (id, enrollmentData) => {
+   try {
+      const response = await api.post(`/enrollment/create/${id}`, { enrollmentData })
+      return response
+   } catch (error) {
+      return error
    }
 }
