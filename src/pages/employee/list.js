@@ -41,7 +41,7 @@ export default function ListUsers(props) {
       { key: 'nacionalidade', label: 'Nascionalidade' },
       { key: 'estado_civil', label: 'Estado Civil' },
       { key: 'conjuge', label: 'Conjuge' },
-      { key: 'email_corporativo', label: 'Email Meliés' },
+      { key: 'email_melies', label: 'Email Meliés' },
       { key: 'dependente', label: 'Dependente' },
    ];
 
