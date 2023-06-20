@@ -23,11 +23,11 @@ export const Text = (props) => {
          {...props}
          sx={{
             fontFamily: "'Metropolis Regular', Helvetica, Arial, Lucida, sans-serif, 'Metropolis Bold'",
-            fontSize: { xs: `12px`, xm: `15px`, md: `15px`, lg: `15px` },
-            ...(light && { fontFamily: 'Metropolis Light' }),
+            fontSize: { xs: `12px`, xm: `16px`, md: `16px`, lg: `16px` },
+            ...(light && { fontFamily: 'normal normal bold 35px/43px Metropolis',  }),
             ...(bold && { fontWeight: 'Metropolis Bold' }),
             ...(xsmall && { fontSize: { xs: `8px`, sm: `11px`, md: `11px`, lg: `11px` } }),
-            ...(small && { fontSize: { xs: `10px`, sm: `13px`, md: `13px`, lg: `13px` } }),
+            ...(small && { fontSize: { xs: `10px`, sm: `12px`, md: `12px`, lg: `12px` } }),
             ...(large && { fontSize: { xs: `15px`, sm: `18px`, md: `18px`, lg: `18px` } }),
             ...(veryLarge && { fontSize: { xs: `15px`, sm: `18px`, md: `18px`, lg: `27px` } }),
             ...(title && { fontSize: { xs: `18px`, sm: `22px`, md: `22px`, lg: `22px` } }),

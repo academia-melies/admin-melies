@@ -2,7 +2,7 @@ export const Colors = {
    background: '#f0f0f0',
    hover: '#eaeaea',
    orange: '#FF9600',
-   backgroundPrimary: '#0E0D15',
+   backgroundPrimary: '#232033',
    backgroundSecundary: '#1C1A2A',
    textPrimary: '#fff',
    green: '#6a9744',

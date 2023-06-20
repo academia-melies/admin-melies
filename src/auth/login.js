@@ -52,7 +52,7 @@ export default function Login() {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: theme ? '#fff' : Colors.backgroundPrimary,
+            backgroundColor: theme ? '#F2F4F8' : Colors.backgroundPrimary,
             transition: 'background-color 1s',
             position: 'absolute',
             top: 0,
@@ -61,9 +61,9 @@ export default function Login() {
         }}>
             <Box sx={{
                 display: 'flex',
-                ...(smallWidthDevice ? { height: '90%', width: '90%' } : { height: '70%', width: '55%' })
+                ...(smallWidthDevice ? { height: '90%', width: '90%' } : { height: '603px', width: '895px' })
             }}>
-                <ContentContainer row fullWidth style={{ padding: 0, zIndex: 999,  transition: 'background-color 1s', backgroundColor: !theme ? Colors.backgroundSecundary : '#EFEFEF', boxShadow: !theme ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px` }} gap={0}>
+                <ContentContainer row fullWidth style={{ borderRadius: '16px', padding: 0, zIndex: 999, transition: 'background-color 1s', backgroundColor: !theme ? Colors.backgroundSecundary : '#FFFFFF', boxShadow: !theme ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px` }} gap={0}>
 
                     <Box sx={{
                         display: 'flex',
@@ -76,17 +76,17 @@ export default function Login() {
                         position: 'relative'
                     }}>
 
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
                             {!smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={40} />}
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '60%', }}>
-                                <Text style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: 40, fontWeight: 'bold',  transition: 'background-color 1s', }}>Login</Text>
-                                <Box sx={{ backgroundColor: Colors.orange, borderRadius: 2, padding: '2px 12px 2px 12px' }}>
-                                    <Text small bold style={{ color: Colors.textPrimary }}>{'Admin'}</Text>
+                                <Text bold style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: '35px', transition: 'background-color 1s', fontWeight: 'bold' }}>Login</Text>
+                                <Box sx={{ backgroundColor: Colors.orange, borderRadius: '16px', padding: '2px 12px 2px 12px' }}>
+                                    <Text small bold style={{ color: '#1D1D1B', fontWeight: 'bold' }}>{'ADMIN'}</Text>
                                 </Box>
                             </Box>
                             <Box sx={{
-                                display: 'flex', flexDirection: 'column', gap: 1, width: '60%', justifyContent: 'center',
-                                alignItems: 'center', 
+                                display: 'flex', flexDirection: 'column', gap: 2, width: '100%', justifyContent: 'center',
+                                alignItems: 'center',
                             }}>
                                 <TextInput
                                     label='e-mail'
@@ -95,20 +95,22 @@ export default function Login() {
                                     onChange={handleChange}
                                     name='email'
                                     margin='none'
-                                    fullWidth
                                     InputProps={{
                                         style: {
-                                            backgroundColor: !theme ?  '#ffffff33' : Colors.background,
+                                            backgroundColor: !theme ? '#1B1829' : Colors.background,
                                             transition: 'background-color 1s',
                                             border: "none",
-                                            color: !theme ?  '#fff' : Colors.backgroundPrimary,
-                                            outline: 'none'
+                                            color: !theme ? '#fff' : Colors.backgroundPrimary,
+                                            outline: 'none',
+                                            borderRadius: '16px',
+                                            width: '280px',
                                         }
                                     }}
                                     InputLabelProps={{
                                         style: {
                                             color: !theme ? '#fff' : Colors.backgroundPrimary,
                                             transition: 'background-color 1s',
+                                            width: '280px',
                                         }
                                     }}
                                 />
@@ -121,14 +123,14 @@ export default function Login() {
                                     name='senha'
                                     type="password"
                                     margin='none'
-                                    fullWidth
                                     InputProps={{
                                         style: {
-                                            backgroundColor: !theme ?  '#ffffff33' : Colors.background,
+                                            backgroundColor: !theme ? '#1B1829' : Colors.background,
                                             transition: 'background-color 1s',
-                                            color: !theme ?  '#ffffffbb' : Colors.backgroundPrimary,
+                                            color: !theme ? '#ffffffbb' : Colors.backgroundPrimary,
                                             outline: 'none',
-                                            border: "none",
+                                            borderRadius: '16px',
+                                            width: '280px',
                                         }
                                     }}
                                     InputLabelProps={{
@@ -140,12 +142,14 @@ export default function Login() {
                                 />
                             </Box>
                             <Button
-                                style={{ width: '60%', padding: '12px 20px', marginBottom: 5 }}
+                                style={{ width: '60%', padding: '12px 20px', marginBottom: 5, borderRadius: '100px' }}
                                 text='Entrar'
                                 onClick={handleLogin}
                             />
                         </Box>
-                        {smallWidthDevice ? <></> : <Box sx={styles.favicon} />}
+                        <Box>
+                            {smallWidthDevice ? <></> : <Box sx={{...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`,}} />}
+                        </Box>
                     </Box>
                     {smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={14} />}
                 </ContentContainer>
@@ -153,19 +157,18 @@ export default function Login() {
             <Box sx={{
                 display: 'flex',
                 position: 'absolute',
-                backgroundColor: !theme ? '#fff' : Colors.backgroundPrimary,
+                backgroundColor: !theme ? Colors.backgroundPrimary  : '#F2F4F8 ',
                 transition: 'background-color 1s',
                 top: 20,
                 left: 20,
                 padding: '5px 20px',
                 borderRadius: '5px',
-                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                 "&:hover": {
                     opacity: 0.8,
                     cursor: 'pointer'
                 }
             }} onClick={() => setTheme(!theme)}>
-                <Text bold style={{ color: theme ? '#fff' : Colors.backgroundPrimary,  transition: 'background-color 1s', }}>{themeName}</Text>
+                <Box sx={{...styles.icon, backgroundImage: theme ? `url('/icons/theme_icon.png')` : `url('/icons/theme_icon_dark.png')`, color: theme ? '#fff' : Colors.backgroundPrimary, transition: 'background-color 1s',}}/>
             </Box>
         </Box>
 
@@ -177,17 +180,15 @@ const CompanyLogo = ({ size = 14, style = {}, theme = {} }) => (
     < Box sx={{
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        height: '100%',
-        backgroundColor: theme ? Colors.backgroundPrimary : '#fff',
+        // justifyContent: 'center',
+        alignItems: 'end',
+        height: '603px', width: '428px',
         transition: 'background-color 1s',
         flex: 1,
         gap: 1,
         ...style
     }}>
-        <img src="/favicon.svg" alt="Admin-melies" style={{ height: `${size}%`, width: 'auto', objectFit: 'contain' }} />
+        <img src={theme ? "/icons/icon_login.png" : "/icons/icon_login_dark.png"} alt="Admin-melies" style={{ height: '603px', width: '428px' }} />
     </Box >
 );
 
@@ -197,11 +198,14 @@ const styles = {
         display: 'flex',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center center',
-        backgroundImage: `url('/favicon.svg')`,
         backgroundSize: 'contain',
-        width: 100,
-        height: 60,
+        width: '140px',
+        height: '67px',
         marginLeft: 12,
         // backgroundColor: 'pink'
     },
+    icon:{
+        width: '30px',
+        height: '30px'
+    }
 }

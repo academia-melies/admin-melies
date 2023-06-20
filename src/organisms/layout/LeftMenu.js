@@ -9,10 +9,14 @@ import { useAppContext } from "../../context/AppContext"
 
 export const LeftMenu = ({ menuItems = [] }) => {
 
-   const router = useRouter()
-   const { logout } = useAppContext()
-   let name = 'Marcus Silva';
-   let photo = '/icons/perfil.jpg';
+   const { user } = useAppContext()
+   const name = user?.nome?.split(' ');
+   const firstName = name[0];
+   const lastName = name[name.length - 1];
+   const userName = `${firstName} ${lastName}`;
+   const router = useRouter();
+   const { logout } = useAppContext();
+   let fotoPerfil = user?.foto;
    const pathname = router.pathname === '/' ? null : router.asPath
 
    const [showUserOptions, setShowUserOptions] = useState(false)
@@ -39,14 +43,20 @@ export const LeftMenu = ({ menuItems = [] }) => {
                <Box sx={styles.userBadgeContainer}>
                   <Box sx={{
                      display: 'flex',
-                     justifyContent: 'center',
+                     justifyContent: 'space-between',
                      alignItems: 'center',
                      gap: 1,
                      borderRadius: 1.5,
                      boxSizing: 'border-box',
-                  }}>
-                     <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={photo} />
-                     <Text style={{ color: Colors.textPrimary }}>{name}</Text>
+                     padding: '8px 8px',
+                     "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer',
+                        backgroundColor: '#f0f0f0' + '22'
+                     }
+                  }} onClick={() => setShowUserOptions(!showUserOptions)}>
+                     <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={fotoPerfil || `/icons/perfil-default.jpg`} />
+                     <Text style={{ color: Colors.textPrimary }}>{userName}</Text>
                      <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
@@ -56,7 +66,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            opacity: 0.8,
                            cursor: 'pointer'
                         }
-                     }} onClick={() => setShowUserOptions(!showUserOptions)} />
+                     }} />
                   </Box>
                   <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />
                   {showUserOptions &&
