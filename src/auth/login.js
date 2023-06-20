@@ -53,6 +53,7 @@ export default function Login() {
             justifyContent: 'center',
             alignItems: 'center',
             backgroundColor: theme ? '#fff' : Colors.backgroundPrimary,
+            transition: 'background-color 1s',
             position: 'absolute',
             top: 0,
             left: 0,
@@ -62,7 +63,7 @@ export default function Login() {
                 display: 'flex',
                 ...(smallWidthDevice ? { height: '90%', width: '90%' } : { height: '70%', width: '55%' })
             }}>
-                <ContentContainer row fullWidth style={{ padding: 0, zIndex: 999, backgroundColor: !theme ? Colors.backgroundSecundary : '#fff', boxShadow: !theme ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px` }} gap={0}>
+                <ContentContainer row fullWidth style={{ padding: 0, zIndex: 999,  transition: 'background-color 1s', backgroundColor: !theme ? Colors.backgroundSecundary : '#EFEFEF', boxShadow: !theme ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px` }} gap={0}>
 
                     <Box sx={{
                         display: 'flex',
@@ -78,14 +79,14 @@ export default function Login() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
                             {!smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={40} />}
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '60%', }}>
-                                <Text style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: 40, fontWeight: 'bold' }}>Login</Text>
+                                <Text style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: 40, fontWeight: 'bold',  transition: 'background-color 1s', }}>Login</Text>
                                 <Box sx={{ backgroundColor: Colors.orange, borderRadius: 2, padding: '2px 12px 2px 12px' }}>
                                     <Text small bold style={{ color: Colors.textPrimary }}>{'Admin'}</Text>
                                 </Box>
                             </Box>
                             <Box sx={{
                                 display: 'flex', flexDirection: 'column', gap: 1, width: '60%', justifyContent: 'center',
-                                alignItems: 'center',
+                                alignItems: 'center', 
                             }}>
                                 <TextInput
                                     label='e-mail'
@@ -98,14 +99,16 @@ export default function Login() {
                                     InputProps={{
                                         style: {
                                             backgroundColor: !theme ?  '#ffffff33' : Colors.background,
+                                            transition: 'background-color 1s',
                                             border: "none",
-                                            color: !theme ?  '#ffffffbb' : Colors.backgroundPrimary,
+                                            color: !theme ?  '#fff' : Colors.backgroundPrimary,
                                             outline: 'none'
                                         }
                                     }}
                                     InputLabelProps={{
                                         style: {
                                             color: !theme ? '#fff' : Colors.backgroundPrimary,
+                                            transition: 'background-color 1s',
                                         }
                                     }}
                                 />
@@ -122,6 +125,7 @@ export default function Login() {
                                     InputProps={{
                                         style: {
                                             backgroundColor: !theme ?  '#ffffff33' : Colors.background,
+                                            transition: 'background-color 1s',
                                             color: !theme ?  '#ffffffbb' : Colors.backgroundPrimary,
                                             outline: 'none',
                                             border: "none",
@@ -130,6 +134,7 @@ export default function Login() {
                                     InputLabelProps={{
                                         style: {
                                             color: !theme ? '#fff' : Colors.backgroundPrimary,
+                                            transition: 'background-color 1s',
                                         }
                                     }}
                                 />
@@ -149,6 +154,7 @@ export default function Login() {
                 display: 'flex',
                 position: 'absolute',
                 backgroundColor: !theme ? '#fff' : Colors.backgroundPrimary,
+                transition: 'background-color 1s',
                 top: 20,
                 left: 20,
                 padding: '5px 20px',
@@ -159,7 +165,7 @@ export default function Login() {
                     cursor: 'pointer'
                 }
             }} onClick={() => setTheme(!theme)}>
-                <Text bold style={{ color: theme ? '#fff' : Colors.backgroundPrimary }}>{themeName}</Text>
+                <Text bold style={{ color: theme ? '#fff' : Colors.backgroundPrimary,  transition: 'background-color 1s', }}>{themeName}</Text>
             </Box>
         </Box>
 
@@ -176,6 +182,7 @@ const CompanyLogo = ({ size = 14, style = {}, theme = {} }) => (
         width: '100%',
         height: '100%',
         backgroundColor: theme ? Colors.backgroundPrimary : '#fff',
+        transition: 'background-color 1s',
         flex: 1,
         gap: 1,
         ...style

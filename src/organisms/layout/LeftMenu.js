@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 import { useState } from "react"
 import { Box, Text } from "../../atoms"
-import { Colors } from "./Colors"
+import { Colors, icons } from "./Colors"
 import { useAppContext } from "../../context/AppContext"
 
 export const LeftMenu = ({ menuItems = [] }) => {
@@ -49,7 +49,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      <Text style={{ color: Colors.textPrimary }}>{name}</Text>
                      <Box sx={{
                         ...styles.menuIcon,
-                        backgroundImage: !showUserOptions ? `url('/icons/gray_arrow_down.PNG')` : `url('/icons/gray_close.PNG')`,
+                        backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
                         width: 17,
                         height: 17,
                         "&:hover": {
@@ -103,7 +103,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            </Box>
                            <Box sx={{
                               ...styles.menuIcon,
-                              backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                              backgroundImage: `url(${icons.gray_arrow_down})`,
                               transform: groupStates[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
                               transition: '.3s',
                               width: 17,
