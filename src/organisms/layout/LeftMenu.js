@@ -5,11 +5,12 @@ import { useRouter } from "next/router"
 import { useState } from "react"
 import { Box, Text } from "../../atoms"
 import { Colors } from "./Colors"
+import { useAppContext } from "../../context/AppContext"
 
 export const LeftMenu = ({ menuItems = [] }) => {
 
    const router = useRouter()
-
+   const { logout } = useAppContext()
    let name = 'Marcus Silva';
    let photo = '/icons/perfil.jpg';
    const pathname = router.pathname === '/' ? null : router.asPath
@@ -33,7 +34,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
    return (
       <>
          <Box sx={{ ...styles.leftMenuMainContainer, ...(showMenuMobile && { display: 'flex' }) }}>
-            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: 200, md: 200, lg: 200 }, padding: '10px 15px'}}>
+            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: 200, md: 200, lg: 200 }, padding: '10px 15px' }}>
 
                <Box sx={styles.userBadgeContainer}>
                   <Box sx={{
@@ -66,7 +67,8 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.backgroundPrimary + '22', cursor: 'pointer' }, }}>
                               <Text style={{ ...styles.text, textAlign: 'center', }}>Alterar Senha</Text>
                            </Box>
-                           <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.backgroundPrimary + '22', cursor: 'pointer' } }}>
+                           <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.backgroundPrimary + '22', cursor: 'pointer' } }}
+                              onClick={logout}>
                               <Text style={{ ...styles.text, textAlign: 'center' }}>Sair</Text>
                            </Box>
                         </Box>
@@ -93,7 +95,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                               backgroundColor: '#f0f0f0' + '22'
                            }
                         }} onClick={() => handleGroupClick(index)}>
-                           <Box sx={{display: 'flex', justifyContent: 'flex-start', gap: 1.5}}>
+                           <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
                               <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
                               <Text style={{ color: '#f0f0f0' }}>
                                  {group.text}

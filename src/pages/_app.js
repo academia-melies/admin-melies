@@ -8,15 +8,17 @@ import '../styles/globals.css'
 
 function App({ Component, pageProps }) {
    return (
-      // <AppProvider>
-      <Box sx={styles.bodyContainer}>
-         <LeftMenu menuItems={menuItems} />
-         <UserHeader />
-         <Box sx={styles.contentContainer}>
-            <Component {...pageProps} />
-         </Box>
-      </Box>
-      // </AppProvider>
+      <AppProvider>
+         <ProtectRoute>
+            <Box sx={styles.bodyContainer}>
+               <LeftMenu menuItems={menuItems} />
+               <UserHeader />
+               <Box sx={styles.contentContainer}>
+                  <Component {...pageProps} />
+               </Box>
+            </Box>
+         </ProtectRoute>
+      </AppProvider>
    )
 }
 

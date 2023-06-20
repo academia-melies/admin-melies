@@ -1,23 +1,7 @@
-/*
-
-Props:
-
-- active: Boolean (sets the dialog open or closed);
-- type: String [success, error, info];
-- title: String;
-- message: String;
-
-The progressbar showing the remaining time for the dialog to close automatically
-is only available when type is different from 'error'. This behavior guarantees
-the user will have enough time to read the whole message. Considering the other
-two types being a success or info message, the 'error message' would be the only
-one the user would want to read twice or even take a screenshot.
-
-*/
 
 import { useEffect, useState } from "react";
 import { Box, Text } from "../../atoms";
-import {Colors} from "../../organisms"
+import { Colors } from "../../organisms"
 
 const getColors = (alertType) => {
    if (alertType === 'success') return {
@@ -81,12 +65,12 @@ export const Alert = (props) => {
                   <Box sx={styles.innerAlertContent}>
                      <Box sx={styles.alertTitleContainer}>
                         <Text bold='true' style={{ color: theme.textColor }}>
-                           {props.title}
+                           {props?.title}
                         </Text>
                      </Box>
                      <Box sx={styles.messageContainer}>
                         <Text small style={{ color: theme.textColor }}>
-                           {props.message}
+                           {props?.message}
                         </Text>
                      </Box>
                   </Box>
@@ -131,7 +115,6 @@ const styles = {
    },
    alertTitle: {
       fontSize: 16,
-      fontFamily: 'UbuntuBold',
       color: '#555'
    },
    alertMessage: {

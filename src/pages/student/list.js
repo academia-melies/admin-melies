@@ -6,9 +6,10 @@ import { Forbidden } from "../../forbiddenPage/forbiddenPage"
 import { Colors, SearchBar, SectionHeader, Table_V1 } from "../../organisms"
 import { api } from "../../api/api"
 import { getUsersPerfil } from "../../validators/api-requests"
+import { useAppContext } from "../../context/AppContext"
 
 export default function ListUsers(props) {
-
+   const { setLoading, alert } = useAppContext()
    const [usersList, setUsers] = useState([])
    const [filterData, setFilterData] = useState('')
    const [perfil, setPerfil] = useState('aluno')
@@ -17,14 +18,17 @@ export default function ListUsers(props) {
    const theme = useTheme()
 
    const getUsers = async () => {
-    try {
-       const response = await getUsersPerfil(perfil) 
-       const { data = [] } = response;
-       setUsers(data)
-    } catch (error) {
-       console.log(error.response.data)
-    }
- }
+      setLoading(true)
+      try {
+         const response = await getUsersPerfil(perfil)
+         const { data = [] } = response;
+         setUsers(data)
+      } catch (error) {
+         console.log(error.response.data)
+      } finally{
+         setLoading(false)
+      }
+   }
 
    useEffect(() => {
       getUsers()

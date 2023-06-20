@@ -3,12 +3,13 @@ import { useEffect, useState } from "react"
 import { api } from "../../api/api"
 import { Box, Button, ContentContainer, Text, TextInput } from "../../atoms"
 import { SectionHeader } from "../../organisms"
-import { emailValidator, formatCEP, formatCPF, formatRg, formatTimeStamp } from "../../helpers"
+import { emailValidator, formatCEP, formatCPF, formatRg } from "../../helpers"
 import { createContract, createUser, deleteUser, editContract, editeUser } from "../../validators/api-requests"
 import axios from "axios"
+import { useAppContext } from "../../context/AppContext"
 
 export default function EditUser(props) {
-
+   const { setLoading, alert } = useAppContext()
    const router = useRouter()
    const { id } = router.query;
    const newUser = id === 'new';
@@ -47,7 +48,7 @@ export default function EditUser(props) {
    }, [])
 
    async function findCEP(cep) {
-
+      setLoading(true)
       try {
          const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
          const { data } = response;
@@ -60,7 +61,8 @@ export default function EditUser(props) {
             bairro: data.bairro,
          }))
       } catch (error) {
-
+      } finally {
+         setLoading(false)
       }
    }
 
@@ -70,8 +72,15 @@ export default function EditUser(props) {
    };
 
    const handleItems = async () => {
-      await getUserData()
-      await getContract()
+      setLoading(true)
+      try {
+         await getUserData()
+         await getContract()
+      } catch (error) {
+         alert.error('Ocorreu um arro ao carregar Usuarios')
+      } finally {
+         setLoading(false)
+      }
    }
 
    const handleChange = (value) => {
@@ -127,53 +136,59 @@ export default function EditUser(props) {
    }
 
    const handleCreateUser = async () => {
+      setLoading(true)
       if (checkRequiredFields()) {
          try {
             const response = await createUser(userData);
             const { data } = response
             const responseContract = await createContract(data?.userId, contract);
             if (response?.status === 201) {
-               alert('Usuário cadastrado com sucesso.');
+               alert.success('Usuário cadastrado com sucesso.');
                router.push(`/employee/${data?.userId}`)
             }
-
          } catch (error) {
-            alert('Tivemos um problema ao cadastrar usuário.');
+            alert.error('Tivemos um problema ao cadastrar usuário.');
             console.log(error)
+         } finally {
+            setLoading(false)
          }
       }
    }
 
    const handleDeleteUser = async () => {
+      setLoading(true)
       try {
          const response = await deleteUser(id)
-
          if (response?.status == 201) {
-            alert('Usuário excluído com sucesso.');
+            alert.success('Usuário excluído com sucesso.');
             router.push('/employee/list')
          }
 
       } catch (error) {
-         alert('Tivemos um problema ao excluir usuário.');
+         alert.error('Tivemos um problema ao excluir usuário.');
          console.log(error.response.data)
+      } finally {
+         setLoading(false)
       }
    }
 
    const handleEditUser = async () => {
+      setLoading(true)
       if (checkRequiredFields()) {
          try {
             const response = await editeUser({ id, userData })
             const contractResponse = await editContract({ id, contract })
             if (response?.status === 201 && contractResponse?.status === 201) {
-               alert('Usuário atualizado com sucesso.');
+               alert.success('Usuário atualizado com sucesso.');
                getUserData()
                router.push(`/employee/list`)
                return
             }
-            alert('Tivemos um problema ao atualizar usuário.');
+            alert.error('Tivemos um problema ao atualizar usuário.');
          } catch (error) {
-            alert('Tivemos um problema ao atualizar usuário.');
-            console.log(error)
+            alert.error('Tivemos um problema ao atualizar usuário.');
+         } finally {
+            setLoading(false)
          }
       }
    }

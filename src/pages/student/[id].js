@@ -6,11 +6,12 @@ import { SectionHeader } from "../../organisms"
 import { emailValidator, formatCEP, formatCPF, formatRg, formatTimeStamp } from "../../helpers"
 import { createEnrollment, createUser, deleteUser, editeEnrollment, editeUser } from "../../validators/api-requests"
 import axios from "axios"
+import { useAppContext } from "../../context/AppContext"
 
 
 export default function EditUser(props) {
    const router = useRouter()
-
+   const { setLoading, alert } = useAppContext()
    const { id } = router.query;
    const newUser = id === 'new';
 
@@ -50,7 +51,7 @@ export default function EditUser(props) {
    }, [])
 
    async function findCEP(cep) {
-
+      setLoading(true)
       try {
          const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
          const { data } = response;
@@ -64,6 +65,8 @@ export default function EditUser(props) {
          }))
       } catch (error) {
          console.log(error)
+      } finally {
+         setLoading(false)
       }
    }
 
@@ -72,8 +75,15 @@ export default function EditUser(props) {
    };
 
    const handleItems = async () => {
-      await getUserData()
-      await getEnrollment()
+      try {
+         setLoading(true)
+         await getUserData()
+         await getEnrollment()
+      } catch (error) {
+         alert.error('Ocorreu um erro ao carregar o usuario')
+      } finally {
+         setLoading(false)
+      }
    }
 
 
@@ -139,50 +149,56 @@ export default function EditUser(props) {
 
    const handleCreateUser = async () => {
       if (checkRequiredFields()) {
+         setLoading(true)
          try {
             const response = await createUser(userData);
             const { data } = response;
             const responseEnrollment = await createEnrollment(data?.userId, enrollmentData);
             if (response?.status === 201) {
-               alert('Usuário cadastrado com sucesso.');
+               alert.success('Usuário cadastrado com sucesso.');
                router.push(`/student/${data?.userId}`)
             }
          } catch (error) {
-            alert('Tivemos um problema ao cadastrar usuário.');
+            alert.error('Tivemos um problema ao cadastrar usuário.');
             console.log(error)
+         } finally {
+            setLoading(false)
          }
       }
    }
 
    const handleDeleteUser = async () => {
       try {
+         setLoading(true)
          const response = await deleteUser(id)
-
          if (response?.status == 201) {
-            alert('Usuário excluído com sucesso.');
+            alert.success('Usuário excluído com sucesso.');
             router.push('/employee/list')
          }
-
       } catch (error) {
-         alert('Tivemos um problema ao excluir usuário.');
+         alert.error('Tivemos um problema ao excluir usuário.');
          console.log(error.response.data)
+      } finally {
+         setLoading(false)
       }
    }
 
    const handleEditUser = async () => {
       if (checkRequiredFields()) {
+         setLoading(true)
          try {
             const response = await editeUser({ id, userData })
             const enrollmentResponse = await editeEnrollment({ id, enrollmentData })
             if (response?.status === 201 && enrollmentResponse?.status === 201) {
-               alert('Usuário atualizado com sucesso.');
+               alert.success('Usuário atualizado com sucesso.');
                handleItems()
                return
             }
-            alert('Tivemos um problema ao atualizar usuário.');
+            alert.error('Tivemos um problema ao atualizar usuário.');
          } catch (error) {
-            alert('Tivemos um problema ao atualizar usuário.');
-            console.log(error)
+            alert.error('Tivemos um problema ao atualizar usuário.');
+         } finally {
+            setLoading(false)
          }
       }
    }

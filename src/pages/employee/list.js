@@ -6,24 +6,28 @@ import { Forbidden } from "../../forbiddenPage/forbiddenPage"
 import { Colors, SearchBar, SectionHeader, Table_V1 } from "../../organisms"
 import { api } from "../../api/api"
 import { getUsersPerfil } from "../../validators/api-requests"
+import { useAppContext } from "../../context/AppContext"
 
 export default function ListUsers(props) {
 
    const [usersList, setUsers] = useState([])
    const [filterData, setFilterData] = useState('')
    const [perfil, setPerfil] = useState('funcionario')
-
+   const { setLoading, alert } = useAppContext()
    const router = useRouter()
    const filter = (item) => (item?.nome?.toLowerCase().includes(filterData?.toLowerCase())) || (item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
    const theme = useTheme()
 
    const getUsers = async () => {
+      setLoading(true)
       try {
-         const response = await getUsersPerfil(perfil) 
+         const response = await getUsersPerfil(perfil)
          const { data = [] } = response;
          setUsers(data)
       } catch (error) {
          console.log(error.response.data)
+      } finally {
+         setLoading(false)
       }
    }
 
