@@ -7,6 +7,7 @@ import { emailValidator, formatCEP, formatCPF, formatRg, formatTimeStamp } from 
 import { createEnrollment, createUser, deleteUser, editeEnrollment, editeUser } from "../../validators/api-requests"
 import axios from "axios"
 import { useAppContext } from "../../context/AppContext"
+import { icons } from "../../organisms/layout/Colors"
 
 
 export default function EditUser(props) {
@@ -237,7 +238,7 @@ export default function EditUser(props) {
                <Text title bold >Cadastro Completo</Text>
                <Box sx={{
                   ...styles.menuIcon,
-                  backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                  backgroundImage: `url(${icons.gray_arrow_down})`,
                   transform: showRegistration ? 'rotate(0deg)' : 'rotate(-90deg)',
                   transition: '.3s',
                   "&:hover": {
@@ -281,7 +282,7 @@ export default function EditUser(props) {
                <Text title bold >Matrícula</Text>
                <Box sx={{
                   ...styles.menuIcon,
-                  backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                  backgroundImage: `url(${icons.gray_arrow_down})`,
                   transform: showEnrollment ? 'rotate(0deg)' : 'rotate(-90deg)',
                   transition: '.3s',
                   "&:hover": {

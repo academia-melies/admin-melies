@@ -7,6 +7,7 @@ import { emailValidator, formatCEP, formatCPF, formatRg } from "../../helpers"
 import { createContract, createUser, deleteUser, editContract, editeUser } from "../../validators/api-requests"
 import axios from "axios"
 import { useAppContext } from "../../context/AppContext"
+import { icons } from "../../organisms/layout/Colors"
 
 export default function EditUser(props) {
    const { setLoading, alert } = useAppContext()
@@ -227,7 +228,7 @@ export default function EditUser(props) {
                <Text title bold >Cadastro Completo</Text>
                <Box sx={{
                   ...styles.menuIcon,
-                  backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                  backgroundImage: `url(${icons.gray_arrow_down})`,
                   transform: showRegistration ? 'rotate(0deg)' : 'rotate(-90deg)',
                   transition: '.3s',
                   "&:hover": {
@@ -272,7 +273,7 @@ export default function EditUser(props) {
                <Text title bold >Contrato</Text>
                <Box sx={{
                   ...styles.menuIcon,
-                  backgroundImage: `url('/icons/gray_arrow_down.PNG')`,
+                  backgroundImage: `url(${icons.gray_arrow_down})`,
                   transform: showContract ? 'rotate(0deg)' : 'rotate(-90deg)',
                   transition: '.3s',
                   "&:hover": {

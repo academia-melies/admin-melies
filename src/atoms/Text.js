@@ -22,10 +22,10 @@ export const Text = (props) => {
       <Typography
          {...props}
          sx={{
-            fontFamily: "'Metropolis Regular', Helvetica, Arial, Lucida, sans-serif",
+            fontFamily: "'Metropolis Regular', Helvetica, Arial, Lucida, sans-serif, 'Metropolis Bold'",
             fontSize: { xs: `12px`, xm: `15px`, md: `15px`, lg: `15px` },
             ...(light && { fontFamily: 'Metropolis Light' }),
-            ...(bold && { fontWeight: 'Metropolis Bold', fontWeight: 'bold' }),
+            ...(bold && { fontWeight: 'Metropolis Bold' }),
             ...(xsmall && { fontSize: { xs: `8px`, sm: `11px`, md: `11px`, lg: `11px` } }),
             ...(small && { fontSize: { xs: `10px`, sm: `13px`, md: `13px`, lg: `13px` } }),
             ...(large && { fontSize: { xs: `15px`, sm: `18px`, md: `18px`, lg: `18px` } }),
