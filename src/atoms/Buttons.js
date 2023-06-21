@@ -70,7 +70,7 @@ const styles = {
       backgroundColor: Colors.orange,
       color: '#f0f0f0',
       padding: { xs: `6px 10px`, xm: `8px 16px`, md: `8px 16px`, lg: `8px 16px` },
-      borderRadius: 2,
+      borderRadius: '100px',
       "&:hover": {
          backgroundColor: Colors.orange + 'dd',
          cursor: 'pointer'

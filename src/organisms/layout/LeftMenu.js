@@ -86,74 +86,74 @@ export const LeftMenu = ({ menuItems = [] }) => {
                   }
                </Box>
 
-               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 5 }}>
-                  {menuItems.map((group, index) =>
-                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}>
-                        {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
-                        <Box sx={{
-                           display: 'flex',
-                           alignItems: 'center',
-                           justifyContent: 'space-between',
-                           gap: 0.5,
-                           padding: `5px 5px`,
-                           width: '100%',
-                           borderRadius: 2,
+               <Box sx={styles.boxMenu}>
+               {menuItems.map((group, index) =>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}>
+                     {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
+                     <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 0.5,
+                        padding: `5px 5px`,
+                        width: '100%',
+                        borderRadius: 2,
+                        opacity: 0.8,
+                        "&:hover": {
                            opacity: 0.8,
+                           cursor: 'pointer',
+                           backgroundColor: '#f0f0f0' + '22'
+                        }
+                     }} onClick={() => handleGroupClick(index)}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
+                           <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
+                           <Text style={{ color: '#f0f0f0' }}>
+                              {group.text}
+                           </Text>
+                        </Box>
+                        <Box sx={{
+                           ...styles.menuIcon,
+                           backgroundImage: `url(${icons.gray_arrow_down})`,
+                           transform: groupStates[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
+                           transition: '.3s',
+                           width: 17,
+                           height: 17,
                            "&:hover": {
                               opacity: 0.8,
-                              cursor: 'pointer',
-                              backgroundColor: '#f0f0f0' + '22'
+                              cursor: 'pointer'
                            }
-                        }} onClick={() => handleGroupClick(index)}>
-                           <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
-                              <Text style={{ color: '#f0f0f0' }}>
-                                 {group.text}
-                              </Text>
-                           </Box>
-                           <Box sx={{
-                              ...styles.menuIcon,
-                              backgroundImage: `url(${icons.gray_arrow_down})`,
-                              transform: groupStates[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
-                              transition: '.3s',
-                              width: 17,
-                              height: 17,
-                              "&:hover": {
-                                 opacity: 0.8,
-                                 cursor: 'pointer'
-                              }
-                           }} />
-                        </Box>
-                        {groupStates[index] && (
-                           group.items.map((item, index) => {
-                              return (
-                                 <MenuItem
-                                    currentPage={item.to === pathname}
-                                    key={`${index}_${item.to}`}
-                                    to={item.to}
-                                    text={item.text}
-                                    icon={item.icon}
-                                    onClick={() => setShowMenuMobile(false)}
-                                 />)
-                           }
-                           ))}
+                        }} />
                      </Box>
-                  )}
-               </Box>
-               <Box sx={{
-                  ...styles.icon,
-                  backgroundImage: `url('/favicon.svg')`,
-                  backgroundSize: 'contain',
-                  width: 140,
-                  height: 40,
-                  bottom: 60,
-                  position: 'absolute',
-                  "&:hover": {
-                     cursor: 'pointer', opacity: 0.8
-                  }
-               }} onClick={() => router.push('/')} />
+                     {groupStates[index] && (
+                        group.items.map((item, index) => {
+                           return (
+                              <MenuItem
+                                 currentPage={item.to === pathname}
+                                 key={`${index}_${item.to}`}
+                                 to={item.to}
+                                 text={item.text}
+                                 icon={item.icon}
+                                 onClick={() => setShowMenuMobile(false)}
+                              />)
+                        }
+                        ))}
+                  </Box>
+               )}
             </Box>
-         </Box >
+            <Box sx={{
+               ...styles.icon,
+               backgroundImage: `url('/favicon.svg')`,
+               backgroundSize: 'contain',
+               width: 140,
+               height: 40,
+               bottom: 60,
+               position: 'absolute',
+               "&:hover": {
+                  cursor: 'pointer', opacity: 0.8
+               }
+            }} onClick={() => router.push('/')} />
+         </Box>
+      </Box >
 
          <Box sx={styles.menuResponsive}>
             <Box sx={{
@@ -176,11 +176,11 @@ export const LeftMenu = ({ menuItems = [] }) => {
                duration={0.3}
             />
          </Box>
-         {
-            showChangePassword && <BoxData
-               onClick={(value) => setShowChangePassword(value)}
-               value={showChangePassword} />
-         }
+   {
+      showChangePassword && <BoxData
+         onClick={(value) => setShowChangePassword(value)}
+         value={showChangePassword} />
+   }
       </>
    )
 }
@@ -251,6 +251,33 @@ const styles = {
       zIndex: 999999999,
       position: { xs: 'absolute', sm: 'absolute', md: 'relative', lg: 'relative' },
       width: { xs: '50%', sm: 200, md: 200, lg: 200 },
+   },
+   boxMenu: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 1,
+      marginTop: 5,
+      overflowY: 'auto',
+      overflowStyle: 'marquee,panner',
+      maxHeight: '58%',
+      scrollbarWidth: 'thin',
+      scrollbarColor: 'gray lightgray',
+      '&::-webkit-scrollbar': {
+         width: '5px',
+         
+      },
+      '&::-webkit-scrollbar-thumb': {
+         backgroundColor: 'gray',
+         borderRadius: '5px'
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+         backgroundColor: 'darkgray',
+         
+      },
+      '&::-webkit-scrollbar-track': {
+         backgroundColor: Colors.backgroundSecundary,
+         
+      },
    },
    userBox: {
       backgroundColor: '#00000017',
