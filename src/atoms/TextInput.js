@@ -10,10 +10,10 @@ export const TextInput = (props) => {
       <TextField label={label}
          {...props}
          InputProps={{
-            sx: { borderRadius: 2, fontSize: { xs: '12px', xm: '15px', md: '15px', lg: '15px' }, fontFamily: 'InterRegular',  ...InputProps?.style }
+            sx: { borderRadius: 2, fontSize: { xs: '14px', xm: '15px', md: '15px', lg: '15px' }, fontFamily: 'InterRegular',  ...InputProps?.style }
          }}
          InputLabelProps={{ 
-            style: { color: '#888' , ...InputLabelProps?.style} 
+            sx: { color: '#888' , fontSize: { xs: '14px', xm: '15px', md: '15px', lg: '15px' }, ...InputLabelProps?.style} 
          }}
       />
    )

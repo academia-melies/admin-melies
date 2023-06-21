@@ -29,7 +29,7 @@ export const UserHeader = (props) => {
 
 const styles = {
     header: {
-        display: 'flex',
+        display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex' },
         width: '100%',
         padding: `13px 32px`,
         alignItems: 'center',

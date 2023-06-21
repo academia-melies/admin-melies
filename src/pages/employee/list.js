@@ -37,7 +37,7 @@ export default function ListUsers(props) {
 
    const column = [
       { key: 'id', label: 'ID' },
-      { key: 'nome', label: 'Nome' },
+      { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'foto' },
       { key: 'email', label: 'E-mail' },
       { key: 'telefone', label: 'Telefone' },
       { key: 'perfil', label: 'Perfil' },

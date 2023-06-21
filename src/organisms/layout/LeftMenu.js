@@ -38,7 +38,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
    return (
       <>
          <Box sx={{ ...styles.leftMenuMainContainer, ...(showMenuMobile && { display: 'flex' }) }}>
-            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: 200, md: 200, lg: 200 }, padding: '10px 15px' }}>
+            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: 200, md: 200, lg: 200 }, padding: { xs: '10px 0px', sm: '10px 15px', md: '10px 15px', lg: '10px 15px' } }}>
 
                <Box sx={styles.userBadgeContainer}>
                   <Box sx={{
@@ -87,100 +87,113 @@ export const LeftMenu = ({ menuItems = [] }) => {
                </Box>
 
                <Box sx={styles.boxMenu}>
-               {menuItems.map((group, index) =>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}>
-                     {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
-                     <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 0.5,
-                        padding: `5px 5px`,
-                        width: '100%',
-                        borderRadius: 2,
-                        opacity: 0.8,
-                        "&:hover": {
-                           opacity: 0.8,
-                           cursor: 'pointer',
-                           backgroundColor: '#f0f0f0' + '22'
-                        }
-                     }} onClick={() => handleGroupClick(index)}>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                           <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
-                           <Text style={{ color: '#f0f0f0' }}>
-                              {group.text}
-                           </Text>
-                        </Box>
+                  {menuItems.map((group, index) =>
+                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}>
+                        {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
                         <Box sx={{
-                           ...styles.menuIcon,
-                           backgroundImage: `url(${icons.gray_arrow_down})`,
-                           transform: groupStates[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
-                           transition: '.3s',
-                           width: 17,
-                           height: 17,
+                           display: 'flex',
+                           alignItems: 'center',
+                           justifyContent: 'space-between',
+                           gap: 0.5,
+                           padding: `5px 5px`,
+                           width: '100%',
+                           borderRadius: 2,
+                           opacity: 0.8,
                            "&:hover": {
                               opacity: 0.8,
-                              cursor: 'pointer'
+                              cursor: 'pointer',
+                              backgroundColor: '#f0f0f0' + '22'
                            }
-                        }} />
+                        }} onClick={() => handleGroupClick(index)}>
+                           <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
+                              <Text style={{ color: '#f0f0f0' }}>
+                                 {group.text}
+                              </Text>
+                           </Box>
+                           <Box sx={{
+                              ...styles.menuIcon,
+                              backgroundImage: `url(${icons.gray_arrow_down})`,
+                              transform: groupStates[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
+                              transition: '.3s',
+                              width: 17,
+                              height: 17,
+                              "&:hover": {
+                                 opacity: 0.8,
+                                 cursor: 'pointer'
+                              }
+                           }} />
+                        </Box>
+                        {groupStates[index] && (
+                           group.items.map((item, index) => {
+                              return (
+                                 <MenuItem
+                                    currentPage={item.to === pathname}
+                                    key={`${index}_${item.to}`}
+                                    to={item.to}
+                                    text={item.text}
+                                    icon={item.icon}
+                                    onClick={() => setShowMenuMobile(false)}
+                                 />)
+                           }
+                           ))}
                      </Box>
-                     {groupStates[index] && (
-                        group.items.map((item, index) => {
-                           return (
-                              <MenuItem
-                                 currentPage={item.to === pathname}
-                                 key={`${index}_${item.to}`}
-                                 to={item.to}
-                                 text={item.text}
-                                 icon={item.icon}
-                                 onClick={() => setShowMenuMobile(false)}
-                              />)
-                        }
-                        ))}
-                  </Box>
-               )}
+                  )}
+               </Box>
+               <Box sx={{
+                  ...styles.icon,
+                  backgroundImage: `url('/favicon.svg')`,
+                  backgroundSize: 'contain',
+                  width: 140,
+                  height: 40,
+                  bottom: 60,
+                  position: 'absolute',
+                  "&:hover": {
+                     cursor: 'pointer', opacity: 0.8
+                  }
+               }} onClick={() => router.push('/')} />
             </Box>
-            <Box sx={{
-               ...styles.icon,
-               backgroundImage: `url('/favicon.svg')`,
-               backgroundSize: 'contain',
-               width: 140,
-               height: 40,
-               bottom: 60,
-               position: 'absolute',
-               "&:hover": {
-                  cursor: 'pointer', opacity: 0.8
-               }
-            }} onClick={() => router.push('/')} />
-         </Box>
-      </Box >
+         </Box >
 
          <Box sx={styles.menuResponsive}>
             <Box sx={{
+               ...styles.menuIcon,
+               backgroundImage: `url('/icons/notification_icon.png')`,
+               width: 20,
+               height: 17,
+               "&:hover": {
+                  opacity: 0.8,
+                  cursor: 'pointer'
+               }
+            }} />
+
+            <Box sx={{
                ...styles.icon,
-               backgroundImage: `url('/favicon.svg')`,
+               backgroundImage: `url('/favicon.png')`,
                backgroundSize: 'contain',
-               backgroundPosition: 'left',
+               backgroundPosition: 'center',
                width: 1,
-               height: 20,
-               marginTop: 1,
+               height: 35,
                display: 'flex',
                flex: 1,
                "&:hover": {
                   cursor: 'pointer', opacity: 0.8
                }
             }} onClick={() => router.push('/')} />
+            <Box>
             <Hamburger
                toggled={showMenuMobile}
                toggle={setShowMenuMobile}
-               duration={0.3}
+               duration={0.5}
+               size={20}
             />
+            </Box>
          </Box>
-   {
-      showChangePassword && <BoxData
-         onClick={(value) => setShowChangePassword(value)}
-         value={showChangePassword} />
-   }
+         {
+            showChangePassword && <BoxData
+               onClick={(value) => setShowChangePassword(value)}
+               value={showChangePassword} />
+         }
       </>
    )
 }
@@ -249,8 +262,8 @@ const styles = {
       padding: `40px 5px 40px 5px`,
       gap: 1,
       zIndex: 999999999,
-      position: { xs: 'absolute', sm: 'absolute', md: 'relative', lg: 'relative' },
-      width: { xs: '50%', sm: 200, md: 200, lg: 200 },
+      position: { xs: 'fixed', sm: 'absolute', md: 'relative', lg: 'relative' },
+      width: { xs: '60%', sm: 200, md: 200, lg: 200 },
    },
    boxMenu: {
       display: 'flex',
@@ -264,7 +277,7 @@ const styles = {
       scrollbarColor: 'gray lightgray',
       '&::-webkit-scrollbar': {
          width: '5px',
-         
+
       },
       '&::-webkit-scrollbar-thumb': {
          backgroundColor: 'gray',
@@ -272,11 +285,11 @@ const styles = {
       },
       '&::-webkit-scrollbar-thumb:hover': {
          backgroundColor: 'darkgray',
-         
+
       },
       '&::-webkit-scrollbar-track': {
          backgroundColor: Colors.backgroundSecundary,
-         
+
       },
    },
    userBox: {
@@ -319,7 +332,7 @@ const styles = {
       maxHeight: '40px',
       width: '100%',
       backgroundColor: '#f9f9f9',
-      borderRight: `1px solid #00000010`,
+      borderBottom: `2px solid #00000010`,
       padding: `30px`,
       alignItems: 'center',
       justifyContent: 'right',
@@ -372,5 +385,13 @@ const styles = {
       borderRadius: 1.5,
       zIndex: 9999999,
       marginTop: 5
-   }
+   },
+   menuIcon: {
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      width: 20,
+      height: 20,
+
+  },
 }

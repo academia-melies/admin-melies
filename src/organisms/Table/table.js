@@ -1,15 +1,17 @@
-import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
+import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
 import React from "react";
 import { Colors } from "../layout/Colors";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { formatTimeStamp } from "../../helpers";
+import { Box } from "../../atoms";
 
 export const Table_V1 = (props) => {
 
     const {
         data = [],
-        columns = []
+        columns = [],
+        avatar = false
     } = props;
 
     const router = useRouter();
@@ -25,31 +27,83 @@ export const Table_V1 = (props) => {
                 <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
-                            <TableRow style={{ backgroundColor: Colors.backgroundSecundary }}>
+                            <TableRow style={{ backgroundColor: Colors.backgroundSecundary, }}>
                                 {columns.map((column) => (
-                                    <TableCell key={column?.key} sx={styles.cell}>{column.label}</TableCell>
+                                    <TableCell key={column?.key} sx={{ ...styles.cell, minWidth: column?.key !== 'id' && '140px' }}>{column.label}</TableCell>
                                 ))}
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {data?.map((row) => (
+                            {/* {data?.map((row) => (
                                 <TableRow key={row.id} onClick={() => handleRowClick(row.id)}
                                     sx={styles.bodyRow}>
                                     {columns.map((column) => (
-                                        row[column?.key] ? 
-                                        <TableCell key={`${row.id}-${column.key}`} sx={styles.bodyCell}>
-                                            {typeof row[column.key] === 'object' &&
-                                                row[column?.key || '-'] instanceof Date ? (
-                                                formatTimeStamp(row[column?.key || '-'])
+                                        row[column?.key] ?
+                                            <Tooltip title={row[column.key]} arrow>
+                                                <TableCell key={`${row.id}-${column.key}`} sx={{
+                                                    ...styles.bodyCell,
+                                                    maxWidth: '140px',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                }}>
+                                                    {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
+                                                    {typeof row[column.key] === 'object' &&
+                                                        row[column?.key || '-'] instanceof Date ? (
+                                                        formatTimeStamp(row[column?.key || '-'])
+                                                    ) : (
+                                                        row[column?.key || '-']
+                                                    )}
+                                                </TableCell>
+                                            </Tooltip>
+                                            :
+                                            <TableCell sx={styles.bodyCell}>---</TableCell>
+                                    ))}
+                                </TableRow>
+                            ))} */}
+                            {data?.map((row) => (
+                                <TableRow key={row.id} onClick={() => handleRowClick(row.id)} sx={styles.bodyRow}>
+                                    {columns.map((column) => (
+                                        <TableCell
+                                            key={`${row.id}-${column.key}`}
+                                            sx={{
+                                                ...styles.bodyCell,
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                maxWidth: '160px',
+                                            }}
+                                        >
+                                            {row[column?.key] ? (
+                                                <Tooltip title={row[column.key]} arrow>
+                                                    <Box
+                                                        sx={{
+                                                            maxWidth: '160px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 2,
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                        }}
+                                                    >
+                                                        {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
+                                                        {typeof row[column.key] === 'object' &&
+                                                            row[column?.key || '-'] instanceof Date ? (
+                                                            formatTimeStamp(row[column?.key || '-'])
+                                                        ) : (
+                                                            row[column?.key || '-']
+                                                        )}
+                                                    </Box>
+                                                </Tooltip>
                                             ) : (
-                                                row[column?.key || '-']
+                                                <TableCell sx={{border: 'none', padding: '2px',}}>---</TableCell>
                                             )}
                                         </TableCell>
-                                        :
-                                        <TableCell sx={styles.bodyCell}>---</TableCell>
                                     ))}
                                 </TableRow>
                             ))}
+
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -62,15 +116,19 @@ const styles = {
     cell: {
         color: '#fff',
         fontWeight: 'bold',
-        textAlign: 'center'
+        textAlign: 'center',
     },
     bodyCell: {
-        textAlign: 'center'
+        textAlign: 'center',
+        borderTop: '1px solid lightGray',
+
     },
     bodyRow: {
+        textOverflow: 'ellipsis',
         "&:hover": {
             backgroundColor: Colors.background + '77',
             cursor: 'pointer'
-        }
+        },
+
     }
 }
