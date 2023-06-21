@@ -1,3 +1,5 @@
+import { useAppContext } from "../../context/AppContext";
+
 export const Colors = {
    background: '#f0f0f0',
    hover: '#eaeaea',
@@ -8,6 +10,19 @@ export const Colors = {
    green: '#6a9744',
    red: '#cc3e12',
    yellow: '#ffd200',
+   darkPrimary: '#0E0D15',
+   darkSecondary: '#232033',
+   darkThird: '#1B1829',
+   darkButton: '#6B30E4',
+   darkText: '#FFFFFF',
+   darkInput: '#1B1829',
+
+   clearPrimary: '#F2F4F8',
+   clearSecondary: '#FFFFFF',
+   clearThird: '#FFFFFF',
+   clearButton: '#F49519',
+   clearText: '#1C2126',
+   clearInput: '#F2F4F8',
 }
 
 export const icons = {

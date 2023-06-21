@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react"
 import { useAppContext } from "../context/AppContext"
 import { emailValidator } from "../helpers"
-import { Colors } from "../organisms"
+import { Colors, IconTheme } from "../organisms"
 import { Box, Button, ContentContainer, TextInput, Text } from "../atoms"
 
 export default function Login() {
 
-    const { login, alert } = useAppContext()
+    const { login, alert, theme, colorPalette } = useAppContext()
     const [userData, setUserData] = useState([])
-    const [theme, setTheme] = useState(false)
     const [themeName, setThemeName] = useState('')
 
     const [windowWidth, setWindowWidth] = useState(0)
@@ -82,8 +81,8 @@ export default function Login() {
                             {/* {!smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={40} />} */}
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '62%', }}>
                                 <Text bold style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: '35px', transition: 'background-color 1s', fontWeight: 'bold' }}>Login</Text>
-                                <Box sx={{ backgroundColor: Colors.orange, borderRadius: '16px', padding: '2px 12px 2px 12px' }}>
-                                    <Text small bold style={{ color: '#1D1D1B', fontWeight: 'bold' }}>{'ADMIN'}</Text>
+                                <Box sx={{ backgroundColor: colorPalette.buttonColor,  transition: 'background-color 1s', borderRadius: '16px', padding: '2px 12px 2px 12px' }}>
+                                    <Text small bold style={{ color: colorPalette.textColor,  transition: 'background-color 1s', fontWeight: 'bold' }}>{'ADMIN'}</Text>
                                 </Box>
                             </Box>
                             <Box sx={{
@@ -158,7 +157,7 @@ export default function Login() {
                     {smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={14} />}
                 </ContentContainer>
             </Box>
-            <Box sx={{
+            {/* <Box sx={{
                 display: 'flex',
                 position: 'absolute',
                 backgroundColor: !theme ? Colors.backgroundPrimary : '#F2F4F8 ',
@@ -173,7 +172,8 @@ export default function Login() {
                 }
             }} onClick={() => setTheme(!theme)}>
                 <Box sx={{ ...styles.icon, backgroundImage: theme ? `url('/icons/theme_icon.png')` : `url('/icons/theme_icon_dark.png')`, color: theme ? '#fff' : Colors.backgroundPrimary, transition: 'background-color 1s', }} />
-            </Box>
+            </Box> */}
+            <IconTheme left/>
         </Box>
 
     )

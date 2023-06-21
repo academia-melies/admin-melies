@@ -3,7 +3,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, ContentContainer, Text } from "../../atoms"
 import { Forbidden } from "../../forbiddenPage/forbiddenPage"
-import { Colors, SearchBar, SectionHeader, Table_V1 } from "../../organisms"
+import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../organisms"
 import { api } from "../../api/api"
 import { getUsersPerfil } from "../../validators/api-requests"
 import { useAppContext } from "../../context/AppContext"
@@ -13,10 +13,10 @@ export default function ListUsers(props) {
    const [usersList, setUsers] = useState([])
    const [filterData, setFilterData] = useState('')
    const [perfil, setPerfil] = useState('funcionario')
-   const { setLoading, alert } = useAppContext()
+   const { setLoading, alert, theme, setTheme, colorPalette } = useAppContext()
    const router = useRouter()
    const filter = (item) => (item?.nome?.toLowerCase().includes(filterData?.toLowerCase())) || (item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
-   const theme = useTheme()
+   // const theme = useTheme()
 
    const getUsers = async () => {
       setLoading(true)
@@ -40,13 +40,10 @@ export default function ListUsers(props) {
       { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'foto' },
       { key: 'email', label: 'E-mail' },
       { key: 'telefone', label: 'Telefone' },
-      { key: 'perfil', label: 'Perfil' },
       { key: 'cpf', label: 'CPF' },
       { key: 'nacionalidade', label: 'Nacionalidade' },
       { key: 'estado_civil', label: 'Estado Civil' },
-      { key: 'conjuge', label: 'Conjuge' },
       { key: 'email_melies', label: 'Email Meliés' },
-      { key: 'dependente', label: 'Dependente' },
    ];
 
    return (
@@ -57,7 +54,7 @@ export default function ListUsers(props) {
             newButtonAction={() => router.push(`/employee/new`)}
          />
          <Box>
-            <Text secundary bold style={{ margin: '0px 5px 5px 5px', }}>Buscar por funcionario: </Text>
+            <Text bold style={{ margin: '0px 5px 5px 5px', }}>Buscar por funcionario: </Text>
             <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px' }} onChange={setFilterData} />
          </Box>
          <Table_V1 data={usersList?.filter(filter)} columns={column} />

@@ -6,16 +6,16 @@ import { useState } from "react"
 import { Box, Text } from "../../atoms"
 import { Colors, icons } from "./Colors"
 import { useAppContext } from "../../context/AppContext"
+import { IconTheme } from "../iconTheme/IconTheme"
 
 export const LeftMenu = ({ menuItems = [] }) => {
 
-   const { user } = useAppContext()
+   const { logout, user, colorPalette, theme } = useAppContext();
    const name = user?.nome?.split(' ');
    const firstName = name[0];
    const lastName = name[name.length - 1];
    const userName = `${firstName} ${lastName}`;
    const router = useRouter();
-   const { logout } = useAppContext();
    let fotoPerfil = user?.foto;
    const pathname = router.pathname === '/' ? null : router.asPath
 
@@ -32,12 +32,9 @@ export const LeftMenu = ({ menuItems = [] }) => {
       setGroupStates(newGroupStates);
    };
 
-   const theme = useTheme()
-   const navBar = useMediaQuery(theme.breakpoints.down('md'))
-
    return (
       <>
-         <Box sx={{ ...styles.leftMenuMainContainer, ...(showMenuMobile && { display: 'flex' }) }}>
+         <Box sx={{ ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary,  transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }) }}>
             <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: 200, md: 200, lg: 200 }, padding: { xs: '10px 0px', sm: '10px 15px', md: '10px 15px', lg: '10px 15px' } }}>
 
                <Box sx={styles.userBadgeContainer}>
@@ -56,7 +53,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      }
                   }} onClick={() => setShowUserOptions(!showUserOptions)}>
                      <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={fotoPerfil || `/icons/perfil-default.jpg`} />
-                     <Text style={{ color: Colors.textPrimary }}>{userName}</Text>
+                     <Text style={{ color: colorPalette.textColor,  transition: 'background-color 1s', }}>{userName}</Text>
                      <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
@@ -106,8 +103,8 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            }
                         }} onClick={() => handleGroupClick(index)}>
                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} />
-                              <Text style={{ color: '#f0f0f0' }}>
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon_dark})`, width: 18, height: 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s'}} />
+                              <Text style={{ color: colorPalette.textColor,  transition: 'background-color 1s', }}>
                                  {group.text}
                               </Text>
                            </Box>
@@ -181,12 +178,12 @@ export const LeftMenu = ({ menuItems = [] }) => {
                }
             }} onClick={() => router.push('/')} />
             <Box>
-            <Hamburger
-               toggled={showMenuMobile}
-               toggle={setShowMenuMobile}
-               duration={0.5}
-               size={20}
-            />
+               <Hamburger
+                  toggled={showMenuMobile}
+                  toggle={setShowMenuMobile}
+                  duration={0.5}
+                  size={20}
+               />
             </Box>
          </Box>
          {
@@ -199,6 +196,8 @@ export const LeftMenu = ({ menuItems = [] }) => {
 }
 
 const MenuItem = (props) => {
+
+   const {colorPalette } = useAppContext()
 
    const {
       to,
@@ -239,7 +238,7 @@ const MenuItem = (props) => {
             }}>
                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
                   {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
-                  <Text small style={{ color: 'inherit' }}>
+                  <Text small style={{ color: colorPalette.textColor,  transition: 'background-color 1s', }}>
                      {text}
                   </Text>
                </Box>
@@ -257,7 +256,6 @@ const styles = {
       flexDirection: 'column',
       minHeight: '100vh',
       // backgroundColor: '#f9f9f9',
-      backgroundColor: Colors.backgroundSecundary,
       borderRight: `1px solid #00000010`,
       padding: `40px 5px 40px 5px`,
       gap: 1,
@@ -393,5 +391,5 @@ const styles = {
       width: 20,
       height: 20,
 
-  },
+   },
 }

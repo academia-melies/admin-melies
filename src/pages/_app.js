@@ -1,23 +1,26 @@
 import { Box } from '../atoms'
-import { AppProvider } from '../context/AppContext'
+import { AppProvider, useAppContext } from '../context/AppContext'
 import { ProtectRoute } from '../context/ProtectRoute'
 import { Colors, LeftMenu, UserHeader } from '../organisms'
 import { menuItems } from '../permissions'
 import '../styles/globals.css'
+import PagesRoute from './pagesRoute'
 
 
 function App({ Component, pageProps }) {
+
    return (
       <AppProvider>
-         <ProtectRoute>
-            <Box sx={styles.bodyContainer}>
+         {/* <ProtectRoute> */}
+            {/* <Box sx={styles.bodyContainer}>
                <LeftMenu menuItems={menuItems} />
                <UserHeader />
-               <Box sx={styles.contentContainer}>
+               <Box sx={{...styles.contentContainer, backgroundColor: '#fff',}}>
                   <Component {...pageProps} />
                </Box>
-            </Box>
-         </ProtectRoute>
+            </Box> */}
+            <PagesRoute Component={Component} pageProps={pageProps} />
+         {/* </ProtectRoute> */}
       </AppProvider>
    )
 }
@@ -37,8 +40,8 @@ const styles = {
       flexDirection: 'column',
       flex: 1,
       gap: `35px`,
-      backgroundColor: Colors.background,
-      padding: { xs: `30px`, xm: `25px`, md: `80px 50px`, lg: `80px 50px` },
+      // backgroundColor: Colors.background,
+      padding: { xs: `30px`, xm: `25px`, md: `120px 50px`, lg: `120px 50px` },
       paddingBottom: `60px`,
       overflowY: 'hidden',
       marginTop: { xs: `60px`, xm: `0px`, md: `0px`, lg: `0px` }

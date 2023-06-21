@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="18.706" height="17.721" viewBox="0 0 18.706 17.721">
+  <g id="Icon" transform="translate(-0.551 0.7)">
+    <rect id="Area" width="18.706" height="17" transform="translate(0.551)" fill="#1d1d1b" opacity="0"/>
+    <path id="Icon_material-account-balance-wallet" data-name="Icon material-account-balance-wallet" d="M22.221,19.268v.985a1.975,1.975,0,0,1-1.969,1.969H6.469A1.968,1.968,0,0,1,4.5,20.252V6.469A1.968,1.968,0,0,1,6.469,4.5H20.252a1.975,1.975,0,0,1,1.969,1.969v.985H13.361a1.968,1.968,0,0,0-1.969,1.969V17.3a1.968,1.968,0,0,0,1.969,1.969ZM13.361,17.3h9.845V9.423H13.361ZM17.3,14.837a1.477,1.477,0,1,1,1.477-1.477A1.475,1.475,0,0,1,17.3,14.837Z" transform="translate(-3.949 -5.2)" fill="#1c2126"/>
+  </g>
+</svg>

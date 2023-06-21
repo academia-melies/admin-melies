@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
 import { Box, Button, Text } from "../atoms";
 import { getDialogPosition } from "../helpers";
-import { Alert } from "../organisms";
+import { Alert, Colors } from "../organisms";
 import { api } from "../api/api";
 import { LoadingIcon } from "../organisms/loading/Loading";
 
@@ -23,6 +23,15 @@ export const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [dataBox, setDataBox] = useState(false)
+    const [colorPalette, setColorPalette] = useState({
+        primary: '',
+        secondary: '',
+        third: '',
+        buttonColor: '',
+        inputColor: '',
+        textColor: ''
+    })
+    const [theme, setTheme] = useState(true)
     const [showConfirmationDialog, setShowConfirmationDialog] = useReducer(reducer, { active: false, position: { left: 0, top: 0 }, acceptAction: () => { } })
     const [alertData, setAlertData] = useState({
         active: false,
@@ -76,10 +85,27 @@ export const AppProvider = ({ children }) => {
     }
 
     const logout = () => {
-       localStorage.removeItem('token')
+        localStorage.removeItem('token')
         setUser(null)
         delete api.defaults.headers.Authorization
     }
+
+    const colorsThem = () => {
+        setColorPalette({
+            primary: theme ? Colors.clearPrimary : Colors.darkPrimary,
+            secondary: theme ? Colors.clearSecondary : Colors.darkSecondary,
+            third: theme ? Colors.clearThird : Colors.darkThird,
+            buttonColor: theme ? Colors.clearButton : Colors.darkButton,
+            inputColor: theme ? Colors.clearInput : Colors.darkInput,
+            textColor: theme ? Colors.clearText : Colors.darkText,
+        })
+    }
+
+    useEffect(() => {
+        colorsThem();
+    }, [theme])
+
+
 
     return (
         <AppContext.Provider
@@ -93,7 +119,11 @@ export const AppProvider = ({ children }) => {
                 setLoading,
                 setDataBox,
                 alert,
-                setShowConfirmationDialog
+                setShowConfirmationDialog,
+                colorPalette,
+                setColorPalette,
+                theme,
+                setTheme
             }}
         >
             {children}

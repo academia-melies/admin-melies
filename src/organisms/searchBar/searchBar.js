@@ -1,13 +1,15 @@
 import { Box, Text } from "../../atoms";
+import { useAppContext } from "../../context/AppContext";
 import { Colors } from "../layout/Colors";
 
 export const SearchBar = (props) => {
 
    // const userName = user?.name?.split(' ')?.[0]
    const { large = false, placeholder = '', style = {}, onChange = () => { }, sx = {} } = props;
+   const { colorPalette, theme } = useAppContext()
    return (
       <>
-         <Box sx={styles.searchBarContainer}>
+         <Box sx={{...styles.searchBarContainer, backgroundColor: !theme ? colorPalette.inputColor : '#fff',  transition: 'background-color 1s',}}>
             <input
                placeholder={placeholder}
                style={{ ...styles.searchBar, ...style, ...sx }}

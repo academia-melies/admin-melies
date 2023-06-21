@@ -1,6 +1,6 @@
 export const menuItems = [
    {
-      text: 'Administrativo', icon: 'adm_icon.png',
+      text: 'Administrativo', icon_clear: 'icon_adm_dark.svg', icon_dark: 'icon_adm_dark.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -16,7 +16,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Acadêmico', icon: 'academico_icon.png',
+      text: 'Acadêmico', icon_clear: 'icon_academico.svg', icon_dark: 'icon_academico_dark.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -33,7 +33,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Biblioteca', icon: 'biblioteca_icon.png',
+      text: 'Biblioteca', icon_clear: 'icon_biblioteca.svg', icon_dark: 'icon_biblioteca_dark.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -50,7 +50,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Financeiro', icon: 'financeiro_icon.png',
+      text: 'Financeiro', icon_clear: 'icon_financeiro.svg', icon_dark: 'icon_financeiro_dark.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -72,7 +72,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Marketing', icon: 'mkt_icon.png',
+      text: 'Marketing', icon_clear: 'icon_mkt.svg', icon_dark: 'icon_mkt_dark.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -88,7 +88,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Suporte', icon: 'suporte_icon.png',
+      text: 'Suporte', icon_clear: 'icon_suporte.svg', icon_dark: 'icon_suporte_dark.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {

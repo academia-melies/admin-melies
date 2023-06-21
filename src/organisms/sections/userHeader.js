@@ -2,26 +2,33 @@ import { useState } from "react";
 import { Box, Button, Text } from "../../atoms";
 import { Colors } from "../layout/Colors";
 import { Avatar } from "@mui/material";
+import { IconTheme } from "../iconTheme/IconTheme";
+import { useAppContext } from "../../context/AppContext";
 
 export const UserHeader = (props) => {
     const {
         title = '',
     } = props;
 
+    const { colorPalette, theme } = useAppContext()
+
 
     return (
         <>
-            <Box sx={styles.header}>
+            <Box sx={{...styles.header, backgroundColor: colorPalette.secondary + '88',}}>
                 <Box sx={{
                     ...styles.menuIcon,
                     backgroundImage: `url('/icons/notification_icon.png')`,
                     width: 20,
                     height: 17,
+                    filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                    transition: 'background-color 1s',
                     "&:hover": {
                         opacity: 0.8,
                         cursor: 'pointer'
                     }
                 }} />
+                <IconTheme right />
             </Box>
         </>
     )
@@ -37,7 +44,6 @@ const styles = {
         boxSizing: 'border-box',
         gap: 1,
         position: 'absolute',
-        backgroundColor: Colors.backgroundPrimary + '05',
         borderBottom: `1px solid ${Colors.backgroundPrimary + '11'}`,
     },
     menuIcon: {

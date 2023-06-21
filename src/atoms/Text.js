@@ -1,5 +1,6 @@
 import { Typography } from "@mui/material";
 import { Colors } from "../organisms";
+import { useAppContext } from "../context/AppContext";
 
 export const Text = (props) => {
 
@@ -18,13 +19,17 @@ export const Text = (props) => {
       sx = {}
    } = props;
 
+   const { colorPalette } = useAppContext()
+
    return (
       <Typography
          {...props}
          sx={{
+            color: colorPalette.textColor,
+            transition: 'background-color 1s',
             fontFamily: "'Metropolis Regular', Helvetica, Arial, Lucida, sans-serif, 'Metropolis Bold'",
             fontSize: { xs: `14px`, xm: `15px`, md: `15px`, lg: `15px` },
-            ...(light && { fontFamily: 'normal normal bold 35px/43px Metropolis',  }),
+            ...(light && { fontFamily: 'normal normal bold 35px/43px Metropolis', }),
             ...(bold && { fontWeight: 'Metropolis Bold' }),
             ...(xsmall && { fontSize: { xs: `8px`, sm: `11px`, md: `11px`, lg: `11px` } }),
             ...(small && { fontSize: { xs: `12px`, sm: `12px`, md: `12px`, lg: `12px` } }),
@@ -32,7 +37,7 @@ export const Text = (props) => {
             ...(veryLarge && { fontSize: { xs: `22px`, sm: `22px`, md: `22px`, lg: `27px` } }),
             ...(title && { fontSize: { xs: `18px`, sm: `22px`, md: `22px`, lg: `22px` } }),
             ...(center && { textAlign: 'center' }),
-            ...(secundary && { color: Colors.backgroundPrimary + '77' }),
+            ...(secundary && { color: Colors.textColor + '77' }),
             ...style,
             ...sx
          }}

@@ -36,16 +36,13 @@ export default function ListUsers(props) {
 
    const column = [
       { key: 'id', label: 'ID' },
-      { key: 'nome', label: 'Nome' },
+      { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'foto' },
       { key: 'email', label: 'E-mail' },
       { key: 'telefone', label: 'Telefone' },
-      { key: 'perfil', label: 'Perfil' },
       { key: 'cpf', label: 'CPF' },
       { key: 'nacionalidade', label: 'Nacionalidade' },
       { key: 'estado_civil', label: 'Estado Civil' },
-      { key: 'conjuge', label: 'Conjuge' },
       { key: 'email_melies', label: 'Email Meliés' },
-      { key: 'dependente', label: 'Dependente' },
    ];
 
    return (
@@ -56,7 +53,7 @@ export default function ListUsers(props) {
             newButtonAction={() => router.push(`/student/new`)}
          />
          <Box>
-            <Text secundary bold style={{ margin: '0px 5px 5px 5px', }}>Buscar por aluno: </Text>
+            <Text bold style={{ margin: '0px 5px 5px 5px', }}>Buscar por aluno: </Text>
             <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px' }} onChange={setFilterData} />
          </Box>
          <Table_V1 data={usersList?.filter(filter)} columns={column} />

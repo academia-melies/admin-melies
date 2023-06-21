@@ -1,4 +1,5 @@
 import { Box, Button, Text } from "../../atoms";
+import { useAppContext } from "../../context/AppContext";
 import { Colors } from "../layout/Colors";
 
 export const SectionHeader = (props) => {
@@ -18,6 +19,8 @@ export const SectionHeader = (props) => {
       customButtonAction = () => { }
    } = props;
 
+   const { colorPalette } = useAppContext()
+
    return (
       <>
          <Box sx={{
@@ -33,11 +36,11 @@ export const SectionHeader = (props) => {
                   style={{
                      whiteSpace: 'nowrap',
                      textAlign: { xs: `center`, sm: 'start', md: 'start', lg: 'start' },
-                     color: Colors.backgroundPrimary
+                     color: colorPalette.textColor
                   }}>{title}</Text>
                {perfil &&
-                  <Box sx={{ backgroundColor: Colors.orange, borderRadius: 2, padding: '2px 12px 2px 12px' }}>
-                     <Text small bold style={{ color: Colors.textPrimary }}>{perfil}</Text>
+                  <Box sx={{ backgroundColor: colorPalette.buttonColor, borderRadius: 2, padding: '2px 12px 2px 12px',  transition: 'background-color 1s', }}>
+                     <Text small bold style={{ color: colorPalette.textColor }}>{perfil}</Text>
                   </Box>
                }
                <Box sx={{ display: { xs: 'none', sm: 'flex', md: 'flex', lg: 'flex' }, position: 'absolute', top: 0, right: 0, height: '100%' }}>
@@ -56,8 +59,9 @@ export const SectionHeader = (props) => {
                margin: { xs: 'auto' },
                zIndex: { xs: 9999, sm: 'auto', md: 'auto', lg: 'auto' },
                padding: { xs: 2, sm: 0, md: 0, lg: 0 },
-               backgroundColor: Colors.background,
-               gap: 1
+               backgroundColor: colorPalette.primary,
+               gap: 1,
+               transition: 'background-color 1s',
             }}>
                {newButton && <Button text='Novo' style={{ width: 150 }} onClick={newButtonAction} />}
                {saveButton && <Button text='Salvar' style={{ width: 150 }} onClick={saveButtonAction} />}

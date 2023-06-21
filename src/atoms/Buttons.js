@@ -1,7 +1,10 @@
 import { Box, Text } from "../atoms";
+import { useAppContext } from "../context/AppContext";
 import { Colors } from "../organisms";
 
 export const Button = (props) => {
+
+   const { colorPalette } = useAppContext()
 
    const {
       secondary = false,
@@ -33,6 +36,12 @@ export const Button = (props) => {
       <Box
          sx={{
             ...styles.buttonContainer,
+            backgroundColor: colorPalette.buttonColor,
+            transition: 'background-color 1s',
+            "&:hover": {
+               backgroundColor: colorPalette.buttonColor + 'dd',
+               cursor: 'pointer'
+            },
             ...(secondary && {
                backgroundColor: Colors.backgroundSecundary + '55',
                color: '#fff',
@@ -53,7 +62,7 @@ export const Button = (props) => {
             }),
             ...(small && { width: '100%', maxWidth: 130 }),
             ...(large && { width: '100%', maxWidth: 230 }),
-            ...style
+            ...style,
          }}
          onClick={onClick}
       >
@@ -67,14 +76,9 @@ const styles = {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: Colors.orange,
       color: '#f0f0f0',
       padding: { xs: `6px 10px`, xm: `8px 16px`, md: `8px 16px`, lg: `8px 16px` },
       borderRadius: '100px',
-      "&:hover": {
-         backgroundColor: Colors.orange + 'dd',
-         cursor: 'pointer'
-      }
    },
    closeButtonContainer: {
       // backgroundColor: '#f0f0f0',

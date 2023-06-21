@@ -1,3 +1,4 @@
+import { useAppContext } from '../context/AppContext';
 import { Box } from './Box';
 
 /*
@@ -10,6 +11,8 @@ Default props:
 */
 
 export const ContentContainer = (props) => {
+
+   const { colorPalette } = useAppContext()
 
    const {
       children,
@@ -28,6 +31,8 @@ export const ContentContainer = (props) => {
          ...styles.contentContainer,
          overflow,
          gap,
+         backgroundColor: colorPalette.secondary,
+         transition: 'background-color 1s',
          ...(width && { width }),
          ...(fullWidth && { flex: 1 }),
          ...(row ?
@@ -54,7 +59,6 @@ const styles = {
       flexDirection: 'column',
       padding: `30px`,
       borderRadius: `12px`,
-      backgroundColor: '#fff',
       boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
    }
 }

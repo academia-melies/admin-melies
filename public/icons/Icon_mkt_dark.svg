@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="17.721" height="17.721" viewBox="0 0 17.721 17.721">
+  <g id="Icon" transform="translate(-0.765 0.7)">
+    <rect id="Area" width="17.721" height="17.7" transform="translate(0.765 -0.7)" fill="#1d1d1b" opacity="0"/>
+    <path id="Icon_material-announcement" data-name="Icon material-announcement" d="M18.949,3H4.772A1.77,1.77,0,0,0,3.009,4.772L3,20.721l3.544-3.544h12.4A1.777,1.777,0,0,0,20.721,15.4V4.772A1.777,1.777,0,0,0,18.949,3Zm-6.2,7.974H10.974V5.658h1.772Zm0,3.544H10.974V12.747h1.772Z" transform="translate(-2.235 -3.7)" fill="#fff"/>
+  </g>
+</svg>
