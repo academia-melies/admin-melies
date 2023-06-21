@@ -23,6 +23,14 @@ export const Table_V1 = (props) => {
         router.push(`/${pathname}/${id}`);
     };
 
+    const getRowBackground = (index) => {
+        if (theme) {
+            return index % 2 === 0 ? '#F2F4F8' : '#FFF';
+        } else {
+            return index % 2 === 0 ? '#0E0D15' : '#221F32';
+        }
+    };
+
     return (
         <>
             <Paper>
@@ -63,62 +71,65 @@ export const Table_V1 = (props) => {
                                     ))}
                                 </TableRow>
                             ))} */}
-                            {data?.map((row) => (
+                            {data?.map((row, index) => (
                                 <TableRow key={row.id} onClick={() => handleRowClick(row.id)} sx={{
-                                    ...styles.bodyRow, transition: 'background-color 1s', backgroundColor: !theme ? colorPalette.secondary : '#fff', "&:hover": {
-                                        backgroundColor: colorPalette.primary + '99',
-                                        cursor: 'pointer',
+                                    ...styles.bodyRow,
+                                    transition: 'background-color 1s',
+                                    backgroundColor: getRowBackground(index),
+                            "&:hover": {
+                                backgroundColor: colorPalette.primary + '99',
+                            cursor: 'pointer',
                                     },
                                 }}>
-                                    {columns.map((column) => (
-                                        <TableCell
-                                            key={`${row.id}-${column.key}`}
-                                            sx={{
-                                                ...styles.bodyCell,
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                maxWidth: '160px',
-                                                color: colorPalette.textColor,
-                                                transition: 'background-color 1s',
-                                            }}
-                                        >
-                                            <Tooltip title={row[column.key]} arrow>
-                                                {row[column?.key] ? (
+                            {columns.map((column) => (
+                                <TableCell
+                                    key={`${row.id}-${column.key}`}
+                                    sx={{
+                                        ...styles.bodyCell,
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        maxWidth: '160px',
+                                        color: colorPalette.textColor,
+                                        transition: 'background-color 1s',
+                                    }}
+                                >
+                                    <Tooltip title={row[column.key]} arrow>
+                                        {row[column?.key] ? (
 
-                                                    <Box
-                                                        sx={{
-                                                            maxWidth: '160px',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: 2,
-                                                            textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap',
-                                                            overflow: 'hidden',
-                                                        }}
-                                                    >
-                                                        {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
-                                                        {typeof row[column.key] === 'object' &&
-                                                            row[column?.key || '-'] instanceof Date ? (
-                                                            formatTimeStamp(row[column?.key || '-'])
-                                                        ) : (
-                                                            row[column?.key || '-']
-                                                        )}
-                                                    </Box>
-
+                                            <Box
+                                                sx={{
+                                                    maxWidth: '160px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
+                                                {typeof row[column.key] === 'object' &&
+                                                    row[column?.key || '-'] instanceof Date ? (
+                                                    formatTimeStamp(row[column?.key || '-'])
                                                 ) : (
-                                                    <TableCell sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>---</TableCell>
+                                                    row[column?.key || '-']
                                                 )}
-                                            </Tooltip>
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
+                                            </Box>
+
+                                        ) : (
+                                            <TableCell sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>---</TableCell>
+                                        )}
+                                    </Tooltip>
+                                </TableCell>
+                            ))}
+                        </TableRow>
                             ))}
 
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper >
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Paper >
         </>
     )
 }
