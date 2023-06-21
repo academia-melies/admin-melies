@@ -41,7 +41,7 @@ export default function ListUsers(props) {
       { key: 'telefone', label: 'Telefone' },
       { key: 'perfil', label: 'Perfil' },
       { key: 'cpf', label: 'CPF' },
-      { key: 'nacionalidade', label: 'Nascionalidade' },
+      { key: 'nacionalidade', label: 'Nacionalidade' },
       { key: 'estado_civil', label: 'Estado Civil' },
       { key: 'conjuge', label: 'Conjuge' },
       { key: 'email_melies', label: 'Email Meliés' },

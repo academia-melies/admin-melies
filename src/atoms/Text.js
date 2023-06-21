@@ -23,7 +23,7 @@ export const Text = (props) => {
          {...props}
          sx={{
             fontFamily: "'Metropolis Regular', Helvetica, Arial, Lucida, sans-serif, 'Metropolis Bold'",
-            fontSize: { xs: `12px`, xm: `16px`, md: `16px`, lg: `16px` },
+            fontSize: { xs: `12px`, xm: `15px`, md: `15px`, lg: `15px` },
             ...(light && { fontFamily: 'normal normal bold 35px/43px Metropolis',  }),
             ...(bold && { fontWeight: 'Metropolis Bold' }),
             ...(xsmall && { fontSize: { xs: `8px`, sm: `11px`, md: `11px`, lg: `11px` } }),
