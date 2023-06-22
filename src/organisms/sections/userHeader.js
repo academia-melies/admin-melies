@@ -15,7 +15,8 @@ export const UserHeader = (props) => {
 
     return (
         <>
-            <Box sx={{...styles.header, backgroundColor: colorPalette.secondary + '88',}}>
+            <Box sx={{...styles.header, backgroundColor: colorPalette.secondary + '88', gap: 3}}>
+                <IconTheme flex/>
                 <Box sx={{
                     ...styles.menuIcon,
                     backgroundImage: `url('/icons/notification_icon.png')`,
@@ -28,7 +29,6 @@ export const UserHeader = (props) => {
                         cursor: 'pointer'
                     }
                 }} />
-                <IconTheme right />
             </Box>
         </>
     )

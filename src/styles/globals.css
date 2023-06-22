@@ -3,7 +3,7 @@
    --border-radius: 12px;
    --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
       'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro',
-      'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
+      'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace, 'Metropolis';
 
    --foreground-rgb: 0, 0, 0;
    --background-start-rgb: 214, 219, 220;
@@ -97,7 +97,70 @@ input::placeholder {
    } */
 }
 
+ @font-face {
+   font-family: 'MetropolisRegular';
+   src: url('../../assets/fonts/metropolis.regular.otf');
+   font-weight: 200;
+   font-style: normal;
+}
+
 @font-face {
+   font-family: 'MetropolisBold';
+   src: url('../../assets/fonts/metropolis.bold.otf');
+   font-weight: 700;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'MetropolisExtraBold';
+   src: url('../../assets/fonts/metropolis.extra-bold.otf');
+   font-weight: 100;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'MetropolisExtraLight';
+   src: url('../../assets/fonts/metropolis.extra-light.otf');
+   font-weight: 100;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'MetropolisSemiBold';
+   src: url('../../assets/fonts/metropolis.semi-bold.otf');
+   font-weight: 100;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'MetropolisLight';
+   src: url('../../assets/fonts/metropolis.light.otf');
+   font-weight: 100;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'MetropolisMedium';
+   src: url('../../assets/fonts/metropolis.medium.otf');
+   font-weight: 100;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'MetropolisBlack';
+   src: url('../../assets/fonts/metropolis.black.otf');
+   font-weight: 100;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'MetropolisThin';
+   src: url('../../assets/fonts/metropolis.thin.otf');
+   font-weight: 100;
+   font-style: normal;
+}
+
+/* @font-face {
    font-family: 'InterThin';
    src: url('../../assets/fonts/Inter-Thin.ttf');
    font-weight: 100;
@@ -165,4 +228,4 @@ input::placeholder {
    src: url('../../assets/fonts/Inter-Black.ttf');
    font-weight: 900;
    font-style: normal;
-}
+} */

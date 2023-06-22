@@ -1,6 +1,6 @@
 export const menuItems = [
    {
-      text: 'Administrativo', icon_clear: 'icon_adm_dark.svg', icon_dark: 'icon_adm_dark.svg',
+      text: 'Administrativo', icon_clear: 'icon_adm_dark.png', icon_dark: 'icon_adm_dark.png',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -16,7 +16,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Acadêmico', icon_clear: 'icon_academico.svg', icon_dark: 'icon_academico_dark.svg',
+      text: 'Acadêmico', icon_clear: 'icon_academico.png', icon_dark: 'icon_academico_dark.png',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -33,7 +33,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Biblioteca', icon_clear: 'icon_biblioteca.svg', icon_dark: 'icon_biblioteca_dark.svg',
+      text: 'Biblioteca', icon_clear: 'icon_biblioteca.png', icon_dark: 'icon_biblioteca_dark.png',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -50,7 +50,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Financeiro', icon_clear: 'icon_financeiro.svg', icon_dark: 'icon_financeiro_dark.svg',
+      text: 'Financeiro', icon_clear: 'icon_financeiro.png', icon_dark: 'icon_financeiro_dark.png',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -72,7 +72,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Marketing', icon_clear: 'icon_mkt.svg', icon_dark: 'icon_mkt_dark.svg',
+      text: 'Marketing', icon_clear: 'icon_mkt.png', icon_dark: 'icon_mkt_dark.png',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -88,7 +88,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Suporte', icon_clear: 'icon_suporte.svg', icon_dark: 'icon_suporte_dark.svg',
+      text: 'Suporte', icon_clear: 'icon_suporte.png', icon_dark: 'icon_suporte_dark.png',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {

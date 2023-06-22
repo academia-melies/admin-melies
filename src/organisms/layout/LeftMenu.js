@@ -10,7 +10,7 @@ import { IconTheme } from "../iconTheme/IconTheme"
 
 export const LeftMenu = ({ menuItems = [] }) => {
 
-   const { logout, user, colorPalette, theme } = useAppContext();
+   const { logout, user, colorPalette, theme, directoryIcons } = useAppContext();
    const name = user?.nome?.split(' ');
    const firstName = name[0];
    const lastName = name[name.length - 1];
@@ -52,8 +52,8 @@ export const LeftMenu = ({ menuItems = [] }) => {
                         backgroundColor: '#f0f0f0' + '22'
                      }
                   }} onClick={() => setShowUserOptions(!showUserOptions)}>
-                     <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={fotoPerfil || `/icons/perfil-default.jpg`} />
-                     <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>{userName}</Text>
+                     <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`} />
+                     <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>{userName}</Text>
                      <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
@@ -68,15 +68,15 @@ export const LeftMenu = ({ menuItems = [] }) => {
                   <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />
                   {showUserOptions &&
                      <>
-                        <Box sx={styles.containerUserOpitions}>
+                        <Box sx={{...styles.containerUserOpitions, backgroundColor: colorPalette.buttonColor}}>
                            <Box onClick={() => {
                               setShowUserOptions(!showUserOptions)
-                           }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.backgroundPrimary + '22', cursor: 'pointer' }, }}>
-                              <Text style={{ ...styles.text, textAlign: 'center', }}>Alterar Senha</Text>
+                           }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' }, }}>
+                              <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff'}}>Alterar Senha</Text>
                            </Box>
-                           <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: Colors.backgroundPrimary + '22', cursor: 'pointer' } }}
+                           <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' } }}
                               onClick={logout}>
-                              <Text style={{ ...styles.text, textAlign: 'center' }}>Sair</Text>
+                              <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff' }}>Sair</Text>
                            </Box>
                         </Box>
                      </>
@@ -103,8 +103,8 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            }
                         }} onClick={() => handleGroupClick(index)}>
                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon_dark})`, width: 18, height: 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
-                              <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(../icons/${group?.icon_dark})`, width: 18, height: 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                              <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
                                  {group.text}
                               </Text>
                            </Box>
@@ -241,18 +241,11 @@ const MenuItem = (props) => {
                   <Text small style={{
                      color: colorPalette.textColor,
                      transition: 'background-color 1s',
-                     ...(currentPage ?
-                        {
-                           color: !theme ? '#FFFFFF' : '#FFFFFF',
-                        }
-                        :
-                        {
-                           "&:hover": {
-                              backgroundColor: colorPalette.buttonColor + '22',
-
-
-                           }
-                        }),
+                     ...(currentPage &&
+                     {
+                        color: !theme ? '#FFFFFF' : '#FFFFFF',
+                     }
+                     ),
                   }}>
                      {text}
                   </Text>
