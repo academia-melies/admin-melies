@@ -295,11 +295,11 @@ export default function EditUser(props) {
             }
          </ContentContainer>
 
-         <Box sx={{ position: 'fixed', bottom: 0, left: 0, width: '100%', padding: 2, gap: 2, display: { xs: 'flex', sm: 'none', md: 'none', lg: 'none' } }}>
+         {/* <Box sx={{ position: 'fixed', bottom: 0, left: 0, width: '100%', padding: 2, gap: 2, display: { xs: 'flex', sm: 'none', md: 'none', lg: 'none' } }}>
             <Button text='Salvar' style={{ flex: 1 }} onClick={() => console.log('Salvar')} />
             <Button text='Resetar senha' style={{ flex: 1 }} onClick={() => console.log('Resetar')} />
             <Button text='Excluir' style={{ flex: 1 }} onClick={() => console.log('Excluir')} />
-         </Box>
+         </Box> */}
       </>
    )
 }

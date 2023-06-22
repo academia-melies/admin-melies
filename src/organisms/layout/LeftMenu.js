@@ -152,27 +152,30 @@ export const LeftMenu = ({ menuItems = [] }) => {
             </Box>
          </Box >
 
-         <Box sx={styles.menuResponsive}>
-            <Box sx={{
+         <Box sx={{...styles.menuResponsive, backgroundColor: theme ? '#fff': colorPalette.primary + '88', gap: 2,}}>
+            {/* <Box sx={{
                ...styles.menuIcon,
                backgroundImage: `url('/icons/notification_icon.png')`,
                width: 20,
+               filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                height: 17,
                "&:hover": {
                   opacity: 0.8,
                   cursor: 'pointer'
                }
-            }} />
+            }} /> */}
+
+            <IconTheme flex/>
 
             <Box sx={{
                ...styles.icon,
-               backgroundImage: `url('/favicon.png')`,
+               backgroundImage: !theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
                backgroundSize: 'contain',
                backgroundPosition: 'center',
                width: 1,
                height: 35,
                display: 'flex',
-               flex: 1,
+               // flex: 1,
                "&:hover": {
                   cursor: 'pointer', opacity: 0.8
                }
@@ -183,6 +186,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                   toggle={setShowMenuMobile}
                   duration={0.5}
                   size={20}
+                  color={colorPalette.textColor}
                />
             </Box>
          </Box>
@@ -341,8 +345,7 @@ const styles = {
       borderBottom: `2px solid #00000010`,
       padding: `30px`,
       alignItems: 'center',
-      justifyContent: 'right',
-      display: 'flex',
+      justifyContent: 'space-around',
       zIndex: 99999999,
       display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none' },
    },
