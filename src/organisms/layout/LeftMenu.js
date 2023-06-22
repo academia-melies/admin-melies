@@ -243,7 +243,6 @@ const MenuItem = (props) => {
                      transition: 'background-color 1s',
                      ...(currentPage ?
                         {
-                           // border: `1px solid ${Colors.orange}`,
                            color: !theme ? '#FFFFFF' : '#FFFFFF',
                         }
                         :
