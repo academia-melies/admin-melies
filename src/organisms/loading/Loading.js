@@ -1,13 +1,16 @@
 import { Box, Text } from "../../atoms";
 import React from "react";
+import { useAppContext } from "../../context/AppContext";
 
 export const LoadingIcon = (props) => {
+
+    const { colorPalette } = useAppContext()
 
     return (
         <>
             <Box sx={styles.backdrop}>
                 <Box sx={styles.favicon} />
-                <Text sx={styles.text}>Carregando...</Text>
+                <Text bold sx={{color: '#fff'}}>Carregando...</Text>
             </Box>
         </>
     )

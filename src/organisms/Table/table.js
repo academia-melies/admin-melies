@@ -39,7 +39,7 @@ export const Table_V1 = (props) => {
                         <TableHead>
                             <TableRow style={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s', }}>
                                 {columns.map((column) => (
-                                    <TableCell key={column?.key} sx={{ ...styles.cell, minWidth: column?.key !== 'id' && '140px' }}>{column.label}</TableCell>
+                                    <TableCell  key={column?.key} sx={{ ...styles.cell, minWidth: column?.key !== 'id' && '140px', fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
                                 ))}
                             </TableRow>
                         </TableHead>
@@ -76,60 +76,63 @@ export const Table_V1 = (props) => {
                                     ...styles.bodyRow,
                                     transition: 'background-color 1s',
                                     backgroundColor: getRowBackground(index),
-                            "&:hover": {
-                                backgroundColor: colorPalette.primary + '99',
-                            cursor: 'pointer',
+                                    "&:hover": {
+                                        backgroundColor: colorPalette.primary + '99',
+                                        cursor: 'pointer',
                                     },
                                 }}>
-                            {columns.map((column) => (
-                                <TableCell
-                                    key={`${row.id}-${column.key}`}
-                                    sx={{
-                                        ...styles.bodyCell,
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        maxWidth: '160px',
-                                        color: colorPalette.textColor,
-                                        transition: 'background-color 1s',
-                                    }}
-                                >
-                                    <Tooltip title={row[column.key]} arrow>
-                                        {row[column?.key] ? (
-
-                                            <Box
+                                    {columns.map((column) => (
+                                        <Tooltip title={row[column.key]} arrow>
+                                            <TableCell
+                                                key={`${row.id}-${column.key}`}
                                                 sx={{
-                                                    maxWidth: '160px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 2,
+                                                    ...styles.bodyCell,
                                                     textOverflow: 'ellipsis',
                                                     whiteSpace: 'nowrap',
                                                     overflow: 'hidden',
+                                                    maxWidth: '160px',
+                                                    color: colorPalette.textColor,
+                                                    transition: 'background-color 1s',
+                                                    fontFamily: 'MetropolisRegular',
                                                 }}
                                             >
-                                                {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
-                                                {typeof row[column.key] === 'object' &&
-                                                    row[column?.key || '-'] instanceof Date ? (
-                                                    formatTimeStamp(row[column?.key || '-'])
+
+                                                {row[column?.key] ? (
+
+                                                    <Box
+                                                        sx={{
+                                                            maxWidth: '160px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 2,
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                           
+                                                        }}
+                                                    >
+                                                        {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
+                                                        {typeof row[column.key] === 'object' &&
+                                                            row[column?.key || '-'] instanceof Date ? (
+                                                            formatTimeStamp(row[column?.key || '-'])
+                                                        ) : (
+                                                            row[column?.key || '-']
+                                                        )}
+                                                    </Box>
+
                                                 ) : (
-                                                    row[column?.key || '-']
+                                                    <TableCell sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>---</TableCell>
                                                 )}
-                                            </Box>
-
-                                        ) : (
-                                            <TableCell sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>---</TableCell>
-                                        )}
-                                    </Tooltip>
-                                </TableCell>
-                            ))}
-                        </TableRow>
+                                            </TableCell>
+                                        </Tooltip>
+                                    ))}
+                                </TableRow>
                             ))}
 
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Paper >
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Paper >
         </>
     )
 }
@@ -138,7 +141,7 @@ const styles = {
     cell: {
         color: '#fff',
         fontWeight: 'bold',
-        textAlign: 'center',
+        // textAlign: 'center',
     },
     bodyCell: {
         textAlign: 'center',

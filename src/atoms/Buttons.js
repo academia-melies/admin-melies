@@ -4,7 +4,7 @@ import { Colors } from "../organisms";
 
 export const Button = (props) => {
 
-   const { colorPalette } = useAppContext()
+   const { colorPalette, theme } = useAppContext()
 
    const {
       secondary = false,
@@ -43,11 +43,12 @@ export const Button = (props) => {
                cursor: 'pointer'
             },
             ...(secondary && {
-               backgroundColor: Colors.backgroundSecundary + '55',
-               color: '#fff',
+               backgroundColor: 'transparent',
+               color: colorPalette.textColor,
+               border: `1px solid ${!theme ? '#fff': 'black'}`,
                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                "&:hover": {
-                  backgroundColor: Colors.backgroundSecundary + '44',
+                  backgroundColor: '#8B0000' + '66',
                   cursor: 'pointer'
                }
             }),
@@ -66,7 +67,7 @@ export const Button = (props) => {
          }}
          onClick={onClick}
       >
-         <Text style={{ color: 'inherit' }}>{text}</Text>
+         <Text bold style={{ color: 'inherit' }}>{text}</Text>
       </Box>
    )
 }

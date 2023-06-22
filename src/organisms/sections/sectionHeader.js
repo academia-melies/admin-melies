@@ -39,7 +39,7 @@ export const SectionHeader = (props) => {
                      color: colorPalette.textColor
                   }}>{title}</Text>
                {perfil &&
-                  <Box sx={{ backgroundColor: colorPalette.buttonColor, borderRadius: 2, padding: '2px 12px 2px 12px',  transition: 'background-color 1s', }}>
+                  <Box sx={{ backgroundColor: colorPalette.buttonColor, borderRadius: 2, padding: '5px 12px 2px 12px',  transition: 'background-color 1s', }}>
                      <Text small bold style={{ color: colorPalette.textColor }}>{perfil}</Text>
                   </Box>
                }

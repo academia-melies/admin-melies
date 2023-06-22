@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext'
 import { ProtectRoute } from '../context/ProtectRoute'
 import { Colors, LeftMenu, UserHeader } from '../organisms'
 import { menuItems } from '../permissions'
-
+import '../styles/Home.module.css'
 
 const PagesRoute = ({ Component, pageProps }) => {
 

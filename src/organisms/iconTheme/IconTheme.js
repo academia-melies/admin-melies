@@ -4,7 +4,7 @@ import { Colors } from "../layout/Colors";
 
 
 export const IconTheme = (props) => {
-    const { left = false, right = false } = props
+    const { left = false, right = false, flex = false } = props
 
     const { logout, user, colorPalette, setColorPalette, setTheme, theme } = useAppContext();
 
@@ -13,13 +13,13 @@ export const IconTheme = (props) => {
 
         <Box sx={{
             display: 'flex',
-            position: 'absolute',
+            position: flex ? 'relative' : 'absolute',
             // backgroundColor: !theme ? Colors.backgroundPrimary : '#F2F4F8 ',
             transition: 'background-color 1s',
-            top: 50,
-            right: right && 5,
+            top: flex ? 0 : 50,
+            right: right && flex ? 10 : 5,
             left: left && 20,
-            padding: '5px 20px',
+            padding: flex ? '2px' : '5px 20px',
             borderRadius: '5px',
             "&:hover": {
                 opacity: 0.8,

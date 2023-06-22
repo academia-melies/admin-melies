@@ -14,6 +14,8 @@ export const AppContext = createContext({});
 
 export const AppProvider = ({ children }) => {
 
+    let directoryIcons = 'https://mf-planejados.s3.us-east-1.amazonaws.com/melies/'
+
     const reducer = (prev, next) => {
         let dialogPosition = null
         if (next.event) dialogPosition = getDialogPosition(next.event, MAX_CONFIRMATION_DIALOG_WITH);
@@ -123,7 +125,8 @@ export const AppProvider = ({ children }) => {
                 colorPalette,
                 setColorPalette,
                 theme,
-                setTheme
+                setTheme,
+                directoryIcons
             }}
         >
             {children}

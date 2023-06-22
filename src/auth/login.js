@@ -27,7 +27,6 @@ export default function Login() {
         if (!senha || senha.length < 4) { return alert.error('A senha deve conter no mínimo 4 digitos.') }
 
         const data = await login({ email, senha })
-        console.log(data)
 
         if (!data) {
             return alert.error('Usuário não encontrado ou senha incorreta. Verifique os dados e tente novamente!')
@@ -80,7 +79,7 @@ export default function Login() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
                             {/* {!smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={40} />} */}
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '62%', }}>
-                                <Text bold style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: '35px', transition: 'background-color 1s', fontWeight: 'bold' }}>Login</Text>
+                                <Text bold style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: '35px', transition: 'background-color 1s' }}>Login</Text>
                                 <Box sx={{ backgroundColor: colorPalette.buttonColor,  transition: 'background-color 1s', borderRadius: '16px', padding: '2px 12px 2px 12px' }}>
                                     <Text small bold style={{ color: colorPalette.textColor,  transition: 'background-color 1s', fontWeight: 'bold' }}>{'ADMIN'}</Text>
                                 </Box>
