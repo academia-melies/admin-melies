@@ -103,7 +103,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            }
                         }} onClick={() => handleGroupClick(index)}>
                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(../icons/${group?.icon_dark})`, width: 18, height: 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group.text === 'Administrativo'? 15: 18, height: group.text === 'Administrativo'? 24: 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
                               <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
                                  {group.text}
                               </Text>

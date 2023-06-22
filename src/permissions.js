@@ -1,6 +1,6 @@
 export const menuItems = [
    {
-      text: 'Administrativo', icon_clear: 'icon_adm_dark.png', icon_dark: 'icon_adm_dark.png',
+      text: 'Administrativo', icon_clear: 'https://mf-planejados.s3.amazonaws.com/icon_adm_dark.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/employee_icon.png',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -16,7 +16,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Acadêmico', icon_clear: 'icon_academico.png', icon_dark: 'icon_academico_dark.png',
+      text: 'Acadêmico', icon_clear: 'https://mf-planejados.s3.amazonaws.com/Icon_academico.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_academico.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -33,7 +33,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Biblioteca', icon_clear: 'icon_biblioteca.png', icon_dark: 'icon_biblioteca_dark.png',
+      text: 'Biblioteca', icon_clear: 'https://mf-planejados.s3.amazonaws.com/Icon_biblioteca.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_biblioteca.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -50,7 +50,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Financeiro', icon_clear: 'icon_financeiro.png', icon_dark: 'icon_financeiro_dark.png',
+      text: 'Financeiro', icon_clear: 'icon_financeiro.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_financeiro.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -72,7 +72,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Marketing', icon_clear: 'icon_mkt.png', icon_dark: 'icon_mkt_dark.png',
+      text: 'Marketing', icon_clear: 'icon_mkt.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_mkt.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -88,7 +88,7 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Suporte', icon_clear: 'icon_suporte.png', icon_dark: 'icon_suporte_dark.png',
+      text: 'Suporte', icon_clear: 'icon_suporte.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_suporte.svg',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {

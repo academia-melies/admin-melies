@@ -217,7 +217,6 @@ export default function EditUser(props) {
             <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login' />
             <TextInput placeholder='Foto' name='foto' onChange={handleChange} value={userData?.foto || ''} label='Foto' />
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
-               <TextInput placeholder='Senha' name='senha' onChange={handleChange} value={userData?.senha || ''} label='Senha' sx={{ flex: 1, }} type="password" />
                <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
             </Box>
          </ContentContainer>
