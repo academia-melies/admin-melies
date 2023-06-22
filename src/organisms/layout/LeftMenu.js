@@ -34,7 +34,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
 
    return (
       <>
-         <Box sx={{ ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary,  transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }) }}>
+         <Box sx={{ ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }) }}>
             <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: 200, md: 200, lg: 200 }, padding: { xs: '10px 0px', sm: '10px 15px', md: '10px 15px', lg: '10px 15px' } }}>
 
                <Box sx={styles.userBadgeContainer}>
@@ -53,7 +53,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      }
                   }} onClick={() => setShowUserOptions(!showUserOptions)}>
                      <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={fotoPerfil || `/icons/perfil-default.jpg`} />
-                     <Text style={{ color: colorPalette.textColor,  transition: 'background-color 1s', }}>{userName}</Text>
+                     <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>{userName}</Text>
                      <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
@@ -103,8 +103,8 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            }
                         }} onClick={() => handleGroupClick(index)}>
                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon_dark})`, width: 18, height: 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s'}} />
-                              <Text style={{ color: colorPalette.textColor,  transition: 'background-color 1s', }}>
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${group?.icon_dark})`, width: 18, height: 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                              <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
                                  {group.text}
                               </Text>
                            </Box>
@@ -197,7 +197,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
 
 const MenuItem = (props) => {
 
-   const {colorPalette } = useAppContext()
+   const { colorPalette, theme } = useAppContext()
 
    const {
       to,
@@ -224,13 +224,13 @@ const MenuItem = (props) => {
                ...(currentPage ?
                   {
                      // border: `1px solid ${Colors.orange}`,
-                     backgroundColor: Colors.orange,
-                     color: Colors.textPrimary,
+                     backgroundColor: colorPalette.buttonColor,
+                     color: !theme ? '#1C2126' : '#FFFFFF',
                   }
                   :
                   {
                      "&:hover": {
-                        backgroundColor: Colors.orange + '22',
+                        backgroundColor: colorPalette.buttonColor + '22',
 
 
                      }
@@ -238,7 +238,23 @@ const MenuItem = (props) => {
             }}>
                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
                   {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
-                  <Text small style={{ color: colorPalette.textColor,  transition: 'background-color 1s', }}>
+                  <Text small style={{
+                     color: colorPalette.textColor,
+                     transition: 'background-color 1s',
+                     ...(currentPage ?
+                        {
+                           // border: `1px solid ${Colors.orange}`,
+                           color: !theme ? '#FFFFFF' : '#FFFFFF',
+                        }
+                        :
+                        {
+                           "&:hover": {
+                              backgroundColor: colorPalette.buttonColor + '22',
+
+
+                           }
+                        }),
+                  }}>
                      {text}
                   </Text>
                </Box>
