@@ -57,7 +57,7 @@ export default function ListUsers(props) {
             <Text bold style={{ margin: '0px 5px 5px 5px', }}>Buscar por funcionario: </Text>
             <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px' }} onChange={setFilterData} />
          </Box>
-         <Table_V1 data={usersList?.filter(filter)} columns={column} />
+         <Table_V1 data={usersList?.filter(filter)} columns={column}/>
       </>
    )
 }
