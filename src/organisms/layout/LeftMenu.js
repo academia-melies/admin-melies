@@ -151,8 +151,8 @@ export const LeftMenu = ({ menuItems = [] }) => {
                   ...styles.icon,
                   backgroundImage: !theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
                   backgroundSize: 'contain',
-                  width: 140,
-                  height: 40,
+                  width: '107px',
+                  height: '51px',
                   bottom: 60,
                   position: 'absolute',
                   "&:hover": {
