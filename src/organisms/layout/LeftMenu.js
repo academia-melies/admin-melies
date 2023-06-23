@@ -43,7 +43,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                   width: '214px',
                   height: '205px',
                   position: 'absolute',
-                  backgroundColor: 'pink',
+                  backgroundColor: colorPalette.secondary,
                   top: -40,
                   left: 0,
                   backgroundImage: `url('https://mf-planejados.s3.amazonaws.com/banner.png')`,
