@@ -35,12 +35,12 @@ export const LeftMenu = ({ menuItems = [] }) => {
    return (
       <>
          <Box sx={{ ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }) }}>
-            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: '214px', md: '214px', lg: '214px' }, padding: { xs: '10px 0px', sm: '10px 15px', md: '10px 15px', lg: '10px 15px' } }}>
+            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '214px', sm: '214px', md: '214px', lg: '214px' }, padding: { xs: '10px 15px', sm: '10px 15px', md: '10px 15px', lg: '10px 15px' } }}>
                <Box sx={{
                   // backgroundSize: 'cover',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center center',
-                  width: '214px',
+                  width: '100%',
                   height: '205px',
                   position: 'absolute',
                   backgroundColor: colorPalette.secondary,
@@ -283,7 +283,7 @@ const styles = {
       gap: 1,
       zIndex: 999999999,
       position: { xs: 'fixed', sm: 'absolute', md: 'relative', lg: 'relative' },
-      width: { xs: '60%', sm: '214px', md: '214px', lg: '214px' },
+      width: { xs: '214px', sm: '214px', md: '214px', lg: '214px' },
    },
    boxMenu: {
       display: 'flex',
