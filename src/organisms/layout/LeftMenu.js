@@ -35,9 +35,21 @@ export const LeftMenu = ({ menuItems = [] }) => {
    return (
       <>
          <Box sx={{ ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }) }}>
-            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: 200, md: 200, lg: 200 }, padding: { xs: '10px 0px', sm: '10px 15px', md: '10px 15px', lg: '10px 15px' } }}>
-
-               <Box sx={styles.userBadgeContainer}>
+            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '50%', sm: '214px', md: '214px', lg: '214px' }, padding: { xs: '10px 0px', sm: '10px 15px', md: '10px 15px', lg: '10px 15px' } }}>
+               <Box sx={{
+                  // backgroundSize: 'cover',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center center',
+                  width: '214px',
+                  height: '205px',
+                  position: 'absolute',
+                  backgroundColor: 'pink',
+                  top: -40,
+                  left: 0,
+                  backgroundImage: `url('https://mf-planejados.s3.amazonaws.com/banner.png')`,
+                  borderRadius: '0px 0px 16px 16px'
+               }} />
+               <Box sx={{ ...styles.userBadgeContainer, }}>
                   <Box sx={{
                      display: 'flex',
                      justifyContent: 'space-between',
@@ -45,34 +57,33 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      gap: 1,
                      borderRadius: 1.5,
                      boxSizing: 'border-box',
+                     flexDirection: 'column',
                      padding: '8px 8px',
-                     "&:hover": {
-                        opacity: 0.8,
-                        cursor: 'pointer',
-                        backgroundColor: '#f0f0f0' + '22'
-                     }
-                  }} onClick={() => setShowUserOptions(!showUserOptions)}>
-                     <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`} />
-                     <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>{userName}</Text>
+                    
+                  }}>
+                     <Avatar sx={{ width: '65px', height: '65px', fontSize: 14 }} src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`} />
+                     <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff'}}>{userName}</Text>
                      <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
-                        width: 17,
-                        height: 17,
+                        width: 20,
+                        height: 20,
+                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                        filter: 'brightness(0) invert(1)',
                         "&:hover": {
                            opacity: 0.8,
                            cursor: 'pointer'
                         }
-                     }} />
+                     }} onClick={() => setShowUserOptions(!showUserOptions)}/>
                   </Box>
-                  <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />
                   {showUserOptions &&
                      <>
-                        <Box sx={{...styles.containerUserOpitions, backgroundColor: colorPalette.buttonColor}}>
+                        <Box sx={{ ...styles.containerUserOpitions, backgroundColor: colorPalette.buttonColor }}>
                            <Box onClick={() => {
                               router.push(`/employee/${user?.id}`)
-                              setShowUserOptions(!showUserOptions)}} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' }, }}>
-                              <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff'}}>Editar</Text>
+                              setShowUserOptions(!showUserOptions)
+                           }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' }, }}>
+                              <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff' }}>Editar</Text>
                            </Box>
                            <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' } }}
                               onClick={logout}>
@@ -82,7 +93,6 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      </>
                   }
                </Box>
-
                <Box sx={styles.boxMenu}>
                   {menuItems.map((group, index) =>
                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}>
@@ -103,7 +113,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            }
                         }} onClick={() => handleGroupClick(index)}>
                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group.text === 'Administrativo'? 15: 18, height: group.text === 'Administrativo'? 24: 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
                               <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
                                  {group.text}
                               </Text>
@@ -139,7 +149,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                </Box>
                <Box sx={{
                   ...styles.icon,
-                  backgroundImage:!theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
+                  backgroundImage: !theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
                   backgroundSize: 'contain',
                   width: 140,
                   height: 40,
@@ -152,7 +162,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
             </Box>
          </Box >
 
-         <Box sx={{...styles.menuResponsive, backgroundColor: theme ? '#fff': colorPalette.primary + '88', gap: 2,}}>
+         <Box sx={{ ...styles.menuResponsive, backgroundColor: theme ? '#fff' : colorPalette.primary + '88', gap: 2, }}>
             {/* <Box sx={{
                ...styles.menuIcon,
                backgroundImage: `url('/icons/notification_icon.png')`,
@@ -165,7 +175,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                }
             }} /> */}
 
-            <IconTheme flex/>
+            <IconTheme flex />
 
             <Box sx={{
                ...styles.icon,
@@ -273,13 +283,13 @@ const styles = {
       gap: 1,
       zIndex: 999999999,
       position: { xs: 'fixed', sm: 'absolute', md: 'relative', lg: 'relative' },
-      width: { xs: '60%', sm: 200, md: 200, lg: 200 },
+      width: { xs: '60%', sm: '214px', md: '214px', lg: '214px' },
    },
    boxMenu: {
       display: 'flex',
       flexDirection: 'column',
       gap: 1,
-      marginTop: 5,
+      marginTop: 10,
       overflowY: 'auto',
       overflowStyle: 'marquee,panner',
       maxHeight: '58%',
@@ -377,7 +387,7 @@ const styles = {
       display: 'flex',
       flexDirection: 'column',
       position: 'absolute',
-      top: 48,
+      top: 135,
       width: '100%',
       boxSizing: 'border-box',
       zIndex: 9999999
@@ -393,7 +403,6 @@ const styles = {
       position: 'relative',
       borderRadius: 1.5,
       zIndex: 9999999,
-      marginTop: 5
    },
    menuIcon: {
       backgroundSize: 'cover',
