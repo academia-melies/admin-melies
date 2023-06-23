@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { Box, Button, Text } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
 import { Colors } from "../layout/Colors";
@@ -28,8 +29,7 @@ export const SectionHeader = (props) => {
             width: '100%',
             alignItems: 'center',
          }}>
-
-            <Box sx={{ display: 'flex', flex: 1, height: '100%', maxWidth: '100%', gap: 2, overflow: 'hidden', position: 'relative', alignItems: 'center'}}>
+            <Box sx={{ display: 'flex', flex: 1, height: '100%', maxWidth: '100%', gap: 2, overflow: 'hidden', position: 'relative', alignItems: 'center' }}>
                <Text
                   veryLarge='true'
                   bold='true'
@@ -39,8 +39,8 @@ export const SectionHeader = (props) => {
                      color: colorPalette.textColor
                   }}>{title}</Text>
                {perfil &&
-                  <Box sx={{ backgroundColor: colorPalette.buttonColor, borderRadius: 2, padding: '5px 12px 2px 12px',  transition: 'background-color 1s', }}>
-                     <Text small bold style={{ color: colorPalette.textColor }}>{perfil}</Text>
+                  <Box sx={{ backgroundColor: colorPalette.buttonColor, borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
+                     <Text xsmall bold style={{ color: "#fff" }}>{perfil}</Text>
                   </Box>
                }
                <Box sx={{ display: { xs: 'none', sm: 'flex', md: 'flex', lg: 'flex' }, position: 'absolute', top: 0, right: 0, height: '100%' }}>

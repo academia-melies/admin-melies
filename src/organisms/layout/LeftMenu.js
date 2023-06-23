@@ -15,8 +15,8 @@ export const LeftMenu = ({ menuItems = [] }) => {
    const firstName = name[0];
    const lastName = name[name.length - 1];
    const userName = `${firstName} ${lastName}`;
-   const router = useRouter();
    let fotoPerfil = user?.foto;
+   const router = useRouter();
    const pathname = router.pathname === '/' ? null : router.asPath
 
    const [showUserOptions, setShowUserOptions] = useState(false)
@@ -70,9 +70,9 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      <>
                         <Box sx={{...styles.containerUserOpitions, backgroundColor: colorPalette.buttonColor}}>
                            <Box onClick={() => {
-                              setShowUserOptions(!showUserOptions)
-                           }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' }, }}>
-                              <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff'}}>Alterar Senha</Text>
+                              router.push(`/employee/${user?.id}`)
+                              setShowUserOptions(!showUserOptions)}} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' }, }}>
+                              <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff'}}>Editar</Text>
                            </Box>
                            <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' } }}
                               onClick={logout}>
@@ -139,7 +139,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                </Box>
                <Box sx={{
                   ...styles.icon,
-                  backgroundImage: `url('/favicon.svg')`,
+                  backgroundImage:!theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
                   backgroundSize: 'contain',
                   width: 140,
                   height: 40,

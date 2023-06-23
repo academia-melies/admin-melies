@@ -11,7 +11,7 @@ const PagesRoute = ({ Component, pageProps }) => {
 
     return (
         <ProtectRoute>
-            <Box sx={styles.bodyContainer}>
+            <Box sx={{...styles.bodyContainer, backgroundColor: colorPalette.primary}}>
                 <LeftMenu menuItems={menuItems} />
                 <UserHeader />
                 <Box sx={{ ...styles.contentContainer, backgroundColor: colorPalette.primary, transition: 'background-color 1s'}}>

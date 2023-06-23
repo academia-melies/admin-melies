@@ -2,12 +2,13 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { api } from "../../api/api"
 import { Box, Button, ContentContainer, Text, TextInput } from "../../atoms"
-import { SectionHeader } from "../../organisms"
+import { RadioItem, SectionHeader } from "../../organisms"
 import { emailValidator, formatCEP, formatCPF, formatRg } from "../../helpers"
 import { createContract, createUser, deleteUser, editContract, editeUser } from "../../validators/api-requests"
 import axios from "axios"
 import { useAppContext } from "../../context/AppContext"
 import { icons } from "../../organisms/layout/Colors"
+import { Avatar, useMediaQuery, useTheme } from "@mui/material"
 
 export default function EditUser(props) {
    const { setLoading, alert } = useAppContext()
@@ -18,6 +19,8 @@ export default function EditUser(props) {
    const [contract, setContract] = useState({})
    const [showRegistration, setShowRegistration] = useState(false)
    const [showContract, setShowContract] = useState(false)
+   const themeApp = useTheme()
+   const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
    const getUserData = async () => {
       try {
@@ -64,6 +67,25 @@ export default function EditUser(props) {
       } catch (error) {
       } finally {
          setLoading(false)
+      }
+   }
+
+   async function autoEmailMelies(email) {
+      try {
+         const name = userData?.nome?.split(' ');
+         const firstName = name[0];
+         const lastName = name.length > 1 ? name[name.length - 1] : '';
+         let firstEmail = `${firstName}.${lastName}@melies.com.br`;
+
+         if(!lastName){
+            firstEmail = `${firstName}01@melies.com.br`;
+         }
+
+         setUserData((prevValues) => ({
+            ...prevValues,
+            email_melies: firstEmail.toLowerCase(),
+         }))
+      } catch (error) {
       }
    }
 
@@ -167,7 +189,7 @@ export default function EditUser(props) {
 
       } catch (error) {
          alert.error('Tivemos um problema ao excluir usuário.');
-         console.log(error.response.data)
+         console.log(error)
       } finally {
          setLoading(false)
       }
@@ -182,7 +204,6 @@ export default function EditUser(props) {
             if (response?.status === 201 && contractResponse?.status === 201) {
                alert.success('Usuário atualizado com sucesso.');
                getUserData()
-               router.push(`/employee/list`)
                return
             }
             alert.error('Tivemos um problema ao atualizar usuário.');
@@ -193,6 +214,28 @@ export default function EditUser(props) {
          }
       }
    }
+
+   const groupPerfil = [
+      { label: 'funcionario', value: 'funcionario' },
+      { label: 'aluno', value: 'aluno' },
+   ]
+
+   const groupCivil = [
+      { label: 'Solteiro', value: 'Solteiro' },
+      { label: 'Casado', value: 'Casado' },
+      { label: 'Separado', value: 'Separado' },
+      { label: 'Divorciado', value: 'Divorciado' },
+      { label: 'Viúvo', value: 'Viúvo' },
+   ]
+
+   const groupEscolaridade = [
+      { label: 'Ensino fundamental', value: 'Ensino fundamental' },
+      { label: 'Ensino médio', value: 'Ensino médio' },
+      { label: 'Superior (Graduação)', value: 'Superior (Graduação)' },
+      { label: 'Pós-graduação', value: 'Pós-graduação' },
+      { label: 'Mestrado', value: 'Mestrado' },
+      { label: 'Doutorado', value: 'Doutorado' },
+   ]
 
 
    return (
@@ -207,18 +250,28 @@ export default function EditUser(props) {
          />
 
          {/* usuario */}
-         <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5 }}>
-            <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Contato</Text>
-            <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome' />
+         <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, padding: '0px 0px 25px 0px', alignItems: 'center' }}>
+               <Box>
+                  <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Contato</Text>
+               </Box>
+
+               <Box sx={{ '&:hover': { opacity: 0.8, cursor: 'pointer' } }}>
+                  <Avatar src={userData?.foto} sx={{ width: 140, height: 140, borderRadius: '16PX' }} variant="square" />
+               </Box>
+            </Box>
+            <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome' onBlur={autoEmailMelies} />
             <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail' />
             <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento' />
             <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone' />
-            <TextInput placeholder='Perfil' name='perfil' onChange={handleChange} value={userData?.perfil || ''} label='Perfil' />
+
+            <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value })} />
+
             <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login' />
-            <TextInput placeholder='Foto' name='foto' onChange={handleChange} value={userData?.foto || ''} label='Foto' />
-            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
+            <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' />
+            {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
-            </Box>
+            </Box>}
          </ContentContainer>
 
 
@@ -242,13 +295,15 @@ export default function EditUser(props) {
                   <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' />
                   <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade' />
                   <TextInput placeholder='Nacionalidade' name='nacionalidade' onChange={handleChange} value={userData?.nacionalidade || ''} label='Nacionalidade' />
-                  <TextInput placeholder='Estado Cívil' name='estado_civil' onChange={handleChange} value={userData?.estado_civil || ''} label='Estado Cívil' />
+                  <RadioItem valueRadio={userData?.estado_civil} group={groupCivil} title="Estado Cívil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, estado_civil: value })} />
+                  {/* <TextInput placeholder='Estado Cívil' name='estado_civil' onChange={handleChange} value={userData?.estado_civil || ''} label='Estado Cívil' /> */}
                   <TextInput placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' />
                   <TextInput placeholder='E-mail corporativo' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail corporativo' />
                   <TextInput placeholder='Dependente' name='dependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' />
                   <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' />
                   <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe' />
-                  <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' />
+                  <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, escolaridade: value })} />
+                  {/* <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' /> */}
                   <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP' onBlur={handleBlurCEP} />
                   <TextInput placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço' />
                   <TextInput placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade' />

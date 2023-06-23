@@ -33,13 +33,13 @@ export const Table_V1 = (props) => {
 
     return (
         <>
-            <Paper>
+            <Paper sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', }}>
                 <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
                             <TableRow style={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s', }}>
                                 {columns.map((column) => (
-                                    <TableCell  key={column?.key} sx={{ ...styles.cell, minWidth: column?.key !== 'id' && '140px', fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
+                                    <TableCell key={column?.key} sx={{ ...styles.cell, minWidth: column?.key !== 'id' && '140px', fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
                                 ))}
                             </TableRow>
                         </TableHead>
@@ -108,7 +108,7 @@ export const Table_V1 = (props) => {
                                                             textOverflow: 'ellipsis',
                                                             whiteSpace: 'nowrap',
                                                             overflow: 'hidden',
-                                                           
+
                                                         }}
                                                     >
                                                         {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
@@ -141,15 +141,11 @@ const styles = {
     cell: {
         color: '#fff',
         fontWeight: 'bold',
-        // textAlign: 'center',
     },
     bodyCell: {
         textAlign: 'center',
-        // borderTop: '1px solid lightGray',
-
     },
     bodyRow: {
         textOverflow: 'ellipsis',
-
     }
 }
