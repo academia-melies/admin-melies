@@ -31,6 +31,7 @@
     "yarn": "^1.22.19"
   },
   "devDependencies": {
+    "eslint": "^8.43.0",
     "raw-loader": "^4.0.2"
   }
 }
