@@ -32,6 +32,18 @@ export const LeftMenu = ({ menuItems = [] }) => {
       setGroupStates(newGroupStates);
    };
 
+   const handleGroupMouseEnter = (index) => {
+      const newGroupStates = [...groupStates];
+      newGroupStates[index] = true;
+      setGroupStates(newGroupStates);
+   };
+
+   const handleGroupMouseLeave = (index) => {
+      const newGroupStates = [...groupStates];
+      newGroupStates[index] = false;
+      setGroupStates(newGroupStates);
+   };
+
    return (
       <>
          <Box sx={{ ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }) }}>
@@ -59,10 +71,10 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      boxSizing: 'border-box',
                      flexDirection: 'column',
                      padding: '8px 8px',
-                    
+
                   }}>
                      <Avatar sx={{ width: '65px', height: '65px', fontSize: 14 }} src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`} />
-                     <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff'}}>{userName}</Text>
+                     <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff' }}>{userName}</Text>
                      <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
@@ -74,7 +86,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            opacity: 0.8,
                            cursor: 'pointer'
                         }
-                     }} onClick={() => setShowUserOptions(!showUserOptions)}/>
+                     }} onClick={() => setShowUserOptions(!showUserOptions)} />
                   </Box>
                   {showUserOptions &&
                      <>
@@ -95,7 +107,10 @@ export const LeftMenu = ({ menuItems = [] }) => {
                </Box>
                <Box sx={styles.boxMenu}>
                   {menuItems.map((group, index) =>
-                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}>
+                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}
+                        onMouseEnter={() => !showMenuMobile && handleGroupMouseEnter(index)}
+                        onMouseLeave={() => !showMenuMobile && handleGroupMouseLeave(index)}
+                        onClick={() => showMenuMobile && handleGroupClick(index)}>
                         {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
                         <Box sx={{
                            display: 'flex',
@@ -111,7 +126,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                               cursor: 'pointer',
                               backgroundColor: '#f0f0f0' + '22'
                            }
-                        }} onClick={() => handleGroupClick(index)}>
+                        }} >
                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
                               <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
                               <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
@@ -121,8 +136,9 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            <Box sx={{
                               ...styles.menuIcon,
                               backgroundImage: `url(${icons.gray_arrow_down})`,
-                              transform: groupStates[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
+                              transform: 'rotate(-90deg)',
                               transition: '.3s',
+                              marginLeft: groupStates[index] ? 10 : 0,
                               width: 17,
                               height: 17,
                               "&:hover": {
@@ -131,20 +147,44 @@ export const LeftMenu = ({ menuItems = [] }) => {
                               }
                            }} />
                         </Box>
-                        {groupStates[index] && (
-                           group.items.map((item, index) => {
-                              return (
-                                 <MenuItem
-                                    currentPage={item.to === pathname}
-                                    key={`${index}_${item.to}`}
-                                    to={item.to}
-                                    text={item.text}
-                                    icon={item.icon}
-                                    onClick={() => setShowMenuMobile(false)}
-                                    slug={item.to}
-                                 />)
-                           }
-                           ))}
+                        {!showMenuMobile ?
+                           <Box sx={{
+                              display: 'flex', flexDirection: 'column', position: 'absolute',
+                              marginLeft: 20, padding: '8px'
+                           }}>
+                              <Box sx={{ marginLeft: 4, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, backgroundColor: colorPalette.secondary }}>
+                                 {groupStates[index] && (
+                                    group.items.map((item, index) => {
+                                       return (
+                                          <MenuItem
+                                             currentPage={item.to === pathname}
+                                             key={`${index}_${item.to}`}
+                                             to={item.to}
+                                             text={item.text}
+                                             icon={item.icon}
+                                             onClick={() => setShowMenuMobile(false)}
+                                             slug={item.to}
+                                          />)
+                                    }
+                                    ))}
+                              </Box>
+                           </Box>
+                           : <>
+                              {groupStates[index] && (
+                                 group.items.map((item, index) => {
+                                    return (
+                                       <MenuItem
+                                          currentPage={item.to === pathname}
+                                          key={`${index}_${item.to}`}
+                                          to={item.to}
+                                          text={item.text}
+                                          icon={item.icon}
+                                          onClick={() => setShowMenuMobile(false)}
+                                          slug={item.to}
+                                       />)
+                                 }))}
+                           </>
+                        }
                      </Box>
                   )}
                </Box>
@@ -228,7 +268,7 @@ const MenuItem = (props) => {
          <Link
             href={to}
             onClick={onClick}
-            style={{ width: '100%' }}
+            style={{ display: 'flex', width: '100%' }}
          >
             <Box sx={{
                display: 'flex',
@@ -240,13 +280,13 @@ const MenuItem = (props) => {
                ...(currentPage ?
                   {
                      // border: `1px solid ${Colors.orange}`,
-                     backgroundColor: colorPalette.buttonColor,
-                     color: !theme ? '#1C2126' : '#FFFFFF',
+                     // backgroundColor: colorPalette.buttonColor,
+                     color: colorPalette.buttonColor,
                   }
                   :
                   {
                      "&:hover": {
-                        backgroundColor: colorPalette.buttonColor + '22',
+                        // backgroundColor: colorPalette.buttonColor + '22',
 
 
                      }
@@ -254,15 +294,20 @@ const MenuItem = (props) => {
             }}>
                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
                   {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
-                  <Text small style={{
-                     color: colorPalette.textColor,
-                     transition: 'background-color 1s',
-                     ...(currentPage &&
-                     {
-                        color: !theme ? '#FFFFFF' : '#FFFFFF',
-                     }
-                     ),
-                  }}>
+                  <Text
+                     small
+                     sx={{
+                        color: colorPalette.textColor,
+                        transition: 'background-color 1s',
+                        "&:hover": {
+                           color: colorPalette.buttonColor,
+                        },
+                        ...(currentPage &&
+                        {
+                           color: colorPalette.buttonColor,
+                        }
+                        ),
+                     }}>
                      {text}
                   </Text>
                </Box>
