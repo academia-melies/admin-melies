@@ -1,7 +1,5 @@
 import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
 import React from "react";
-import { Colors } from "../layout/Colors";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { formatTimeStamp } from "../../helpers";
 import { Box } from "../../atoms";
@@ -12,15 +10,16 @@ export const Table_V1 = (props) => {
     const {
         data = [],
         columns = [],
-        avatar = false
+        avatar = false,
+        slug = ''
     } = props;
 
     const { colorPalette, theme } = useAppContext()
     const router = useRouter();
-    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[1]
+    // const pathname = router.pathname === '/' ? null : router.asPath.split('/')[1]
 
     const handleRowClick = (id) => {
-        router.push(`/${pathname}/${id}`);
+        router.push(`/administrative/${slug}/${id}`);
     };
 
     const getRowBackground = (index) => {
@@ -44,33 +43,6 @@ export const Table_V1 = (props) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {/* {data?.map((row) => (
-                                <TableRow key={row.id} onClick={() => handleRowClick(row.id)}
-                                    sx={styles.bodyRow}>
-                                    {columns.map((column) => (
-                                        row[column?.key] ?
-                                            <Tooltip title={row[column.key]} arrow>
-                                                <TableCell key={`${row.id}-${column.key}`} sx={{
-                                                    ...styles.bodyCell,
-                                                    maxWidth: '140px',
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                }}>
-                                                    {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
-                                                    {typeof row[column.key] === 'object' &&
-                                                        row[column?.key || '-'] instanceof Date ? (
-                                                        formatTimeStamp(row[column?.key || '-'])
-                                                    ) : (
-                                                        row[column?.key || '-']
-                                                    )}
-                                                </TableCell>
-                                            </Tooltip>
-                                            :
-                                            <TableCell sx={styles.bodyCell}>---</TableCell>
-                                    ))}
-                                </TableRow>
-                            ))} */}
                             {data?.map((row, index) => (
                                 <TableRow key={row.id} onClick={() => handleRowClick(row.id)} sx={{
                                     ...styles.bodyRow,
@@ -108,7 +80,6 @@ export const Table_V1 = (props) => {
                                                             textOverflow: 'ellipsis',
                                                             whiteSpace: 'nowrap',
                                                             overflow: 'hidden',
-
                                                         }}
                                                     >
                                                         {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}

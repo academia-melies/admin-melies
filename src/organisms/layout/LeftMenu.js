@@ -141,6 +141,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                                     text={item.text}
                                     icon={item.icon}
                                     onClick={() => setShowMenuMobile(false)}
+                                    slug={item.to}
                                  />)
                            }
                            ))}
@@ -219,6 +220,7 @@ const MenuItem = (props) => {
       icon,
       currentPage,
       onClick,
+      slug
    } = props
 
    return (
