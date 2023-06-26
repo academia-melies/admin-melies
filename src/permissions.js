@@ -4,12 +4,12 @@ export const menuItems = [
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
-            to: '/employee/list',
+            to: '/administrative/employee',
             text: 'Funcionarios',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
          {
-            to: '/student/list',
+            to: '/administrative/student',
             text: 'Alunos',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
