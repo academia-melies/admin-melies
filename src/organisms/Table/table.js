@@ -38,7 +38,7 @@ export const Table_V1 = (props) => {
                         <TableHead>
                             <TableRow style={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s', }}>
                                 {columns.map((column) => (
-                                    <TableCell key={column?.key} sx={{ ...styles.cell, minWidth: column?.key !== 'id' && '140px', fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
+                                    <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
                                 ))}
                             </TableRow>
                         </TableHead>
@@ -73,7 +73,7 @@ export const Table_V1 = (props) => {
 
                                                     <Box
                                                         sx={{
-                                                            maxWidth: '160px',
+                                                            // maxWidth: '160px',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             gap: 2,

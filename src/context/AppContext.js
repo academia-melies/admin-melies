@@ -132,7 +132,7 @@ export const AppProvider = ({ children }) => {
             {children}
             <Alert active={alertData.active} type={alertData.type} title={alertData.title} message={alertData.message}
                 handleClose={() => setAlertData({ active: false, type: '', title: '', message: '' })} />
-            <Backdrop sx={{ color: '#fff', zIndex: 99999999 }} open={loading}>
+            <Backdrop sx={{ color: '#fff', zIndex: 99999999, backgroundColor: '#0E0D15' }} open={loading}>
                 <LoadingIcon />
             </Backdrop>
             <ConfirmationModal

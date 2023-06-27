@@ -162,10 +162,10 @@ export default function EditUser(props) {
     const handleChangeEnrollment = (value) => {
 
         setEnrollmentData((prevValues) => ({
-           ...prevValues,
-           [value.target.name]: value.target.value,
+            ...prevValues,
+            [value.target.name]: value.target.value,
         }))
-     }
+    }
 
     const checkRequiredFields = () => {
         if (!userData.nome) {
@@ -281,7 +281,7 @@ export default function EditUser(props) {
         <>
             <SectionHeader
                 perfil={userData?.perfil}
-                title={userData?.nome || `Novo ${perfil === 'employee' ? 'Funcionario' : 'Aluno'}`}
+                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionario' || userData.perfil === 'aluno' && 'Aluno' || 'Usuario'}`}
                 saveButton
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
@@ -299,15 +299,18 @@ export default function EditUser(props) {
                         <Avatar src={userData?.foto} sx={{ width: 140, height: 140, borderRadius: '16PX' }} variant="square" />
                     </Box>
                 </Box>
-                <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome' onBlur={autoEmailMelies} />
-                <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail' />
-                <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento' />
-                <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone' />
+                <Box sx={styles.inputSection}>
+                    <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
+                    <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail' sx={{ flex: 1, }} />
+                </Box>
+                <Box sx={styles.inputSection}>
+                    <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone' sx={{ flex: 1, }} />
+                </Box>
+                <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value })} sx={{ flex: 1, }} />
 
-                <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value })} />
-
-                <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login' />
-                <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' />
+                <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' sx={{ flex: 1, }} />
                 {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
                 </Box>}
@@ -316,55 +319,73 @@ export default function EditUser(props) {
 
             {/* dados_pessoais */}
             <ContentContainer style={{ ...styles.containerRegister, padding: showRegistration ? '40px' : '25px' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, padding: showRegistration ? '0px 0px 20px 0px' : '0px' }}>
+                <Box sx={{
+                    display: 'flex', alignItems: 'center', gap: 1, padding: showRegistration ? '0px 0px 20px 0px' : '0px', "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                    }
+                }} onClick={() => setShowRegistration(!showRegistration)}>
                     <Text title bold >Cadastro Completo</Text>
                     <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: `url(${icons.gray_arrow_down})`,
                         transform: showRegistration ? 'rotate(0deg)' : 'rotate(-90deg)',
                         transition: '.3s',
-                        "&:hover": {
-                            opacity: 0.8,
-                            cursor: 'pointer'
-                        }
-                    }} onClick={() => setShowRegistration(!showRegistration)} />
+                    }} />
                 </Box>
                 {showRegistration &&
                     <>
-                        <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' />
-                        <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade' />
-                        <TextInput placeholder='Nacionalidade' name='nacionalidade' onChange={handleChange} value={userData?.nacionalidade || ''} label='Nacionalidade' />
+                        <Box sx={styles.inputSection}>
+                            <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nacionalidade' name='nacionalidade' onChange={handleChange} value={userData?.nacionalidade || ''} label='Nacionalidade' sx={{ flex: 1, }} />
+                        </Box>
                         <RadioItem valueRadio={userData?.estado_civil} group={groupCivil} title="Estado Cívil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, estado_civil: value })} />
                         {/* <TextInput placeholder='Estado Cívil' name='estado_civil' onChange={handleChange} value={userData?.estado_civil || ''} label='Estado Cívil' /> */}
-                        <TextInput placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' />
                         <TextInput placeholder='E-mail corporativo' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail corporativo' />
-                        <TextInput placeholder='Dependente' name='dependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' />
-                        <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' />
-                        <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe' />
+                        <Box sx={styles.inputSection}>
+                            {userData?.estado_civil === 'Casado' && <TextInput placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
+                            <TextInput placeholder='Dependente' name='sdependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe' sx={{ flex: 1, }} />
+                        </Box>
                         <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, escolaridade: value })} />
                         {/* <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' /> */}
-                        <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP' onBlur={handleBlurCEP} />
-                        <TextInput placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço' />
-                        <TextInput placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade' />
-                        <TextInput placeholder='UF' name='uf' onChange={handleChange} value={userData?.uf || ''} label='UF' />
-                        <TextInput placeholder='Bairro' name='bairro' onChange={handleChange} value={userData?.bairro || ''} label='Bairro' />
-                        <TextInput placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' />
-                        <TextInput placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG' />
-                        <TextInput placeholder='UF' name='uf_rg' onChange={handleChange} value={userData?.uf_rg || ''} label='UF' />
-                        <TextInput placeholder='Expedição' name='expedicao' onChange={handleChange} type="date" value={(userData?.expedicao)?.split('T')[0] || ''} label='Expedição' />
-                        <TextInput placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão' />
-                        <TextInput placeholder='Titulo de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Titulo de Eleitor' />
-                        <TextInput placeholder='Zona' name='zona' onChange={handleChange} value={userData?.zona || ''} label='Zona' />
-                        <TextInput placeholder='Seção' name='secao' onChange={handleChange} value={userData?.secao || ''} label='Seção' />
+                        <Box sx={styles.inputSection}>
+                            <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
+                            <TextInput placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade' sx={{ flex: 1, }} />
+                        </Box>
+                        <Box sx={styles.inputSection}>
+                            <TextInput placeholder='UF' name='uf' onChange={handleChange} value={userData?.uf || ''} label='UF' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Bairro' name='bairro' onChange={handleChange} value={userData?.bairro || ''} label='Bairro' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' sx={{ flex: 1, }} />
+                        </Box>
+                        <Box sx={styles.inputSection}>
+                            <TextInput placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG' sx={{ flex: 1, }} />
+                            <TextInput placeholder='UF' name='uf_rg' onChange={handleChange} value={userData?.uf_rg || ''} label='UF' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Expedição' name='expedicao' onChange={handleChange} type="date" value={(userData?.expedicao)?.split('T')[0] || ''} label='Expedição' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão' sx={{ flex: 1, }} />
+                        </Box>
+                        <Box sx={styles.inputSection}>
+                            <TextInput placeholder='Titulo de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Titulo de Eleitor' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Zona' name='zona' onChange={handleChange} value={userData?.zona || ''} label='Zona' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Seção' name='secao' onChange={handleChange} value={userData?.secao || ''} label='Seção' sx={{ flex: 1, }} />
+                        </Box>
 
                     </>
                 }
             </ContentContainer>
 
             {/* contrato */}
-            {perfil === 'employee' &&
+            {userData.perfil === 'funcionario' &&
                 <ContentContainer style={{ ...styles.containerContract, padding: showContract ? '40px' : '25px' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', padding: showContract ? '0px 0px 20px 0px' : '0px', gap: 1 }}>
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', padding: showContract ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={() => setShowContract(!showContract)}>
                         <Text title bold >Contrato</Text>
                         <Box sx={{
                             ...styles.menuIcon,
@@ -375,25 +396,36 @@ export default function EditUser(props) {
                                 opacity: 0.8,
                                 cursor: 'pointer'
                             }
-                        }} onClick={() => setShowContract(!showContract)} />
+                        }} />
                     </Box>
                     {showContract &&
                         <>
-                            <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' />
-                            <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' />
-                            <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' />
-                            <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={(contract?.desligamento)?.split('T')[0] || ''} label='Desligamento' />
-                            <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' />
-                            <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Serie' />
-                            <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' />
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={(contract?.desligamento)?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Serie' sx={{ flex: 1, }} />
+                                <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
+                            </Box>
                         </>
                     }
                 </ContentContainer>
             }
 
-            {perfil === 'student' &&
+            {userData.perfil === 'aluno' &&
                 <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', padding: showEnrollment ? '0px 0px 20px 0px' : '0px', gap: 1 }}>
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', padding: showEnrollment ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={() => setShowEnrollment(!showEnrollment)}>
                         <Text title bold >Matrícula</Text>
                         <Box sx={{
                             ...styles.menuIcon,
@@ -404,7 +436,7 @@ export default function EditUser(props) {
                                 opacity: 0.8,
                                 cursor: 'pointer'
                             }
-                        }} onClick={() => setShowEnrollment(!showEnrollment)} />
+                        }} />
                     </Box>
                     {showEnrollment &&
                         <>
@@ -440,4 +472,11 @@ const styles = {
         width: 20,
         height: 20,
     },
+    inputSection: {
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'space-around',
+        gap: 1.8,
+        flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
+    }
 }
