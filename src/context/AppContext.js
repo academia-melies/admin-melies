@@ -70,6 +70,10 @@ export const AppProvider = ({ children }) => {
         try {
             setLoading(true)
             const response = await api.post('/user/login', { email, senha })
+            console.log(response.data.admin_melies < 1)
+            if (response.data.admin_melies < 1) {
+                return 0
+            }
             if (response.data.token) {
                 const { data } = response;
                 localStorage.setItem('token', data?.token)

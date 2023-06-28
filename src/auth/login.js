@@ -23,10 +23,25 @@ export default function Login() {
     const handleLogin = async () => {
         const { email, senha } = userData
 
-        if (!email || !emailValidator(email)) { return alert.error("O email está inválido!") }
+        if (!email) {
+
+            return alert.error("O email está inválido!")
+        }
+
+        if (email.includes('@')) {
+            if (!emailValidator(email)) {
+                return alert.error("O email está inválido!")
+            }
+        }
+
         if (!senha || senha.length < 4) { return alert.error('A senha deve conter no mínimo 4 digitos.') }
+        
 
         const data = await login({ email, senha })
+
+        if (data === 0) {
+            return alert.error('Desculpe. Você não tem acesso ao painel administrativo. Consulte o Suporte Melies.')
+        }
 
         if (!data) {
             return alert.error('Usuário não encontrado ou senha incorreta. Verifique os dados e tente novamente!')
@@ -80,8 +95,8 @@ export default function Login() {
                             {/* {!smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={40} />} */}
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '62%', }}>
                                 <Text bold style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: '35px', transition: 'background-color 1s' }}>Login</Text>
-                                <Box sx={{ backgroundColor: colorPalette.buttonColor,  transition: 'background-color 1s', borderRadius: '16px', padding: '2px 12px 2px 12px' }}>
-                                    <Text small bold style={{ color: colorPalette.textColor,  transition: 'background-color 1s', fontWeight: 'bold' }}>{'ADMIN'}</Text>
+                                <Box sx={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s', borderRadius: '16px', padding: '2px 12px 2px 12px' }}>
+                                    <Text small bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', fontWeight: 'bold' }}>{'ADMIN'}</Text>
                                 </Box>
                             </Box>
                             <Box sx={{
@@ -142,15 +157,15 @@ export default function Login() {
                                 />
                             </Box>
                             <Button
-                                style={{ width:{ xs: `80%`, xm: `80%`, md: '60%', lg: '60%' }, padding: '12px 20px', marginBottom: 5, borderRadius: '100px' }}
+                                style={{ width: { xs: `80%`, xm: `80%`, md: '60%', lg: '60%' }, padding: '12px 20px', marginBottom: 5, borderRadius: '100px' }}
                                 text='Entrar'
                                 onClick={handleLogin}
                             />
                         </Box>
                         <Box>
-                            {smallWidthDevice ? <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: 11, marginLeft: 0,}} />
+                            {smallWidthDevice ? <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: 11, marginLeft: 0, }} />
                                 :
-                                <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`,  marginRight: !notebookWidth ? 16 : 6, marginLeft: 0,  width: !notebookWidth ? '140px': '120px',}} />}
+                                <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: !notebookWidth ? 16 : 6, marginLeft: 0, width: !notebookWidth ? '140px' : '120px', }} />}
                         </Box>
                     </Box>
                     {smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={14} />}
@@ -172,7 +187,7 @@ export default function Login() {
             }} onClick={() => setTheme(!theme)}>
                 <Box sx={{ ...styles.icon, backgroundImage: theme ? `url('/icons/theme_icon.png')` : `url('/icons/theme_icon_dark.png')`, color: theme ? '#fff' : Colors.backgroundPrimary, transition: 'background-color 1s', }} />
             </Box> */}
-            <IconTheme left/>
+            <IconTheme left />
         </Box>
 
     )

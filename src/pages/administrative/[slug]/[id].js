@@ -7,7 +7,8 @@ import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
 import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
-import { createContract, createEnrollment, createUser, editContract, editeEnrollment } from "../../../validators/api-requests"
+import { createContract, createEnrollment, createUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
+import { emailValidator } from "../../../helpers"
 
 export default function EditUser(props) {
     const { setLoading, alert } = useAppContext()
@@ -234,15 +235,13 @@ export default function EditUser(props) {
                 const response = await editeUser({ id, userData })
                 if (perfil === 'employee') {
                     const responseData = await editContract({ id, contract })
-                    return responseData;
                 }
                 if (perfil === 'employee') {
                     const responseData = await editeEnrollment({ id, enrollmentData })
-                    return responseData;
                 }
-                if (response?.status === 201 && responseData?.status === 201) {
+                if (response?.status === 201) {
                     alert.success('Usuário atualizado com sucesso.');
-                    getUserData()
+                    handleItems()
                     return
                 }
                 alert.error('Tivemos um problema ao atualizar usuário.');
@@ -275,6 +274,20 @@ export default function EditUser(props) {
         { label: 'Mestrado', value: 'Mestrado' },
         { label: 'Doutorado', value: 'Doutorado' },
     ]
+
+    const groupStatus = [
+        { label: 'ativo', value: 1 },
+        { label: 'inativo', value: 0 },
+    ]
+
+    const groupAdmin = [
+        { label: 'sim', value: 1 },
+        { label: 'não', value: 0 },
+    ]
+
+    console.log('ativo', userData.ativo)
+    console.log('admin', userData.admin_melies)
+
 
 
     return (
@@ -314,6 +327,10 @@ export default function EditUser(props) {
                 {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
                 </Box>}
+
+                <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, ativo: parseInt(value) })} />
+                <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMelies" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />
+
             </ContentContainer>
 
 

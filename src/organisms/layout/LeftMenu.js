@@ -353,7 +353,7 @@ const styles = {
       flexDirection: 'column',
       gap: 1,
       marginTop: 10,
-      overflowY: 'auto',
+      // overflowY: 'auto',
       overflowStyle: 'marquee,panner',
       maxHeight: '58%',
       scrollbarWidth: 'thin',

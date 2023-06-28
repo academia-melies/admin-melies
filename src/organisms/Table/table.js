@@ -14,6 +14,8 @@ export const Table_V1 = (props) => {
         slug = ''
     } = props;
 
+    console.log(data)
+
     const { colorPalette, theme } = useAppContext()
     const router = useRouter();
     // const pathname = router.pathname === '/' ? null : router.asPath.split('/')[1]
@@ -30,6 +32,10 @@ export const Table_V1 = (props) => {
         }
     };
 
+    const ativo = data?.map((item) => item.ativo >= 1 ? 'green' : 'red')
+
+    console.log(ativo)
+
     return (
         <>
             <Paper sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', }}>
@@ -40,6 +46,7 @@ export const Table_V1 = (props) => {
                                 {columns.map((column) => (
                                     <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
                                 ))}
+                                <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>ativo</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -97,6 +104,11 @@ export const Table_V1 = (props) => {
                                             </TableCell>
                                         </Tooltip>
                                     ))}
+                                    <TableCell>
+                                        <IconStatus
+                                            style={{ backgroundColor: row.ativo >= 1 ? 'green' : 'red', boxShadow: row.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                                        />
+                                    </TableCell>
                                 </TableRow>
                             ))}
 
@@ -106,6 +118,16 @@ export const Table_V1 = (props) => {
             </Paper >
         </>
     )
+}
+
+export const IconStatus = (props) => {
+
+    const { style = {} } = props
+    return (
+        <Box sx={{ width: 16.5, height: 16.5, padding: '0px 10px', borderRadius: 30, justifyContent: 'center', alignItems: 'center', }}>
+            <Box sx={{ width: 16, height: 16, borderRadius: 30, ...style }} />
+        </Box>
+    );
 }
 
 const styles = {

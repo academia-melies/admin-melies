@@ -7,11 +7,19 @@ export const RadioItem = (props) => {
     const { colorPalette, theme } = useAppContext()
 
     const getChecked = (optionValue) => {
-        if (valueRadio !== '' && valueRadio === optionValue) {
-           return valueRadio;
+
+        if (typeof valueRadio === 'string') {
+            return valueRadio === optionValue;
+
+        } else if (typeof valueRadio === 'number') {
+            if (isNaN(optionValue)) {
+                return false;
+            }
+            return Number(valueRadio) === Number(optionValue);
         }
         return false;
-     };
+    };
+
 
     return (
         <FormControl sx={{ padding: '5px 13px', }}>
@@ -23,7 +31,7 @@ export const RadioItem = (props) => {
                         value={item?.value}
                         control={
                             <Radio sx={{ color: colorPalette.textColor, }} onChange={(event) => onSelect(event.target.value)}
-                            checked={getChecked(item.value)} />
+                                checked={getChecked(item.value)} />
                         } label={item?.label} sx={{ color: colorPalette.textColor, }} />
                 ))
                 }

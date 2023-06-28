@@ -9,8 +9,12 @@ export const SearchBar = (props) => {
    const { colorPalette, theme } = useAppContext()
    return (
       <>
-         <Box sx={{...styles.searchBarContainer, backgroundColor: !theme ? colorPalette.inputColor : '#fff',  transition: 'background-color 1s',}}>
+         <Box sx={{...styles.searchBarContainer, backgroundColor: !theme ? colorPalette.inputColor : '#fff',  transition: 'background-color 1s', border: `1px solid #00000040`, 
+         '&:hover':{
+            border: `1px solid #00000080`
+         }}}>
             <input
+            label = 'maça'
                placeholder={placeholder}
                style={{ ...styles.searchBar, ...style, ...sx }}
                onChange={({ target }) => setTimeout(() => onChange(target.value), 10)}
@@ -73,7 +77,7 @@ const styles = {
       alignItems: 'center',
       backgroundColor: '#fff',
       width: '100%',
-      borderRadius: `12px`,
+      borderRadius: `4px`,
       overflow: 'hidden',
       gap: 2,
       padding: `0px 1px`,
