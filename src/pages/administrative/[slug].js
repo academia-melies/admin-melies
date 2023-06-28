@@ -7,15 +7,18 @@ import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../org
 import { api } from "../../api/api"
 import { getUsersPerfil } from "../../validators/api-requests"
 import { useAppContext } from "../../context/AppContext"
+import { SelectList } from "../../organisms/select/SelectList"
 
 export default function ListUsers(props) {
     const [usersList, setUsers] = useState([])
     const [filterData, setFilterData] = useState('')
     const [perfil, setPerfil] = useState('')
-    const { setLoading } = useAppContext()
+    const { setLoading, colorPalette } = useAppContext()
+    const [filterAtive, setFilterAtive] = useState('')
     const router = useRouter()
     const { slug } = router.query;
-    const filter = (item) => (item?.nome?.toLowerCase().includes(filterData?.toLowerCase())) || (item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
+    const filter = (item) => (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase())) && filterAtive === '' || item?.ativo === filterAtive;
+
 
     useEffect(() => {
         if (slug === "employee") {
@@ -51,10 +54,25 @@ export default function ListUsers(props) {
         { key: 'email', label: 'E-mail' },
         { key: 'telefone', label: 'Telefone' },
         { key: 'cpf', label: 'CPF' },
-        { key: 'nacionalidade', label: 'Nacionalidade' },
-        { key: 'estado_civil', label: 'Estado Civil' },
+        // { key: 'nacionalidade', label: 'Nacionalidade' },
+        // { key: 'estado_civil', label: 'Estado Civil' },
         { key: 'email_melies', label: 'Email Meliés' },
+
     ];
+
+    const listAtivo = [
+        { label: 'todos', value: 'todos' },
+        { label: 'ativo', value: 1 },
+        { label: 'inativo', value: 0 },
+    ]
+
+    const filterSet = (value) => {
+        if (value !== '') {
+            setFilterAtive(parseInt(value))
+        }
+        setFilterAtive('')
+    }
+
 
     if (!slug) return <Forbidden />
 
@@ -65,9 +83,18 @@ export default function ListUsers(props) {
                 newButton
                 newButtonAction={() => router.push(`/administrative/${slug}/new`)}
             />
-            <Box>
-                <Text bold style={{ margin: '0px 5px 5px 5px', }}>Buscar por: </Text>
+            {/* <Text bold>Buscar por: </Text> */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                 <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px' }} onChange={setFilterData} />
+                <SelectList
+                    data={listAtivo}
+                    valueSelection={filterAtive}
+                    onSelect={(value) => setFilterAtive(value === 'todos' ? '' : value)}
+                    title="status"
+                    filterOpition="value"
+                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
+                    inputStyle={{ color: colorPalette.textColor }}
+                />
             </Box>
             <Table_V1 data={usersList?.filter(filter)} columns={column} slug={slug} />
         </>

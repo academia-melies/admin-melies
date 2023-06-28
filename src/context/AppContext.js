@@ -70,6 +70,10 @@ export const AppProvider = ({ children }) => {
         try {
             setLoading(true)
             const response = await api.post('/user/login', { email, senha })
+            console.log(response.data.admin_melies < 1)
+            if (response.data.admin_melies < 1) {
+                return 0
+            }
             if (response.data.token) {
                 const { data } = response;
                 localStorage.setItem('token', data?.token)
@@ -132,7 +136,7 @@ export const AppProvider = ({ children }) => {
             {children}
             <Alert active={alertData.active} type={alertData.type} title={alertData.title} message={alertData.message}
                 handleClose={() => setAlertData({ active: false, type: '', title: '', message: '' })} />
-            <Backdrop sx={{ color: '#fff', zIndex: 99999999 }} open={loading}>
+            <Backdrop sx={{ color: '#fff', zIndex: 99999999, backgroundColor: '#0E0D15' }} open={loading}>
                 <LoadingIcon />
             </Backdrop>
             <ConfirmationModal

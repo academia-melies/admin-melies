@@ -33,16 +33,32 @@ export const LeftMenu = ({ menuItems = [] }) => {
    };
 
    const handleGroupMouseEnter = (index) => {
-      const newGroupStates = [...groupStates];
-      newGroupStates[index] = true;
-      setGroupStates(newGroupStates);
-   };
+      setGroupStates((prevGroupStates) => {
+        if (!prevGroupStates[index]) {
+          const newGroupStates = [...prevGroupStates];
+          newGroupStates[index] = true;
+          return newGroupStates;
+        }
+        return prevGroupStates;
+      });
+    };
+
+   // const handleGroupMouseLeave = (index) => {
+   //    const newGroupStates = [...groupStates];
+   //    newGroupStates[index] = false;
+   //    setGroupStates(newGroupStates);
+   // };
 
    const handleGroupMouseLeave = (index) => {
-      const newGroupStates = [...groupStates];
-      newGroupStates[index] = false;
-      setGroupStates(newGroupStates);
-   };
+      setGroupStates((prevGroupStates) => {
+        if (prevGroupStates[index]) {
+          const newGroupStates = [...prevGroupStates];
+          newGroupStates[index] = false;
+          return newGroupStates;
+        }
+        return prevGroupStates;
+      });
+    };
 
    return (
       <>
@@ -337,7 +353,7 @@ const styles = {
       flexDirection: 'column',
       gap: 1,
       marginTop: 10,
-      overflowY: 'auto',
+      // overflowY: 'auto',
       overflowStyle: 'marquee,panner',
       maxHeight: '58%',
       scrollbarWidth: 'thin',
