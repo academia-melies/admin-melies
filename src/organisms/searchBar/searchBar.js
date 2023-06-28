@@ -16,7 +16,7 @@ export const SearchBar = (props) => {
             <input
             label = 'maça'
                placeholder={placeholder}
-               style={{ ...styles.searchBar, ...style, ...sx }}
+               style={{ ...styles.searchBar, ...style, ...sx, }}
                onChange={({ target }) => setTimeout(() => onChange(target.value), 10)}
             />
          </Box>
@@ -89,7 +89,7 @@ const styles = {
       boxSizing: 'border-box',
       outline: 'none',
       padding: 25,
-      fontSize: 15,
+      fontSize: '15px',
       color: '#aaa',
       display: 'flex',
       flex: 1

@@ -328,8 +328,8 @@ export default function EditUser(props) {
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
                 </Box>}
 
-                <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, ativo: parseInt(value) })} />
-                <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMelies" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />
+                <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, ativo: parseInt(value), admin_melies: value < 1 ? parseInt(value) : userData?.admin_melies })} />
+                <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />
 
             </ContentContainer>
 

@@ -34,14 +34,14 @@ export const LeftMenu = ({ menuItems = [] }) => {
 
    const handleGroupMouseEnter = (index) => {
       setGroupStates((prevGroupStates) => {
-        if (!prevGroupStates[index]) {
-          const newGroupStates = [...prevGroupStates];
-          newGroupStates[index] = true;
-          return newGroupStates;
-        }
-        return prevGroupStates;
+         if (!prevGroupStates[index]) {
+            const newGroupStates = [...prevGroupStates];
+            newGroupStates[index] = true;
+            return newGroupStates;
+         }
+         return prevGroupStates;
       });
-    };
+   };
 
    // const handleGroupMouseLeave = (index) => {
    //    const newGroupStates = [...groupStates];
@@ -51,14 +51,14 @@ export const LeftMenu = ({ menuItems = [] }) => {
 
    const handleGroupMouseLeave = (index) => {
       setGroupStates((prevGroupStates) => {
-        if (prevGroupStates[index]) {
-          const newGroupStates = [...prevGroupStates];
-          newGroupStates[index] = false;
-          return newGroupStates;
-        }
-        return prevGroupStates;
+         if (prevGroupStates[index]) {
+            const newGroupStates = [...prevGroupStates];
+            newGroupStates[index] = false;
+            return newGroupStates;
+         }
+         return prevGroupStates;
       });
-    };
+   };
 
    return (
       <>
@@ -89,9 +89,9 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      padding: '8px 8px',
 
                   }}>
-                     <Avatar sx={{ width: '65px', height: '65px', fontSize: 14 }} src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`} />
-                     <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff' }}>{userName}</Text>
-                     <Box sx={{
+                     <Avatar sx={{ width: '65px', height: '65px', fontSize: 14, border: `1px solid #fff` }} src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`} />
+                     <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff', fontFamily: 'MetropolisSemiBold' }}>{userName}</Text>
+                     {/* <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
                         width: 20,
@@ -102,13 +102,47 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            opacity: 0.8,
                            cursor: 'pointer'
                         }
-                     }} onClick={() => setShowUserOptions(!showUserOptions)} />
+                     }} onClick={() => setShowUserOptions(!showUserOptions)} /> */}
+                     <Box sx={{
+                        display: 'flex', gap: 1.5, alignItems: 'center',
+                        justifyContent: 'center',
+                     }}>
+                        <Box sx={{
+                           backgroundColor: colorPalette.buttonColor,
+                           borderRadius: 2,
+                           padding: '0px 6px 0px 6px',
+                           transition: 'background-color 1s',
+                           display: 'flex',
+                           '&:hover':{
+                              cursor: 'pointer',
+                              backgroundColor: colorPalette.buttonColor + '88'
+                           }
+                        }}
+                           onClick={logout}>
+                           <Text bold small style={{ ...styles.text, textAlign: 'center', color: '#fff' }}>SAIR</Text>
+                        </Box>
+                        <Box sx={{
+                           ...styles.menuIcon,
+                           backgroundImage: `url('https://mf-planejados.s3.amazonaws.com/Icon_user_edit.png')`,
+                           width: 20,
+                           height: 15,
+                           filter: 'brightness(0) invert(1)',
+                           transition: 'background-color 1s',
+                           "&:hover": {
+                              opacity: 0.8,
+                              cursor: 'pointer'
+                           }
+                        }} onClick={() => {
+                           router.push(`/administrative/employee/${user?.id}`)
+                           setShowUserOptions(!showUserOptions)
+                        }}/>
+                     </Box>
                   </Box>
-                  {showUserOptions &&
+                  {/* {showUserOptions &&
                      <>
                         <Box sx={{ ...styles.containerUserOpitions, backgroundColor: colorPalette.buttonColor }}>
                            <Box onClick={() => {
-                              router.push(`/employee/${user?.id}`)
+                              router.push(`/administrative/employee/${user?.id}`)
                               setShowUserOptions(!showUserOptions)
                            }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' }, }}>
                               <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff' }}>Editar</Text>
@@ -119,7 +153,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            </Box>
                         </Box>
                      </>
-                  }
+                  } */}
                </Box>
                <Box sx={styles.boxMenu}>
                   {menuItems.map((group, index) =>

@@ -66,20 +66,13 @@ export default function ListUsers(props) {
         { label: 'inativo', value: 0 },
     ]
 
-    const filterSet = (value) => {
-        if (value !== '') {
-            setFilterAtive(parseInt(value))
-        }
-        setFilterAtive('')
-    }
-
 
     if (!slug) return <Forbidden />
 
     return (
         <>
             <SectionHeader
-                title={`${slug === 'employee' ? 'Funcionarios' : 'Alunos'} (${usersList?.length})`}
+                title={`${slug === 'employee' ? 'Funcionarios' : 'Alunos'} (${usersList.filter(filter)?.length})`}
                 newButton
                 newButtonAction={() => router.push(`/administrative/${slug}/new`)}
             />
@@ -92,8 +85,8 @@ export default function ListUsers(props) {
                     onSelect={(value) => setFilterAtive(value === 'todos' ? '' : value)}
                     title="status"
                     filterOpition="value"
-                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
-                    inputStyle={{ color: colorPalette.textColor }}
+                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, flex: 1 }}
+                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
             <Table_V1 data={usersList?.filter(filter)} columns={column} slug={slug} />
