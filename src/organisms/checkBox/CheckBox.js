@@ -1,22 +1,19 @@
-import { FormControlLabel, Checkbox, FormGroup } from "@mui/material";
-import { Box, Text } from "../../atoms";
+import { Checkbox } from "@mui/material";
 import { useAppContext } from "../../context/AppContext";
+import { Box, Text } from "../../atoms";
 
-export const Chackbox = (props) => {
-    const { title = '', style = {}, onSelect = (value) => { }, sx = {}, group = [], horizontal = false } = props;
+export const CheckBoxComponent = (props) => {
+    const { title = '', style = {}, onSelect = () => { }, sx = {}, horizontal = false, label} = props;
     const { colorPalette, theme } = useAppContext()
 
     return (
-        <FormControlLabel sx={{ padding: '5px 13px', }}>
-            <FormLabel sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}>{title}</FormLabel>
-            <FormGroup sx={{ gap: 1, ...style, ...sx }} row={horizontal}>
-                {group?.map((item) => (
-                    <>
-                        <Checkbox />
-                    </>
-                ))}
-            </FormGroup>
-        </FormControlLabel>
+        <Box sx={{display: 'flex', alignItems: 'center'}}> 
+            <Checkbox
+                onChange={(event) => onSelect(event.target.checked)}
+                sx={{ color: colorPalette.textColor, }}
+            />
+            <Text bold>{label}</Text>
+        </Box>
     )
 }
 
