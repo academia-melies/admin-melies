@@ -14,6 +14,8 @@ export const Table_V1 = (props) => {
         slug = ''
     } = props;
 
+    let perfil = slug === 'funcionario' && 'employee' || slug === 'aluno' && 'student' || slug === 'insteressado' && 'interested' 
+
     console.log(data)
 
     const { colorPalette, theme } = useAppContext()
@@ -21,7 +23,7 @@ export const Table_V1 = (props) => {
     // const pathname = router.pathname === '/' ? null : router.asPath.split('/')[1]
 
     const handleRowClick = (id) => {
-        router.push(`/administrative/user/${id}`);
+        router.push(`/administrative/${perfil}/${id}`);
     };
 
     const getRowBackground = (index) => {
