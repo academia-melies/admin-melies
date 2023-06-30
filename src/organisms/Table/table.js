@@ -21,7 +21,7 @@ export const Table_V1 = (props) => {
     // const pathname = router.pathname === '/' ? null : router.asPath.split('/')[1]
 
     const handleRowClick = (id) => {
-        router.push(`/administrative/${slug}/${id}`);
+        router.push(`/administrative/user/${id}`);
     };
 
     const getRowBackground = (index) => {

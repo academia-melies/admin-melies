@@ -4,14 +4,15 @@ import axios from "axios"
 import { Avatar, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
-import { RadioItem, SectionHeader } from "../../../organisms"
+import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
 import { emailValidator } from "../../../helpers"
+import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditUser(props) {
-    const { setLoading, alert } = useAppContext()
+    const { setLoading, alert, colorPalette } = useAppContext()
     const router = useRouter()
     const { id, slug } = router.query;
     const newUser = id === 'new';
@@ -20,13 +21,15 @@ export default function EditUser(props) {
     const [contract, setContract] = useState({})
     const [enrollmentData, setEnrollmentData] = useState({})
     const [showRegistration, setShowRegistration] = useState(false)
+    const [countries, setCountries] = useState([])
+    const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
     useEffect(() => {
-        setPerfil(slug)
+        findCountries()
     }, [slug])
 
     const getUserData = async () => {
@@ -86,6 +89,45 @@ export default function EditUser(props) {
             setLoading(false)
         }
     }
+
+    async function findCountries() {
+        try {
+            const response = await axios.get(`https://servicodados.ibge.gov.br/api/v1/paises/paises`);
+            const { data = [] } = response;
+            const abbreviatedNames = data.map(country => country.nome.abreviado);
+            const uniqueAbbreviatedNames = [...new Set(abbreviatedNames)];
+
+            uniqueAbbreviatedNames.sort()
+
+            const groupAccount = uniqueAbbreviatedNames.map(name => ({
+                label: name,
+                value: name
+            }));
+
+            setCountries(groupAccount);
+        } catch (error) {
+        }
+    }
+
+
+
+    // async function verifyCPF(cpf, nascimento) {
+    //     setLoading(true)
+    //     let token_access = 'F285AF4D-13C7-46B9-8C66-583DBE14E017';
+    //     let cpf = cpf;
+    //     let dataNascimento = nascimento;
+    //     let plugin = 'CPF';
+
+
+    //     try {
+    //         const response = await axios.get(`https://www.sintegraws.com.br/api/v1/execute-api.php?token=${token_access}&cpf=${cpf}&data-nascimento=${dataNascimento}&plugin=${plugin}`)
+    //         const { data } = response;
+
+    //     } catch (error) {
+    //     } finally {
+    //         setLoading(false)
+    //     }
+    // }
 
     async function autoEmailMelies(email) {
         try {
@@ -181,6 +223,11 @@ export default function EditUser(props) {
             alert.error('O e-mail inserido parece estar incorreto.')
             return false
         }
+
+        if (userData.senha !== userData.confirmar_senha) {
+            alert.error('As senhas não correspondem. Por favor, verifique novamente.')
+            return false
+        }
         return true
     }
 
@@ -190,17 +237,17 @@ export default function EditUser(props) {
             try {
                 const response = await createUser(userData);
                 const { data } = response
-                if (perfil === 'employee') {
+                if (userData.perfil === 'funcionario') {
                     const responseData = await createContract(data?.userId, contract)
                     return responseData;
                 }
-                if (perfil === 'employee') {
+                if (userData.perfil === 'aluno') {
                     const responseData = await createEnrollment(data?.userId, enrollmentData);
                     return responseData;
                 }
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    router.push(`/administrative/${perfil}/${data?.userId}`)
+                    router.push(`/administrative/user/${data?.userId}`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
@@ -217,7 +264,7 @@ export default function EditUser(props) {
             const response = await deleteUser(id)
             if (response?.status == 201) {
                 alert.success('Usuário excluído com sucesso.');
-                router.push('/employee/list')
+                router.push(`/administrative/user`)
             }
 
         } catch (error) {
@@ -229,14 +276,14 @@ export default function EditUser(props) {
     }
 
     const handleEditUser = async () => {
-        setLoading(true)
         if (checkRequiredFields()) {
+            setLoading(true)
             try {
                 const response = await editeUser({ id, userData })
                 if (perfil === 'employee') {
                     const responseData = await editContract({ id, contract })
                 }
-                if (perfil === 'employee') {
+                if (perfil === 'student') {
                     const responseData = await editeEnrollment({ id, enrollmentData })
                 }
                 if (response?.status === 201) {
@@ -256,6 +303,7 @@ export default function EditUser(props) {
     const groupPerfil = [
         { label: 'funcionario', value: 'funcionario' },
         { label: 'aluno', value: 'aluno' },
+        { label: 'interessado', value: 'interessado' },
     ]
 
     const groupCivil = [
@@ -285,16 +333,39 @@ export default function EditUser(props) {
         { label: 'não', value: 0 },
     ]
 
-    console.log('ativo', userData.ativo)
-    console.log('admin', userData.admin_melies)
+    const groupRacaCor = [
+        { label: 'Prefiro não declarar', value: 'Prefiro não declarar' },
+        { label: 'Branca', value: 'Branca' },
+        { label: 'Preta', value: 'Preta' },
+        { label: 'Parda', value: 'Parda' },
+        { label: 'Amarela', value: 'Amarela' },
+        { label: 'Indigena', value: 'Indigena' },
+    ]
 
+    const groupGender = [
+        { label: 'Masculino', value: 'Masculino' },
+        { label: 'Feminino', value: 'Feminino' },
+        { label: 'Outro', value: 'Outro' },
+        { label: 'Prefiro não informar', value: 'Prefiro não informar' },
+    ]
 
+    const groupDisability = [
+        { label: 'Sim', value: 'Sim' },
+        { label: 'Não', value: 'Não' },
+        { label: 'Não dispõe de informação', value: 'Não dispõe de informação' },
+    ]
+
+    const groupNationality = [
+        { label: 'Brasileira Nata', value: 'Brasileira Nata' },
+        { label: 'Brasileira por Naturalização', value: 'Brasileira por Naturalização' },
+        { label: 'Estrangeira', value: 'Estrangeira' },
+    ]
 
     return (
         <>
             <SectionHeader
                 perfil={userData?.perfil}
-                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionario' || userData.perfil === 'aluno' && 'Aluno' || 'Usuario'}`}
+                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionario' || userData.perfil === 'aluno' && 'Aluno' || userData.perfil === 'interessado' && 'Interessado'  || 'Usuario'}`}
                 saveButton
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
@@ -314,6 +385,7 @@ export default function EditUser(props) {
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
+                    <TextInput placeholder='Nome Social' name='nome_social' onChange={handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
                     <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail' sx={{ flex: 1, }} />
                 </Box>
                 <Box sx={styles.inputSection}>
@@ -321,11 +393,12 @@ export default function EditUser(props) {
                     <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone' sx={{ flex: 1, }} />
                 </Box>
-                <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value })} sx={{ flex: 1, }} />
+                <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} />
 
                 <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' sx={{ flex: 1, }} />
                 {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Confirmar senha' name='confirmar_senha' onChange={handleChange} value={userData?.confirmar_senha || ''} type="password" label='Confirmar senha' sx={{ flex: 1, }} />
                 </Box>}
 
                 <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, ativo: parseInt(value), admin_melies: value < 1 ? parseInt(value) : userData?.admin_melies })} />
@@ -352,12 +425,52 @@ export default function EditUser(props) {
                 </Box>
                 {showRegistration &&
                     <>
-                        <Box sx={styles.inputSection}>
-                            <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
-                            <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade' sx={{ flex: 1, }} />
-                            <TextInput placeholder='Nacionalidade' name='nacionalidade' onChange={handleChange} value={userData?.nacionalidade || ''} label='Nacionalidade' sx={{ flex: 1, }} />
+                        <Box sx={{ padding: '0px 0px 20px 0px' }}>
+                            <CheckBoxComponent label="Estrangeiro sem CPF" onSelect={(value) => {
+                                setForeigner(value)
+                                setUserData({...userData, nacionalidade: value === true ? 'Estrangeira' : ''})
+                                }} />
                         </Box>
+                        <Box sx={styles.inputSection}>
+                            {!foreigner && <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />}
+                            {foreigner && <TextInput placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />}
+
+                            <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade' sx={{ flex: 1, }} />
+
+                            <SelectList fullWidth data={countries} valueSelection={userData?.pais_origem} onSelect={(value) => setUserData({ ...userData, pais_origem: value })}
+                                title="Pais de origem" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+                            <SelectList fullWidth data={groupNationality} valueSelection={userData?.nacionalidade} onSelect={(value) => setUserData({ ...userData, nacionalidade: value })}
+                                title="Nacionalidade" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+                        </Box>
+
+                        {/* <RadioItem valueRadio={userData?.cor_raca} group={groupCivil} title="Cor/raça" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, cor_raca: value })} />
+                         */}
+                        <Box sx={styles.inputSection}>
+
+                            <SelectList fullWidth data={groupRacaCor} valueSelection={userData.cor_raca} onSelect={(value) => setUserData({ ...userData, cor_raca: value })}
+                                title="Cor/raça" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+
+                            <SelectList fullWidth data={groupGender} valueSelection={userData?.genero} onSelect={(value) => setUserData({ ...userData, genero: value })}
+                                title="Genêro" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+
+                            <SelectList fullWidth data={groupDisability} valueSelection={userData?.deficiencia} onSelect={(value) => setUserData({ ...userData, deficiencia: value })}
+                                title="Deficiência" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+
+                        </Box>
+
+
                         <RadioItem valueRadio={userData?.estado_civil} group={groupCivil} title="Estado Cívil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, estado_civil: value })} />
+
                         {/* <TextInput placeholder='Estado Cívil' name='estado_civil' onChange={handleChange} value={userData?.estado_civil || ''} label='Estado Cívil' /> */}
                         <TextInput placeholder='E-mail corporativo' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail corporativo' />
                         <Box sx={styles.inputSection}>
@@ -371,9 +484,10 @@ export default function EditUser(props) {
                         <Box sx={styles.inputSection}>
                             <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
                             <TextInput placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço' sx={{ flex: 1, }} />
-                            <TextInput placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nº' name='numero' onChange={handleChange} value={userData?.numero || ''} label='Nº' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
+                            <TextInput placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade' sx={{ flex: 1, }} />
                             <TextInput placeholder='UF' name='uf' onChange={handleChange} value={userData?.uf || ''} label='UF' sx={{ flex: 1, }} />
                             <TextInput placeholder='Bairro' name='bairro' onChange={handleChange} value={userData?.bairro || ''} label='Bairro' sx={{ flex: 1, }} />
                             <TextInput placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' sx={{ flex: 1, }} />
@@ -429,6 +543,24 @@ export default function EditUser(props) {
                                 <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
                                 <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Serie' sx={{ flex: 1, }} />
                                 <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='Banco' name='banco_1' onChange={handleChangeContract} value={contract?.banco_1 || ''} label='Banco' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Agência' name='agencia_1' onChange={handleChangeContract} value={contract?.agencia_1 || ''} label='Agência' sx={{ flex: 1, }} />
+                                <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_1} onSelect={(value) => setContract({ ...contract, tipo_conta_1: value })}
+                                    title="Tipo de conta" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='Banco 2' name='banco_2' onChange={handleChangeContract} value={contract?.banco_2 || ''} label='Banco 2' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
+                                <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
+                                    title="Tipo de conta 2" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
                             </Box>
                         </>
                     }
