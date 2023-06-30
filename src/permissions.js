@@ -8,11 +8,36 @@ export const menuItems = [
             text: 'Usuarios',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
-         // {
-         //    to: '/administrative/student',
-         //    text: 'Alunos',
-         //    // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
-         // },
+         {
+            to: '/administrative/calendar',
+            text: 'Calendario',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/course',
+            text: 'Curso',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/discipline',
+            text: 'Disciplina',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/gridCourse',
+            text: 'Grade',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/class',
+            text: 'Turma',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/class schedule',
+            text: 'Cronograma de aulas',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
       ]
    },
    {

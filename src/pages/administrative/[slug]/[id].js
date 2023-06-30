@@ -8,7 +8,7 @@ import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator } from "../../../helpers"
+import { emailValidator, formatCEP, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditUser(props) {
@@ -176,7 +176,7 @@ export default function EditUser(props) {
 
         if (value.target.name == 'cpf') {
             let str = value.target.value;
-            value.target.value = formatCPF(str)
+            value.target.value = formatCEP(str)
         }
 
         if (value.target.name == 'rg') {
@@ -434,7 +434,7 @@ export default function EditUser(props) {
                         <Box sx={{ padding: '0px 0px 20px 0px' }}>
                             <CheckBoxComponent label="Estrangeiro sem CPF" onSelect={(value) => {
                                 setForeigner(value)
-                                setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : '' })
+                                setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : 'Brasileira Nata' })
                             }} />
                         </Box>
                         <Box sx={styles.inputSection}>
@@ -444,11 +444,11 @@ export default function EditUser(props) {
                             <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade' sx={{ flex: 1, }} />
 
                             <SelectList fullWidth data={countries} valueSelection={userData?.pais_origem} onSelect={(value) => setUserData({ ...userData, pais_origem: value })}
-                                title="Pais de origem" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Pais de origem" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
                             <SelectList fullWidth data={groupNationality} valueSelection={userData?.nacionalidade} onSelect={(value) => setUserData({ ...userData, nacionalidade: value })}
-                                title="Nacionalidade" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Nacionalidade" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
                         </Box>
@@ -458,17 +458,17 @@ export default function EditUser(props) {
                         <Box sx={styles.inputSection}>
 
                             <SelectList fullWidth data={groupRacaCor} valueSelection={userData.cor_raca} onSelect={(value) => setUserData({ ...userData, cor_raca: value })}
-                                title="Cor/raça" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Cor/raça" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
                             <SelectList fullWidth data={groupGender} valueSelection={userData?.genero} onSelect={(value) => setUserData({ ...userData, genero: value })}
-                                title="Genêro" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Genêro" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
                             <SelectList fullWidth data={groupDisability} valueSelection={userData?.deficiencia} onSelect={(value) => setUserData({ ...userData, deficiencia: value })}
-                                title="Deficiência" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Deficiência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
@@ -555,7 +555,7 @@ export default function EditUser(props) {
                                 <TextInput placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
                                 <TextInput placeholder='Agência' name='agencia_1' onChange={handleChangeContract} value={contract?.agencia_1 || ''} label='Agência' sx={{ flex: 1, }} />
                                 <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_1} onSelect={(value) => setContract({ ...contract, tipo_conta_1: value })}
-                                    title="Tipo de conta" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                    title="Tipo de conta" filterOpition="value" sx={{  color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
                             </Box>
@@ -564,7 +564,7 @@ export default function EditUser(props) {
                                 <TextInput placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
                                 <TextInput placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
                                 <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
-                                    title="Tipo de conta 2" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                    title="Tipo de conta 2" filterOpition="value" sx={{  color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
                             </Box>
