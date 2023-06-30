@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Box, Button, Text } from "../../atoms";
-import { Colors } from "../layout/Colors";
+import { Colors, icons } from "../layout/Colors";
 import { Avatar } from "@mui/material";
 import { IconTheme } from "../iconTheme/IconTheme";
 import { useAppContext } from "../../context/AppContext";
+import { useRouter } from "next/router";
 
 export const UserHeader = (props) => {
     const {
@@ -11,12 +12,27 @@ export const UserHeader = (props) => {
     } = props;
 
     const { colorPalette, theme } = useAppContext()
+    const router = useRouter()
 
 
     return (
         <>
-            <Box sx={{...styles.header, backgroundColor: colorPalette.secondary + '88', gap: 3}}>
-                <IconTheme flex/>
+            <Box sx={{ ...styles.header, backgroundColor: colorPalette.secondary + '88', gap: 3 }}>
+                <Box sx={{
+                    ...styles.menuIcon,
+                    backgroundImage: `url(${icons.gray_arrow_down})`,
+                    transform: 'rotate(90deg)',
+                    transition: '.3s',
+                    width: 17,
+                    height: 17,
+                    position: 'absolute',
+                    left: 260,
+                    "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                    }
+                }} onClick={() => router.back()} />
+                <IconTheme flex />
                 <Box sx={{
                     ...styles.menuIcon,
                     backgroundImage: `url('/icons/notification_icon.png')`,
