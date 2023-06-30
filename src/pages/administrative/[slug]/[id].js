@@ -29,6 +29,7 @@ export default function EditUser(props) {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
     useEffect(() => {
+        setPerfil(slug)
         findCountries()
     }, [slug])
 
@@ -360,12 +361,17 @@ export default function EditUser(props) {
         { label: 'Brasileira por Naturalização', value: 'Brasileira por Naturalização' },
         { label: 'Estrangeira', value: 'Estrangeira' },
     ]
-
+    
+    const groupAccount = [
+        { label: 'Conta Corrente', value: 'Conta Corrente' },
+        { label: 'Conta salário', value: 'Conta salário' },
+        { label: 'Conta poupança', value: 'Conta poupança' }
+    ]
     return (
         <>
             <SectionHeader
                 perfil={userData?.perfil}
-                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionario' || userData.perfil === 'aluno' && 'Aluno' || userData.perfil === 'interessado' && 'Interessado'  || 'Usuario'}`}
+                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionario' || userData.perfil === 'aluno' && 'Aluno' || userData.perfil === 'interessado' && 'Interessado' || 'Usuario'}`}
                 saveButton
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
@@ -428,8 +434,8 @@ export default function EditUser(props) {
                         <Box sx={{ padding: '0px 0px 20px 0px' }}>
                             <CheckBoxComponent label="Estrangeiro sem CPF" onSelect={(value) => {
                                 setForeigner(value)
-                                setUserData({...userData, nacionalidade: value === true ? 'Estrangeira' : ''})
-                                }} />
+                                setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : '' })
+                            }} />
                         </Box>
                         <Box sx={styles.inputSection}>
                             {!foreigner && <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />}
