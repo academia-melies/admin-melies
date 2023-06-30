@@ -21,6 +21,7 @@ export default function EditUser(props) {
     const [contract, setContract] = useState({})
     const [enrollmentData, setEnrollmentData] = useState({})
     const [showRegistration, setShowRegistration] = useState(false)
+    const [countries, setCountries] = useState([])
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
@@ -28,7 +29,7 @@ export default function EditUser(props) {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
     useEffect(() => {
-        setPerfil(slug)
+        findCountries()
     }, [slug])
 
     const getUserData = async () => {
@@ -88,6 +89,27 @@ export default function EditUser(props) {
             setLoading(false)
         }
     }
+
+    async function findCountries() {
+        try {
+            const response = await axios.get(`https://servicodados.ibge.gov.br/api/v1/paises/paises`);
+            const { data = [] } = response;
+            const abbreviatedNames = data.map(country => country.nome.abreviado);
+            const uniqueAbbreviatedNames = [...new Set(abbreviatedNames)];
+
+            uniqueAbbreviatedNames.sort()
+
+            const groupAccount = uniqueAbbreviatedNames.map(name => ({
+                label: name,
+                value: name
+            }));
+
+            setCountries(groupAccount);
+        } catch (error) {
+        }
+    }
+
+
 
     // async function verifyCPF(cpf, nascimento) {
     //     setLoading(true)
@@ -215,17 +237,17 @@ export default function EditUser(props) {
             try {
                 const response = await createUser(userData);
                 const { data } = response
-                if (perfil === 'employee') {
+                if (userData.perfil === 'funcionario') {
                     const responseData = await createContract(data?.userId, contract)
                     return responseData;
                 }
-                if (perfil === 'employee') {
+                if (userData.perfil === 'aluno') {
                     const responseData = await createEnrollment(data?.userId, enrollmentData);
                     return responseData;
                 }
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    router.push(`/administrative/${perfil}/${data?.userId}`)
+                    router.push(`/administrative/user/${data?.userId}`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
@@ -242,7 +264,7 @@ export default function EditUser(props) {
             const response = await deleteUser(id)
             if (response?.status == 201) {
                 alert.success('Usuário excluído com sucesso.');
-                router.push('/employee/list')
+                router.push(`/administrative/user`)
             }
 
         } catch (error) {
@@ -339,12 +361,11 @@ export default function EditUser(props) {
         { label: 'Estrangeira', value: 'Estrangeira' },
     ]
 
-
     return (
         <>
             <SectionHeader
                 perfil={userData?.perfil}
-                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionario' || userData.perfil === 'aluno' && 'Aluno' || 'Usuario'}`}
+                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionario' || userData.perfil === 'aluno' && 'Aluno' || userData.perfil === 'interessado' && 'Interessado'  || 'Usuario'}`}
                 saveButton
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
@@ -404,8 +425,11 @@ export default function EditUser(props) {
                 </Box>
                 {showRegistration &&
                     <>
-                        <Box sx={{padding: '0px 0px 20px 0px'}}>
-                            <CheckBoxComponent label="Estrangeiro sem CPF" onSelect={(value) => setForeigner(value)} />
+                        <Box sx={{ padding: '0px 0px 20px 0px' }}>
+                            <CheckBoxComponent label="Estrangeiro sem CPF" onSelect={(value) => {
+                                setForeigner(value)
+                                setUserData({...userData, nacionalidade: value === true ? 'Estrangeira' : ''})
+                                }} />
                         </Box>
                         <Box sx={styles.inputSection}>
                             {!foreigner && <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />}
@@ -413,6 +437,10 @@ export default function EditUser(props) {
 
                             <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade' sx={{ flex: 1, }} />
 
+                            <SelectList fullWidth data={countries} valueSelection={userData?.pais_origem} onSelect={(value) => setUserData({ ...userData, pais_origem: value })}
+                                title="Pais de origem" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
                             <SelectList fullWidth data={groupNationality} valueSelection={userData?.nacionalidade} onSelect={(value) => setUserData({ ...userData, nacionalidade: value })}
                                 title="Nacionalidade" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -515,6 +543,24 @@ export default function EditUser(props) {
                                 <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
                                 <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Serie' sx={{ flex: 1, }} />
                                 <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='Banco' name='banco_1' onChange={handleChangeContract} value={contract?.banco_1 || ''} label='Banco' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Agência' name='agencia_1' onChange={handleChangeContract} value={contract?.agencia_1 || ''} label='Agência' sx={{ flex: 1, }} />
+                                <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_1} onSelect={(value) => setContract({ ...contract, tipo_conta_1: value })}
+                                    title="Tipo de conta" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='Banco 2' name='banco_2' onChange={handleChangeContract} value={contract?.banco_2 || ''} label='Banco 2' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
+                                <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
+                                    title="Tipo de conta 2" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
                             </Box>
                         </>
                     }

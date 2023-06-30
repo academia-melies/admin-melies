@@ -12,21 +12,12 @@ import { SelectList } from "../../organisms/select/SelectList"
 export default function ListUsers(props) {
     const [usersList, setUsers] = useState([])
     const [filterData, setFilterData] = useState('')
-    const [perfil, setPerfil] = useState('')
+    const [perfil, setPerfil] = useState('funcionario')
     const { setLoading, colorPalette } = useAppContext()
-    const [filterAtive, setFilterAtive] = useState('')
+    const [filterAtive, setFilterAtive] = useState(1)
     const router = useRouter()
     const { slug } = router.query;
     const filter = (item) => (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase())) && filterAtive === '' || item?.ativo === filterAtive;
-
-
-    useEffect(() => {
-        if (slug === "employee") {
-            setPerfil("employee");
-        } else if (slug === "student") {
-            setPerfil("student");
-        }
-    }, [slug]);
 
     useEffect(() => {
         if (perfil) {
@@ -36,9 +27,9 @@ export default function ListUsers(props) {
 
     const getUsers = async () => {
         setLoading(true)
-        let perfilUser = perfil === 'employee' ? 'funcionario' : 'aluno';
+        // let perfilUser = perfil === 'employee' && 'funcionario' || perfil === 'student' && 'aluno' || perfil ==;
         try {
-            const response = await getUsersPerfil(perfilUser)
+            const response = await getUsersPerfil(perfil)
             const { data = [] } = response;
             setUsers(data)
         } catch (error) {
@@ -66,19 +57,39 @@ export default function ListUsers(props) {
         { label: 'inativo', value: 0 },
     ]
 
+    const listUser = [
+        { label: 'Funcionario', value: 'funcionario' },
+        { label: 'Aluno', value: 'aluno' },
+        { label: 'Interessado', value: 'interessado' },
+    ]
+
+    console.log(listUser)
+
 
     if (!slug) return <Forbidden />
 
     return (
         <>
             <SectionHeader
-                title={`${slug === 'employee' ? 'Funcionarios' : 'Alunos'} (${usersList.filter(filter)?.length})`}
+                title={`${perfil.charAt(0).toUpperCase() + perfil.slice(1)} (${usersList.filter(filter)?.length})`}
                 newButton
                 newButtonAction={() => router.push(`/administrative/${slug}/new`)}
             />
             {/* <Text bold>Buscar por: </Text> */}
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px' }} onChange={setFilterData} />
+                <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px', }} onChange={setFilterData} />
+                <Box>
+                    <SelectList
+                        fullWidth
+                        data={listUser}
+                        valueSelection={perfil}
+                        onSelect={(value) => setPerfil(value === 'todos' ? '' : value)}
+                        title="usuário"
+                        filterOpition="value"
+                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                    />
+                </Box>
                 <SelectList
                     data={listAtivo}
                     valueSelection={filterAtive}
@@ -89,7 +100,13 @@ export default function ListUsers(props) {
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
-            <Table_V1 data={usersList?.filter(filter)} columns={column} slug={slug} />
+            {usersList.length > 1 ?
+                <Table_V1 data={usersList?.filter(filter)} columns={column} slug={perfil} />
+                :
+                <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
+                    <Text bold>Não foi encontrado usuarios {perfil}</Text>
+                </Box>
+            }
         </>
     )
 }
