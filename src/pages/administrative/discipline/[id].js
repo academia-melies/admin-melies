@@ -1,15 +1,11 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { Avatar, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
-import { icons } from "../../../organisms/layout/Colors"
-import { createContract, createCourse, createDiscipline, createEnrollment, createUser, deleteCourse, deleteDiscipline, editContract, editCourse, editDiscipline, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator, formatCEP, formatRg } from "../../../helpers"
-import { SelectList } from "../../../organisms/select/SelectList"
+import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../validators/api-requests"
 
 export default function EditDiscipline(props) {
     const { setLoading, alert, colorPalette } = useAppContext()
@@ -17,7 +13,6 @@ export default function EditDiscipline(props) {
     const { id, slug } = router.query;
     const newDiscipline = id === 'new';
     const [disciplineData, setDisciplineData] = useState({})
-    const [showRegistration, setShowRegistration] = useState(false)
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -74,13 +69,12 @@ export default function EditDiscipline(props) {
             try {
                 const response = await createDiscipline(disciplineData);
                 const { data } = response
-                console.group(data)
                 if (response?.status === 201) {
-                    alert.success('Curso cadastrado com sucesso.');
+                    alert.success('Disciplina cadastrado com sucesso.');
                     router.push(`/administrative/discipline/${data?.discipline}`)
                 }
             } catch (error) {
-                alert.error('Tivemos um problema ao cadastrar o curso.');
+                alert.error('Tivemos um problema ao cadastrar a disciplina.');
             } finally {
                 setLoading(false)
             }
@@ -92,8 +86,8 @@ export default function EditDiscipline(props) {
         try {
             const response = await deleteDiscipline(id)
             if (response?.status == 201) {
-                alert.success('Disciplina excluído com sucesso.');
-                router.push(`/administrative/course/list`)
+                alert.success('Disciplina excluída com sucesso.');
+                router.push(`/administrative/discipline/list`)
             }
 
         } catch (error) {
@@ -158,6 +152,7 @@ export default function EditDiscipline(props) {
                     <TextInput placeholder='Ementa' name='ementa' onChange={handleChange} value={disciplineData?.ementa || ''} label='Ementa' sx={{ flex: 1, }} />
                     <TextInput placeholder='Objetivo' name='objetivo_dp' onChange={handleChange} value={disciplineData?.objetivo_dp || ''} label='Objetivo' sx={{ flex: 1, }} />
                 </Box>
+                <RadioItem valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value)})} />
             </ContentContainer>
         </>
     )

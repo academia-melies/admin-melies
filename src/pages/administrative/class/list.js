@@ -10,7 +10,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
 
-export default function ListDiscipline(props) {
+export default function ListClasses(props) {
     const [classesList, setClasses] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette } = useAppContext()
@@ -19,9 +19,9 @@ export default function ListDiscipline(props) {
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
-            return item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase());
+            return item?.nome_turma?.toLowerCase().includes(filterData?.toLowerCase());
         } else {
-            return item?.ativo === filterAtive && (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
+            return item?.ativo === filterAtive && (item?.nome_turma?.toLowerCase().includes(filterData?.toLowerCase()));
         }
     };
 
@@ -32,7 +32,7 @@ export default function ListDiscipline(props) {
     const getClasses = async () => {
         setLoading(true)
         try {
-            const response = await axios.get('/classes')
+            const response = await api.get('/classes')
             const { data = [] } = response;
             setClasses(data)
         } catch (error) {
@@ -42,16 +42,13 @@ export default function ListDiscipline(props) {
         }
     }
 
-    const column = [
-        { key: 'id', label: 'ID' },
-        { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'foto' },
-        { key: 'email', label: 'E-mail' },
-        { key: 'telefone', label: 'Telefone' },
-        { key: 'cpf', label: 'CPF' },
-        // { key: 'nacionalidade', label: 'Nacionalidade' },
-        // { key: 'estado_civil', label: 'Estado Civil' },
-        { key: 'email_melies', label: 'Email Meliés' },
+    console.log(classesList)
 
+    const column = [
+        { key: 'id_turma', label: 'ID' },
+        { key: 'nome_turma', label: 'Nome'},
+        { key: 'inicio', label: 'Inicio', date: true },
+        { key: 'fim', label: 'Fim', date: true }
     ];
 
     const listAtivo = [
@@ -87,8 +84,8 @@ export default function ListDiscipline(props) {
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
-            {classesList.length > 1 ?
-                <Table_V1 data={classesList?.filter(filter)} columns={column}/>
+            {classesList.length > 0 ?
+                <Table_V1 data={classesList?.filter(filter)} columns={column} columnId={'id_turma'}/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar Turmas cadastradas</Text>

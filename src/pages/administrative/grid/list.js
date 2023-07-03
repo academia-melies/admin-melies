@@ -10,7 +10,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
 
-export default function ListDiscipline(props) {
+export default function ListGrid(props) {
     const [gridList, setGrid] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette } = useAppContext()
