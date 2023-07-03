@@ -1,22 +1,22 @@
 import { useTheme } from "@mui/system"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../atoms"
-import { Forbidden } from "../../forbiddenPage/forbiddenPage"
-import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../organisms"
-import { api } from "../../api/api"
-import { getUsersPerfil } from "../../validators/api-requests"
-import { useAppContext } from "../../context/AppContext"
-import { SelectList } from "../../organisms/select/SelectList"
+import { Box, Text } from "../../../atoms"
+import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
+import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
+import { api } from "../../../api/api"
+import { getDisciplines, getdisciplines, getUsersPerfil } from "../../../validators/api-requests"
+import { useAppContext } from "../../../context/AppContext"
+import { SelectList } from "../../../organisms/select/SelectList"
+import axios from "axios"
 
-export default function ListUsers(props) {
-    const [usersList, setUsers] = useState([])
+export default function ListDiscipline(props) {
+    const [gridList, setGrid] = useState([])
     const [filterData, setFilterData] = useState('')
-    const [perfil, setPerfil] = useState('aluno')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState(1)
     const router = useRouter()
-    const { slug } = router.query;
+    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
             return item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase());
@@ -26,19 +26,17 @@ export default function ListUsers(props) {
     };
 
     useEffect(() => {
-        if (perfil) {
-            getUsers();
-        }
-    }, [perfil]);
+        getGrid();
+    }, []);
 
-    const getUsers = async () => {
+    const getGrid = async () => {
         setLoading(true)
         try {
-            const response = await getUsersPerfil(perfil)
+            const response = await axios.get('/grids')
             const { data = [] } = response;
-            setUsers(data)
+            setGrid(data)
         } catch (error) {
-            console.log(error.response.data)
+            console.log(error)
         } finally {
             setLoading(false)
         }
@@ -72,25 +70,13 @@ export default function ListUsers(props) {
     return (
         <>
             <SectionHeader
-                title={`${perfil === 'todos' ? 'Usuarios' : (perfil.charAt(0).toUpperCase() + perfil.slice(1)) } (${usersList.filter(filter)?.length})`}
+                title={`Grades (${gridList.filter(filter)?.length || '0'})`}
                 newButton
-                newButtonAction={() => router.push(`/administrative/user/new`)}
+                newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
-            {/* <Text bold>Buscar por: </Text> */}
+            <Text bold>Buscar por: </Text>
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px', }} onChange={setFilterData} />
-                <Box>
-                    <SelectList
-                        fullWidth
-                        data={listUser}
-                        valueSelection={perfil}
-                        onSelect={(value) => setPerfil(value)}
-                        title="usuário"
-                        filterOpition="value"
-                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                    />
-                </Box>
+                <SearchBar placeholder='Artes visuais, Desenvolvimento de Games ...' style={{ padding: '15px', }} onChange={setFilterData} />
                 <SelectList
                     data={listAtivo}
                     valueSelection={filterAtive}
@@ -101,11 +87,11 @@ export default function ListUsers(props) {
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
-            {usersList.length > 1 ?
-                <Table_V1 data={usersList?.filter(filter)} columns={column} slug={perfil} />
+            {gridList.length > 1 ?
+                <Table_V1 data={gridList?.filter(filter)} columns={column}/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
-                    <Text bold>Não foi encontrado usuarios {perfil}</Text>
+                    <Text bold>Não conseguimos encontrar grades cadastradas</Text>
                 </Box>
             }
         </>

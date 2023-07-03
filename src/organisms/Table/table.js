@@ -11,19 +11,15 @@ export const Table_V1 = (props) => {
         data = [],
         columns = [],
         avatar = false,
-        slug = ''
+        screen = ''
     } = props;
-
-    let perfil = slug === 'funcionario' && 'employee' || slug === 'aluno' && 'student' || slug === 'insteressado' && 'interested' 
-
-    console.log(data)
 
     const { colorPalette, theme } = useAppContext()
     const router = useRouter();
-    // const pathname = router.pathname === '/' ? null : router.asPath.split('/')[1]
+    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
     const handleRowClick = (id) => {
-        router.push(`/administrative/${perfil}/${id}`);
+        router.push(`/administrative/${pathname}/${id}`);
     };
 
     const getRowBackground = (index) => {
@@ -35,8 +31,6 @@ export const Table_V1 = (props) => {
     };
 
     const ativo = data?.map((item) => item.ativo >= 1 ? 'green' : 'red')
-
-    console.log(ativo)
 
     return (
         <>
