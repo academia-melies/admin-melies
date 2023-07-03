@@ -11,7 +11,8 @@ export const Table_V1 = (props) => {
         data = [],
         columns = [],
         avatar = false,
-        screen = ''
+        screen = '',
+        columnId
     } = props;
 
     const { colorPalette, theme } = useAppContext()
@@ -47,7 +48,7 @@ export const Table_V1 = (props) => {
                         </TableHead>
                         <TableBody>
                             {data?.map((row, index) => (
-                                <TableRow key={row.id} onClick={() => handleRowClick(row.id)} sx={{
+                                <TableRow key={row.id} onClick={() => handleRowClick(row[columnId])} sx={{
                                     ...styles.bodyRow,
                                     transition: 'background-color 1s',
                                     backgroundColor: getRowBackground(index),

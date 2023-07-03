@@ -82,3 +82,59 @@ export const createEnrollment = async (id, enrollmentData) => {
    }
 }
 
+export const createCourse = async (courseData) => {
+   try {
+      const response = await api.post(`/course/create`, { courseData })
+      return response
+   } catch (error) {
+      return error
+   }
+}
+
+export const deleteCourse = async (id) => {
+   try {
+      const response = await api.delete(`/course/delete/${id}`)
+      return response
+   } catch (error) {
+      console.log(error.response.data)
+      return error
+   }
+}
+
+export const editCourse = async ({ id, courseData }) => {
+   try {
+      const response = await api.patch(`/course/update/${id}`, { courseData })
+      return response
+   } catch (error) {
+      return error?.response
+   }
+}
+
+export const createDiscipline = async (disciplineData) => {
+   try {
+      const response = await api.post(`/discipline/create`, { disciplineData })
+      return response
+   } catch (error) {
+      return error
+   }
+}
+
+export const deleteDiscipline = async (id) => {
+   try {
+      const response = await api.delete(`/discipline/delete/${id}`)
+      return response
+   } catch (error) {
+      console.log(error.response.data)
+      return error
+   }
+}
+
+export const editDiscipline = async ({ id, disciplineData }) => {
+   try {
+      const response = await api.patch(`/discipline/update/${id}`, { disciplineData })
+      return response
+   } catch (error) {
+      return error?.response
+   }
+}
+

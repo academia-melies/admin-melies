@@ -8,7 +8,6 @@ import { api } from "../../../api/api"
 import { getCourses, getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
-import axios from "axios"
 
 export default function ListCourse(props) {
     const [courseList, setCourseList] = useState([])
@@ -20,9 +19,9 @@ export default function ListCourse(props) {
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
-            return item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase());
+            return item?.nome_curso?.toLowerCase().includes(filterData?.toLowerCase())
         } else {
-            return item?.ativo === filterAtive && (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
+            return item?.ativo === filterAtive && (item?.nome_curso?.toLowerCase().includes(filterData?.toLowerCase()));
         }
     };
 
@@ -33,7 +32,7 @@ export default function ListCourse(props) {
     const getCourse = async () => {
         setLoading(true)
         try {
-            const response = await axios.get('/courses')
+            const response = await api.get('/courses')
             const { data = [] } = response;
             setCourseList(data)
         } catch (error) {
@@ -44,28 +43,16 @@ export default function ListCourse(props) {
     }
 
     const column = [
-        { key: 'id', label: 'ID' },
-        { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'foto' },
-        { key: 'email', label: 'E-mail' },
-        { key: 'telefone', label: 'Telefone' },
-        { key: 'cpf', label: 'CPF' },
-        // { key: 'nacionalidade', label: 'Nacionalidade' },
-        // { key: 'estado_civil', label: 'Estado Civil' },
-        { key: 'email_melies', label: 'Email Meliés' },
-
+        { key: 'id_curso', label: 'ID' },
+        { key: 'nome_curso', avatar: true, label: 'Nome', avatarUrl: 'foto' },
+        { key: 'modalidade_curso', label: 'Modalidade' },
+        { key: 'nivel_curso', label: 'Nivél Curso' },
     ];
 
     const listAtivo = [
         { label: 'Todos', value: 'todos' },
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
-    ]
-
-    const listUser = [
-        { label: 'Todos', value: 'todos' },
-        { label: 'Aluno', value: 'aluno' },
-        { label: 'Funcionario', value: 'funcionario' },
-        { label: 'Interessado', value: 'interessado' },
     ]
 
     return (
@@ -88,8 +75,8 @@ export default function ListCourse(props) {
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
-            {courseList.length > 1 ?
-                <Table_V1 data={courseList?.filter(filter)} columns={column}/>
+            {courseList.length >= 1 ?
+                <Table_V1 data={courseList?.filter(filter)} columns={column} columnId={'id_curso'}/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não consegui encontrar cursos cadastrados</Text>

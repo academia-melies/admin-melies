@@ -102,8 +102,8 @@ export default function ListUsers(props) {
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
-            {usersList.length > 1 ?
-                <Table_V1 data={usersList?.filter(filter)} columns={column}/>
+            {usersList.length > 0 ?
+                <Table_V1 data={usersList?.filter(filter)} columns={column} columnId={'id'}/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não foi encontrado usuarios {perfil}</Text>

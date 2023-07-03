@@ -19,9 +19,9 @@ export default function ListDiscipline(props) {
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
-            return item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase());
+            return item?.nome_disciplina?.toLowerCase().includes(filterData?.toLowerCase());
         } else {
-            return item?.ativo === filterAtive && (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
+            return item?.ativo === filterAtive && (item?.nome_disciplina?.toLowerCase().includes(filterData?.toLowerCase()));
         }
     };
 
@@ -32,7 +32,7 @@ export default function ListDiscipline(props) {
     const getDiscipline = async () => {
         setLoading(true)
         try {
-            const response = await axios.get('/disciplines')
+            const response = await api.get('/disciplines')
             const { data = [] } = response;
             setDiscipline(data)
         } catch (error) {
@@ -42,15 +42,13 @@ export default function ListDiscipline(props) {
         }
     }
 
+    console.log(disciplineList)
+
     const column = [
-        { key: 'id', label: 'ID' },
-        { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'foto' },
-        { key: 'email', label: 'E-mail' },
-        { key: 'telefone', label: 'Telefone' },
-        { key: 'cpf', label: 'CPF' },
-        // { key: 'nacionalidade', label: 'Nacionalidade' },
-        // { key: 'estado_civil', label: 'Estado Civil' },
-        { key: 'email_melies', label: 'Email Meliés' },
+        { key: 'id_disciplina', label: 'ID' },
+        { key: 'nome_disciplina', avatar: true, label: 'Nome' },
+        { key: 'carga_hr_dp', label: 'Carga Horária' },
+        { key: 'objetivo_dp', label: 'Objetivo' },
 
     ];
 
@@ -87,8 +85,8 @@ export default function ListDiscipline(props) {
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
-            {disciplineList.length > 1 ?
-                <Table_V1 data={disciplineList?.filter(filter)} columns={column}/>
+            {disciplineList.length > 0 ?
+                <Table_V1 data={disciplineList?.filter(filter)} columns={column} columnId={'id_disciplina'}/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar disciplinas cadastradas</Text>
