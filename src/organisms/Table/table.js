@@ -58,7 +58,7 @@ export const Table_V1 = (props) => {
                                     },
                                 }}>
                                     {columns.map((column) => (
-                                        <Tooltip title={column.date ? formatDate(row[column?.key]) : row[column?.key || '-']} arrow>
+                                        <Tooltip key={`${column}-${row}`} title={column.date ? formatDate(row[column?.key]) : row[column?.key || '-']} arrow>
                                             <TableCell
                                                 key={`${row.id}-${column.key}`}
                                                 sx={{

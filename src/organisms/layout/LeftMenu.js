@@ -157,7 +157,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                </Box>
                <Box sx={styles.boxMenu}>
                   {menuItems.map((group, index) =>
-                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}
+                     <Box key={`${group}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}
                         onMouseEnter={() => !showMenuMobile && handleGroupMouseEnter(index)}
                         onMouseLeave={() => !showMenuMobile && handleGroupMouseLeave(index)}
                         onClick={() => showMenuMobile && handleGroupClick(index)}>
@@ -291,11 +291,6 @@ export const LeftMenu = ({ menuItems = [] }) => {
                />
             </Box>
          </Box>
-         {
-            showChangePassword && <BoxData
-               onClick={(value) => setShowChangePassword(value)}
-               value={showChangePassword} />
-         }
       </>
    )
 }

@@ -3,6 +3,7 @@ import { useAppContext } from "../context/AppContext"
 import { emailValidator } from "../helpers"
 import { Colors, IconTheme } from "../organisms"
 import { Box, Button, ContentContainer, TextInput, Text } from "../atoms"
+import Image from "next/image"
 
 export default function Login() {
 
@@ -206,7 +207,7 @@ const CompanyLogo = ({ size = 14, style = {}, theme = {} }) => (
         gap: 1,
         ...style
     }}>
-        <img src={theme ? "/icons/icon_login.png" : "/icons/icon_login_dark.png"} alt="Admin-melies" style={{ height: '100%', width: 'auto' }} />
+        <Image src={theme ? "/icons/icon_login.png" : "/icons/icon_login_dark.png"} alt="Admin-melies" style={{ height: '100%', width: 'auto' }} />
     </Box >
 );
 
