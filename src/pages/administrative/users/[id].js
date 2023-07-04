@@ -36,9 +36,9 @@ export default function EditUser(props) {
         listCourses()
     }, [slug])
 
-    useEffect(()=>{
+    useEffect(() => {
         listClass()
-    },[enrollmentData?.curso_id])
+    }, [enrollmentData?.curso_id])
 
     const getUserData = async () => {
         try {
@@ -317,10 +317,10 @@ export default function EditUser(props) {
             setLoading(true)
             try {
                 const response = await editeUser({ id, userData })
-                if (userData.perfil === 'funcionario') {
+                if (contract.length > 0 && userData.perfil.includes('funcionario')) {
                     const responseData = await editContract({ id, contract })
                 }
-                if (userData.perfil === 'aluno') {
+                if (enrollmentData.length > 0 && userData.perfil.includes('aluno')) {
                     const responseData = await editeEnrollment({ id, enrollmentData })
                 }
                 if (response?.status === 201) {
@@ -403,6 +403,7 @@ export default function EditUser(props) {
         { label: 'Conta salário', value: 'Conta salário' },
         { label: 'Conta poupança', value: 'Conta poupança' }
     ]
+
     return (
         <>
             <SectionHeader
@@ -435,8 +436,19 @@ export default function EditUser(props) {
                     <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone' sx={{ flex: 1, }} />
                 </Box>
-                <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} />
-
+                {/* <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} /> */}
+                <CheckBoxComponent
+                    valueChecked={userData?.perfil}
+                    boxGroup={groupPerfil}
+                    title="Perfil"
+                    horizontal={mobile ? false : true}
+                    onSelect={(value) => setUserData({
+                        ...userData,
+                        perfil: value,
+                        admin_melies: !value.includes('funcionario') ? 0 : 1
+                    })}
+                    sx={{ flex: 1, }}
+                />
                 <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' sx={{ flex: 1, }} />
                 {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
@@ -517,7 +529,7 @@ export default function EditUser(props) {
                         <TextInput placeholder='E-mail corporativo' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail corporativo' />
                         <Box sx={styles.inputSection}>
                             {userData?.estado_civil === 'Casado' && <TextInput placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
-                            <TextInput placeholder='Dependente' name='sdependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Dependente' name='dependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} />
                             <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' sx={{ flex: 1, }} />
                             <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe' sx={{ flex: 1, }} />
                         </Box>
@@ -551,7 +563,7 @@ export default function EditUser(props) {
             </ContentContainer>
 
             {/* contrato */}
-            {userData.perfil === 'funcionario' &&
+            {userData.perfil && userData.perfil.includes('funcionario') &&
                 <ContentContainer style={{ ...styles.containerContract, padding: showContract ? '40px' : '25px' }}>
                     <Box sx={{
                         display: 'flex', alignItems: 'center', padding: showContract ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
@@ -579,7 +591,7 @@ export default function EditUser(props) {
                             </Box>
                             <Box sx={styles.inputSection}>
                                 <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={contract?.admissao || ''} label='Admissão' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento  || ''} label='Desligamento' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento || ''} label='Desligamento' sx={{ flex: 1, }} />
                             </Box>
                             <Box sx={styles.inputSection}>
                                 <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
@@ -609,7 +621,7 @@ export default function EditUser(props) {
                 </ContentContainer>
             }
 
-            {userData.perfil === 'aluno' &&
+            {userData.perfil && userData.perfil.includes('aluno') &&
                 <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>
                     <Box sx={{
                         display: 'flex', alignItems: 'center', padding: showEnrollment ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
