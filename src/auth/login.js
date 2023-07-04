@@ -207,7 +207,7 @@ const CompanyLogo = ({ size = 14, style = {}, theme = {} }) => (
         gap: 1,
         ...style
     }}>
-        <Image src={theme ? "/icons/icon_login.png" : "/icons/icon_login_dark.png"} alt="Admin-melies" style={{ height: '100%', width: 'auto' }} />
+        <img src={theme ? "/icons/icon_login.png" : "/icons/icon_login_dark.png"} alt="Admin-melies" style={{ height: '100%', width: 'auto' }} />
     </Box >
 );
 

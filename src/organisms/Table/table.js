@@ -12,7 +12,8 @@ export const Table_V1 = (props) => {
         columns = [],
         avatar = false,
         screen = '',
-        columnId
+        columnId,
+        columnActive = true
     } = props;
 
     const { colorPalette, theme } = useAppContext()
@@ -43,7 +44,9 @@ export const Table_V1 = (props) => {
                                 {columns.map((column) => (
                                     <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
                                 ))}
-                                <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>ativo</TableCell>
+                                {columnActive &&
+                                    <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>ativo</TableCell>
+                                }
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -102,11 +105,12 @@ export const Table_V1 = (props) => {
                                             </TableCell>
                                         </Tooltip>
                                     ))}
-                                    <TableCell>
+                                    {columnActive && <TableCell>
                                         <IconStatus
                                             style={{ backgroundColor: row.ativo >= 1 ? 'green' : 'red', boxShadow: row.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
                                         />
                                     </TableCell>
+                                    }
                                 </TableRow>
                             ))}
 

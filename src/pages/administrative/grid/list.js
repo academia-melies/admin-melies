@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/system"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../../atoms"
+import { Box, ContentContainer, Text } from "../../../atoms"
 import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
 import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
@@ -9,10 +9,12 @@ import { getDisciplines, getdisciplines, getUsersPerfil } from "../../../validat
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
+import { icons } from "../../../organisms/layout/Colors"
 
 export default function ListGrid(props) {
     const [gridList, setGrid] = useState([])
     const [filterData, setFilterData] = useState('')
+    const [showGridTable, setShowGridTable] = useState(false)
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState(1)
     const router = useRouter()
@@ -43,14 +45,10 @@ export default function ListGrid(props) {
     }
 
     const column = [
-        { key: 'id', label: 'ID' },
-        { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'foto' },
-        { key: 'email', label: 'E-mail' },
-        { key: 'telefone', label: 'Telefone' },
-        { key: 'cpf', label: 'CPF' },
-        // { key: 'nacionalidade', label: 'Nacionalidade' },
-        // { key: 'estado_civil', label: 'Estado Civil' },
-        { key: 'email_melies', label: 'Email Meliés' },
+        { key: 'disciplinas', label: 'Disciplinas' },
+        { key: 'carga_hr_t_disciplina', label: 'Carga horaria Teórica' },
+        { key: 'carga_hr_p_disciplina', label: 'Carga horaria Prática' },
+        { key: 'carga_hr_disciplina', label: 'Carga horaria Disciplina' },
 
     ];
 
@@ -87,13 +85,69 @@ export default function ListGrid(props) {
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
-            {gridList.length > 1 ?
+            <ContentContainer>
+                <Box sx={{
+                    display: 'flex', alignItems: 'center', gap: 4, "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                    }
+                }} onClick={() => setShowGridTable(!showGridTable)}>
+                    <Text bold>{'2023.1 - Bimestre'}</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        transform: showGridTable ? 'rotate(0)' : 'rotate(-90deg)',
+                        transition: '.3s',
+                        width: 17,
+                        height: 17
+                    }} />
+                </Box>
+                {showGridTable &&
+                    <Box sx={{}}>
+                        <Table_V1 data={gridList?.filter(filter)} columns={column} columnActive={false} />
+                    </Box>
+                }
+            </ContentContainer>
+            <ContentContainer>
+                <Box sx={{
+                    display: 'flex', alignItems: 'center', gap: 4, "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                    }
+                }} onClick={() => setShowGridTable(!showGridTable)}>
+                    <Text bold>{'2023.2 - Bimestre'}</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        transform: showGridTable ? 'rotate(0)' : 'rotate(-90deg)',
+                        transition: '.3s',
+                        width: 17,
+                        height: 17,
+                    }} />
+                </Box>
+                {showGridTable &&
+                    <Box sx={{}}>
+                        <Table_V1 data={gridList?.filter(filter)} columns={column} columnActive={false} />
+                    </Box>
+                }
+            </ContentContainer>
+            {/* {gridList.length > 1 ?
                 <Table_V1 data={gridList?.filter(filter)} columns={column}/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar grades cadastradas</Text>
                 </Box>
-            }
+            } */}
         </>
     )
+}
+
+const styles = {
+    menuIcon: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
+    }
 }
