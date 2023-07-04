@@ -138,3 +138,33 @@ export const editDiscipline = async ({ id, disciplineData }) => {
    }
 }
 
+export const createClass = async (classData) => {
+   try {
+      const response = await api.post(`/class/create`, { classData })
+      return response
+   } catch (error) {
+      return error
+   }
+}
+
+export const deleteClass = async (id) => {
+   try {
+      const response = await api.delete(`/class/delete/${id}`)
+      return response
+   } catch (error) {
+      console.log(error.response.data)
+      return error
+   }
+}
+
+export const editClass = async ({ id, classData }) => {
+   try {
+      const response = await api.patch(`/class/update/${id}`, { classData })
+      return response
+   } catch (error) {
+      return error?.response
+   }
+}
+
+
+

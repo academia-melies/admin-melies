@@ -23,6 +23,7 @@ export default function EditUser(props) {
     const [showRegistration, setShowRegistration] = useState(false)
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
+    const [classes, setClasses] = useState([])
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
@@ -34,6 +35,10 @@ export default function EditUser(props) {
         findCountries()
         listCourses()
     }, [slug])
+
+    useEffect(()=>{
+        listClass()
+    },[enrollmentData?.curso_id])
 
     const getUserData = async () => {
         try {
@@ -128,6 +133,19 @@ export default function EditUser(props) {
         }
     }
 
+    async function listClass() {
+        try {
+            const response = await api.get(`/class/course/${enrollmentData?.curso_id}`)
+            const { data = [] } = response
+            const groupClass = data.map(turma => ({
+                label: turma.nome_turma,
+                value: turma?.id_turma
+            }));
+
+            setClasses(groupClass);
+        } catch (error) {
+        }
+    }
 
 
     // async function verifyCPF(cpf, nascimento) {
@@ -147,8 +165,6 @@ export default function EditUser(props) {
     //         setLoading(false)
     //     }
     // }
-
-    console.log(enrollmentData)
 
     async function autoEmailMelies(email) {
         try {
@@ -562,8 +578,8 @@ export default function EditUser(props) {
                                 <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
                             </Box>
                             <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={(contract?.desligamento)?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={contract?.admissao || ''} label='Admissão' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento  || ''} label='Desligamento' sx={{ flex: 1, }} />
                             </Box>
                             <Box sx={styles.inputSection}>
                                 <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
@@ -617,15 +633,15 @@ export default function EditUser(props) {
                         <>
                             <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChangeEnrollment} value={enrollmentData?.financeiro || ''} label='Financeiro' />
                             <TextInput placeholder='Situação' name='situacao' onChange={handleChangeEnrollment} value={enrollmentData?.situacao || ''} label='Situação' />
-                            <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...userData, curso_id: value })}
+                            <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}
                                 title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
-                            <SelectList fullWidth data={courses} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...userData, turma_id: value })}
+                            <SelectList fullWidth data={classes} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, turma_id: value })}
                                 title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
-                             <SelectList fullWidth data={courses} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...userData, periodo_id: value })}
+                            <SelectList fullWidth data={courses} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, periodo_id: value })}
                                 title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />

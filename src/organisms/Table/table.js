@@ -1,7 +1,7 @@
 import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
 import React from "react";
 import { useRouter } from "next/router";
-import { formatTimeStamp } from "../../helpers";
+import { formatDate, formatTimeStamp } from "../../helpers";
 import { Box } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
 
@@ -58,7 +58,7 @@ export const Table_V1 = (props) => {
                                     },
                                 }}>
                                     {columns.map((column) => (
-                                        <Tooltip title={row[column.key]} arrow>
+                                        <Tooltip title={column.date ? formatDate(row[column?.key]) : row[column?.key || '-']} arrow>
                                             <TableCell
                                                 key={`${row.id}-${column.key}`}
                                                 sx={{
@@ -87,11 +87,12 @@ export const Table_V1 = (props) => {
                                                         }}
                                                     >
                                                         {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
+
                                                         {typeof row[column.key] === 'object' &&
                                                             row[column?.key || '-'] instanceof Date ? (
                                                             formatTimeStamp(row[column?.key || '-'])
                                                         ) : (
-                                                            row[column?.key || '-']
+                                                            column.date ? formatDate(row[column?.key]) : row[column?.key || '-']
                                                         )}
                                                     </Box>
 
