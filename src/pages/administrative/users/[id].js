@@ -8,7 +8,7 @@ import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator } from "../../../helpers"
+import { emailValidator, formatCEP, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditUser(props) {
@@ -22,6 +22,8 @@ export default function EditUser(props) {
     const [enrollmentData, setEnrollmentData] = useState({})
     const [showRegistration, setShowRegistration] = useState(false)
     const [countries, setCountries] = useState([])
+    const [courses, setCourses] = useState([])
+    const [classes, setClasses] = useState([])
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
@@ -31,7 +33,12 @@ export default function EditUser(props) {
     useEffect(() => {
         setPerfil(slug)
         findCountries()
+        listCourses()
     }, [slug])
+
+    useEffect(() => {
+        listClass()
+    }, [enrollmentData?.curso_id])
 
     const getUserData = async () => {
         try {
@@ -63,6 +70,7 @@ export default function EditUser(props) {
         }
     }
 
+
     useEffect(() => {
         (async () => {
             if (newUser) {
@@ -89,6 +97,7 @@ export default function EditUser(props) {
         } finally {
             setLoading(false)
         }
+
     }
 
     async function findCountries() {
@@ -110,6 +119,33 @@ export default function EditUser(props) {
         }
     }
 
+    async function listCourses() {
+        try {
+            const response = await api.get(`/courses`)
+            const { data } = response
+            const groupCourses = data.map(course => ({
+                label: course.nome_curso,
+                value: course?.id_curso
+            }));
+
+            setCourses(groupCourses);
+        } catch (error) {
+        }
+    }
+
+    async function listClass() {
+        try {
+            const response = await api.get(`/class/course/${enrollmentData?.curso_id}`)
+            const { data = [] } = response
+            const groupClass = data.map(turma => ({
+                label: turma.nome_turma,
+                value: turma?.id_turma
+            }));
+
+            setClasses(groupClass);
+        } catch (error) {
+        }
+    }
 
 
     // async function verifyCPF(cpf, nascimento) {
@@ -158,8 +194,8 @@ export default function EditUser(props) {
         setLoading(true)
         try {
             await getUserData()
-            if (perfil === 'student') return getEnrollment()
-            if (perfil === 'employee') return getContract()
+            await getEnrollment()
+            await getContract()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -176,7 +212,7 @@ export default function EditUser(props) {
 
         if (value.target.name == 'cpf') {
             let str = value.target.value;
-            value.target.value = formatCPF(str)
+            value.target.value = formatCEP(str)
         }
 
         if (value.target.name == 'rg') {
@@ -248,7 +284,7 @@ export default function EditUser(props) {
                 }
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    router.push(`/administrative/user/${data?.userId}`)
+                    router.push(`/administrative/users/${data?.userId}`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
@@ -265,7 +301,7 @@ export default function EditUser(props) {
             const response = await deleteUser(id)
             if (response?.status == 201) {
                 alert.success('Usuário excluído com sucesso.');
-                router.push(`/administrative/user`)
+                router.push(`/administrative/users`)
             }
 
         } catch (error) {
@@ -281,10 +317,10 @@ export default function EditUser(props) {
             setLoading(true)
             try {
                 const response = await editeUser({ id, userData })
-                if (perfil === 'employee') {
+                if (contract.length > 0 && userData.perfil.includes('funcionario')) {
                     const responseData = await editContract({ id, contract })
                 }
-                if (perfil === 'student') {
+                if (enrollmentData.length > 0 && userData.perfil.includes('aluno')) {
                     const responseData = await editeEnrollment({ id, enrollmentData })
                 }
                 if (response?.status === 201) {
@@ -361,12 +397,13 @@ export default function EditUser(props) {
         { label: 'Brasileira por Naturalização', value: 'Brasileira por Naturalização' },
         { label: 'Estrangeira', value: 'Estrangeira' },
     ]
-    
+
     const groupAccount = [
         { label: 'Conta Corrente', value: 'Conta Corrente' },
         { label: 'Conta salário', value: 'Conta salário' },
         { label: 'Conta poupança', value: 'Conta poupança' }
     ]
+
     return (
         <>
             <SectionHeader
@@ -399,8 +436,19 @@ export default function EditUser(props) {
                     <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone' sx={{ flex: 1, }} />
                 </Box>
-                <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} />
-
+                {/* <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} /> */}
+                <CheckBoxComponent
+                    valueChecked={userData?.perfil}
+                    boxGroup={groupPerfil}
+                    title="Perfil"
+                    horizontal={mobile ? false : true}
+                    onSelect={(value) => setUserData({
+                        ...userData,
+                        perfil: value,
+                        admin_melies: !value.includes('funcionario') ? 0 : 1
+                    })}
+                    sx={{ flex: 1, }}
+                />
                 <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' sx={{ flex: 1, }} />
                 {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
@@ -434,7 +482,7 @@ export default function EditUser(props) {
                         <Box sx={{ padding: '0px 0px 20px 0px' }}>
                             <CheckBoxComponent label="Estrangeiro sem CPF" onSelect={(value) => {
                                 setForeigner(value)
-                                setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : '' })
+                                setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : 'Brasileira Nata' })
                             }} />
                         </Box>
                         <Box sx={styles.inputSection}>
@@ -444,11 +492,11 @@ export default function EditUser(props) {
                             <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade' sx={{ flex: 1, }} />
 
                             <SelectList fullWidth data={countries} valueSelection={userData?.pais_origem} onSelect={(value) => setUserData({ ...userData, pais_origem: value })}
-                                title="Pais de origem" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Pais de origem" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
                             <SelectList fullWidth data={groupNationality} valueSelection={userData?.nacionalidade} onSelect={(value) => setUserData({ ...userData, nacionalidade: value })}
-                                title="Nacionalidade" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Nacionalidade" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
                         </Box>
@@ -458,17 +506,17 @@ export default function EditUser(props) {
                         <Box sx={styles.inputSection}>
 
                             <SelectList fullWidth data={groupRacaCor} valueSelection={userData.cor_raca} onSelect={(value) => setUserData({ ...userData, cor_raca: value })}
-                                title="Cor/raça" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Cor/raça" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
                             <SelectList fullWidth data={groupGender} valueSelection={userData?.genero} onSelect={(value) => setUserData({ ...userData, genero: value })}
-                                title="Genêro" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Genêro" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
                             <SelectList fullWidth data={groupDisability} valueSelection={userData?.deficiencia} onSelect={(value) => setUserData({ ...userData, deficiencia: value })}
-                                title="Deficiência" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                title="Deficiência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
@@ -481,7 +529,7 @@ export default function EditUser(props) {
                         <TextInput placeholder='E-mail corporativo' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail corporativo' />
                         <Box sx={styles.inputSection}>
                             {userData?.estado_civil === 'Casado' && <TextInput placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
-                            <TextInput placeholder='Dependente' name='sdependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Dependente' name='dependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} />
                             <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' sx={{ flex: 1, }} />
                             <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe' sx={{ flex: 1, }} />
                         </Box>
@@ -515,7 +563,7 @@ export default function EditUser(props) {
             </ContentContainer>
 
             {/* contrato */}
-            {userData.perfil === 'funcionario' &&
+            {userData.perfil && userData.perfil.includes('funcionario') &&
                 <ContentContainer style={{ ...styles.containerContract, padding: showContract ? '40px' : '25px' }}>
                     <Box sx={{
                         display: 'flex', alignItems: 'center', padding: showContract ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
@@ -542,8 +590,8 @@ export default function EditUser(props) {
                                 <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
                             </Box>
                             <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={(contract?.desligamento)?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={contract?.admissao || ''} label='Admissão' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento || ''} label='Desligamento' sx={{ flex: 1, }} />
                             </Box>
                             <Box sx={styles.inputSection}>
                                 <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
@@ -555,7 +603,7 @@ export default function EditUser(props) {
                                 <TextInput placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
                                 <TextInput placeholder='Agência' name='agencia_1' onChange={handleChangeContract} value={contract?.agencia_1 || ''} label='Agência' sx={{ flex: 1, }} />
                                 <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_1} onSelect={(value) => setContract({ ...contract, tipo_conta_1: value })}
-                                    title="Tipo de conta" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                    title="Tipo de conta" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
                             </Box>
@@ -564,7 +612,7 @@ export default function EditUser(props) {
                                 <TextInput placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
                                 <TextInput placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
                                 <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
-                                    title="Tipo de conta 2" filterOpition="value" sx={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, flex: 1 }}
+                                    title="Tipo de conta 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
                             </Box>
@@ -573,7 +621,7 @@ export default function EditUser(props) {
                 </ContentContainer>
             }
 
-            {userData.perfil === 'aluno' &&
+            {userData.perfil && userData.perfil.includes('aluno') &&
                 <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>
                     <Box sx={{
                         display: 'flex', alignItems: 'center', padding: showEnrollment ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
@@ -597,7 +645,18 @@ export default function EditUser(props) {
                         <>
                             <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChangeEnrollment} value={enrollmentData?.financeiro || ''} label='Financeiro' />
                             <TextInput placeholder='Situação' name='situacao' onChange={handleChangeEnrollment} value={enrollmentData?.situacao || ''} label='Situação' />
-                            <TextInput placeholder='Periodo' name='periodo' onChange={handleChangeEnrollment} value={enrollmentData?.periodo || ''} label='Periodo' />
+                            <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}
+                                title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+                            <SelectList fullWidth data={classes} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, turma_id: value })}
+                                title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+                            <SelectList fullWidth data={courses} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, periodo_id: value })}
+                                title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
                         </>
                     }
                 </ContentContainer>

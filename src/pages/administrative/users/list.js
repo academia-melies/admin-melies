@@ -1,23 +1,30 @@
 import { useTheme } from "@mui/system"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../atoms"
-import { Forbidden } from "../../forbiddenPage/forbiddenPage"
-import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../organisms"
-import { api } from "../../api/api"
-import { getUsersPerfil } from "../../validators/api-requests"
-import { useAppContext } from "../../context/AppContext"
-import { SelectList } from "../../organisms/select/SelectList"
+import { Box, Text } from "../../../atoms"
+import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
+import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
+import { api } from "../../../api/api"
+import { getUsersPerfil } from "../../../validators/api-requests"
+import { useAppContext } from "../../../context/AppContext"
+import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function ListUsers(props) {
     const [usersList, setUsers] = useState([])
     const [filterData, setFilterData] = useState('')
-    const [perfil, setPerfil] = useState('funcionario')
+    const [perfil, setPerfil] = useState('aluno')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState(1)
+    const [screen, setScreen] = useState('users')
     const router = useRouter()
-    const { slug } = router.query;
-    const filter = (item) => (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase())) && filterAtive === '' || item?.ativo === filterAtive;
+    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
+    const filter = (item) => {
+        if (filterAtive === 'todos') {
+            return item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase());
+        } else {
+            return item?.ativo === filterAtive && (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
+        }
+    };
 
     useEffect(() => {
         if (perfil) {
@@ -27,7 +34,6 @@ export default function ListUsers(props) {
 
     const getUsers = async () => {
         setLoading(true)
-        // let perfilUser = perfil === 'employee' && 'funcionario' || perfil === 'student' && 'aluno' || perfil ==;
         try {
             const response = await getUsersPerfil(perfil)
             const { data = [] } = response;
@@ -52,28 +58,24 @@ export default function ListUsers(props) {
     ];
 
     const listAtivo = [
-        { label: 'todos', value: 'todos' },
+        { label: 'Todos', value: 'todos' },
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
     ]
 
     const listUser = [
-        { label: 'Funcionario', value: 'funcionario' },
+        { label: 'Todos', value: 'todos' },
         { label: 'Aluno', value: 'aluno' },
+        { label: 'Funcionario', value: 'funcionario' },
         { label: 'Interessado', value: 'interessado' },
     ]
-
-    console.log(listUser)
-
-
-    if (!slug) return <Forbidden />
 
     return (
         <>
             <SectionHeader
-                title={`${perfil.charAt(0).toUpperCase() + perfil.slice(1)} (${usersList.filter(filter)?.length})`}
+                title={`${perfil === 'todos' ? 'Usuarios' : (perfil.charAt(0).toUpperCase() + perfil.slice(1)) } (${usersList.filter(filter)?.length})`}
                 newButton
-                newButtonAction={() => router.push(`/administrative/${slug}/new`)}
+                newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             {/* <Text bold>Buscar por: </Text> */}
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
@@ -83,7 +85,7 @@ export default function ListUsers(props) {
                         fullWidth
                         data={listUser}
                         valueSelection={perfil}
-                        onSelect={(value) => setPerfil(value === 'todos' ? '' : value)}
+                        onSelect={(value) => setPerfil(value)}
                         title="usuário"
                         filterOpition="value"
                         sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, }}
@@ -93,15 +95,15 @@ export default function ListUsers(props) {
                 <SelectList
                     data={listAtivo}
                     valueSelection={filterAtive}
-                    onSelect={(value) => setFilterAtive(value === 'todos' ? '' : value)}
+                    onSelect={(value) => setFilterAtive(value)}
                     title="status"
                     filterOpition="value"
                     sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                 />
             </Box>
-            {usersList.length > 1 ?
-                <Table_V1 data={usersList?.filter(filter)} columns={column} slug={perfil} />
+            {usersList.length > 0 ?
+                <Table_V1 data={usersList?.filter(filter)} columns={column} columnId={'id'}/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não foi encontrado usuarios {perfil}</Text>

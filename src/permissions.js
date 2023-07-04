@@ -4,15 +4,40 @@ export const menuItems = [
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
-            to: '/administrative/users',
+            to: '/administrative/users/list',
             text: 'Usuarios',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
-         // {
-         //    to: '/administrative/student',
-         //    text: 'Alunos',
-         //    // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
-         // },
+         {
+            to: '/administrative/calendar/list',
+            text: 'Calendario',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/course/list',
+            text: 'Curso',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/discipline/list',
+            text: 'Disciplina',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/grid/list',
+            text: 'Grade',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/class/list',
+            text: 'Turma',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
+         {
+            to: '/administrative/classSchedule/list',
+            text: 'Cronograma de aulas',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
       ]
    },
    {

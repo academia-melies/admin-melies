@@ -15,6 +15,8 @@ export const SelectList = (props) => {
         fullWidth = false
     } = props;
 
+    const { colorPalette } = useAppContext()
+
 
     return (
         <Box sx={{ minWidth: 120, flex: fullWidth && 1 }}>
@@ -22,7 +24,7 @@ export const SelectList = (props) => {
                 <InputLabel
                     sx={{ ...inputStyle }}
                 >{title}</InputLabel>
-                <Select sx={{ borderRadius: '8px', ...sx }}
+                <Select sx={{ borderRadius: '8px', backgroundColor: colorPalette.inputColor, ...sx }}
                     value={valueSelection}
                     label={title}
                     onChange={(event) => onSelect(event.target.value)}
