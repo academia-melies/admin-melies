@@ -166,5 +166,33 @@ export const editClass = async ({ id, classData }) => {
    }
 }
 
+export const createGrid = async (gridData) => {
+   try {
+      const response = await api.post(`/grid/create`, { gridData })
+      return response
+   } catch (error) {
+      return error
+   }
+}
+
+export const deleteGrid = async (id) => {
+   try {
+      const response = await api.delete(`/grid/delete/${id}`)
+      return response
+   } catch (error) {
+      console.log(error.response.data)
+      return error
+   }
+}
+
+export const editGrid = async ({ id, gridData }) => {
+   try {
+      const response = await api.patch(`/grid/update/${id}`, { gridData })
+      return response
+   } catch (error) {
+      return error?.response
+   }
+}
+
 
 
