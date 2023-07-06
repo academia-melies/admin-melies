@@ -1,14 +1,11 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import axios from "axios"
-import { Avatar, useMediaQuery, useTheme } from "@mui/material"
+import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
+import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
-import { icons } from "../../../organisms/layout/Colors"
-import { createContract, createCourse, createEnrollment, createUser, deleteCourse, editContract, editCourse, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator, formatCEP, formatRg } from "../../../helpers"
+import { createGrid, deleteGrid, editGrid } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditGrid(props) {
@@ -16,16 +13,61 @@ export default function EditGrid(props) {
     const router = useRouter()
     const { id, slug } = router.query;
     const newGrid = id === 'new';
-    const [gridData, setGridData] = useState({})
-    const [showRegistration, setShowRegistration] = useState(false)
+    const [gridData, setGridData] = useState([])
+    const [planGridData, setPlanGridData] = useState([])
+    const [disciplines, setDisciplines] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+
+    const addPlanGrid = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/gridplan/create`, { gridData })
+            if (response?.status == 201) {
+                alert.success('Disciplina adicionada.');
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao adicionar a disciplina selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    };
+
+
+    const deletePlanGrid = async (idPlan) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/gridplan/delete/${idPlan}`)
+            if (response?.status == 201) {
+                alert.success('Disciplina removida.');
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a disciplina selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
     const getGrids = async () => {
         try {
             const response = await api.get(`/grid/${id}`)
             const { data } = response
             setGridData(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const getPlanGrids = async () => {
+        try {
+            const response = await api.get(`/gridplan/${id}`)
+            const { data } = response
+            setPlanGridData(data)
         } catch (error) {
             console.log(error)
         }
@@ -40,11 +82,30 @@ export default function EditGrid(props) {
         })();
     }, [id])
 
+    useEffect(() => {
+        listDisciplines()
+    }, [id])
+
+    async function listDisciplines() {
+        try {
+            const response = await api.get(`/disciplines`)
+            const { data } = response
+            const groupDisciplines = data.map(disciplines => ({
+                label: disciplines.nome_disciplina,
+                value: disciplines?.id_disciplina
+            }));
+
+            setDisciplines(groupDisciplines);
+        } catch (error) {
+        }
+    }
+
 
     const handleItems = async () => {
         setLoading(true)
         try {
             await getGrids()
+            await getPlanGrids()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Grade')
         } finally {
@@ -60,40 +121,30 @@ export default function EditGrid(props) {
         }))
     }
 
-    const checkRequiredFields = () => {
-        // if (!gridData.nome) {
-        //     alert.error('Usuário precisa de nome')
-        //     return false
-        // }
-        return true
-    }
-
-    const handleCreateCourse = async () => {
+    const handleCreateGrid = async () => {
         setLoading(true)
-        if (checkRequiredFields()) {
-            try {
-                const response = await createCourse(gridData);
-                const { data } = response
-                console.group(data)
-                if (response?.status === 201) {
-                    alert.success('Curso cadastrado com sucesso.');
-                    router.push(`/administrative/course/${data?.course}`)
-                }
-            } catch (error) {
-                alert.error('Tivemos um problema ao cadastrar o curso.');
-            } finally {
-                setLoading(false)
+        try {
+            const response = await createGrid(gridData);
+            const { data } = response
+            console.log(data)
+            if (response?.status === 201) {
+                alert.success('Curso cadastrado com sucesso.');
+                router.push(`/administrative/grid/${data?.grid}`)
             }
+        } catch (error) {
+            alert.error('Tivemos um problema ao cadastrar o curso.');
+        } finally {
+            setLoading(false)
         }
     }
 
-    const handleDeleteCourse = async () => {
+    const handleDeleteGrid = async () => {
         setLoading(true)
         try {
-            const response = await deleteCourse(id)
+            const response = await deleteGrid(id)
             if (response?.status == 201) {
                 alert.success('Curso excluído com sucesso.');
-                router.push(`/administrative/course/list`)
+                router.push(`/administrative/grid/list`)
             }
 
         } catch (error) {
@@ -104,42 +155,26 @@ export default function EditGrid(props) {
         }
     }
 
-    const handleEditCourse = async () => {
-        if (checkRequiredFields()) {
-            setLoading(true)
-            try {
-                const response = await editCourse({ id, gridData })
-                if (response?.status === 201) {
-                    alert.success('Curso atualizado com sucesso.');
-                    handleItems()
-                    return
-                }
-                alert.error('Tivemos um problema ao atualizar Curso.');
-            } catch (error) {
-                alert.error('Tivemos um problema ao atualizar Curso.');
-            } finally {
-                setLoading(false)
+    const handleEditGrid = async () => {
+        setLoading(true)
+        try {
+            const response = await editGrid({ id, gridData })
+            if (response?.status === 201) {
+                alert.success('Grade atualizado com sucesso.');
+                handleItems()
+                return
             }
+            alert.error('Tivemos um problema ao atualizar Grade.');
+        } catch (error) {
+            alert.error('Tivemos um problema ao atualizar Grade.');
+        } finally {
+            setLoading(false)
         }
     }
 
     const groupStatus = [
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
-    ]
-
-    const groupModal = [
-        { label: 'Presencial', value: 'Presencial' },
-        { label: 'EAD', value: 'EAD' },
-        { label: 'Hibrido', value: 'Hibrido' },
-    ]
-
-    const groupNivel = [
-        { label: 'Graduação', value: 'Graduação' },
-        { label: 'Pós-Graduação', value: 'Pós-Graduação' },
-        { label: 'Tecnólogo', value: 'Tecnólogo' },
-        { label: 'Curso Tecnico', value: 'Curso Tecnico' },
-        { label: 'Curso livre', value: 'Curso livre' },
     ]
 
     const formatter = new Intl.NumberFormat('pt-BR', {
@@ -150,33 +185,82 @@ export default function EditGrid(props) {
     return (
         <>
             <SectionHeader
-                perfil={gridData?.modalidade_curso}
-                title={gridData?.nome_curso || `Novo Curso`}
+                // perfil={'bimestre'}
+                title={gridData?.nome_grade || `Nova grade`}
                 saveButton
-                saveButtonAction={newGrid ? handleCreateCourse : handleEditCourse}
+                saveButtonAction={newGrid ? handleCreateGrid : handleEditGrid}
                 deleteButton={!newGrid}
-                deleteButtonAction={() => handleDeleteCourse()}
+                deleteButtonAction={() => handleDeleteGrid()}
             />
 
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Curso</Text>
+                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Grade</Text>
                 </Box>
-                <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Nome' name='nome_curso' onChange={handleChange} value={gridData?.nome_curso || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Duração' name='duracao' onChange={handleChange} value={gridData?.duracao || ''} label='Duração' sx={{ flex: 1, }} />
-                </Box>
-                <RadioItem valueRadio={gridData?.modalidade_curso} group={groupModal} title="Modalidade" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, modalidade_curso: value })} sx={{ flex: 1, }} />
-                <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Portaria MEC' name='porta_mec' onChange={handleChange} value={gridData?.porta_mec || ''} label='Portaria MEC' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Valor' name='valor' onChange={handleChange} value={gridData?.valor || ''} label='Valor' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={gridData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
-                </Box>
-                <RadioItem valueRadio={gridData?.nivel_curso} group={groupNivel} title="Nível do curso" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, nivel_curso: value })} sx={{ flex: 1, }} />
-                <RadioItem valueRadio={gridData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, ativo: parseInt(value)})} />
+                <TextInput placeholder='Nome' name='nome_grade' onChange={handleChange} value={gridData?.nome_grade || ''} label='Nome da grade' sx={{ flex: 1, }} />
+                <RadioItem valueRadio={gridData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, ativo: parseInt(value) })} />
+                {!newGrid &&
+                    <>
+                        {planGridData && (Array.isArray(planGridData) ?
+                            planGridData.map((planGrid, index) => (
+                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                    <TextInput placeholder='Disciplina' name="discipline" value={planGrid?.nome_disciplina || ''} label='Disciplina' sx={{ flex: 1 }} />
+                                    <Box sx={{
+                                        backgroundSize: 'cover',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
+                                        width: 25,
+                                        height: 25,
+                                        backgroundImage: `url(/icons/remove_icon.png)`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => deletePlanGrid(planGrid?.id_plano_grade)} />
+                                </Box>
+                            )) :
+                            <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                <TextInput placeholder='Disciplina' name="discipline" value={planGridData?.nome_disciplina || ''} label='Disciplina' sx={{ flex: 1 }} />
+                                <Box sx={{
+                                    backgroundSize: 'cover',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                    width: 25,
+                                    height: 25,
+                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => deletePlanGrid(planGridData?.id_plano_grade)} />
+                            </Box>
+                        )}
 
-            </ContentContainer>
+                        < Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                            <SelectList fullWidth data={disciplines} valueSelection={gridData?.disciplina_id} onSelect={(value) => setGridData({ ...gridData, disciplina_id: value })}
+                                title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+                            <Box sx={{
+                                backgroundSize: 'cover',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center',
+                                width: 25,
+                                height: 25,
+                                backgroundImage: `url(/icons/include_icon.png)`,
+                                transition: '.3s',
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} onClick={() => addPlanGrid()} />
+                        </Box>
+                    </>
+                }
+            </ContentContainer >
         </>
     )
 }

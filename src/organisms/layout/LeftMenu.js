@@ -18,7 +18,6 @@ export const LeftMenu = ({ menuItems = [] }) => {
    let fotoPerfil = user?.foto;
    const router = useRouter();
    const pathname = router.pathname === '/' ? null : router.asPath
-
    const [showUserOptions, setShowUserOptions] = useState(false)
 
    const [showMenuMobile, setShowMenuMobile] = useState(false)
