@@ -100,7 +100,6 @@ export default function EditGrid(props) {
         }
     }
 
-
     const handleItems = async () => {
         setLoading(true)
         try {
