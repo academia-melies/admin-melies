@@ -185,7 +185,6 @@ export default function EditGrid(props) {
     return (
         <>
             <SectionHeader
-                // perfil={'bimestre'}
                 title={gridData?.nome_grade || `Nova grade`}
                 saveButton
                 saveButtonAction={newGrid ? handleCreateGrid : handleEditGrid}
