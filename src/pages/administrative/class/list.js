@@ -14,7 +14,7 @@ export default function ListClasses(props) {
     const [classesList, setClasses] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette } = useAppContext()
-    const [filterAtive, setFilterAtive] = useState(1)
+    const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {

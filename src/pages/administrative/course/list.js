@@ -14,7 +14,7 @@ export default function ListCourse(props) {
     const [filterData, setFilterData] = useState('')
     const [perfil, setPerfil] = useState('aluno')
     const { setLoading, colorPalette } = useAppContext()
-    const [filterAtive, setFilterAtive] = useState(1)
+    const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {

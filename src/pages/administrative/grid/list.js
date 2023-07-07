@@ -15,7 +15,7 @@ export default function ListGrid(props) {
     const [showGridTable, setShowGridTable] = useState({});
 
     const { setLoading, colorPalette } = useAppContext()
-    const [filterAtive, setFilterAtive] = useState(1)
+    const [filterAtive, setFilterAtive] = useState('todos')
     const [gradeQnt, setGradeQnt] = useState()
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
