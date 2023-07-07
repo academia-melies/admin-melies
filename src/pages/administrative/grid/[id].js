@@ -84,11 +84,11 @@ export default function EditGrid(props) {
 
     useEffect(() => {
         listDisciplines()
-    }, [id])
+    }, [])
 
     async function listDisciplines() {
         try {
-            const response = await api.get(`/disciplines`)
+            const response = await api.get(`/disciplines/active`)
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
                 label: disciplines.nome_disciplina,
@@ -126,7 +126,6 @@ export default function EditGrid(props) {
         try {
             const response = await createGrid(gridData);
             const { data } = response
-            console.log(data)
             if (response?.status === 201) {
                 alert.success('Curso cadastrado com sucesso.');
                 router.push(`/administrative/grid/${data?.grid}`)
