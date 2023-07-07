@@ -8,7 +8,7 @@ import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator, formatCEP, formatRg } from "../../../helpers"
+import { emailValidator, formatCEP, formatCPF, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditUser(props) {
@@ -212,7 +212,7 @@ export default function EditUser(props) {
 
         if (value.target.name == 'cpf') {
             let str = value.target.value;
-            value.target.value = formatCEP(str)
+            value.target.value = formatCPF(str)
         }
 
         if (value.target.name == 'rg') {
@@ -317,10 +317,10 @@ export default function EditUser(props) {
             setLoading(true)
             try {
                 const response = await editeUser({ id, userData })
-                if (contract.length > 0 && userData.perfil.includes('funcionario')) {
+                if (contract) {
                     const responseData = await editContract({ id, contract })
                 }
-                if (enrollmentData.length > 0 && userData.perfil.includes('aluno')) {
+                if (enrollmentData) {
                     const responseData = await editeEnrollment({ id, enrollmentData })
                 }
                 if (response?.status === 201) {
@@ -402,6 +402,12 @@ export default function EditUser(props) {
         { label: 'Conta Corrente', value: 'Conta Corrente' },
         { label: 'Conta salário', value: 'Conta salário' },
         { label: 'Conta poupança', value: 'Conta poupança' }
+    ]
+
+    const grouperiod = [
+        { label: 'Manhã', value: 'Manhã' },
+        { label: 'Tarde', value: 'Tarde' },
+        { label: 'Noite', value: 'Noite' }
     ]
 
     return (
@@ -643,20 +649,24 @@ export default function EditUser(props) {
                     </Box>
                     {showEnrollment &&
                         <>
-                            <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChangeEnrollment} value={enrollmentData?.financeiro || ''} label='Financeiro' />
-                            <TextInput placeholder='Situação' name='situacao' onChange={handleChangeEnrollment} value={enrollmentData?.situacao || ''} label='Situação' />
-                            <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}
-                                title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-                            <SelectList fullWidth data={classes} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, turma_id: value })}
-                                title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-                            <SelectList fullWidth data={courses} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, periodo_id: value })}
-                                title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChangeEnrollment} value={enrollmentData?.financeiro || ''} label='Financeiro' sx={{ flex: 1, }}/>
+                                <TextInput placeholder='Situação' name='situacao' onChange={handleChangeEnrollment} value={enrollmentData?.situacao || ''} label='Situação' sx={{ flex: 1, }}/>
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}
+                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <SelectList fullWidth data={classes} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, turma_id: value })}
+                                    title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <SelectList fullWidth data={grouperiod} valueSelection={enrollmentData?.periodo} onSelect={(value) => setEnrollmentData({ ...enrollmentData, periodo: value })}
+                                    title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                            </Box>
                         </>
                     }
                 </ContentContainer>

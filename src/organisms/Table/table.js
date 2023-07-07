@@ -13,8 +13,10 @@ export const Table_V1 = (props) => {
         avatar = false,
         screen = '',
         columnId,
-        columnActive = true
+        columnActive = true,
+        center = false
     } = props;
+
 
     const { colorPalette, theme } = useAppContext()
     const router = useRouter();

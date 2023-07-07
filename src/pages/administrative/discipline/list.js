@@ -42,8 +42,6 @@ export default function ListDiscipline(props) {
         }
     }
 
-    console.log(disciplineList)
-
     const column = [
         { key: 'id_disciplina', label: 'ID' },
         { key: 'nome_disciplina', avatar: true, label: 'Nome' },
