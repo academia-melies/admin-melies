@@ -204,7 +204,7 @@ export default function EditGrid(props) {
                     <>
                         {planGridData && (Array.isArray(planGridData) ?
                             planGridData.map((planGrid, index) => (
-                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }} key={`${planGrid}-${index}`}>
                                     <TextInput placeholder='Disciplina' name="discipline" value={planGrid?.nome_disciplina || ''} label='Disciplina' sx={{ flex: 1 }} />
                                     <Box sx={{
                                         backgroundSize: 'cover',
