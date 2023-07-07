@@ -16,6 +16,7 @@ export default function ListGrid(props) {
 
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState(1)
+    const [gradeQnt, setGradeQnt] = useState()
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
@@ -28,10 +29,10 @@ export default function ListGrid(props) {
 
     const toggleGridTable = (index) => {
         setShowGridTable(prevState => ({
-          ...prevState,
-          [index]: !prevState[index]
+            ...prevState,
+            [index]: !prevState[index]
         }));
-      };
+    };
 
     useEffect(() => {
         getGrid();
@@ -51,8 +52,11 @@ export default function ListGrid(props) {
     }
 
     const column = [
-        { key: 'id_disciplina', label: 'ID_Disciplina' },
+        // { key: 'id_grade', label: 'ID Grade' },
+        { key: 'id_disciplina', label: 'ID Disciplina' },
         { key: 'nome_disciplina', label: 'Disciplinas' },
+        { key: 'carga_hr_dp', label: 'Carga horaria Teorica' },
+        { key: 'carga_hr_dp', label: 'Carga horaria Pratica' },
         { key: 'carga_hr_dp', label: 'Carga horaria Disciplina' },
     ];
 
@@ -65,7 +69,7 @@ export default function ListGrid(props) {
     return (
         <>
             <SectionHeader
-                title={`Grades (${gridList.filter(filter)?.length || '0'})`}
+                title={`Grades (${gridList.length||'0'})`}
                 newButton
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
@@ -83,10 +87,10 @@ export default function ListGrid(props) {
                 />
             </Box>
             {gridList ? (
-                gridList.map((item, index) => {
-                    const gridData = gridList[index];
-                    const name = gridList[index].map((name) => name.nome_grade);
-                    
+                gridList.filter(filter).map((item, index) => {
+                    const gridData = item.disciplinas;
+                    const name = item.nome_grade;
+
                     return (
                         <ContentContainer key={`${item}-${index}`}>
                             <Box
@@ -116,10 +120,11 @@ export default function ListGrid(props) {
                             {showGridTable[index] && (
                                 <Box sx={{}}>
                                     <Table_V1
-                                        data={gridData?.filter(filter)}
+                                        data={gridData}
                                         columns={column}
                                         columnActive={false}
-                                        columnId={'id_grade'}
+                                        columnId={'id_disciplina'}
+                                        center
                                     />
                                 </Box>
                             )}

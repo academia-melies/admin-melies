@@ -42,8 +42,6 @@ export default function ListClasses(props) {
         }
     }
 
-    console.log(classesList)
-
     const column = [
         { key: 'id_turma', label: 'ID' },
         { key: 'nome_turma', label: 'Nome'},
