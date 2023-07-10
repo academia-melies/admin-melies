@@ -45,6 +45,11 @@ export const AppProvider = ({ children }) => {
     const router = useRouter()
     const alert = new ShowAlert(setAlertData)
 
+    const calculateExpiration = (hours) => {
+        const now = new Date();
+        return now.getTime() + hours * 60 * 60 * 1000;
+    };
+
     useEffect(() => {
         async function loadUserFromCookies() {
             setLoading(true)
@@ -70,13 +75,15 @@ export const AppProvider = ({ children }) => {
         try {
             setLoading(true)
             const response = await api.post('/user/login', { email, senha })
-            console.log(response.data.admin_melies < 1)
             if (response.data.admin_melies < 1) {
                 return 0
             }
             if (response.data.token) {
                 const { data } = response;
-                localStorage.setItem('token', data?.token)
+                const expiration = calculateExpiration(9);
+                data.expiredAt = expiration;
+                localStorage.setItem('token', data?.token);
+                localStorage.setItem('expiredAt', expiration.toLocaleString('pt-BR', { hour: 'numeric', minute: 'numeric' }));
                 api.defaults.headers.Authorization = `Bearer ${data?.token}`
                 setUser(response.data)
                 router.push('/');
@@ -92,6 +99,7 @@ export const AppProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token')
+        localStorage.removeItem('expiredAt')
         setUser(null)
         delete api.defaults.headers.Authorization
     }

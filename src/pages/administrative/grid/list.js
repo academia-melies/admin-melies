@@ -123,7 +123,7 @@ export default function ListGrid(props) {
                                         data={gridData}
                                         columns={column}
                                         columnActive={false}
-                                        columnId={'id_disciplina'}
+                                        columnId={'id_grade'}
                                         center
                                     />
                                 </Box>
