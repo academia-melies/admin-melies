@@ -105,21 +105,19 @@ export default function EditCourse(props) {
     }
 
     const handleEditCourse = async () => {
-        if (checkRequiredFields()) {
-            setLoading(true)
-            try {
-                const response = await editCourse({ id, courseData })
-                if (response?.status === 201) {
-                    alert.success('Curso atualizado com sucesso.');
-                    handleItems()
-                    return
-                }
-                alert.error('Tivemos um problema ao atualizar Curso.');
-            } catch (error) {
-                alert.error('Tivemos um problema ao atualizar Curso.');
-            } finally {
-                setLoading(false)
+        setLoading(true)
+        try {
+            const response = await editCourse({ id, courseData })
+            if (response?.status === 201) {
+                alert.success('Curso atualizado com sucesso.');
+                handleItems()
+                return
             }
+            alert.error('Tivemos um problema ao atualizar Curso.');
+        } catch (error) {
+            alert.error('Tivemos um problema ao atualizar Curso.');
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -135,11 +133,23 @@ export default function EditCourse(props) {
     ]
 
     const groupNivel = [
-        { label: 'Graduação', value: 'Graduação' },
-        { label: 'Pós-Graduação', value: 'Pós-Graduação' },
+        { label: 'Bacharelado', value: 'Bacharelado' },
         { label: 'Tecnólogo', value: 'Tecnólogo' },
-        { label: 'Curso Tecnico', value: 'Curso Tecnico' },
-        { label: 'Curso livre', value: 'Curso livre' },
+        { label: 'Pós-Graduação', value: 'Pós-Graduação' },
+        { label: 'Extensão', value: 'Extensão' },
+    ]
+
+    const groupDuration = [
+        { label: '1 - Semestre', value: 1 },
+        { label: '2 - Semestres', value: 2 },
+        { label: '3 - Semestres', value: 3 },
+        { label: '4 - Semestres', value: 4 },
+        { label: '5 - Semestres', value: 5 },
+        { label: '6 - Semestres', value: 6 },
+        { label: '7 - Semestres', value: 7 },
+        { label: '8 - Semestres', value: 8 },
+        { label: '9 - Semestres', value: 9 },
+        { label: '10 - Semestres', value: 10 },
     ]
 
     const formatter = new Intl.NumberFormat('pt-BR', {
@@ -165,16 +175,27 @@ export default function EditCourse(props) {
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Nome' name='nome_curso' onChange={handleChange} value={courseData?.nome_curso || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Duração' name='duracao' onChange={handleChange} value={courseData?.duracao || ''} label='Duração' sx={{ flex: 1, }} />
+                    <TextInput placeholder='TPA ...' name='sigla' onChange={handleChange} value={courseData?.sigla || ''} label='Sigla' sx={{ flex: 1, }} />
+                    {/* <TextInput placeholder='Duração' name='duracao' onChange={handleChange} value={courseData?.duracao || ''} label='Duração' sx={{ flex: 1, }} /> */}
+
+                    <SelectList fullWidth data={groupDuration} valueSelection={courseData?.duracao} onSelect={(value) => setCourseData({ ...courseData, duracao: value })}
+                        title="Duração" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
                 </Box>
                 <RadioItem valueRadio={courseData?.modalidade_curso} group={groupModal} title="Modalidade" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, modalidade_curso: value })} sx={{ flex: 1, }} />
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Portaria MEC' name='porta_mec' onChange={handleChange} value={courseData?.porta_mec || ''} label='Portaria MEC' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Portaria MEC/Autorização' name='pt_autorizacao' onChange={handleChange} value={courseData?.pt_autorizacao || ''} label='Portaria MEC/Autorização' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Data' name='dt_autorizacao' onChange={handleChange} value={(courseData?.dt_autorizacao)?.split('T')[0] || ''} type="date" label='Data' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Portaria MEC/Reconhecimento' name='pt_reconhecimento' onChange={handleChange} value={courseData?.pt_reconhecimento || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" label='Data' sx={{ flex: 1, }} />
+                </Box>
+                <Box sx={styles.inputSection}>
                     <TextInput placeholder='Valor' name='valor' onChange={handleChange} value={courseData?.valor || ''} label='Valor' sx={{ flex: 1, }} />
                     <TextInput placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={courseData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
                 </Box>
                 <RadioItem valueRadio={courseData?.nivel_curso} group={groupNivel} title="Nível do curso" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, nivel_curso: value })} sx={{ flex: 1, }} />
-                <RadioItem valueRadio={courseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, ativo: parseInt(value)})} />
+                <RadioItem valueRadio={courseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, ativo: parseInt(value) })} />
 
             </ContentContainer>
         </>
