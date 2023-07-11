@@ -1,9 +1,9 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { Avatar, useMediaQuery, useTheme } from "@mui/material"
+import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
@@ -12,7 +12,8 @@ import { emailValidator, formatCEP, formatCPF, formatRg } from "../../../helpers
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditUser(props) {
-    const { setLoading, alert, colorPalette } = useAppContext()
+    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
     const newUser = id === 'new';
@@ -24,25 +25,31 @@ export default function EditUser(props) {
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
+    const [classesInterest, setClassesInterest] = useState([])
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [interests, setInterests] = useState({});
+    const [arrayInterests, setArrayInterests] = useState([])
+    const [showInterest, setShowInterest] = useState(false)
 
     useEffect(() => {
         setPerfil(slug)
         findCountries()
         listCourses()
+        listClassesInterest()
     }, [slug])
 
     useEffect(() => {
         listClass()
-    }, [enrollmentData?.curso_id])
+    }, [enrollmentData?.curso_id, interests.curso_id])
 
     const getUserData = async () => {
         try {
             const response = await api.get(`/user/${id}`)
+            console.log(response)
             const { data } = response
             setUserData(data)
         } catch (error) {
@@ -65,6 +72,16 @@ export default function EditUser(props) {
             const response = await api.get(`/enrollment/${id}`)
             const { data } = response
             setEnrollmentData(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const getInterest = async () => {
+        try {
+            const response = await api.get(`/user/interests/${id}`)
+            const { data } = response
+            setArrayInterests(data)
         } catch (error) {
             console.log(error)
         }
@@ -134,8 +151,11 @@ export default function EditUser(props) {
     }
 
     async function listClass() {
+
+        let id_course = enrollmentData?.curso_id || interests.curso_id;
+
         try {
-            const response = await api.get(`/class/course/${enrollmentData?.curso_id}`)
+            const response = await api.get(`/class/course/${id_course}`)
             const { data = [] } = response
             const groupClass = data.map(turma => ({
                 label: turma.nome_turma,
@@ -146,6 +166,23 @@ export default function EditUser(props) {
         } catch (error) {
         }
     }
+
+    async function listClassesInterest() {
+
+        try {
+            const response = await api.get(`/classes`)
+            const { data = [] } = response
+            const groupClass = data.map(turma => ({
+                label: turma.nome_turma,
+                value: turma?.id_turma
+            }));
+
+            setClassesInterest(groupClass);
+        } catch (error) {
+        }
+    }
+
+
 
 
     // async function verifyCPF(cpf, nascimento) {
@@ -196,6 +233,7 @@ export default function EditUser(props) {
             await getUserData()
             await getEnrollment()
             await getContract()
+            await getInterest()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -247,6 +285,56 @@ export default function EditUser(props) {
         }))
     }
 
+    const addInterest = () => {
+        setArrayInterests((prevArray) => [...prevArray, { [value.target.name]: value.target.value }])
+        setInterests({})
+    }
+
+    const deleteInterest = (index) => {
+        if (newUser) {
+            setArrayInterests((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
+
+    const handleDeleteInterest = async (id_interesse) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/user/interest/delete/${id_interesse}`)
+            if (response?.status == 201) {
+                alert.success('Interesse removido.');
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover o Interesse selecionado.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleAddInterest = async () => {
+        setLoading(true)
+        let userId = userData?.id;
+
+        try {
+            const response = await api.post(`/user/interest/create/${usuario_id}`, { interests, userId })
+            if (response?.status == 201) {
+                alert.success('Interesse adicionado.');
+                setInterests({})
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao adicionar Interesse.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const checkRequiredFields = () => {
         if (!userData.nome) {
             alert.error('Usuário precisa de nome')
@@ -272,7 +360,7 @@ export default function EditUser(props) {
         setLoading(true)
         if (checkRequiredFields()) {
             try {
-                const response = await createUser(userData);
+                const response = await createUser(userData, arrayInterests);
                 const { data } = response
                 if (userData.perfil === 'funcionario') {
                     const responseData = await createContract(data?.userId, contract)
@@ -410,6 +498,11 @@ export default function EditUser(props) {
         { label: 'Noite', value: 'Noite' }
     ]
 
+    const groupSituation = [
+        { label: 'Ok', value: 'Ok' },
+        { label: 'Pendente', value: 'Pendente' }
+    ]
+
     return (
         <>
             <SectionHeader
@@ -443,18 +536,26 @@ export default function EditUser(props) {
                     <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone' sx={{ flex: 1, }} />
                 </Box>
                 {/* <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} /> */}
-                <CheckBoxComponent
-                    valueChecked={userData?.perfil}
-                    boxGroup={groupPerfil}
-                    title="Perfil"
-                    horizontal={mobile ? false : true}
-                    onSelect={(value) => setUserData({
-                        ...userData,
-                        perfil: value,
-                        admin_melies: !value.includes('funcionario') ? 0 : 1
-                    })}
-                    sx={{ flex: 1, }}
-                />
+                <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25 }}>
+                    <CheckBoxComponent
+                        valueChecked={userData?.perfil}
+                        boxGroup={groupPerfil}
+                        title="Perfil"
+                        horizontal={mobile ? false : true}
+                        onSelect={(value) => setUserData({
+                            ...userData,
+                            perfil: value,
+                            admin_melies: !value.includes('funcionario') ? 0 : 1
+                        })}
+                        sx={{ flex: 1, }}
+                    />
+                    {!newUser &&
+                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                            <Text bold small>Lista de interesses:</Text>
+                            <Button small text='interesses' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowInterest(!showInterest)} />
+                        </Box>
+                    }
+                </Box>
                 <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' sx={{ flex: 1, }} />
                 {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
@@ -463,7 +564,6 @@ export default function EditUser(props) {
 
                 <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, ativo: parseInt(value), admin_melies: value < 1 ? parseInt(value) : userData?.admin_melies })} />
                 <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />
-
             </ContentContainer>
 
 
@@ -595,8 +695,9 @@ export default function EditUser(props) {
                         <>
                             <Box sx={styles.inputSection}>
                                 <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Cartão de Ponto' name='cartao_ponto' onChange={handleChangeContract} value={contract?.cartao_ponto || ''} label='Cartão de Ponto' sx={{ flex: 1, }} />
                             </Box>
+                            <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
                             <Box sx={styles.inputSection}>
                                 <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={contract?.admissao || ''} label='Admissão' sx={{ flex: 1, }} />
                                 <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento || ''} label='Desligamento' sx={{ flex: 1, }} />
@@ -652,27 +753,142 @@ export default function EditUser(props) {
                     {showEnrollment &&
                         <>
                             <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChangeEnrollment} value={enrollmentData?.financeiro || ''} label='Financeiro' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Situação' name='situacao' onChange={handleChangeEnrollment} value={enrollmentData?.situacao || ''} label='Situação' sx={{ flex: 1, }} />
-                            </Box>
-                            <Box sx={styles.inputSection}>
-                                <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}
-                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                                <SelectList fullWidth data={classes} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, turma_id: value })}
+                                <SelectList fullWidth data={classesInterest} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, turma_id: value })}
                                     title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
-                                <SelectList fullWidth data={grouperiod} valueSelection={enrollmentData?.periodo} onSelect={(value) => setEnrollmentData({ ...enrollmentData, periodo: value })}
-                                    title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                <TextInput placeholder='Pendências' name='pendencia_aluno' onChange={handleChangeEnrollment} value={enrollmentData?.pendencia_aluno || ''} label='Pendências' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', flex: 1 }}>
+                                    {/* <Text bold>Contrato:</Text> */}
+                                    <TextInput placeholder='Contrato' name='contrato_aluno' onChange={handleChangeEnrollment} value={enrollmentData?.contrato_aluno || ''} label='Contrato' sx={{ flex: 1, }} />
+                                    <Button small text='imprimir' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
+                                    <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
+                                    <Button small text='enviar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
+                                </Box>
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
+                                    <Text bold>Boleto:</Text>
+                                    <Button small text='imprimir' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
+                                    <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
+                                    <Button small text='enviar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
+                                </Box>
+                            </Box>
+                            <Box sx={styles.inputSection}>
+
+                                <TextInput name='dt_inicio' onChange={handleChangeEnrollment} type="date" value={(enrollmentData?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
+                                <TextInput name='dt_final' onChange={handleChangeEnrollment} type="date" value={(enrollmentData?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
+                                <SelectList fullWidth data={groupSituation} valueSelection={enrollmentData?.status} onSelect={(value) => setEnrollmentData({ ...enrollmentData, status: value })}
+                                    title="Status/Situação" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
                             </Box>
+
+                            {/* <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}
+                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                /> */}
                         </>
                     }
-                </ContentContainer>
+                </ContentContainer >
             }
+
+            <Backdrop open={showInterest} sx={{ zIndex: 99 }}>
+
+                {showInterest &&
+                    <ContentContainer>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                            <Text bold large>Interesses</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_close})`,
+                                transform: showEnrollment ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                transition: '.3s',
+                                zIndex: 999999999,
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} onClick={() => setShowInterest(!showInterest)} />
+                        </Box>
+                        <ContentContainer style={{ boxShadow: 'none', zIndex: 999999 }}>
+                            <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px', zIndex: 999999999 }}>
+                                <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Curso</Text>
+                                <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Turma</Text>
+                                <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Periodo</Text>
+                            </Box>
+
+                            {arrayInterests.map((interest, index) => (
+                                <>
+
+                                    <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                        <SelectList fullWidth data={courses} valueSelection={interest?.curso_id}
+                                            title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                        />
+                                        <SelectList data={classesInterest} valueSelection={interest?.turma_id}
+                                            title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                        />
+                                        <SelectList data={grouperiod} valueSelection={interest?.periodo_interesse}
+                                            title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999, }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                        />
+
+                                        <Box sx={{
+                                            backgroundSize: 'cover',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center',
+                                            width: 25,
+                                            height: 25,
+                                            backgroundImage: `url(/icons/remove_icon.png)`,
+                                            transition: '.3s',
+                                            zIndex: 999999999,
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => {
+                                            newUser ? deleteInterest(index) : handleDeleteInterest(interest?.id_interesse)
+                                        }} />
+                                    </Box>
+                                </>
+                            ))}
+                            <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => setInterests({ ...interests, curso_id: value })}
+                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <SelectList fullWidth data={classes} valueSelection={interests?.turma_id} onSelect={(value) => setInterests({ ...interests, turma_id: value })}
+                                    title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <SelectList fullWidth data={grouperiod} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
+                                    title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <Box sx={{
+                                    backgroundSize: 'cover',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                    width: 25,
+                                    height: 25,
+                                    backgroundImage: `url(/icons/include_icon.png)`,
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => {
+                                    newUser ? addInterest() : handleAddInterest()
+                                }} />
+                            </Box>
+                        </ContentContainer>
+                    </ContentContainer>
+                }
+            </Backdrop>
         </>
     )
 }

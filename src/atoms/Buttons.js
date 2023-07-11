@@ -67,7 +67,7 @@ export const Button = (props) => {
          }}
          onClick={onClick}
       >
-         <Text bold style={{ color: 'inherit' }}>{text}</Text>
+         <Text small={small} bold style={{ color: 'inherit' }}>{text}</Text>
       </Box>
    )
 }

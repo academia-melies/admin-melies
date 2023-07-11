@@ -105,6 +105,17 @@ export default function EditDiscipline(props) {
         setSkills({})
     }
 
+    const deleteSkill = (index) => {
+
+        if (newDiscipline) {
+            setArraySkills((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
+
     const checkRequiredFields = () => {
         // if (!disciplineData.nome) {
         //     alert.error('Usuário precisa de nome')
@@ -200,16 +211,6 @@ export default function EditDiscipline(props) {
         }
     }
 
-    const deleteSkill = (index) => {
-
-        if (newDiscipline) {
-            setArraySkills((prevArray) => {
-                const newArray = [...prevArray];
-                newArray.splice(index, 1);
-                return newArray;
-            });
-        }
-    };
 
     const groupStatus = [
         { label: 'ativo', value: 1 },
