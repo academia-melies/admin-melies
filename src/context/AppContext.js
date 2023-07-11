@@ -80,10 +80,7 @@ export const AppProvider = ({ children }) => {
             }
             if (response.data.token) {
                 const { data } = response;
-                const expiration = calculateExpiration(9);
-                data.expiredAt = expiration;
                 localStorage.setItem('token', data?.token);
-                localStorage.setItem('expiredAt', expiration.toLocaleString('pt-BR', { hour: 'numeric', minute: 'numeric' }));
                 api.defaults.headers.Authorization = `Bearer ${data?.token}`
                 setUser(response.data)
                 router.push('/');
@@ -99,7 +96,6 @@ export const AppProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token')
-        localStorage.removeItem('expiredAt')
         setUser(null)
         delete api.defaults.headers.Authorization
     }

@@ -186,9 +186,9 @@ export default function EditCourse(props) {
                 <RadioItem valueRadio={courseData?.modalidade_curso} group={groupModal} title="Modalidade" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, modalidade_curso: value })} sx={{ flex: 1, }} />
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Portaria MEC/Autorização' name='pt_autorizacao' onChange={handleChange} value={courseData?.pt_autorizacao || ''} label='Portaria MEC/Autorização' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Data' name='dt_autorizacao' onChange={handleChange} value={(courseData?.dt_autorizacao)?.split('T')[0] || ''} type="date" label='Data' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Data' name='dt_autorizacao' onChange={handleChange} value={(courseData?.dt_autorizacao)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                     <TextInput placeholder='Portaria MEC/Reconhecimento' name='pt_reconhecimento' onChange={handleChange} value={courseData?.pt_reconhecimento || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" label='Data' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Valor' name='valor' onChange={handleChange} value={courseData?.valor || ''} label='Valor' sx={{ flex: 1, }} />
