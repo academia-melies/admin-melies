@@ -528,6 +528,8 @@ export default function EditUser(props) {
 
                         </Box>
 
+                        {/* Incluir campos ocorrencia, data_ocorrencia, responsável quando usuario !newUser */}
+
 
                         <RadioItem valueRadio={userData?.estado_civil} group={groupCivil} title="Estado Cívil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, estado_civil: value })} />
 
@@ -650,8 +652,8 @@ export default function EditUser(props) {
                     {showEnrollment &&
                         <>
                             <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChangeEnrollment} value={enrollmentData?.financeiro || ''} label='Financeiro' sx={{ flex: 1, }}/>
-                                <TextInput placeholder='Situação' name='situacao' onChange={handleChangeEnrollment} value={enrollmentData?.situacao || ''} label='Situação' sx={{ flex: 1, }}/>
+                                <TextInput placeholder='Financeiro' name='financeiro' onChange={handleChangeEnrollment} value={enrollmentData?.financeiro || ''} label='Financeiro' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Situação' name='situacao' onChange={handleChangeEnrollment} value={enrollmentData?.situacao || ''} label='Situação' sx={{ flex: 1, }} />
                             </Box>
                             <Box sx={styles.inputSection}>
                                 <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}

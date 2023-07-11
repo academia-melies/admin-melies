@@ -54,7 +54,7 @@ const styles = {
     header: {
         display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex' },
         width: '100%',
-        padding: `13px 32px`,
+        padding: `3px 32px 3px 32px`,
         alignItems: 'center',
         justifyContent: 'flex-end',
         boxSizing: 'border-box',

@@ -110,9 +110,9 @@ export const editCourse = async ({ id, courseData }) => {
    }
 }
 
-export const createDiscipline = async (disciplineData) => {
+export const createDiscipline = async ({ disciplineData, arraySkills, usuario_id }) => {
    try {
-      const response = await api.post(`/discipline/create`, { disciplineData })
+      const response = await api.post(`/discipline/create/${usuario_id}`, { disciplineData, arraySkills })
       return response
    } catch (error) {
       return error

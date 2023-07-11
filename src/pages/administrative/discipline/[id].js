@@ -6,15 +6,22 @@ import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../validators/api-requests"
+import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditDiscipline(props) {
-    const { setLoading, alert, colorPalette } = useAppContext()
+    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
     const newDiscipline = id === 'new';
     const [disciplineData, setDisciplineData] = useState({})
+    const [disciplines, setDisciplines] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [skills, setSkills] = useState({});
+    const [arraySkills, setArraySkills] = useState([])
+
+
 
     const getDiscipline = async () => {
         try {
@@ -26,6 +33,18 @@ export default function EditDiscipline(props) {
         }
     }
 
+    const getSkillDiscipline = async () => {
+        try {
+            const response = await api.get(`/disciplines/skills/${id}`)
+            const { data } = response
+            setArraySkills(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+
     useEffect(() => {
         (async () => {
             if (newDiscipline) {
@@ -35,11 +54,30 @@ export default function EditDiscipline(props) {
         })();
     }, [id])
 
+    useEffect(() => {
+        listDisciplines()
+    }, [])
+
+    async function listDisciplines() {
+        try {
+            const response = await api.get(`/disciplines/active`)
+            const { data } = response
+            const groupDisciplines = data.map(disciplines => ({
+                label: disciplines.nome_disciplina,
+                value: disciplines?.id_disciplina
+            }));
+
+            setDisciplines(groupDisciplines);
+        } catch (error) {
+        }
+    }
+
 
     const handleItems = async () => {
         setLoading(true)
         try {
             await getDiscipline()
+            getSkillDiscipline()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
         } finally {
@@ -55,6 +93,18 @@ export default function EditDiscipline(props) {
         }))
     }
 
+    const handleChangeSkills = (value) => {
+        setSkills((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    };
+
+    const addSkills = () => {
+        setArraySkills((prevArray) => [...prevArray, { habilidade: skills.habilidade, avaliacao: skills.avaliacao }])
+        setSkills({})
+    }
+
     const checkRequiredFields = () => {
         // if (!disciplineData.nome) {
         //     alert.error('Usuário precisa de nome')
@@ -67,7 +117,7 @@ export default function EditDiscipline(props) {
         setLoading(true)
         if (checkRequiredFields()) {
             try {
-                const response = await createDiscipline(disciplineData);
+                const response = await createDiscipline({ disciplineData, arraySkills, usuario_id });
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Disciplina cadastrado com sucesso.');
@@ -98,6 +148,39 @@ export default function EditDiscipline(props) {
         }
     }
 
+    const deleteSkillDiscipline = async (id_habilidade_dp) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/disciplines/skills/delete/${id_habilidade_dp}`)
+            if (response?.status == 201) {
+                alert.success('Habilidade removida.');
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a Habilidade selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const addSkillDiscipline = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/disciplines/skills/create/${id}/${usuario_id}`, { skills })
+            if (response?.status == 201) {
+                alert.success('Habilidade adicionada.');
+                setSkills({})
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a Habilidade selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleEdit = async () => {
         if (checkRequiredFields()) {
             setLoading(true)
@@ -116,6 +199,17 @@ export default function EditDiscipline(props) {
             }
         }
     }
+
+    const deleteSkill = (index) => {
+
+        if (newDiscipline) {
+            setArraySkills((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
 
     const groupStatus = [
         { label: 'ativo', value: 1 },
@@ -145,14 +239,151 @@ export default function EditDiscipline(props) {
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Nome' name='nome_disciplina' onChange={handleChange} value={disciplineData?.nome_disciplina || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Carga Horária' name='carga_hr_dp' onChange={handleChange} value={disciplineData?.carga_hr_dp || ''} label='Carga Horária' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Pré-requisitos' name='pre_req' onChange={handleChange} value={disciplineData?.pre_req || ''} label='Pré-requisitos' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Data da Criação' name='dt_criacao' onChange={handleChange} value={(disciplineData?.dt_criacao)?.split('T')[0] || ''} type="date" label='Data da Criação' sx={{ flex: 1, }} />
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Ementa' name='ementa' onChange={handleChange} value={disciplineData?.ementa || ''} label='Ementa' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Objetivo' name='objetivo_dp' onChange={handleChange} value={disciplineData?.objetivo_dp || ''} label='Objetivo' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Carga Horária' name='carga_hr_dp' onChange={handleChange} value={disciplineData?.carga_hr_dp || ''} label='Carga Horária' sx={{}} />
+                    <SelectList fullWidth data={disciplines} valueSelection={disciplineData?.pre_req} onSelect={(value) => setDisciplineData({ ...disciplineData, pre_req: value })}
+                        title="Pré-requisitos" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
                 </Box>
-                <RadioItem valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value)})} />
+                <Box sx={styles.inputSection}>
+                    <TextInput
+                        placeholder='Ementa'
+                        name='ementa'
+                        onChange={handleChange} value={disciplineData?.ementa || ''}
+                        label='Ementa' sx={{ flex: 1, }}
+                        multiline
+                        maxRows={8}
+                        rows={4}
+                    />
+                    <TextInput
+                        placeholder='Plano de ensino'
+                        name='plan_ensino'
+                        onChange={handleChange} value={disciplineData?.plan_ensino || ''}
+                        label='Plano de ensino'
+                        multiline
+                        maxRows={8}
+                        rows={4}
+                        sx={{ flex: 1, }}
+                    />
+                </Box>
+                <TextInput
+                    placeholder='Objetivo'
+                    name='objetivo_dp'
+                    onChange={handleChange}
+                    value={disciplineData?.objetivo_dp || ''}
+                    label='Objetivo'
+                    multiline
+                    maxRows={8}
+                    rows={4}
+                    sx={{ flex: 1, }}
+                />
+                <Box sx={styles.inputSection}>
+                    <TextInput
+                        placeholder='Metodologia'
+                        name='metodologia'
+                        onChange={handleChange}
+                        value={disciplineData?.metodologia || ''}
+                        label='Metodologia'
+                        multiline
+                        maxRows={4}
+                        rows={3}
+                        sx={{ flex: 1, }}
+                    />
+                    <TextInput
+                        placeholder='Recurso de apoio'
+                        name='recusrso_apoio'
+                        onChange={handleChange}
+                        value={disciplineData?.recusrso_apoio || ''}
+                        label='Recurso de apoio'
+                        multiline
+                        maxRows={6}
+                        rows={3}
+                        sx={{ flex: 1, }}
+                    />
+                </Box>
+                <Box sx={styles.inputSection}>
+                    <TextInput
+                        placeholder='Bibliografia Básica'
+                        name='bibl_basica'
+                        onChange={handleChange}
+                        value={disciplineData?.bibl_basica || ''}
+                        label='Bibliografia Básica'
+                        multiline
+                        maxRows={8}
+                        rows={3}
+                        sx={{ flex: 1, }}
+                    />
+                    <TextInput
+                        placeholder='Bibliografia Complementar'
+                        name='bibl_compl'
+                        onChange={handleChange}
+                        value={disciplineData?.bibl_compl || ''}
+                        label='Bibliografia Complementar'
+                        multiline
+                        maxRows={8}
+                        rows={3}
+                        sx={{ flex: 1, }}
+                    />
+                </Box>
+
+                <RadioItem valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value) })} />
+            </ContentContainer>
+            <ContentContainer>
+                <Text bold large>Conteúdo e Habilidades</Text>
+                <ContentContainer style={{ boxShadow: 'none' }}>
+                    <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px' }}>
+                        <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Habilidades/Conteúdo</Text>
+                        <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Avaliação</Text>
+                    </Box>
+
+                    {arraySkills.map((skill, index) => (
+                        <>
+
+                            <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                <TextInput placeholder='Habilidade/Conteúdo' name={`habilidade-${index}`} onChange={handleChangeSkills} value={skill.habilidade} sx={{ flex: 1 }} />
+                                <TextInput placeholder='Avaliação' name={`avaliacao-${index}`} onChange={handleChangeSkills} value={skill.avaliacao} sx={{ flex: 1 }} />
+
+                                <Box sx={{
+                                    backgroundSize: 'cover',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                    width: 25,
+                                    height: 25,
+                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => {
+                                    newDiscipline ? deleteSkill(index) : deleteSkillDiscipline(skill?.id_habilidade_dp)
+                                }} />
+                            </Box>
+                        </>
+                    ))}
+                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                        <TextInput placeholder='Habilidade/Conteúdo' name='habilidade' onChange={handleChangeSkills} value={skills?.habilidade || ''} sx={{ flex: 1 }} />
+                        <TextInput placeholder='Avaliação' name='avaliacao' onChange={handleChangeSkills} value={skills?.avaliacao || ''} sx={{ flex: 1 }} />
+                        <Box sx={{
+                            backgroundSize: 'cover',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'center',
+                            width: 25,
+                            height: 25,
+                            backgroundImage: `url(/icons/include_icon.png)`,
+                            transition: '.3s',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            newDiscipline ? addSkills() : addSkillDiscipline()
+                        }} />
+                    </Box>
+                </ContentContainer>
             </ContentContainer>
         </>
     )
