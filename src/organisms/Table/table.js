@@ -14,7 +14,9 @@ export const Table_V1 = (props) => {
         screen = '',
         columnId,
         columnActive = true,
-        center = false
+        onSelect = () => { },
+        center = false,
+        routerPush = true
     } = props;
 
 
@@ -53,7 +55,10 @@ export const Table_V1 = (props) => {
                         </TableHead>
                         <TableBody>
                             {data?.map((row, index) => (
-                                <TableRow key={row.id} onClick={() => handleRowClick(row[columnId])} sx={{
+                                <TableRow key={row.id} onClick={() => {
+                                    routerPush ? handleRowClick(row[columnId])
+                                    : onSelect(row[columnId])
+                                }} sx={{
                                     ...styles.bodyRow,
                                     transition: 'background-color 1s',
                                     backgroundColor: getRowBackground(index),

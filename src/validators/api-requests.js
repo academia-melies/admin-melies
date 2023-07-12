@@ -16,9 +16,9 @@ export const getUsersPerfil = async (perfil) => {
    }
 }
 
-export const createUser = async (userData, arrayInterests) => {
+export const createUser = async (userData, arrayInterests, arrayHistoric) => {
    try {
-      const response = await api.post('/user', { userData, arrayInterests })
+      const response = await api.post('/user', { userData, arrayInterests, arrayHistoric })
       return response
    } catch (error) {
       return error
