@@ -17,21 +17,37 @@ export const UserHeader = (props) => {
 
     return (
         <>
-            <Box sx={{ ...styles.header, backgroundColor: colorPalette.secondary + '88', gap: 3 }}>
-                <Box sx={{
-                    ...styles.menuIcon,
-                    backgroundImage: `url(${icons.gray_arrow_down})`,
-                    transform: 'rotate(90deg)',
-                    transition: '.3s',
-                    width: 17,
-                    height: 17,
-                    position: 'absolute',
-                    left: 260,
-                    "&:hover": {
-                        opacity: 0.8,
-                        cursor: 'pointer'
-                    }
-                }} onClick={() => router.back()} />
+            <Box sx={{ ...styles.header, backgroundColor: colorPalette.secondary + '88', gap: 2 }}>
+                <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.home})`,
+                        width: 17,
+                        height: 17,
+                        position: 'absolute',
+                        filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                        transition: 'background-color 1s',
+                        left: 250,
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={() => router.push('/')} />
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        transform: 'rotate(90deg)',
+                        transition: '.3s',
+                        width: 17,
+                        height: 17,
+                        position: 'absolute',
+                        left: 290,
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={() => router.back()} />
+                </Box>
                 <IconTheme flex />
                 <Box sx={{
                     ...styles.menuIcon,

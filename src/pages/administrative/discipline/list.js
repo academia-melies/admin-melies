@@ -81,6 +81,7 @@ export default function ListDiscipline(props) {
                     filterOpition="value"
                     sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                    clean={false}
                 />
             </Box>
             {disciplineList.length > 0 ?
