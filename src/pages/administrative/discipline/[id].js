@@ -249,6 +249,14 @@ export default function EditDiscipline(props) {
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
+
+
+                <RadioItem valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value) })} />
+            </ContentContainer>
+            <ContentContainer>
+                <Box>
+                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Plano de ensino</Text>
+                </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput
                         placeholder='Ementa'
@@ -260,27 +268,17 @@ export default function EditDiscipline(props) {
                         rows={4}
                     />
                     <TextInput
-                        placeholder='Plano de ensino'
-                        name='plan_ensino'
-                        onChange={handleChange} value={disciplineData?.plan_ensino || ''}
-                        label='Plano de ensino'
+                        placeholder='Objetivo'
+                        name='objetivo_dp'
+                        onChange={handleChange}
+                        value={disciplineData?.objetivo_dp || ''}
+                        label='Objetivo'
                         multiline
                         maxRows={8}
                         rows={4}
                         sx={{ flex: 1, }}
                     />
                 </Box>
-                <TextInput
-                    placeholder='Objetivo'
-                    name='objetivo_dp'
-                    onChange={handleChange}
-                    value={disciplineData?.objetivo_dp || ''}
-                    label='Objetivo'
-                    multiline
-                    maxRows={8}
-                    rows={4}
-                    sx={{ flex: 1, }}
-                />
                 <Box sx={styles.inputSection}>
                     <TextInput
                         placeholder='Metodologia'
@@ -329,62 +327,60 @@ export default function EditDiscipline(props) {
                         sx={{ flex: 1, }}
                     />
                 </Box>
+            </ContentContainer >
+            <ContentContainer style={{ boxShadow: 'none' }}>
+                <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px' }}>
+                    <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Conteúdo</Text>
+                    <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Habilidades</Text>
+                    <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Avaliação</Text>
+                </Box>
 
-                <RadioItem valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value) })} />
-            </ContentContainer>
-            <ContentContainer>
-                <Text bold large>Conteúdo e Habilidades</Text>
-                <ContentContainer style={{ boxShadow: 'none' }}>
-                    <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px' }}>
-                        <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Habilidades/Conteúdo</Text>
-                        <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Avaliação</Text>
-                    </Box>
+                {arraySkills.map((skill, index) => (
+                    <>
 
-                    {arraySkills.map((skill, index) => (
-                        <>
+                        <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                            <TextInput placeholder='Conteúdo' name={`conteudo-${index}`} onChange={handleChangeSkills} value={skill.conteudo} sx={{ flex: 1 }} />
+                            <TextInput placeholder='Habilidade' name={`habilidade-${index}`} onChange={handleChangeSkills} value={skill.habilidade} sx={{ flex: 1 }} />
+                            <TextInput placeholder='Avaliação' name={`avaliacao-${index}`} onChange={handleChangeSkills} value={skill.avaliacao} sx={{ flex: 1 }} />
 
-                            <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                <TextInput placeholder='Habilidade/Conteúdo' name={`habilidade-${index}`} onChange={handleChangeSkills} value={skill.habilidade} sx={{ flex: 1 }} />
-                                <TextInput placeholder='Avaliação' name={`avaliacao-${index}`} onChange={handleChangeSkills} value={skill.avaliacao} sx={{ flex: 1 }} />
-
-                                <Box sx={{
-                                    backgroundSize: 'cover',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                    width: 25,
-                                    height: 25,
-                                    backgroundImage: `url(/icons/remove_icon.png)`,
-                                    transition: '.3s',
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => {
-                                    newDiscipline ? deleteSkill(index) : deleteSkillDiscipline(skill?.id_habilidade_dp)
-                                }} />
-                            </Box>
-                        </>
-                    ))}
-                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                        <TextInput placeholder='Habilidade/Conteúdo' name='habilidade' onChange={handleChangeSkills} value={skills?.habilidade || ''} sx={{ flex: 1 }} />
-                        <TextInput placeholder='Avaliação' name='avaliacao' onChange={handleChangeSkills} value={skills?.avaliacao || ''} sx={{ flex: 1 }} />
-                        <Box sx={{
-                            backgroundSize: 'cover',
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'center',
-                            width: 25,
-                            height: 25,
-                            backgroundImage: `url(/icons/include_icon.png)`,
-                            transition: '.3s',
-                            "&:hover": {
-                                opacity: 0.8,
-                                cursor: 'pointer'
-                            }
-                        }} onClick={() => {
-                            newDiscipline ? addSkills() : addSkillDiscipline()
-                        }} />
-                    </Box>
-                </ContentContainer>
+                            <Box sx={{
+                                backgroundSize: 'cover',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center',
+                                width: 25,
+                                height: 25,
+                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                transition: '.3s',
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} onClick={() => {
+                                newDiscipline ? deleteSkill(index) : deleteSkillDiscipline(skill?.id_habilidade_dp)
+                            }} />
+                        </Box>
+                    </>
+                ))}
+                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                    <TextInput placeholder='Conteúdo' name='conteudo' onChange={handleChangeSkills} value={skills?.conteudo || ''} sx={{ flex: 1 }} />
+                    <TextInput placeholder='Habilidade' name='habilidade' onChange={handleChangeSkills} value={skills?.habilidade || ''} sx={{ flex: 1 }} />
+                    <TextInput placeholder='Avaliação' name='avaliacao' onChange={handleChangeSkills} value={skills?.avaliacao || ''} sx={{ flex: 1 }} />
+                    <Box sx={{
+                        backgroundSize: 'cover',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'center',
+                        width: 25,
+                        height: 25,
+                        backgroundImage: `url(/icons/include_icon.png)`,
+                        transition: '.3s',
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={() => {
+                        newDiscipline ? addSkills() : addSkillDiscipline()
+                    }} />
+                </Box>
             </ContentContainer>
         </>
     )

@@ -20,7 +20,12 @@ export default function EditUser(props) {
     const [perfil, setPerfil] = useState('')
     const [userData, setUserData] = useState({})
     const [contract, setContract] = useState({})
-    const [enrollmentData, setEnrollmentData] = useState({})
+    const [enrollmentData, setEnrollmentData] = useState({
+        status: '',
+        motivo_desistencia: '',
+        dt_desistencia: null,
+        certificado_emitido: ''
+    })
     const [showRegistration, setShowRegistration] = useState(false)
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
@@ -36,10 +41,16 @@ export default function EditUser(props) {
     const [showInterest, setShowInterest] = useState(false)
     const [showHistoric, setShowHistoric] = useState(false)
     const [showAddHistoric, setAddShowHistoric] = useState(false)
+    const [showAddInterest, setAddShowInterest] = useState(false)
+    const [showViewInterest, setShowViewInterest] = useState(false)
     const [showEditHistoric, setEditShowHistoric] = useState(false)
-    const [historicData, setHistoricData] = useState({});
+    const [historicData, setHistoricData] = useState({
+        responsavel: user?.nome
+    });
     const [arrayHistoric, setArrayHistoric] = useState([])
     const [valueIdHistoric, setValueIdHistoric] = useState()
+    const [valueIdInterst, setValueIdInterst] = useState()
+
 
     useEffect(() => {
         setPerfil(slug)
@@ -247,10 +258,10 @@ export default function EditUser(props) {
         setLoading(true)
         try {
             await getUserData()
-             getEnrollment()
-             getContract()
-             getInterest()
-             getHistoric()
+            getEnrollment()
+            getContract()
+            getInterest()
+            getHistoric()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -305,6 +316,14 @@ export default function EditUser(props) {
     const handleChangeHistoric = (value) => {
 
         setHistoricData((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
+
+    const handleChangeInterest = (value) => {
+
+        setInterests((prevValues) => ({
             ...prevValues,
             [value.target.name]: value.target.value,
         }))
@@ -548,6 +567,11 @@ export default function EditUser(props) {
         { label: 'inativo', value: 0 },
     ]
 
+    const groupCertificate = [
+        { label: 'Sim', value: 1 },
+        { label: 'Não', value: 0 },
+    ]
+
     const groupAdmin = [
         { label: 'sim', value: 1 },
         { label: 'não', value: 0 },
@@ -594,8 +618,29 @@ export default function EditUser(props) {
     ]
 
     const groupSituation = [
-        { label: 'Ok', value: 'Ok' },
-        { label: 'Pendente', value: 'Pendente' }
+        { label: 'Aguardando início', value: 'Aguardando início' },
+        { label: 'Em andamento', value: 'Em andamento' },
+        { label: 'Concluído', value: 'Concluído' },
+        { label: 'Turma cancelada', value: 'Turma cancelada' },
+        { label: 'Aprovado', value: 'Aprovado' },
+        { label: 'Reprovado', value: 'Reprovado' },
+        { label: 'Bloq. Online', value: 'Bloq. Online' },
+        { label: 'Matrícula cancelada', value: 'Matrícula cancelada' },
+        { label: 'Transferido ', value: 'Transferido ' },
+        { label: 'Desistente ', value: 'Desistente ' },
+        { label: 'Nenhuma', value: 'Nenhuma' },
+    ]
+
+    const groupReasonsDroppingOut = [
+        { label: 'Pessoal', value: 'Pessoal' },
+        { label: 'Financeiro', value: 'Financeiro' },
+        { label: 'Insatisfação', value: 'Insatisfação' },
+        { label: 'Turma cancelada', value: 'Turma cancelada' },
+        { label: 'Reprovação', value: 'Reprovação' },
+        { label: 'Profissional', value: 'Profissional' },
+        { label: 'Saúde', value: 'Saúde' },
+        { label: 'Dificuldade', value: 'Dificuldade' },
+        { label: 'Não quis informar ', value: 'Não quis informar ' },
     ]
 
 
@@ -662,8 +707,8 @@ export default function EditUser(props) {
                             </Box>
 
                             <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Text bold small>Historico do {userData.perfil}:</Text>
-                                <Button small text='historico' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowHistoric(!showHistoric)} />
+                                <Text bold small>Observações do {userData.perfil}:</Text>
+                                <Button small text='observação' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowHistoric(!showHistoric)} />
                             </Box>
                         </>
                     }
@@ -746,7 +791,7 @@ export default function EditUser(props) {
                         <RadioItem valueRadio={userData?.estado_civil} group={groupCivil} title="Estado Cívil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, estado_civil: value })} />
 
                         {/* <TextInput placeholder='Estado Cívil' name='estado_civil' onChange={handleChange} value={userData?.estado_civil || ''} label='Estado Cívil' /> */}
-                        <TextInput placeholder='E-mail corporativo' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail corporativo' />
+                        <TextInput placeholder='E-mail Méliès' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail Méliès' />
                         <Box sx={styles.inputSection}>
                             {userData?.estado_civil === 'Casado' && <TextInput placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
                             <TextInput placeholder='Dependente' name='dependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} />
@@ -889,7 +934,6 @@ export default function EditUser(props) {
                                 </Box>
                             </Box>
                             <Box sx={styles.inputSection}>
-
                                 <TextInput name='dt_inicio' onChange={handleChangeEnrollment} type="date" value={(enrollmentData?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
                                 <TextInput name='dt_final' onChange={handleChangeEnrollment} type="date" value={(enrollmentData?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
                                 <SelectList fullWidth data={groupSituation} valueSelection={enrollmentData?.status} onSelect={(value) => setEnrollmentData({ ...enrollmentData, status: value })}
@@ -897,6 +941,29 @@ export default function EditUser(props) {
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
                             </Box>
+                            {
+                                enrollmentData.status?.includes('Desistente') &&
+                                <>
+
+                                    <CheckBoxComponent
+                                        valueChecked={enrollmentData?.motivo_desistencia || ''}
+                                        boxGroup={groupReasonsDroppingOut}
+                                        title="Motivo da desistência"
+                                        horizontal={mobile ? false : true}
+                                        onSelect={(value) => setEnrollmentData({
+                                            ...enrollmentData,
+                                            motivo_desistencia: value
+                                        })}
+                                        sx={{ width: 1 }}
+                                    />
+                                    <TextInput name='dt_desistencia' onChange={handleChangeEnrollment} type="date" value={(enrollmentData?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
+                                </>
+                            }
+                            <RadioItem valueRadio={enrollmentData?.certificado_emitido}
+                                group={groupCertificate}
+                                title="Certificado emitido:"
+                                horizontal={mobile ? false : true}
+                                onSelect={(value) => setEnrollmentData({ ...enrollmentData, certificado_emitido: parseInt(value) })} />
 
                             {/* <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}
                                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -930,6 +997,7 @@ export default function EditUser(props) {
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Curso</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Turma</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Periodo</Text>
+                                <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Observação</Text>
                             </Box>
 
                             {arrayInterests.map((interest, index) => (
@@ -939,23 +1007,34 @@ export default function EditUser(props) {
                                         <SelectList fullWidth data={courses} valueSelection={interest?.curso_id}
                                             title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                            clean={false}
                                         />
                                         <SelectList data={classesInterest} valueSelection={interest?.turma_id}
                                             title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                            clean={false}
                                         />
                                         <SelectList data={grouperiod} valueSelection={interest?.periodo_interesse}
                                             title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999, }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                            clean={false}
                                         />
-
+                                        <TextInput
+                                            placeholder='Observação'
+                                            name='observacao_int'
+                                            value={interest?.observacao_int || ''}
+                                            sx={{ flex: 1 }}
+                                        // rows={3}
+                                        />
                                         <Box sx={{
                                             backgroundSize: 'cover',
                                             backgroundRepeat: 'no-repeat',
                                             backgroundPosition: 'center',
+                                            backgroundBlendMode: '#fff',
                                             width: 25,
                                             height: 25,
-                                            backgroundImage: `url(/icons/remove_icon.png)`,
+                                            backdropFilter: 'inherit',
+                                            backgroundImage: `url(${icons.search})`,
                                             transition: '.3s',
                                             zIndex: 999999999,
                                             "&:hover": {
@@ -963,40 +1042,137 @@ export default function EditUser(props) {
                                                 cursor: 'pointer'
                                             }
                                         }} onClick={() => {
-                                            newUser ? deleteInterest(index) : handleDeleteInterest(interest?.id_interesse)
+                                            setValueIdInterst(interest.id_interesse)
+                                            setShowViewInterest(true)
                                         }} />
+                                        {newUser &&
+                                            <Box sx={{
+                                                backgroundSize: 'cover',
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'center',
+                                                width: 25,
+                                                height: 25,
+                                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                                transition: '.3s',
+                                                zIndex: 999999999,
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
+                                                }
+                                            }} onClick={() => {
+                                                deleteInterest(index)
+                                            }} />
+                                        }
                                     </Box>
                                 </>
                             ))}
-                            <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => setInterests({ ...interests, curso_id: value })}
-                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                                <SelectList fullWidth data={classes} valueSelection={interests?.turma_id} onSelect={(value) => setInterests({ ...interests, turma_id: value })}
-                                    title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                                <SelectList fullWidth data={grouperiod} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
-                                    title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                                <Box sx={{
-                                    backgroundSize: 'cover',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                    width: 25,
-                                    height: 25,
-                                    backgroundImage: `url(/icons/include_icon.png)`,
-                                    transition: '.3s',
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => {
-                                    newUser ? addInterest() : handleAddInterest()
-                                }} />
-                            </Box>
+
+                            {!showAddInterest && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setAddShowInterest(!showAddInterest)} />
+                            </Box>}
+
+                            {showAddInterest &&
+                                <ContentContainer>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                        <Text bold style={{ padding: '5px 0px 8px 0px' }}>Novo Interesse</Text>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 15,
+                                            height: 15,
+                                            backgroundImage: `url(${icons.gray_close})`,
+                                            transition: '.3s',
+                                            zIndex: 999999999,
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => setAddShowInterest(false)} />
+                                    </Box>
+                                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                        <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => setInterests({ ...interests, curso_id: value })}
+                                            title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList fullWidth data={classes} valueSelection={interests?.turma_id} onSelect={(value) => setInterests({ ...interests, turma_id: value })}
+                                            title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList fullWidth data={grouperiod} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
+                                            title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+
+                                    </Box>
+                                    <TextInput
+                                        placeholder='Observação'
+                                        name='observacao_int'
+                                        onChange={handleChangeInterest}
+                                        value={interests?.observacao_int || ''}
+                                        sx={{ flex: 1 }}
+                                        multiline
+                                        maxRows={5}
+                                        rows={3}
+                                    />
+                                    <Button small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
+                                        newUser ? addInterest() : handleAddInterest()
+                                        setAddShowInterest(false)
+                                    }} />
+                                </ContentContainer>
+                            }
+
+                            {showViewInterest &&
+                                <ContentContainer>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                        <Text bold style={{ padding: '5px 0px 8px 0px' }}>Interesse</Text>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 15,
+                                            height: 15,
+                                            backgroundImage: `url(${icons.gray_close})`,
+                                            transition: '.3s',
+                                            zIndex: 999999999,
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => setShowViewInterest(false)} />
+                                    </Box>
+                                    {arrayInterests.filter((item) => item.id_interesse === valueIdInterst).map((interest, index) => (
+                                        <>
+
+                                            <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                                <SelectList fullWidth data={courses} valueSelection={interest?.curso_id}
+                                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                                    clean={false}
+                                                />
+                                                <SelectList data={classesInterest} valueSelection={interest?.turma_id}
+                                                    title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                                    clean={false}
+                                                />
+                                                <SelectList data={grouperiod} valueSelection={interest?.periodo_interesse}
+                                                    title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999, }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                                    clean={false}
+                                                />
+                                            </Box>
+                                            <TextInput
+                                                placeholder='Observação'
+                                                name='observacao_int'
+                                                value={interest?.observacao_int || ''}
+                                                sx={{ flex: 1 }}
+                                                multiline
+                                                maxRows={5}
+                                                rows={3}
+                                            />
+                                            <Button small secondary text='excluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
+                                                handleDeleteInterest(interest?.id_interesse)
+                                                setShowViewInterest(false)
+                                            }} />
+                                        </>
+                                    ))}
+                                </ContentContainer>}
                         </ContentContainer>
                     </ContentContainer>
                 }
@@ -1006,7 +1182,7 @@ export default function EditUser(props) {
                 {showHistoric &&
                     <ContentContainer>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
-                            <Text bold large>Historico</Text>
+                            <Text bold large>Observações</Text>
                             <Box sx={{
                                 ...styles.menuIcon,
                                 backgroundImage: `url(${icons.gray_close})`,
@@ -1018,96 +1194,100 @@ export default function EditUser(props) {
                                 }
                             }} onClick={() => setShowHistoric(!showHistoric)} />
                         </Box>
-                        <Table_V1 columns={columnHistoric}
-                            data={arrayHistoric}
-                            columnId="id_historico"
-                            columnActive={false}
-                            onSelect={(value) => setValueIdHistoric(value)}
-                            routerPush={false}
-                        />
+                        <ContentContainer style={{ boxShadow: 'none' }}>
+                            <Table_V1 columns={columnHistoric}
+                                data={arrayHistoric}
+                                columnId="id_historico"
+                                columnActive={false}
+                                onSelect={(value) => setValueIdHistoric(value)}
+                                routerPush={false}
+                            />
 
-                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                            <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setAddShowHistoric(!showAddHistoric)} />
-                            {
-                           //valueIdHistoric > 0 && !newUser &&
-                             //   <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
-                            //        handleEditHistoric(valueIdHistoric)
-                            //        setValueIdHistoric('')
-                            //    }} />
-                           // }
-                            }
-                        </Box>
+                            {!showAddHistoric && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setAddShowHistoric(!showAddHistoric)} />
+                            </Box>}
 
-                        {showAddHistoric &&
-                            <>
-                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                    <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historicData?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
-                                    <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historicData?.responsavel || ''} sx={{ flex: 1 }} />
-                                    <Box sx={{
-                                        backgroundSize: 'cover',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center',
-                                        width: 25,
-                                        height: 25,
-                                        backgroundImage: `url(/icons/include_icon.png)`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} onClick={() => {
-                                        newUser ? addHistoric() : handleAddHistoric()
-                                        setAddShowHistoric(!showAddHistoric)
-                                    }} />
-                                </Box>
-                                <TextInput
-                                    placeholder='Ocorrência'
-                                    name='ocorrencia'
-                                    onChange={handleChangeHistoric}
-                                    value={historicData?.ocorrencia || ''}
-                                    sx={{ flex: 1 }}
-                                    multiline
-                                    maxRows={5}
-                                    rows={3}
-                                />
+                            {showAddHistoric &&
+                                <>
+                                    <ContentContainer>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                            <Text bold>Nova Observação</Text>
+                                            <Box sx={{
+                                                ...styles.menuIcon,
+                                                width: 15,
+                                                height: 15,
+                                                backgroundImage: `url(${icons.gray_close})`,
+                                                transition: '.3s',
+                                                zIndex: 999999999,
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
+                                                }
+                                            }} onClick={() => setAddShowHistoric(false)} />
+                                        </Box>
+                                        <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                            <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historicData?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
+                                            <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historicData?.responsavel || ''} label="Responsável" sx={{ flex: 1 }} />
+                                        </Box>
+                                        <TextInput
+                                            placeholder='Ocorrência'
+                                            name='ocorrencia'
+                                            onChange={handleChangeHistoric}
+                                            value={historicData?.ocorrencia || ''}
+                                            label="Ocorrência"
+                                            sx={{ flex: 1 }}
+                                            multiline
+                                            maxRows={5}
+                                            rows={3}
+                                        />
 
-                            </>}
+                                        <Button small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
+                                            newUser ? addHistoric() : handleAddHistoric()
+                                            setAddShowHistoric(!showAddHistoric)
+                                        }} />
+                                    </ContentContainer>
+                                </>}
 
-                        {valueIdHistoric && arrayHistoric.filter((item) => item.id_historico === valueIdHistoric).map((historic) => (
-                            <>
-
-                                <Box key={historic} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                    <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historic?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
-                                    <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historic?.responsavel || ''} sx={{ flex: 1 }} />
-                                    <Box sx={{
-                                        backgroundSize: 'cover',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center',
-                                        width: 25,
-                                        height: 25,
-                                        backgroundImage: `url(/icons/remove_icon.png)`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} onClick={() => {
-                                        newUser ? deleteHistoric(valueIdHistoric) : handleDeleteHistoric(historic?.id_historico)
-                                    }} />
-                                </Box>
-                                <TextInput
-                                    placeholder='Ocorrência'
-                                    name='ocorrencia'
-                                    onChange={handleChangeHistoric}
-                                    value={historic?.ocorrencia || ''}
-                                    sx={{ flex: 1 }}
-                                    multiline
-                                    maxRows={5}
-                                    rows={3}
-                                />
-
-                            </>
-                        ))}
+                            {valueIdHistoric && arrayHistoric.filter((item) => item.id_historico === valueIdHistoric).map((historic) => (
+                                <>
+                                    <ContentContainer>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                            <Text bold>Observação</Text>
+                                            <Box sx={{
+                                                ...styles.menuIcon,
+                                                width: 15,
+                                                height: 15,
+                                                backgroundImage: `url(${icons.gray_close})`,
+                                                transition: '.3s',
+                                                zIndex: 999999999,
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
+                                                }
+                                            }} onClick={() => setValueIdHistoric('')} />
+                                        </Box>
+                                        <Box key={historic} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                            <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historic?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
+                                            <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historic?.responsavel || ''} label="Responsável" sx={{ flex: 1 }} />
+                                        </Box>
+                                        <TextInput
+                                            placeholder='Ocorrência'
+                                            name='ocorrencia'
+                                            onChange={handleChangeHistoric}
+                                            value={historic?.ocorrencia || ''}
+                                            label="Ocorrência"
+                                            sx={{ flex: 1 }}
+                                            multiline
+                                            maxRows={5}
+                                            rows={3}
+                                        />
+                                        <Button small secondary text='excluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
+                                            newUser ? deleteHistoric(valueIdHistoric) : handleDeleteHistoric(historic?.id_historico)
+                                        }} />
+                                    </ContentContainer>
+                                </>
+                            ))}
+                        </ContentContainer>
 
                     </ContentContainer>
                 }

@@ -59,8 +59,8 @@ export default function ListUsers(props) {
 
     const listAtivo = [
         { label: 'Todos', value: 'todos' },
-        { label: 'ativo', value: 1 },
-        { label: 'inativo', value: 0 },
+        { label: 'Ativo', value: 1 },
+        { label: 'Inativo', value: 0 },
     ]
 
     const listUser = [
@@ -90,6 +90,7 @@ export default function ListUsers(props) {
                         filterOpition="value"
                         sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                        clean={false}
                     />
                 </Box>
                 <SelectList
@@ -100,6 +101,7 @@ export default function ListUsers(props) {
                     filterOpition="value"
                     sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                    clean={false}
                 />
             </Box>
             {usersList.length > 0 ?

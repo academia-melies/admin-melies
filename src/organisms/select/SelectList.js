@@ -1,6 +1,7 @@
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, InputAdornment } from "@mui/material";
 import { Box, Text } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
+import { useState } from "react";
 
 export const SelectList = (props) => {
     const {
@@ -12,25 +13,52 @@ export const SelectList = (props) => {
         valueSelection = '',
         filterOpition,
         inputStyle,
-        fullWidth = false
+        fullWidth = false,
+        clean = true
     } = props;
 
     const { colorPalette } = useAppContext()
+    const [showClearButton, setShowClearButton] = useState(false);
 
 
     return (
         <Box sx={{ minWidth: 120, flex: fullWidth && 1 }}>
             <FormControl fullWidth>
-                <InputLabel
-                    sx={{ ...inputStyle }}
-                >{title}</InputLabel>
-                <Select sx={{ borderRadius: '8px', backgroundColor: colorPalette.inputColor, ...sx }}
+                <InputLabel sx={{ ...inputStyle }}>{title}</InputLabel>
+                <Select
+                    sx={{ borderRadius: "8px", backgroundColor: colorPalette.inputColor, ...sx }}
                     value={valueSelection}
                     label={title}
                     onChange={(event) => onSelect(event.target.value)}
+                    endAdornment={clean ? 
+                        <InputAdornment position="end">
+                            {valueSelection && (
+                                <Box
+                                    sx={{
+                                        backgroundSize: "cover",
+                                        backgroundRepeat: "no-repeat",
+                                        backgroundPosition: "center",
+                                        width: 15,
+                                        height: 15,
+                                        marginRight: 2,
+                                        backgroundImage: `url(/icons/remove_icon.png)`,
+                                        transition: ".3s",
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: "pointer",
+                                        },
+                                    }}
+                                    onClick={() => onSelect("")}
+                                />
+                            )}
+                        </InputAdornment>
+                        : false
+                    }
                 >
                     {data.map((item, index) => (
-                        <MenuItem key={index} value={item[filterOpition]}>{item.label}</MenuItem>
+                        <MenuItem key={index} value={item[filterOpition]}>
+                            {item.label}
+                        </MenuItem>
                     ))}
                 </Select>
             </FormControl>
@@ -40,3 +68,20 @@ export const SelectList = (props) => {
 
 const styles = {
 }
+
+{/* <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'space-between', alignItems: 'center' }}>
+                                {item[filterOpition]}
+                                <Box sx={{
+                                    backgroundSize: 'cover',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                    width: 15,
+                                    height: 15,
+                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => onSelect('')} />
+                            </Box> */}
