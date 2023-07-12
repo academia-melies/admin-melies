@@ -4,7 +4,7 @@ import axios from "axios"
 import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
+import { CheckBoxComponent, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
@@ -34,6 +34,12 @@ export default function EditUser(props) {
     const [interests, setInterests] = useState({});
     const [arrayInterests, setArrayInterests] = useState([])
     const [showInterest, setShowInterest] = useState(false)
+    const [showHistoric, setShowHistoric] = useState(false)
+    const [showAddHistoric, setAddShowHistoric] = useState(false)
+    const [showEditHistoric, setEditShowHistoric] = useState(false)
+    const [historicData, setHistoricData] = useState({});
+    const [arrayHistoric, setArrayHistoric] = useState([])
+    const [valueIdHistoric, setValueIdHistoric] = useState()
 
     useEffect(() => {
         setPerfil(slug)
@@ -87,6 +93,19 @@ export default function EditUser(props) {
         }
     }
 
+    const getHistoric = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/user/historics/${id}`)
+            const { data } = response
+            setArrayHistoric(data)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
     useEffect(() => {
         (async () => {
@@ -95,7 +114,7 @@ export default function EditUser(props) {
             }
             await handleItems();
         })();
-    }, [perfil])
+    }, [id])
 
     async function findCEP(cep) {
         setLoading(true)
@@ -182,9 +201,6 @@ export default function EditUser(props) {
         }
     }
 
-
-
-
     // async function verifyCPF(cpf, nascimento) {
     //     setLoading(true)
     //     let token_access = 'F285AF4D-13C7-46B9-8C66-583DBE14E017';
@@ -231,9 +247,10 @@ export default function EditUser(props) {
         setLoading(true)
         try {
             await getUserData()
-            await getEnrollment()
-            await getContract()
-            await getInterest()
+             getEnrollment()
+             getContract()
+             getInterest()
+             getHistoric()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -285,6 +302,15 @@ export default function EditUser(props) {
         }))
     }
 
+    const handleChangeHistoric = (value) => {
+
+        setHistoricData((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
+
+
     const addInterest = () => {
         setArrayInterests((prevArray) => [...prevArray, { [value.target.name]: value.target.value }])
         setInterests({})
@@ -335,6 +361,75 @@ export default function EditUser(props) {
         }
     }
 
+
+    const addHistoric = () => {
+        setArrayHistoric((prevArray) => [...prevArray, { [value.target.name]: value.target.value }])
+        setHistoricData({})
+    }
+
+    const deleteHistoric = (index) => {
+        if (newUser) {
+            setArrayHistoric((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
+
+    const handleDeleteHistoric = async (id_historic) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/user/historic/delete/${id_historic}`)
+            if (response?.status == 201) {
+                alert.success('Historico removido.');
+                setValueIdHistoric('')
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover o Historico selecionado.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleAddHistoric = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/user/historic/create/${id}`, { historicData })
+            if (response?.status == 201) {
+                alert.success('Historico adicionado.');
+                setHistoricData({})
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao adicionar Historico.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleEditHistoric = async (id_historic) => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/user/historic/update/${id_historic}`, { historicData })
+            if (response?.status == 201) {
+                alert.success('Historico atualizado.');
+                setHistoricData({})
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao adicionar Historico.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+
     const checkRequiredFields = () => {
         if (!userData.nome) {
             alert.error('Usuário precisa de nome')
@@ -360,7 +455,7 @@ export default function EditUser(props) {
         setLoading(true)
         if (checkRequiredFields()) {
             try {
-                const response = await createUser(userData, arrayInterests);
+                const response = await createUser(userData, arrayInterests, arrayHistoric);
                 const { data } = response
                 if (userData.perfil === 'funcionario') {
                     const responseData = await createContract(data?.userId, contract)
@@ -503,6 +598,16 @@ export default function EditUser(props) {
         { label: 'Pendente', value: 'Pendente' }
     ]
 
+
+    const columnHistoric = [
+        { key: 'id_historico', label: 'ID' },
+        { key: 'ocorrencia', label: 'Ocorrência' },
+        { key: 'dt_ocorrencia', label: 'Data', date: true },
+        { key: 'responsavel', label: 'Responsável' }
+    ];
+
+    console.log(arrayHistoric)
+
     return (
         <>
             <SectionHeader
@@ -550,10 +655,17 @@ export default function EditUser(props) {
                         sx={{ flex: 1, }}
                     />
                     {!newUser &&
-                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                            <Text bold small>Lista de interesses:</Text>
-                            <Button small text='interesses' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowInterest(!showInterest)} />
-                        </Box>
+                        <>
+                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Text bold small>Lista de interesses:</Text>
+                                <Button small text='interesses' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowInterest(!showInterest)} />
+                            </Box>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Text bold small>Historico do {userData.perfil}:</Text>
+                                <Button small text='historico' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowHistoric(!showHistoric)} />
+                            </Box>
+                        </>
                     }
                 </Box>
                 <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' sx={{ flex: 1, }} />
@@ -886,6 +998,117 @@ export default function EditUser(props) {
                                 }} />
                             </Box>
                         </ContentContainer>
+                    </ContentContainer>
+                }
+            </Backdrop>
+
+            <Backdrop open={showHistoric} sx={{ zIndex: 99999 }}>
+                {showHistoric &&
+                    <ContentContainer>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                            <Text bold large>Historico</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_close})`,
+                                transition: '.3s',
+                                zIndex: 999999999,
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} onClick={() => setShowHistoric(!showHistoric)} />
+                        </Box>
+                        <Table_V1 columns={columnHistoric}
+                            data={arrayHistoric}
+                            columnId="id_historico"
+                            columnActive={false}
+                            onSelect={(value) => setValueIdHistoric(value)}
+                            routerPush={false}
+                        />
+
+                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                            <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setAddShowHistoric(!showAddHistoric)} />
+                            {
+                           //valueIdHistoric > 0 && !newUser &&
+                             //   <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
+                            //        handleEditHistoric(valueIdHistoric)
+                            //        setValueIdHistoric('')
+                            //    }} />
+                           // }
+                            }
+                        </Box>
+
+                        {showAddHistoric &&
+                            <>
+                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                    <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historicData?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
+                                    <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historicData?.responsavel || ''} sx={{ flex: 1 }} />
+                                    <Box sx={{
+                                        backgroundSize: 'cover',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
+                                        width: 25,
+                                        height: 25,
+                                        backgroundImage: `url(/icons/include_icon.png)`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => {
+                                        newUser ? addHistoric() : handleAddHistoric()
+                                        setAddShowHistoric(!showAddHistoric)
+                                    }} />
+                                </Box>
+                                <TextInput
+                                    placeholder='Ocorrência'
+                                    name='ocorrencia'
+                                    onChange={handleChangeHistoric}
+                                    value={historicData?.ocorrencia || ''}
+                                    sx={{ flex: 1 }}
+                                    multiline
+                                    maxRows={5}
+                                    rows={3}
+                                />
+
+                            </>}
+
+                        {valueIdHistoric && arrayHistoric.filter((item) => item.id_historico === valueIdHistoric).map((historic) => (
+                            <>
+
+                                <Box key={historic} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                    <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historic?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
+                                    <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historic?.responsavel || ''} sx={{ flex: 1 }} />
+                                    <Box sx={{
+                                        backgroundSize: 'cover',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
+                                        width: 25,
+                                        height: 25,
+                                        backgroundImage: `url(/icons/remove_icon.png)`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => {
+                                        newUser ? deleteHistoric(valueIdHistoric) : handleDeleteHistoric(historic?.id_historico)
+                                    }} />
+                                </Box>
+                                <TextInput
+                                    placeholder='Ocorrência'
+                                    name='ocorrencia'
+                                    onChange={handleChangeHistoric}
+                                    value={historic?.ocorrencia || ''}
+                                    sx={{ flex: 1 }}
+                                    multiline
+                                    maxRows={5}
+                                    rows={3}
+                                />
+
+                            </>
+                        ))}
+
                     </ContentContainer>
                 }
             </Backdrop>
