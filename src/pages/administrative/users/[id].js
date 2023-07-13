@@ -4,7 +4,7 @@ import axios from "axios"
 import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
+import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
@@ -49,6 +49,7 @@ export default function EditUser(props) {
     const [showAddInterest, setAddShowInterest] = useState(false)
     const [showViewInterest, setShowViewInterest] = useState(false)
     const [showEditHistoric, setEditShowHistoric] = useState(false)
+    const [showEditFile, setShowEditFile] = useState(false)
     const [historicData, setHistoricData] = useState({
         responsavel: user?.nome
     });
@@ -452,7 +453,7 @@ export default function EditUser(props) {
         }
     }
 
-     const checkRequiredFields = () => {
+    const checkRequiredFields = () => {
         if (!userData?.nome) {
             alert?.error('O campo nome é obrigatório')
             return false
@@ -465,97 +466,97 @@ export default function EditUser(props) {
             alert?.error('O e-mail inserido parece estar incorreto.')
             return false
         }
-    
+
         if (userData?.senha !== userData?.confirmar_senha) {
             alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
             return false
         }
-    
+
         if (!userData?.telefone) {
             alert?.error('O campo telefone é obrigatório')
             return false
         }
-    
+
         if (!userData?.perfil) {
             alert?.error('O campo perfil é obrigatório')
             return false
         }
-    
-        if (!userData?.ativo) {
+
+        if (!!userData?.ativo) {
             alert?.error('O campo status é obrigatório')
             return false
         }
-    
+
         if (!userData?.naturalidade) {
             alert?.error('O campo naturalidade é obrigatório')
             return false
         }
-    
+
         if (!userData?.pais_origem) {
             alert?.error('O campo País de origem é obrigatório')
             return false
         }
-    
+
         if (!userData?.nacionalidade) {
             alert?.error('O campo nacionalidade é obrigatório')
             return false
         }
-    
+
         if (!userData?.cor_raca) {
             alert?.error('O campo Cor e raça é obrigatório')
             return false
         }
-    
+
         if (!userData?.genero) {
             alert?.error('O campo gênero é obrigatório')
             return false
         }
-    
+
         if (!userData?.deficiencia) {
             alert.error('O campo deficiência é obrigatório')
             return false
         }
-    
+
         if (!userData?.estado_civil) {
             alert.error('O campo Estado cívil é obrigatório')
             return false
         }
-    
+
         if (!userData?.escolaridade) {
             alert.error('O campo escolaridade é obrigatório')
             return false
         }
-    
+
         if (!userData?.escolaridade) {
             alert.error('O campo escolaridade é obrigatório')
             return false
         }
-    
+
         if (!userData?.cep) {
             alert.error('O campo CEP é obrigatório')
             return false
         }
-    
-        if (!userData?.numero) {
+
+        if (!userData?.telefone) {
             alert.error('O campo numero é obrigatório')
             return false
         }
-    
+
         if (!userData?.cidade) {
             alert.error('O campo cidade é obrigatório')
             return false
         }
-    
+
         if (!userData?.rg) {
             alert.error('O campo RG é obrigatório')
             return false
         }
-    
+
         if (!userData?.cpf) {
             alert.error('O campo CPF é obrigatório')
             return false
         }
-    
+
         return true
     }
 
@@ -605,28 +606,28 @@ export default function EditUser(props) {
     }
 
     const handleEditUser = async () => {
-        if (checkRequiredFields()) {
-            setLoading(true)
-            try {
-                const response = await editeUser({ id, userData })
-                if (contract) {
-                    const responseData = await editContract({ id, contract })
-                }
-                if (enrollmentData) {
-                    const responseData = await editeEnrollment({ id, enrollmentData })
-                }
-                if (response?.status === 201) {
-                    alert.success('Usuário atualizado com sucesso.');
-                    handleItems()
-                    return
-                }
-                alert.error('Tivemos um problema ao atualizar usuário.');
-            } catch (error) {
-                alert.error('Tivemos um problema ao atualizar usuário.');
-            } finally {
-                setLoading(false)
+
+        setLoading(true)
+        try {
+            const response = await editeUser({ id, userData })
+            if (contract) {
+                const responseData = await editContract({ id, contract })
             }
+            if (enrollmentData) {
+                const responseData = await editeEnrollment({ id, enrollmentData })
+            }
+            if (response?.status === 201) {
+                alert.success('Usuário atualizado com sucesso.');
+                handleItems()
+                return
+            }
+            alert.error('Tivemos um problema ao atualizar usuário.');
+        } catch (error) {
+            alert.error('Tivemos um problema ao atualizar usuário.');
+        } finally {
+            setLoading(false)
         }
+
     }
 
     const groupPerfil = [
@@ -784,9 +785,24 @@ export default function EditUser(props) {
                         <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Contato</Text>
                     </Box>
 
-                    <Box sx={{ '&:hover': { opacity: 0.8, cursor: 'pointer' } }}>
-                        <Avatar src={userData?.foto} sx={{ width: 140, height: 140, borderRadius: '16PX' }} variant="square" />
+                    <Box sx={{ '&:hover': { opacity: 0.8, cursor: 'pointer' }, }}>
+                        <Avatar src={userData?.foto} sx={{ width: 140, height: 140, borderRadius: '16px' }} variant="square" onClick={() => setShowEditFile(true)} />
                     </Box>
+
+                    <EditFile
+                        open={showEditFile}
+                        onSet={(set) => {
+                            setShowEditFile(set)
+                        }}
+                        title='Foto de perfil'
+                        text='Edite ou remova sua foto de perfil.'
+                        textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                        data={userData}
+                        usuarioId={userData?.id}
+                        campo='foto_perfil'
+                        tipo='foto'
+                        bgImage={userData.foto}
+                    />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
@@ -802,7 +818,7 @@ export default function EditUser(props) {
                         name='telefone'
                         onChange={(phone) => setUserData({ ...userData, telefone: phone })}
                         value={userData?.telefone}
-                        sx={{ flex: 1, }} 
+                        sx={{ flex: 1, }}
                     />
                 </Box>
                 {/* <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} /> */}
@@ -1485,4 +1501,87 @@ const styles = {
         gap: 1.8,
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
     }
+}
+
+export const EditFile = (props) => {
+    const {
+        open = false,
+        onSet = () => { },
+        loading = () => { },
+        title = '',
+        text = '',
+        textDropzone = '',
+        data = [],
+        campo = '',
+        tipo = '',
+        bgImage = '',
+        usuarioId,
+        handleItems,
+    } = props
+
+    const { alert } = useAppContext()
+
+    return (
+        <Backdrop open={open} sx={{ zIndex: 99999 }}>
+            <ContentContainer>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
+                    <Text bold>{title}</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        width: 15,
+                        height: 15,
+                        backgroundImage: `url(${icons.gray_close})`,
+                        transition: '.3s',
+                        zIndex: 999999999,
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={() => onSet(false)} />
+                </Box>
+                <Box sx={{}}>
+                    <Text>{text}</Text>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+
+                    <CustomDropzone
+                        txt={textDropzone}
+                        bgImage={bgImage}
+                        bgImageStyle={{
+                            backgroundImage: `url('${bgImage}')`,
+                            backgroundSize: 'contain',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'center center',
+                            width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                            aspectRatio: '1/1',
+                        }}
+                        callback={(file) => {
+                            if (file?._id) {
+                                alert.success('Logo inserida com sucesso.');
+                                handleItems()
+                            }
+                        }}
+                        usuario_id={usuarioId}
+                        campo={campo}
+                        tipo={tipo}
+                    />
+
+                </Box>
+
+                {bgImage &&
+                    <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Button small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => console.log('remover')} />
+                            </Box>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Button small text='Adicionar novo' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => console.log('adicionar')} />
+                            </Box>
+                        </Box>
+                    </>
+                }
+            </ContentContainer>
+        </Backdrop>
+    )
 }

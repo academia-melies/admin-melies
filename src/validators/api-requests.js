@@ -194,5 +194,35 @@ export const editGrid = async ({ id, gridData }) => {
    }
 }
 
+export const uploadFile = async (data) => {
+
+   const { formData, usuario_id = null, campo = null, tipo = null } = data;
+
+   let query = `?usuario_id=${usuario_id}`;
+
+   if (campo) query += `&campo=${campo}`;
+   if (tipo) query += `&tipo=${tipo}`;
+
+   try {
+      const response = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+      return response
+   } catch (error) {
+      return (error)
+   }
+}
+
+export const deleteFile = async ({ fileId, usuario_id }) => {
+
+   let query = `?companyId=${companyId}`;
+   if (usuario_id) query += `&usuario_id=${usuario_id}`;
+
+   try {
+      const response = await api.delete(`/file/delete/${fileId}${query}`)
+      return response
+   } catch (error) {
+      return error
+   }
+}
+
 
 
