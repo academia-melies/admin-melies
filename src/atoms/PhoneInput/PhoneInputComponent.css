@@ -1,0 +1,10 @@
+.PhoneInputCountryIcon {
+  height: 20px;
+  /* Ajuste o tamanho do ícone do país conforme necessário */
+  width: auto;
+}
+
+.PhoneInputInput {
+  padding-left: 30px;
+  /* Ajuste o espaçamento à esquerda conforme necessário */
+}
