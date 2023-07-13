@@ -8,6 +8,8 @@ export { UserHeader } from "./sections/userHeader";
 export { Table_V1 } from "./Table/table";
 export { IconTheme } from "./iconTheme/IconTheme";
 export { CheckBoxComponent } from "./checkBox/CheckBox";
+export { CustomDropzone } from "./dropzone/Dropzone";
+
 
 
 
