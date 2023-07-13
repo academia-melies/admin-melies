@@ -97,7 +97,7 @@ input::placeholder {
    } */
 }
 
- @font-face {
+@font-face {
    font-family: 'MetropolisRegular';
    src: url('../../assets/fonts/metropolis.regular.otf');
    font-weight: 200;
@@ -158,6 +158,47 @@ input::placeholder {
    src: url('../../assets/fonts/metropolis.thin.otf');
    font-weight: 100;
    font-style: normal;
+}
+
+.PhoneInputCountryIcon {
+   height: auto;
+   color: currentColor;
+   /* Ajuste o tamanho do ícone do país conforme necessário */
+   width: 20px;
+   background: none;
+   border: none;
+   box-sizing: none;
+   -webkit-tap-highlight-color: transparent;
+
+}
+
+.PhoneInputInput {
+   font: MetropolisRegular;
+   letter-spacing: inherit;
+   color: currentColor;
+   font-size: 15px;
+   /* padding: 4px 0 5px; */
+   border: 0;
+   box-sizing: content-box;
+   background: none;
+   height: 1.35em;
+   margin: 0;
+   -webkit-tap-highlight-color: transparent;
+   display: block;
+   min-width: 0;
+   width: 100%;
+   -webkit-animation-name: mui-auto-fill-cancel;
+   animation-name: mui-auto-fill-cancel;
+   -webkit-animation-duration: 10ms;
+   animation-duration: 10ms;
+   padding: 16.5px 8px;
+
+   /* Ajuste o espaçamento à esquerda conforme necessário */
+}
+
+.PhoneInputInput--focus {
+   border: 1px solid #1976d2;
+   box-shadow: 0 0 0 1px #1976d2;
 }
 
 /* @font-face {

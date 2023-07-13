@@ -4,3 +4,4 @@ export { ContentContainer } from "./ContentContainer";
 export { Divider } from "./Divider";
 export { Text } from "./Text";
 export { TextInput } from './TextInput';
+export { PhoneInputField } from './PhoneInput/PhoneInput'
