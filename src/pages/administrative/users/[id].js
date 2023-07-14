@@ -1622,7 +1622,9 @@ export const EditFile = (props) => {
                             </Box>
 
                             <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button small text='Adicionar novo' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => console.log('adicionar')} />
+                                <Button small text='Salvar' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
+                                    onSet(false)
+                                    alert.info('Sua foto de perfil foi atualizada.')}} />
                             </Box>
                         </Box>
                     </>

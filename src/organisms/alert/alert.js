@@ -18,7 +18,7 @@ const getColors = (alertType) => {
       progressBarBackgroundColor: '#f5f2f2',
       textColor: '#91604e',
    }
-   return {
+   if(alertType === 'info') return {
       backgroundColor: '#f5f3f2',
       progressBarColor: Colors.yellow,
       borderColor: '#71644844',
@@ -29,7 +29,7 @@ const getColors = (alertType) => {
 
 export const Alert = (props) => {
 
-   const defaultTimer = props.type === 'success' ? 2 : 5
+   const defaultTimer = props.type === 'success' ? 5 : 5
 
    const [timer, setTimer] = useState(defaultTimer)
    const theme = getColors(props.type)
