@@ -15,7 +15,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
    const firstName = name[0];
    const lastName = name[name.length - 1];
    const userName = `${firstName} ${lastName}`;
-   let fotoPerfil = user?.foto;
+   let fotoPerfil = user?.getPhoto?.location || '';
    const router = useRouter();
    const pathname = router.pathname === '/' ? null : router.asPath
    const [showUserOptions, setShowUserOptions] = useState(false)
@@ -88,7 +88,10 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      padding: '8px 8px',
 
                   }}>
-                     <Avatar sx={{ width: '65px', height: '65px', fontSize: 14, border: `1px solid #fff` }} src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`} />
+                     <Avatar
+                        sx={{ width: '65px', height: '65px', fontSize: 14, border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }}
+                        src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`}
+                        onClick={() => router.push(`/administrative/users/${user?.id}`)} />
                      <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff', fontFamily: 'MetropolisSemiBold' }}>{userName}</Text>
                      {/* <Box sx={{
                         ...styles.menuIcon,
@@ -112,7 +115,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            padding: '0px 6px 0px 6px',
                            transition: 'background-color 1s',
                            display: 'flex',
-                           '&:hover':{
+                           '&:hover': {
                               cursor: 'pointer',
                               backgroundColor: colorPalette.buttonColor + '88'
                            }
@@ -132,9 +135,9 @@ export const LeftMenu = ({ menuItems = [] }) => {
                               cursor: 'pointer'
                            }
                         }} onClick={() => {
-                           router.push(`/administrative/employee/${user?.id}`)
+                           router.push(`/administrative/users/${user?.id}`)
                            setShowUserOptions(!showUserOptions)
-                        }}/>
+                        }} />
                      </Box>
                   </Box>
                   {/* {showUserOptions &&

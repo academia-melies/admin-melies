@@ -59,7 +59,8 @@ export const AppProvider = ({ children }) => {
                     api.defaults.headers.Authorization = `Bearer ${token}`
                     const response = await api.post('/user/loginToken')
                     const { data } = response;
-                    if (data) setUser(data);
+                    const { userData, getPhoto } = data;
+                    if (userData) setUser({ ...userData, getPhoto });
                     else setUser(null);
                 }
             } catch (error) {
@@ -75,14 +76,16 @@ export const AppProvider = ({ children }) => {
         try {
             setLoading(true)
             const response = await api.post('/user/login', { email, senha })
-            if (response.data.admin_melies < 1) {
+            const { userData } = response.data
+            if (userData.admin_melies < 1) {
                 return 0
             }
-            if (response.data.token) {
+            if (userData.token) {
                 const { data } = response;
-                localStorage.setItem('token', data?.token);
-                api.defaults.headers.Authorization = `Bearer ${data?.token}`
-                setUser(response.data)
+                const { userData, getPhoto } = data;
+                localStorage.setItem('token', userData?.token);
+                api.defaults.headers.Authorization = `Bearer ${userData?.token}`
+                setUser({ ...userData, getPhoto });
                 router.push('/');
                 return response
             }
@@ -115,13 +118,12 @@ export const AppProvider = ({ children }) => {
         colorsThem();
     }, [theme])
 
-
-
     return (
         <AppContext.Provider
             value={{
                 isAuthenticated: !!user,
                 user,
+                setUser,
                 permissions: user?.permissions,
                 login,
                 logout,

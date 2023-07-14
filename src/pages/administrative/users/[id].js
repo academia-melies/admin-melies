@@ -7,13 +7,13 @@ import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField } from 
 import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
-import { createContract, createEnrollment, createUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
+import { createContract, createEnrollment, createUser, deleteFile, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
 import { emailValidator, formatCEP, formatCPF, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { checkRequiredFields } from "../../../validators/validators"
 
 export default function EditUser(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setUser } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -56,7 +56,7 @@ export default function EditUser(props) {
     const [arrayHistoric, setArrayHistoric] = useState([])
     const [valueIdHistoric, setValueIdHistoric] = useState()
     const [valueIdInterst, setValueIdInterst] = useState()
-
+    const [bgPhoto, setBgPhoto] = useState({})
 
     useEffect(() => {
         setPerfil(slug)
@@ -72,7 +72,6 @@ export default function EditUser(props) {
     const getUserData = async () => {
         try {
             const response = await api.get(`/user/${id}`)
-            console.log(response)
             const { data } = response
             setUserData(data)
         } catch (error) {
@@ -116,6 +115,20 @@ export default function EditUser(props) {
             const response = await api.get(`/user/historics/${id}`)
             const { data } = response
             setArrayHistoric(data)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const getPhoto = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/photo/${id}`)
+            const { data } = response
+            setBgPhoto(data)
+            console.log(response)
         } catch (error) {
             console.log(error)
         } finally {
@@ -268,6 +281,7 @@ export default function EditUser(props) {
             getContract()
             getInterest()
             getHistoric()
+            getPhoto()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -780,13 +794,9 @@ export default function EditUser(props) {
 
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, padding: '0px 0px 25px 0px', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'center' }}>
                     <Box>
-                        <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Contato</Text>
-                    </Box>
-
-                    <Box sx={{ '&:hover': { opacity: 0.8, cursor: 'pointer' }, }}>
-                        <Avatar src={userData?.foto} sx={{ width: 140, height: 140, borderRadius: '16px' }} variant="square" onClick={() => setShowEditFile(true)} />
+                        <Text title bold style={{}}>Contato</Text>
                     </Box>
 
                     <EditFile
@@ -795,31 +805,48 @@ export default function EditUser(props) {
                             setShowEditFile(set)
                         }}
                         title='Foto de perfil'
-                        text='Edite ou remova sua foto de perfil.'
+                        text='Para alterar sua foto de perfil, clique ou arraste no local desejado.'
                         textDropzone='Arraste ou clique para selecionar a Foto que deseja'
-                        data={userData}
+                        fileData={bgPhoto}
                         usuarioId={userData?.id}
                         campo='foto_perfil'
                         tipo='foto'
-                        bgImage={userData.foto}
+                        bgImage={bgPhoto.location}
+                        callback={(status) => {
+                            if (status === 201 || status === 200) {
+                                handleItems()
+                            }
+                        }}
                     />
                 </Box>
-                <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
-                    <TextInput placeholder='Nome Social' name='nome_social' onChange={handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
-                    <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail *' sx={{ flex: 1, }} />
-                </Box>
-                <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login *' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
-                    {/* <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone *' sx={{ flex: 1, }} /> */}
-                    <PhoneInputField
-                        label='Telefone *'
-                        name='telefone'
-                        onChange={(phone) => setUserData({ ...userData, telefone: phone })}
-                        value={userData?.telefone}
-                        sx={{ flex: 1, }}
-                    />
+                <Box sx={{ ...styles.inputSection, whiteSpace: 'nowrap', alignItems: 'end', gap: 4 }}>
+                    <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
+                        <Box sx={{ ...styles.inputSection }}>
+                            <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nome Social' name='nome_social' onChange={handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
+                            <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail *' sx={{ flex: 1, }} />
+                        </Box>
+                        <Box sx={{ ...styles.inputSection }}>
+                            <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login *' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
+                            {/* <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone *' sx={{ flex: 1, }} /> */}
+                            <PhoneInputField
+                                label='Telefone *'
+                                name='telefone'
+                                onChange={(phone) => setUserData({ ...userData, telefone: phone })}
+                                value={userData?.telefone}
+                                sx={{ flex: 1, }}
+                            />
+                        </Box>
+                    </Box>
+                    <Box sx={{ '&:hover': { opacity: 0.8, cursor: 'pointer' }, }}>
+                        <Avatar src={bgPhoto.location} sx={{
+                            height: 'auto',
+                            borderRadius: '16px',
+                            width: { xs: '100%', sm: 150, md: 150, lg: 180 },
+                            aspectRatio: '1/1',
+                        }} variant="square" onClick={() => setShowEditFile(true)} />
+                    </Box>
                 </Box>
                 {/* <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} /> */}
                 <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25 }}>
@@ -835,6 +862,8 @@ export default function EditUser(props) {
                         })}
                         sx={{ flex: 1, }}
                     />
+                </Box>
+                <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25, padding: '0px 0px 20px 15px' }}>
                     {!newUser &&
                         <>
                             <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
@@ -849,7 +878,6 @@ export default function EditUser(props) {
                         </>
                     }
                 </Box>
-                <TextInput placeholder='URL (foto perfil)' name='foto' onChange={handleChange} value={userData?.foto || ''} label='URL (foto perfil)' sx={{ flex: 1, }} />
                 {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
                     <TextInput placeholder='Confirmar senha' name='confirmar_senha' onChange={handleChange} value={userData?.confirmar_senha || ''} type="password" label='Confirmar senha' sx={{ flex: 1, }} />
@@ -1033,8 +1061,8 @@ export default function EditUser(props) {
                             </Box>
                             <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
                             <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={contract?.admissao || ''} label='Admissão' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento || ''} label='Desligamento' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao).split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
                             </Box>
                             <Box sx={styles.inputSection}>
                                 <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
@@ -1507,7 +1535,7 @@ export const EditFile = (props) => {
     const {
         open = false,
         onSet = () => { },
-        loading = () => { },
+        callback = () => { },
         title = '',
         text = '',
         textDropzone = '',
@@ -1517,9 +1545,23 @@ export const EditFile = (props) => {
         bgImage = '',
         usuarioId,
         handleItems,
+        fileData = {}
     } = props
 
-    const { alert } = useAppContext()
+    const { alert, setLoading } = useAppContext()
+
+    const handleDeleteFile = async () => {
+        setLoading(true)
+        const response = await deleteFile({ fileId: fileData?.id_foto_perfil, usuario_id: usuarioId, campo: 'foto_perfil', key: fileData?.key_file })
+
+        if (response.status === 200) {
+            alert.success('Aqruivo removido.');
+            callback(response.status)
+        } else {
+            alert.error('Ocorreu um erro ao remover arquivo.');
+        }
+        setLoading(false)
+    }
 
     return (
         <Backdrop open={open} sx={{ zIndex: 99999 }}>
@@ -1539,7 +1581,12 @@ export const EditFile = (props) => {
                         }
                     }} onClick={() => onSet(false)} />
                 </Box>
-                <Box sx={{}}>
+                <Box sx={{
+                    display: 'flex',
+                    whiteSpace: 'wrap',
+                    maxWidth: 280,
+                    justifyContent: 'center'
+                }}>
                     <Text>{text}</Text>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
@@ -1555,10 +1602,9 @@ export const EditFile = (props) => {
                             width: { xs: '100%', sm: 150, md: 150, lg: 150 },
                             aspectRatio: '1/1',
                         }}
-                        callback={(file) => {
-                            if (file?._id) {
-                                alert.success('Logo inserida com sucesso.');
-                                handleItems()
+                        callback={(status) => {
+                            if (status === 201) {
+                                callback(status)
                             }
                         }}
                         usuario_id={usuarioId}
@@ -1572,7 +1618,7 @@ export const EditFile = (props) => {
                     <>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => console.log('remover')} />
+                                <Button small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => handleDeleteFile()} />
                             </Box>
 
                             <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>

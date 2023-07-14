@@ -211,12 +211,15 @@ export const uploadFile = async (data) => {
    }
 }
 
-export const deleteFile = async ({ fileId, usuario_id }) => {
+export const deleteFile = async ({ fileId, usuario_id, campo, key }) => {
 
-   let query = `?companyId=${companyId}`;
-   if (usuario_id) query += `&usuario_id=${usuario_id}`;
+   let query = `?key=${key}`;
 
    try {
+      if (campo === 'foto_perfil') {
+         const response = await api.delete(`/photos/delete/${fileId}${query}`)
+         return response
+      }
       const response = await api.delete(`/file/delete/${fileId}${query}`)
       return response
    } catch (error) {
