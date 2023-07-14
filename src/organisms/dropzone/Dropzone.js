@@ -3,10 +3,12 @@ import { useAppContext } from "../../context/AppContext";
 import { getRandomInt } from "../../helpers";
 import { uploadFile } from "../../validators/api-requests";
 import { Box, Text } from "../../atoms";
+import { useState } from "react";
 
 export const CustomDropzone = (props) => {
 
     const { setLoading, alert, colorPalette } = useAppContext()
+    const [filesDrop, setFilesDrop] = useState()
     const {
         callback = () => { },
         usuario_id = null,
@@ -38,6 +40,7 @@ export const CustomDropzone = (props) => {
 
         formData.append('file', uploadedFile.file, encodeURIComponent(uploadedFile.name))
 
+
         try {
             const response = await uploadFile({ formData, usuario_id, campo, tipo });
             const { data = {}, status } = response;
@@ -45,7 +48,7 @@ export const CustomDropzone = (props) => {
 
             if (status === 201) {
                 alert.success('Upload relizado com sucesso.');
-                callback(file)
+                callback(status)
                 return file
             }
             alert.error('Tivemos um problema ao fazer upload do arquivo.');
@@ -59,27 +62,43 @@ export const CustomDropzone = (props) => {
     }
 
     return (
-        <Dropzone accept={{ 'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'], 'image/png': ['.png', '.PNG'], 'application/pdf': ['.pdf'] }} onDrop={onDropFiles}>
-            {({ getRootProps, getInputProps, isDragActive, isDragReject }) => (
-                <Box {...getRootProps()}
-                    sx={{
-                        ...styles.dropZoneContainer,
-                        border: `2px dashed ${colorPalette.primary + 'aa'}`,
-                        backgroundColor: isDragActive && !isDragReject ? colorPalette.secondary : isDragReject ? '#ff000042' : colorPalette.primary,
-                        ...(bgImage ? { ...bgImageStyle, border: 'none' } : {})
-                    }}
-                >
-                    <input {...getInputProps()} />
-                    {!bgImage &&
-                        <Box style={{ textAlign: 'center', display: 'flex', fontSize: 12 }}>
-                            <Text small='true' style={{ color: colorPalette.textColor, whiteSpace: 'pre-line' }}>
-                                {props.txt || 'Clique ou arraste aqui seus arquivos para upload'}
-                            </Text>
-                        </Box>
-                    }
-                </Box>
-            )}
-        </Dropzone>
+        <>
+            <Dropzone accept={{ 'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'], 'image/png': ['.png', '.PNG'], 'application/pdf': ['.pdf'] }} onDrop={onDropFiles}>
+                {({ getRootProps, getInputProps, isDragActive, isDragReject }) => (
+                    <Box {...getRootProps()}
+                        sx={{
+                            ...styles.dropZoneContainer,
+                            border: `2px dashed ${colorPalette.primary + 'aa'}`,
+                            backgroundColor: isDragActive && !isDragReject ? colorPalette.secondary : isDragReject ? '#ff000042' : colorPalette.primary,
+                            ...(bgImage ? { ...bgImageStyle, border: 'none' } : {})
+                        }}
+                    >
+                        <input {...getInputProps()} />
+                        {!bgImage &&
+                            <Box style={{ textAlign: 'center', display: 'flex', fontSize: 12 }}>
+                                <Text small='true' style={{ color: colorPalette.textColor, whiteSpace: 'pre-line' }}>
+                                    {props.txt || 'Clique ou arraste aqui seus arquivos para upload'}
+                                </Text>
+                            </Box>
+                        }
+                    </Box>
+                )}
+            </Dropzone>
+            {/* {filesDrop?.map((file, index) => {
+                return (
+                    <Box key={`${file}-${index}`}
+                        sx={{
+                            backgroundImage: `url('${file.preview}')`,
+                            backgroundSize: 'contain',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'center center',
+                            width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                            aspectRatio: '1/1',
+                        }}>
+                    </Box>
+                )
+            })} */}
+        </>
     )
 }
 

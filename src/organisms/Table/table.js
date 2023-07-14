@@ -96,7 +96,7 @@ export const Table_V1 = (props) => {
                                                             overflow: 'hidden',
                                                         }}
                                                     >
-                                                        {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column.avatarUrl]} />}
+                                                        {column.key === 'nome' && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column?.avatarUrl || '']} />}
 
                                                         {typeof row[column.key] === 'object' &&
                                                             row[column?.key || '-'] instanceof Date ? (
