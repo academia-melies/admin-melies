@@ -29,6 +29,7 @@ export const icons = {
    gray_arrow_down: 'https://mf-planejados.s3.amazonaws.com/gray_arrow_down.png',
    gray_close: 'https://mf-planejados.s3.amazonaws.com/gray_close.png',
    home: 'https://mf-planejados.s3.amazonaws.com/home_icon.png',
-   search: 'https://mf-planejados.s3.amazonaws.com/search_icon.png'
+   search: 'https://mf-planejados.s3.amazonaws.com/search_icon.png',
+   file: 'https://adm-melies.s3.amazonaws.com/file_icon.png'
 
 }

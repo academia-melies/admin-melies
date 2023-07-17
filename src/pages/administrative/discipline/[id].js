@@ -371,6 +371,7 @@ export default function EditDiscipline(props) {
                         backgroundPosition: 'center',
                         width: 25,
                         height: 25,
+                        borderRadius: '50%',
                         backgroundImage: `url(/icons/include_icon.png)`,
                         transition: '.3s',
                         "&:hover": {

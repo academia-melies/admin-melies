@@ -11,6 +11,7 @@ import { createContract, createEnrollment, createUser, deleteFile, editContract,
 import { emailValidator, formatCEP, formatCPF, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { checkRequiredFields } from "../../../validators/validators"
+import { FileInput } from "../../../atoms/FileInput"
 
 export default function EditUser(props) {
     const { setLoading, alert, colorPalette, user, setUser } = useAppContext()
@@ -29,13 +30,14 @@ export default function EditUser(props) {
         status: '',
         motivo_desistencia: '',
         dt_desistencia: null,
-        certificado_emitido: ''
+        certificado_emitido: '',
     })
     const [showRegistration, setShowRegistration] = useState(false)
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
     const [classesInterest, setClassesInterest] = useState([])
+    const [fileCallback, setFileCallback] = useState()
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
@@ -50,6 +52,12 @@ export default function EditUser(props) {
     const [showViewInterest, setShowViewInterest] = useState(false)
     const [showEditHistoric, setEditShowHistoric] = useState(false)
     const [showEditFile, setShowEditFile] = useState(false)
+    const [showCpfFile, setShowCpfFile] = useState(false)
+    const [showRgFile, setShowRgFile] = useState(false)
+    const [showFoireingerFile, setShowFoireingerFile] = useState(false)
+    const [showAddressFile, setShowAddressFile] = useState(false)
+    const [showCertificate, setShowCertificate] = useState(false)
+
     const [historicData, setHistoricData] = useState({
         responsavel: user?.nome
     });
@@ -128,7 +136,19 @@ export default function EditUser(props) {
             const response = await api.get(`/photo/${id}`)
             const { data } = response
             setBgPhoto(data)
-            console.log(response)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const getPhotoNewUser = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/photo/${fileCallback}`)
+            const { data } = response
+            setBgPhoto(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -145,6 +165,12 @@ export default function EditUser(props) {
             await handleItems();
         })();
     }, [id])
+
+    useEffect(() => {
+        if (newUser && fileCallback) {
+            getPhotoNewUser()
+        }
+    }, [fileCallback])
 
     async function findCEP(cep) {
         setLoading(true)
@@ -582,11 +608,12 @@ export default function EditUser(props) {
                 const { data } = response
                 if (userData.perfil === 'funcionario') {
                     const responseData = await createContract(data?.userId, contract)
-                    return responseData;
                 }
                 if (userData.perfil === 'aluno') {
                     const responseData = await createEnrollment(data?.userId, enrollmentData);
-                    return responseData;
+                }
+                if (fileCallback) {
+                    const responseData = await api.patch(`/file/edit/${fileCallback}/${data?.userId}`);
                 }
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
@@ -772,6 +799,12 @@ export default function EditUser(props) {
         },
     ]
 
+    const groupForeigner = [
+        {
+            label: 'Estrangeiro sem CPF',
+            value: true
+        },
+    ]
 
     const columnHistoric = [
         { key: 'id_historico', label: 'ID' },
@@ -779,7 +812,6 @@ export default function EditUser(props) {
         { key: 'dt_ocorrencia', label: 'Data', date: true },
         { key: 'responsavel', label: 'Responsável' }
     ];
-
 
     return (
         <>
@@ -801,6 +833,7 @@ export default function EditUser(props) {
 
                     <EditFile
                         open={showEditFile}
+                        newUser={newUser}
                         onSet={(set) => {
                             setShowEditFile(set)
                         }}
@@ -808,12 +841,13 @@ export default function EditUser(props) {
                         text='Para alterar sua foto de perfil, clique ou arraste no local desejado.'
                         textDropzone='Arraste ou clique para selecionar a Foto que deseja'
                         fileData={bgPhoto}
-                        usuarioId={userData?.id}
+                        usuarioId={id}
                         campo='foto_perfil'
                         tipo='foto'
                         bgImage={bgPhoto.location}
-                        callback={(status) => {
-                            if (status === 201 || status === 200) {
+                        callback={(file) => {
+                            if (file.status === 201 || file.status === 200) {
+                                setFileCallback(file?.id_foto_perfil)
                                 handleItems()
                             }
                         }}
@@ -907,13 +941,55 @@ export default function EditUser(props) {
                 {showRegistration &&
                     <>
                         <Box sx={{ padding: '0px 0px 20px 0px' }}>
-                            <CheckBoxComponent label="Estrangeiro sem CPF" onSelect={(value) => {
-                                setForeigner(value)
-                                setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : 'Brasileira Nata' })
-                            }} />
+                            <CheckBoxComponent
+                                boxGroup={groupForeigner}
+                                valueChecked={userData?.foreigner || ''}
+                                // title="Estrangeiro sem CPF" 
+                                horizontal={mobile ? false : true}
+                                onSelect={(value) => {
+                                    setForeigner(value)
+                                    setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : 'Brasileira Nata' })
+                                }}
+                                sx={{ width: 1 }} />
+
+                            {/* <CheckBoxComponent
+                                valueChecked={userData?.tipo_deficiencia || ''}
+                                boxGroup={groupDeficiency}
+                                title="Tipo de deficiência"
+                                horizontal={mobile ? false : true}
+                                onSelect={(value) => setUserData({
+                                    ...userData,
+                                    tipo_deficiencia: value
+                                })}
+                                sx={{ width: 1 }}
+                            /> */}
                         </Box>
                         <Box sx={styles.inputSection}>
-                            {!foreigner && <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />}
+                            {!foreigner &&
+                                <FileInput onClick={(value) => setShowCpfFile(value)}>
+                                    <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
+                                </FileInput>
+                            }
+                            <EditFile
+                                open={showCpfFile}
+                                newUser={newUser}
+                                onSet={(set) => {
+                                    setShowCpfFile(set)
+                                }}
+                                title='CPF - Frente e verso'
+                                text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
+                                textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                fileData={bgPhoto}
+                                usuarioId={id}
+                                campo='cpf'
+                                tipo='foto/pdf'
+                                callback={(file) => {
+                                    if (file.status === 201 || file.status === 200) {
+                                        setFileCallback(file?.id_foto_perfil)
+                                        handleItems()
+                                    }
+                                }}
+                            />
                             {foreigner && <TextInput placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />}
 
                             <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade *' sx={{ flex: 1, }} />
@@ -1001,7 +1077,14 @@ export default function EditUser(props) {
                             {userData?.estado_civil === 'Casado' && <TextInput placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
                             <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' sx={{ flex: 1, }} />
                             <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe *' sx={{ flex: 1, }} />
-                            <TextInput placeholder='Telefone de emergência' name='telefone_emergencia' onChange={handleChange} value={userData?.telefone_emergencia || ''} label='Telefone de emergência' sx={{ flex: 1, }} />
+                            <PhoneInputField
+                                label='Telefone de emergência'
+                                placeholder='(11) 91234-6789'
+                                name='telefone_emergencia'
+                                onChange={(phone) => setUserData({ ...userData, telefone_emergencia: phone })}
+                                value={userData?.telefone_emergencia}
+                                sx={{ flex: 1, }}
+                            />
                         </Box>
                         <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, escolaridade: value })} />
                         {/* <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' /> */}
@@ -1017,7 +1100,29 @@ export default function EditUser(props) {
                             <TextInput placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
-                            <TextInput placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
+                            <FileInput onClick={(value) => setShowRgFile(value)}>
+                                <TextInput placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
+                                <EditFile
+                                    open={showRgFile}
+                                    newUser={newUser}
+                                    onSet={(set) => {
+                                        setShowRgFile(set)
+                                    }}
+                                    title='RG - Frente e verso'
+                                    text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
+                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                    fileData={bgPhoto}
+                                    usuarioId={id}
+                                    campo='rg'
+                                    tipo='foto/pdf'
+                                    callback={(file) => {
+                                        if (file.status === 201 || file.status === 200) {
+                                            setFileCallback(file?.id_foto_perfil)
+                                            handleItems()
+                                        }
+                                    }}
+                                />
+                            </FileInput>
                             <TextInput placeholder='UF' name='uf_rg' onChange={handleChange} value={userData?.uf_rg || ''} label='UF RG *' sx={{ flex: 1, }} />
                             <TextInput placeholder='Expedição' name='expedicao' onChange={handleChange} type="date" value={(userData?.expedicao)?.split('T')[0] || ''} label='Expedição *' sx={{ flex: 1, }} />
                             <TextInput placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão *' sx={{ flex: 1, }} />
@@ -1122,9 +1227,8 @@ export default function EditUser(props) {
                                 <TextInput placeholder='Pendências' name='pendencia_aluno' onChange={handleChangeEnrollment} value={enrollmentData?.pendencia_aluno || ''} label='Pendências' sx={{ flex: 1, }} />
                             </Box>
                             <Box sx={styles.inputSection}>
-                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', flex: 1 }}>
-                                    {/* <Text bold>Contrato:</Text> */}
-                                    <TextInput placeholder='Contrato' name='contrato_aluno' onChange={handleChangeEnrollment} value={enrollmentData?.contrato_aluno || ''} label='Contrato' sx={{ flex: 1, }} />
+                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
+                                    <Text bold>Contrato do aluno:</Text>
                                     <Button small text='imprimir' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
                                     <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
                                     <Button small text='enviar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
@@ -1544,8 +1648,9 @@ export const EditFile = (props) => {
         tipo = '',
         bgImage = '',
         usuarioId,
-        handleItems,
-        fileData = {}
+        newUser,
+        fileData = {},
+        children
     } = props
 
     const { alert, setLoading } = useAppContext()
@@ -1553,10 +1658,13 @@ export const EditFile = (props) => {
     const handleDeleteFile = async () => {
         setLoading(true)
         const response = await deleteFile({ fileId: fileData?.id_foto_perfil, usuario_id: usuarioId, campo: 'foto_perfil', key: fileData?.key_file })
-
-        if (response.status === 200) {
+        const { status } = response
+        let file = {
+            status
+        }
+        if (status === 200) {
             alert.success('Aqruivo removido.');
-            callback(response.status)
+            callback(file)
         } else {
             alert.error('Ocorreu um erro ao remover arquivo.');
         }
@@ -1590,21 +1698,21 @@ export const EditFile = (props) => {
                     <Text>{text}</Text>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-
                     <CustomDropzone
                         txt={textDropzone}
                         bgImage={bgImage}
                         bgImageStyle={{
                             backgroundImage: `url('${bgImage}')`,
-                            backgroundSize: 'contain',
+                            backgroundSize: campo === 'foto_perfil' ? 'cover' : 'contain',
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'center center',
                             width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                            borderRadius: campo === 'foto_perfil' ? '50%' : '',
                             aspectRatio: '1/1',
                         }}
-                        callback={(status) => {
-                            if (status === 201) {
-                                callback(status)
+                        callback={(file) => {
+                            if (file.status === 201) {
+                                callback(file)
                             }
                         }}
                         usuario_id={usuarioId}
@@ -1618,14 +1726,17 @@ export const EditFile = (props) => {
                     <>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => handleDeleteFile()} />
+                                <Button secondary small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
+                                    newUser ? callback("") : handleDeleteFile()
+                                }} />
                             </Box>
 
-                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                            {/* <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                 <Button small text='Salvar' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
                                     onSet(false)
-                                    alert.info('Sua foto de perfil foi atualizada.')}} />
-                            </Box>
+                                    alert.info('Sua foto de perfil foi atualizada.')
+                                }} />
+                            </Box> */}
                         </Box>
                     </>
                 }
