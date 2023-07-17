@@ -141,7 +141,7 @@ export const CustomDropzone = (props) => {
                             <Text bold>Preview</Text>
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                                 {filesDrop?.map((file, index) => (
-                                    <Box sx={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}>
+                                    <Box key={`${file}-${index}`} sx={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}>
                                         <Box key={`${file}-${index}`}
                                             sx={{
                                                 backgroundImage: `url('${file?.preview}')`,
