@@ -3,15 +3,14 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField, FileInput } from "../../../atoms"
 import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, deleteFile, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
 import { emailValidator, formatCEP, formatCPF, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { checkRequiredFields } from "../../../validators/validators"
-import { FileInput } from "../../../atoms/FileInput"
+import Link from "next/link"
 
 export default function EditUser(props) {
     const { setLoading, alert, colorPalette, user, setUser } = useAppContext()
@@ -50,14 +49,14 @@ export default function EditUser(props) {
     const [showAddHistoric, setAddShowHistoric] = useState(false)
     const [showAddInterest, setAddShowInterest] = useState(false)
     const [showViewInterest, setShowViewInterest] = useState(false)
-    const [showEditHistoric, setEditShowHistoric] = useState(false)
-    const [showEditFile, setShowEditFile] = useState(false)
-    const [showCpfFile, setShowCpfFile] = useState(false)
-    const [showRgFile, setShowRgFile] = useState(false)
-    const [showFoireingerFile, setShowFoireingerFile] = useState(false)
-    const [showAddressFile, setShowAddressFile] = useState(false)
-    const [showCertificate, setShowCertificate] = useState(false)
-
+    const [showEditFile, setShowEditFiles] = useState({
+        photoProfile: false,
+        cpf: false,
+        rg: false,
+        foreigner: false,
+        address: false,
+        certificate: false,
+    })
     const [historicData, setHistoricData] = useState({
         responsavel: user?.nome
     });
@@ -65,6 +64,7 @@ export default function EditUser(props) {
     const [valueIdHistoric, setValueIdHistoric] = useState()
     const [valueIdInterst, setValueIdInterst] = useState()
     const [bgPhoto, setBgPhoto] = useState({})
+    const [filesUser, setFilesUser] = useState([])
 
     useEffect(() => {
         setPerfil(slug)
@@ -143,12 +143,26 @@ export default function EditUser(props) {
         }
     }
 
+
     const getPhotoNewUser = async () => {
         setLoading(true)
         try {
             const response = await api.get(`/photo/${fileCallback}`)
             const { data } = response
             setBgPhoto(data)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const getFileUser = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/files/${id}`)
+            const { data } = response
+            setFilesUser(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -308,6 +322,7 @@ export default function EditUser(props) {
             getInterest()
             getHistoric()
             getPhoto()
+            getFileUser()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -315,12 +330,9 @@ export default function EditUser(props) {
         }
     }
 
+    console.log(filesUser)
+
     const handleChange = (value) => {
-        // if (value.target.name == 'telefone' || value.target.name == 'telefone_emergencia') {
-        //     const regex = /^\(?([0-9]{2})\)?([0-9]{4,5})\-?([0-9]{4})$/mg;
-        //     let str = value.target.value.replace(/[^0-9]/g, "").slice(0, 11);
-        //     value.target.value = str.replace(regex, "($1) $2-$3")
-        // }
 
         if (value.target.name == 'cpf') {
             let str = value.target.value;
@@ -336,7 +348,6 @@ export default function EditUser(props) {
             let str = value.target.value;
             value.target.value = formatCEP(str)
         }
-
 
         setUserData((prevValues) => ({
             ...prevValues,
@@ -832,10 +843,11 @@ export default function EditUser(props) {
                     </Box>
 
                     <EditFile
-                        open={showEditFile}
+                        columnId="id_foto_perfil"
+                        open={showEditFile.photoProfile}
                         newUser={newUser}
                         onSet={(set) => {
-                            setShowEditFile(set)
+                            setShowEditFiles({ ...showEditFile, photoProfile: set })
                         }}
                         title='Foto de perfil'
                         text='Para alterar sua foto de perfil, clique ou arraste no local desejado.'
@@ -879,7 +891,7 @@ export default function EditUser(props) {
                             borderRadius: '16px',
                             width: { xs: '100%', sm: 150, md: 150, lg: 180 },
                             aspectRatio: '1/1',
-                        }} variant="square" onClick={() => setShowEditFile(true)} />
+                        }} variant="square" onClick={() => setShowEditFiles({ ...showEditFile, photoProfile: true })} />
                     </Box>
                 </Box>
                 {/* <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} /> */}
@@ -951,47 +963,58 @@ export default function EditUser(props) {
                                     setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : 'Brasileira Nata' })
                                 }}
                                 sx={{ width: 1 }} />
-
-                            {/* <CheckBoxComponent
-                                valueChecked={userData?.tipo_deficiencia || ''}
-                                boxGroup={groupDeficiency}
-                                title="Tipo de deficiência"
-                                horizontal={mobile ? false : true}
-                                onSelect={(value) => setUserData({
-                                    ...userData,
-                                    tipo_deficiencia: value
-                                })}
-                                sx={{ width: 1 }}
-                            /> */}
                         </Box>
                         <Box sx={styles.inputSection}>
                             {!foreigner &&
-                                <FileInput onClick={(value) => setShowCpfFile(value)}>
+                                <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cpf: value })}>
                                     <TextInput placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
                                 </FileInput>
                             }
                             <EditFile
-                                open={showCpfFile}
+                                columnId="id_doc_usuario"
+                                open={showEditFile.cpf}
                                 newUser={newUser}
                                 onSet={(set) => {
-                                    setShowCpfFile(set)
+                                    setShowEditFiles({ ...showEditFile, cpf: set })
                                 }}
                                 title='CPF - Frente e verso'
                                 text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
                                 textDropzone='Arraste ou clique para selecionar a Foto que deseja'
-                                fileData={bgPhoto}
+                                fileData={filesUser?.filter((file) => file.campo === 'cpf')}
                                 usuarioId={id}
                                 campo='cpf'
-                                tipo='foto/pdf'
+                                tipo='documento usuario'
                                 callback={(file) => {
                                     if (file.status === 201 || file.status === 200) {
-                                        setFileCallback(file?.id_foto_perfil)
                                         handleItems()
                                     }
                                 }}
                             />
-                            {foreigner && <TextInput placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />}
-
+                            {foreigner &&
+                                <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, foreigner: value })}>
+                                    <TextInput placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />
+                                    <EditFile
+                                        columnId="id_doc_usuario"
+                                        open={showEditFile.foreigner}
+                                        newUser={newUser}
+                                        onSet={(set) => {
+                                            setShowEditFiles({ ...showEditFile, foreigner: set })
+                                        }}
+                                        title='Documento estrangeiro - Frente e verso'
+                                        text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
+                                        textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                        fileData={filesUser?.filter((file) => file.campo === 'estrangeiro')}
+                                        usuarioId={id}
+                                        campo='estrangeiro'
+                                        tipo='documento usuario'
+                                        callback={(file) => {
+                                            if (file.status === 201 || file.status === 200) {
+                                                handleItems()
+                                            }
+                                        }}
+                                    />
+                                </FileInput>
+                            }
                             <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade *' sx={{ flex: 1, }} />
 
                             <SelectList fullWidth data={countries} valueSelection={userData?.pais_origem} onSelect={(value) => setUserData({ ...userData, pais_origem: value })}
@@ -1089,7 +1112,29 @@ export default function EditUser(props) {
                         <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, escolaridade: value })} />
                         {/* <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' /> */}
                         <Box sx={styles.inputSection}>
-                            <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
+                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, address: value })}>
+                                <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
+                                <EditFile
+                                    columnId="id_doc_usuario"
+                                    open={showEditFile.address}
+                                    newUser={newUser}
+                                    onSet={(set) => {
+                                        setShowEditFiles({ ...showEditFile, address: set })
+                                    }}
+                                    title='Comprovante de residencia'
+                                    text='Faça o upload do seu comprovante de residencia, precisa ser uma conta em seu nome ou comprovar que mora com o titular da conta.'
+                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                    fileData={filesUser?.filter((file) => file.campo === 'comprovante residencia')}
+                                    usuarioId={id}
+                                    campo='comprovante residencia'
+                                    tipo='documento usuario'
+                                    callback={(file) => {
+                                        if (file.status === 201 || file.status === 200) {
+                                            handleItems()
+                                        }
+                                    }}
+                                />
+                            </FileInput>
                             <TextInput placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
                             <TextInput placeholder='Nº' name='numero' onChange={handleChange} value={userData?.numero || ''} label='Nº *' sx={{ flex: 1, }} />
                         </Box>
@@ -1100,24 +1145,24 @@ export default function EditUser(props) {
                             <TextInput placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
-                            <FileInput onClick={(value) => setShowRgFile(value)}>
+                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, rg: value })}>
                                 <TextInput placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
                                 <EditFile
-                                    open={showRgFile}
+                                    columnId="id_doc_usuario"
+                                    open={showEditFile.rg}
                                     newUser={newUser}
                                     onSet={(set) => {
-                                        setShowRgFile(set)
+                                        setShowEditFiles({ ...showEditFile, rg: set })
                                     }}
                                     title='RG - Frente e verso'
                                     text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
                                     textDropzone='Arraste ou clique para selecionar a Foto que deseja'
-                                    fileData={bgPhoto}
+                                    fileData={filesUser?.filter((file) => file.campo === 'rg')}
                                     usuarioId={id}
                                     campo='rg'
-                                    tipo='foto/pdf'
+                                    tipo='documento usuario'
                                     callback={(file) => {
                                         if (file.status === 201 || file.status === 200) {
-                                            setFileCallback(file?.id_foto_perfil)
                                             handleItems()
                                         }
                                     }}
@@ -1564,6 +1609,7 @@ export default function EditUser(props) {
                                             <Text bold>Observação</Text>
                                             <Box sx={{
                                                 ...styles.menuIcon,
+                                                backgroundSize: 'contain',
                                                 width: 15,
                                                 height: 15,
                                                 backgroundImage: `url(${icons.gray_close})`,
@@ -1620,7 +1666,7 @@ const styles = {
         gap: 1.5,
     },
     menuIcon: {
-        backgroundSize: 'cover',
+        backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
         width: 20,
@@ -1643,21 +1689,20 @@ export const EditFile = (props) => {
         title = '',
         text = '',
         textDropzone = '',
-        data = [],
         campo = '',
         tipo = '',
         bgImage = '',
         usuarioId,
         newUser,
-        fileData = {},
-        children
+        fileData = [],
+        columnId = ''
     } = props
 
     const { alert, setLoading } = useAppContext()
 
-    const handleDeleteFile = async () => {
+    const handleDeleteFile = async (files) => {
         setLoading(true)
-        const response = await deleteFile({ fileId: fileData?.id_foto_perfil, usuario_id: usuarioId, campo: 'foto_perfil', key: fileData?.key_file })
+        const response = await deleteFile({ fileId: files?.[columnId], usuario_id: usuarioId, campo: files.campo, key: files?.key_file })
         const { status } = response
         let file = {
             status
@@ -1687,7 +1732,9 @@ export const EditFile = (props) => {
                             opacity: 0.8,
                             cursor: 'pointer'
                         }
-                    }} onClick={() => onSet(false)} />
+                    }} onClick={() => {
+                        onSet(false)
+                    }} />
                 </Box>
                 <Box sx={{
                     display: 'flex',
@@ -1739,6 +1786,49 @@ export const EditFile = (props) => {
                             </Box> */}
                         </Box>
                     </>
+                }
+
+                {campo != 'foto_perfil' && fileData?.length > 0 &&
+                    <ContentContainer>
+                        <Text bold>Arquivos</Text>
+                        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                            {fileData?.map((file, index) => (
+                                <Link style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }} href={file.location} target="_blank">
+                                    <Box key={`${file}-${index}`}
+                                        sx={{
+                                            backgroundImage: `url('${file?.location}')`,
+                                            backgroundSize: 'contain',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center center',
+                                            width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                                            aspectRatio: '1/1',
+                                        }}>
+                                    </Box>
+                                    <Box sx={{
+                                        backgroundSize: "cover",
+                                        backgroundRepeat: "no-repeat",
+                                        backgroundPosition: "center",
+                                        width: 22,
+                                        height: 22,
+                                        backgroundImage: `url(/icons/remove_icon.png)`,
+                                        position: 'absolute',
+                                        top: -5,
+                                        right: -5,
+                                        transition: ".3s",
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: "pointer",
+                                        },
+                                        zIndex: 9999999,
+                                    }} onClick={(event) => {
+                                        event.preventDefault()
+                                        handleDeleteFile(file)
+                                    }} />
+                                </Link>
+
+                            ))}
+                        </Box>
+                    </ContentContainer>
                 }
             </ContentContainer>
         </Backdrop>
