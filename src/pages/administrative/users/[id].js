@@ -1793,8 +1793,8 @@ export const EditFile = (props) => {
                         <Text bold>Arquivos</Text>
                         <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                             {fileData?.map((file, index) => (
-                                <Link style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }} href={file.location} target="_blank">
-                                    <Box key={`${file}-${index}`}
+                                <Link key={`${file}-${index}`} style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }} href={file.location} target="_blank">
+                                    <Box
                                         sx={{
                                             backgroundImage: `url('${file?.location}')`,
                                             backgroundSize: 'contain',
