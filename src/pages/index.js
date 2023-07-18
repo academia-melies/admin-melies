@@ -15,7 +15,7 @@ const backgroundHome = [
 
 export default function Home() {
 
-   const { user, colorPalette } = useAppContext()
+   const { user, colorPalette, matches } = useAppContext()
 
    return (
       <>
@@ -30,7 +30,15 @@ export default function Home() {
          <Box sx={{ marginTop: { xs: 0, xm: -8, md: -8, lg: -8 } }}>
             <Box>
                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' }, alignItems: 'center', gap: 2 }}>
-                  <Text bold veryLarge style={{ padding: { xs: '0', xm: '10px 0px 10px 0px', md: '10px 0px 10px 0px', lg: '10px 0px 10px 0px' } }}>Bem vindo, {user?.nome}!</Text>
+                  <Text
+                     bold
+                     veryLarge
+                     style={{ padding: { xs: '0', xm: '10px 0px 10px 0px', md: '10px 0px 10px 0px', lg: '10px 0px 10px 0px' }, display: 'flex', gap: 8 }}>
+                     Bem vindo,
+                     <Text bold veryLarge style={{color: colorPalette.buttonColor}}>
+                        {user?.nome}!
+                     </Text>
+                  </Text>
                   <Text bold small>Se liga nas novidades...</Text>
                </Box>
                <Carousel
@@ -40,7 +48,7 @@ export default function Home() {
                      borderRadius: '8px',
                      boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                   }}
-                  heigth={{ xs: 200, xm: 480, md: 480, lg: 480 }}
+                  heigth={{ xs: 200, xm: 480, md: 200, lg: 480 }}
                   width={'auto'}
                />
             </Box>

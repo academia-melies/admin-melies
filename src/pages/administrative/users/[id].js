@@ -13,7 +13,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 
 export default function EditUser(props) {
-    const { setLoading, alert, colorPalette, user, setUser } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setUser, matches } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -1301,7 +1301,7 @@ export default function EditUser(props) {
                                             opacity: 0.8,
                                             cursor: 'pointer'
                                         }
-                                    }} onClick={() => setShowEditFiles({ ...showEditFile, contractStudent: true })}/>
+                                    }} onClick={() => setShowEditFiles({ ...showEditFile, contractStudent: true })} />
                                     <Box sx={{
                                         ...styles.menuIcon,
                                         width: 22,
@@ -1423,10 +1423,10 @@ export default function EditUser(props) {
                 </ContentContainer >
             }
 
-            <Backdrop open={showInterest} sx={{ zIndex: 99 }}>
+            <Backdrop open={showInterest} sx={{ zIndex: 99999, marginLeft: { md: '180px', lg: '280px' } }}>
 
                 {showInterest &&
-                    <ContentContainer>
+                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                             <Text bold large>Interesses</Text>
                             <Box sx={{
@@ -1441,7 +1441,7 @@ export default function EditUser(props) {
                                 }
                             }} onClick={() => setShowInterest(!showInterest)} />
                         </Box>
-                        <ContentContainer style={{ boxShadow: 'none', zIndex: 999999 }}>
+                        <ContentContainer style={{ boxShadow: 'none', zIndex: 999999, overflowY: matches && 'auto', }}>
                             <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px', zIndex: 999999999 }}>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Curso</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Turma</Text>
@@ -1521,7 +1521,7 @@ export default function EditUser(props) {
                             </Box>}
 
                             {showAddInterest &&
-                                <ContentContainer>
+                                <ContentContainer style={{ overflowY: matches && 'auto' }}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                                         <Text bold style={{ padding: '5px 0px 8px 0px' }}>Novo Interesse</Text>
                                         <Box sx={{
@@ -1570,7 +1570,7 @@ export default function EditUser(props) {
                             }
 
                             {showViewInterest &&
-                                <ContentContainer>
+                                <ContentContainer style={{ overflowY: matches && 'auto' }}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                                         <Text bold style={{ padding: '5px 0px 8px 0px' }}>Interesse</Text>
                                         <Box sx={{
@@ -1627,9 +1627,9 @@ export default function EditUser(props) {
                 }
             </Backdrop>
 
-            <Backdrop open={showHistoric} sx={{ zIndex: 99999 }}>
+            <Backdrop open={showHistoric} sx={{ zIndex: 99999, marginLeft: { md: '180px', lg: '0px' } }}>
                 {showHistoric &&
-                    <ContentContainer>
+                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                             <Text bold large>Observações</Text>
                             <Box sx={{
@@ -1643,7 +1643,7 @@ export default function EditUser(props) {
                                 }
                             }} onClick={() => setShowHistoric(!showHistoric)} />
                         </Box>
-                        <ContentContainer style={{ boxShadow: 'none' }}>
+                        <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
                             <Table_V1 columns={columnHistoric}
                                 data={arrayHistoric}
                                 columnId="id_historico"
@@ -1658,7 +1658,7 @@ export default function EditUser(props) {
 
                             {showAddHistoric &&
                                 <>
-                                    <ContentContainer>
+                                    <ContentContainer style={{ overflowY: matches && 'auto', }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                                             <Text bold>Nova Observação</Text>
                                             <Box sx={{
@@ -1699,7 +1699,7 @@ export default function EditUser(props) {
 
                             {valueIdHistoric && arrayHistoric.filter((item) => item.id_historico === valueIdHistoric).map((historic) => (
                                 <>
-                                    <ContentContainer>
+                                    <ContentContainer style={{ overflowY: matches && 'auto', }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                                             <Text bold>Observação</Text>
                                             <Box sx={{
@@ -1773,6 +1773,26 @@ const styles = {
         justifyContent: 'space-around',
         gap: 1.8,
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
+    },
+    containerFile: {
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'gray lightgray',
+        '&::-webkit-scrollbar': {
+            width: '5px',
+
+        },
+        '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'darkgray',
+            borderRadius: '5px'
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: 'gray',
+
+        },
+        '&::-webkit-scrollbar-track': {
+            backgroundColor: 'gray',
+
+        },
     }
 }
 
@@ -1793,7 +1813,7 @@ export const EditFile = (props) => {
         columnId = ''
     } = props
 
-    const { alert, setLoading } = useAppContext()
+    const { alert, setLoading, matches } = useAppContext()
 
     const handleDeleteFile = async (files) => {
         setLoading(true)
@@ -1812,8 +1832,8 @@ export const EditFile = (props) => {
     }
 
     return (
-        <Backdrop open={open} sx={{ zIndex: 99999 }}>
-            <ContentContainer>
+        <Backdrop open={open} sx={{ zIndex: 99999, marginLeft: { md: '180px', lg: '0px' } }}>
+            <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'scroll', }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
                     <Text bold>{title}</Text>
                     <Box sx={{
