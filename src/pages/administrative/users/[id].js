@@ -56,6 +56,8 @@ export default function EditUser(props) {
         foreigner: false,
         address: false,
         certificate: false,
+        schoolRecord: false,
+        contractStudent: false
     })
     const [historicData, setHistoricData] = useState({
         responsavel: user?.nome
@@ -570,11 +572,6 @@ export default function EditUser(props) {
 
         if (!userData?.estado_civil) {
             alert.error('O campo Estado cívil é obrigatório')
-            return false
-        }
-
-        if (!userData?.escolaridade) {
-            alert.error('O campo escolaridade é obrigatório')
             return false
         }
 
@@ -1109,8 +1106,30 @@ export default function EditUser(props) {
                                 sx={{ flex: 1, }}
                             />
                         </Box>
-                        <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, escolaridade: value })} />
-                        {/* <TextInput placeholder='Escolaridade' name='escolaridade' onChange={handleChange} value={userData?.escolaridade || ''} label='Escolaridade' /> */}
+                        <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, schoolRecord: value })} style={{ alignItems: 'center' }}>
+                            <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, escolaridade: value })} />
+                            <EditFile
+                                columnId="id_doc_usuario"
+                                open={showEditFile.schoolRecord}
+                                newUser={newUser}
+                                onSet={(set) => {
+                                    setShowEditFiles({ ...showEditFile, schoolRecord: set })
+                                }}
+                                title='Historico Escolar/Diploma'
+                                text='Por favor, faça o upload do seu histórico escolar. Caso você tenha concluído um bacharelado,
+                                 por favor, também faça o upload do seu diploma.'
+                                textDropzone='Arraste ou clique para selecionar a Foto ou arquivo desejado.'
+                                fileData={filesUser?.filter((file) => file.campo === 'historico/diploma')}
+                                usuarioId={id}
+                                campo='historico/diploma'
+                                tipo='documento usuario'
+                                callback={(file) => {
+                                    if (file.status === 201 || file.status === 200) {
+                                        handleItems()
+                                    }
+                                }}
+                            />
+                        </FileInput>
                         <Box sx={styles.inputSection}>
                             <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, address: value })}>
                                 <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
@@ -1274,17 +1293,93 @@ export default function EditUser(props) {
                             <Box sx={styles.inputSection}>
                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
                                     <Text bold>Contrato do aluno:</Text>
-                                    <Button small text='imprimir' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
-                                    <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
-                                    <Button small text='enviar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        backgroundImage: `url('${icons.file}')`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => setShowEditFiles({ ...showEditFile, contractStudent: true })}/>
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        width: 22,
+                                        height: 22,
+                                        backgroundImage: `url('${icons.print}')`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} />
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        width: 22,
+                                        height: 22,
+                                        backgroundImage: `url('${icons.send}')`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} />
+                                    <EditFile
+                                        columnId="id_doc_usuario"
+                                        open={showEditFile.contractStudent}
+                                        newUser={newUser}
+                                        onSet={(set) => {
+                                            setShowEditFiles({ ...showEditFile, contractStudent: set })
+                                        }}
+                                        title='Contrato do aluno'
+                                        text='Faça o upload do contrato do aluno, depois clique em salvar.'
+                                        textDropzone='Arraste ou clique para selecionar a foto/arquivo que deseja'
+                                        fileData={filesUser?.filter((file) => file.campo === 'contrato aluno')}
+                                        usuarioId={id}
+                                        campo='contrato aluno'
+                                        tipo='documento usuario'
+                                        callback={(file) => {
+                                            if (file.status === 201 || file.status === 200) {
+                                                handleItems()
+                                            }
+                                        }}
+                                    />
                                 </Box>
                             </Box>
                             <Box sx={styles.inputSection}>
                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
                                     <Text bold>Boleto:</Text>
-                                    <Button small text='imprimir' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
-                                    <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
-                                    <Button small text='enviar' style={{ padding: '5px 6px 5px 6px', width: 100 }} />
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        width: 22,
+                                        height: 22,
+                                        backgroundImage: `url('${icons.print}')`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} />
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        backgroundImage: `url('${icons.file}')`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} />
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        width: 22,
+                                        height: 22,
+                                        backgroundImage: `url('${icons.send}')`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} />
                                 </Box>
                             </Box>
                             <Box sx={styles.inputSection}>
