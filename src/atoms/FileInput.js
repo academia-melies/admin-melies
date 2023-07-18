@@ -3,11 +3,14 @@ import { Box } from './Box';
 
 export const FileInput = (props) => {
 
-    const { children, onClick = () => { }
+    const {
+        children,
+        onClick = () => { },
+        style = {}
     } = props;
 
     return (
-        <Box sx={{ ...styles.inputSection, alignItems: 'start', gap: 0.5 }}>
+        <Box sx={{ ...styles.inputSection, alignItems: 'start', gap: 0.5, ...style }}>
             {children}
             <Box sx={{
                 ...styles.menuIcon,
@@ -33,7 +36,7 @@ const styles = {
     inputSection: {
         flex: 1,
         display: 'flex',
-        justifyContent: 'space-around',
+        justifyContent: 'flex-start',
         // gap: 1.8,
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
     }
