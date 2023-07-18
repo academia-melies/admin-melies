@@ -188,9 +188,9 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            <Box sx={{
                               ...styles.menuIcon,
                               backgroundImage: `url(${icons.gray_arrow_down})`,
-                              transform: 'rotate(-90deg)',
+                              transform: showMenuMobile && groupStates[index] ? 'rotate(-0deg)' : 'rotate(-90deg)',
                               transition: '.3s',
-                              marginLeft: groupStates[index] ? 10 : 0,
+                              marginLeft: !showMenuMobile && groupStates[index] ? 10 : 0,
                               width: 17,
                               height: 17,
                               "&:hover": {
@@ -384,7 +384,7 @@ const styles = {
       flexDirection: 'column',
       gap: 1,
       marginTop: 10,
-      // overflowY: 'auto',
+      overflowY: { xs: 'auto', sm: 'auto', md: 'none', lg: 'none' },
       overflowStyle: 'marquee,panner',
       maxHeight: '58%',
       scrollbarWidth: 'thin',
@@ -398,11 +398,11 @@ const styles = {
          borderRadius: '5px'
       },
       '&::-webkit-scrollbar-thumb:hover': {
-         backgroundColor: 'darkgray',
+         backgroundColor: 'gray',
 
       },
       '&::-webkit-scrollbar-track': {
-         backgroundColor: Colors.backgroundSecundary,
+         backgroundColor: Colors.primary,
 
       },
    },

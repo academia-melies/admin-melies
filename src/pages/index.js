@@ -1,9 +1,22 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
+import { Box, Text } from '../atoms'
+import { Carousel } from '../organisms'
+import { useAppContext } from '../context/AppContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const backgroundHome = [
+   { name: 'slide-1', location: 'https://adm-melies.s3.amazonaws.com/slide-3.jpg' },
+   { name: 'slide-2', location: 'https://adm-melies.s3.amazonaws.com/slide-5.jpg' },
+   { name: 'slide-3', location: 'https://adm-melies.s3.amazonaws.com/slide-8.png' },
+
+]
+
 export default function Home() {
+
+   const { user, colorPalette } = useAppContext()
+
    return (
       <>
          <Head>
@@ -14,7 +27,24 @@ export default function Home() {
             <link rel="icon" href="https://mf-planejados.s3.us-east-1.amazonaws.com/favicon.svg?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEFIaCXNhLWVhc3QtMSJGMEQCIGkYXyLSxXUHPLD5MR4wd7EFUUfOjR%2BTbegiCwhOm2Z7AiA8LBR%2BS3QYr%2BiA7%2BEzDV9mgpQTU%2FEQdRlzgTmmo%2BI6mSrtAgir%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDA2NjAyNzEzNDQ2NiIMxkoyEAalZBROeIUkKsECTKqSEhf%2BT7dEoO35uQP9G2bELbWgHHvIOo1RjVn%2FI84XRgaO%2FGEfSr1dDFAfN29dp7khnWRjM4TP13WuPKDl1qFsrJ6vJq%2FA1Gurkq3Kr0Jh3bhwtH6IQXa%2Fs8YWeBtH4Db4TXH7typhzqiJ9iO1WO87XIU6xtzd2nzJ9sme8399tmFIYu9ECmF9WgjzSrp6JpGvzbLixn%2BNs2Xztm7ds3w0vFcRlA7K%2B9IwdEI7oeoNQzcjWf9%2ByDx8KGB%2FVdJBD9FZX0cMJoxoF5qsD4DUZXAfSjfo6%2BwPK2FfXDQmACNNFF9u2u%2B9Ll3z8BYwYfiauJgh4mbF%2B635CazqQytJ7aiR5f%2B%2BMBHhznEVbiLQapl78aRvPU%2FSeIJ1UWKsgUliqNq9u4sxp5XDFz%2Fatk5sMFzRb6U%2Fi6ehh1Qjcy6Ue%2F99MJjPx6QGOrQCRTxfSZld%2BVs7Uq4uEjCHKm0b8hzOQAqJ%2BvBUfXsNUkoCc3bGr%2BQSCE7z5D%2FjV2E9BLJObSNDET9s39P%2FtPfVKCeAG9aYqLHg%2FI9lOVWgcc%2BsT6sh84dh4bl8BT%2Bop52cOfxJDasM1gZlll5%2BLBfLa92vzGb2zm1JGqoQgULV9QEm%2FaVG7467wWBki1rWyufqfWa7tYnmXTu7orpgP%2FFWZzF5HyT1DpE8RfoskCh3CBzbPoTZw1CByHDqoAhC0V%2Fzwp85rkLhT3zQxrIVcaE5x2EBxDuhrIi0t963sA1NzIhTtHrdWSPtj9w1V%2FEfaBUi2bFWr%2BD2StHPQUiFFbCkGHO%2FzG6grQMxH45E4%2FOBt9Sa1S%2FCLYmQudzL2rWs5Qx7zQlWc9xou4HOsRRttWGkfuBg0lM%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230620T175625Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQ6X4GDYBLMA74NWA%2F20230620%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=3a9a1f350f09a527e57bf6fde6193d7393b4ce194568818770b3d1564fb50be5" />
             {/* <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> */}
          </Head>
-         {/* <p>Login</p> */}
+         <Box sx={{ marginTop: { xs: 0, xm: -8, md: -8, lg: -8 } }}>
+            <Box>
+               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' }, alignItems: 'center', gap: 2 }}>
+                  <Text bold veryLarge style={{ padding: { xs: '0', xm: '10px 0px 10px 0px', md: '10px 0px 10px 0px', lg: '10px 0px 10px 0px' } }}>Bem vindo, {user?.nome}!</Text>
+                  <Text bold small>Se liga nas novidades...</Text>
+               </Box>
+               <Carousel
+                  data={backgroundHome}
+                  style={{
+                     backgroundColor: colorPalette.secondary,
+                     borderRadius: '8px',
+                     boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                  }}
+                  heigth={{ xs: 200, xm: 480, md: 480, lg: 480 }}
+                  width={'auto'}
+               />
+            </Box>
+         </Box>
       </>
    )
 }
