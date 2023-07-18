@@ -1,4 +1,4 @@
-import { Backdrop, CircularProgress } from "@mui/material";
+import { Backdrop, CircularProgress, useMediaQuery } from "@mui/material";
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
@@ -25,6 +25,7 @@ export const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [dataBox, setDataBox] = useState(false)
+    const matches = useMediaQuery('(min-width: 1080px) and (max-width: 1320px)');
     const [colorPalette, setColorPalette] = useState({
         primary: '',
         secondary: '',
@@ -136,7 +137,8 @@ export const AppProvider = ({ children }) => {
                 setColorPalette,
                 theme,
                 setTheme,
-                directoryIcons
+                directoryIcons,
+                matches
             }}
         >
             {children}

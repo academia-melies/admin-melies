@@ -77,7 +77,7 @@ export default function Login() {
         }}>
             <Box sx={{
                 display: 'flex',
-                ...(smallWidthDevice ? { height: '70%', width: '90%' } : { height: '62.3%', width: '48%' })
+                ...(smallWidthDevice ? { height: '70%', width: '90%' } : { height: { md: '480px', lg: '603px' }, width: { md: '700px', lg: '895px' } })
             }}>
                 <ContentContainer row fullWidth style={{ borderRadius: '16px', padding: 0, zIndex: 999, transition: 'background-color 1s', backgroundColor: !theme ? Colors.backgroundSecundary : '#FFFFFF', boxShadow: !theme ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px` }} gap={0}>
 
