@@ -27,6 +27,7 @@
     "react-draft-wysiwyg": "^1.15.0",
     "react-dropzone": "^14.2.3",
     "react-icons": "^4.8.0",
+    "react-input-mask": "^2.0.4",
     "react-phone-number-input": "^3.3.0",
     "react-router-dom": "^6.8.2",
     "swiper": "^10.0.4",

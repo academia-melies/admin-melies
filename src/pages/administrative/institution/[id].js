@@ -6,6 +6,7 @@ import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { formatCNPJ } from "../../../helpers"
 
 export default function EditInstitution(props) {
     const { setLoading, alert, colorPalette } = useAppContext()
@@ -63,6 +64,11 @@ export default function EditInstitution(props) {
 
     const handleChange = (value) => {
 
+        if (value.target.name == 'cnpj') {
+            let str = value.target.value;
+            value.target.value = formatCNPJ(str)
+        }
+
         setInstitutionData((prevValues) => ({
             ...prevValues,
             [value.target.name]: value.target.value,
@@ -116,7 +122,7 @@ export default function EditInstitution(props) {
     const handleEditInstitution = async () => {
         setLoading(true)
         try {
-            const response = await api.patch(`/institution/update/:${id}`, { institutionData })
+            const response = await api.patch(`/institution/update/${id}`, { institutionData })
             if (response?.status === 201) {
                 alert.success('Instituição atualizada com sucesso.');
                 handleItems()
@@ -159,6 +165,10 @@ export default function EditInstitution(props) {
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Nome' name='nome_instituicao' onChange={handleChange} value={institutionData?.nome_instituicao || ''} label='Nome' sx={{ flex: 1, }} />
                     <TextInput placeholder='CNPJ' name='cnpj' onChange={handleChange} value={institutionData?.cnpj || ''} label='CNPJ' sx={{ flex: 1, }} />
+                </Box>
+                <Box sx={styles.inputSection}>
+                    <TextInput placeholder='Mantenedora' name='mantenedora' onChange={handleChange} value={institutionData?.mantenedora || ''} label='Mantenedora' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Mantido' name='mantida' onChange={handleChange} value={institutionData?.mantida || ''} label='Mantido' sx={{ flex: 1, }} />
                 </Box>
                 <Text bold>Presencial</Text>
                 <Box sx={styles.inputSection}>
