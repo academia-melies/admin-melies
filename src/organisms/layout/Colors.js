@@ -32,5 +32,6 @@ export const icons = {
    search: 'https://mf-planejados.s3.amazonaws.com/search_icon.png',
    file: 'https://adm-melies.s3.amazonaws.com/file_icon.png',
    print: 'https://adm-melies.s3.amazonaws.com/print_icon.png',
-   send: 'https://adm-melies.s3.amazonaws.com/send_icon.png'
+   send: 'https://adm-melies.s3.amazonaws.com/send_icon.png',
+   goback: 'https://adm-melies.s3.amazonaws.com/goback_icon.png'
 }

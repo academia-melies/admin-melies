@@ -23,7 +23,9 @@ export const ContentContainer = (props) => {
       gap = 2,
       width = null,
       style = {},
-      overflow = 'hidden'
+      sx = {},
+      overflow = 'hidden',
+      onClick = () => { }
    } = props;
 
    return (
@@ -46,8 +48,9 @@ export const ContentContainer = (props) => {
                ...(center && { alignItems: 'center' }),
                ...(right && { alignItems: 'flex-end' }),
             }),
-         ...style
-      }}>
+         ...style,
+         ...sx
+      }} onClick={onClick}>
          {children}
       </Box>
    )

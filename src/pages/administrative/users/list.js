@@ -12,7 +12,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 export default function ListUsers(props) {
     const [usersList, setUsers] = useState([])
     const [filterData, setFilterData] = useState('')
-    const [perfil, setPerfil] = useState('aluno')
+    const [perfil, setPerfil] = useState('todos')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [screen, setScreen] = useState('users')

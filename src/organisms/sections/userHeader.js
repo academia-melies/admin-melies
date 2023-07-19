@@ -34,19 +34,26 @@ export const UserHeader = (props) => {
                         }
                     }} onClick={() => router.push('/')} />
                     <Box sx={{
-                        ...styles.menuIcon,
-                        backgroundImage: `url(${icons.gray_arrow_down})`,
-                        transform: 'rotate(90deg)',
-                        transition: '.3s',
-                        width: 17,
-                        height: 17,
                         position: 'absolute',
                         left: 290,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
                         "&:hover": {
                             opacity: 0.8,
                             cursor: 'pointer'
                         }
-                    }} onClick={() => router.back()} />
+                    }} onClick={() => router.back()}>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.goback})`,
+                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                            transition: '.3s',
+                            width: 20,
+                            height: 20,
+                        }}/>
+                        <Text bold small sx={{}}>Voltar</Text>
+                    </Box>
                 </Box>
                 <IconTheme flex />
                 <Box sx={{
