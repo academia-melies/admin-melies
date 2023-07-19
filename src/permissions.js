@@ -1,8 +1,16 @@
 export const menuItems = [
    {
-      text: 'Administrativo', icon_clear: 'https://mf-planejados.s3.amazonaws.com/icon_adm_dark.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/employee_icon.png',
+      text: 'Administrativo',
+      icon_clear: 'https://mf-planejados.s3.amazonaws.com/icon_adm_dark.svg',
+      icon_dark: 'https://mf-planejados.s3.amazonaws.com/employee_icon.png',
+      to: '/administrative/users/list',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
+         {
+            to: '/administrative/institution/list',
+            text: 'Instituição',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
          {
             to: '/administrative/users/list',
             text: 'Usuarios',
@@ -41,7 +49,10 @@ export const menuItems = [
       ]
    },
    {
-      text: 'Acadêmico', icon_clear: 'https://mf-planejados.s3.amazonaws.com/Icon_academico.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_academico.svg',
+      text: 'Acadêmico',
+      icon_clear: 'https://mf-planejados.s3.amazonaws.com/Icon_academico.svg',
+      icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_academico.svg',
+      to: '/#',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -59,6 +70,7 @@ export const menuItems = [
    },
    {
       text: 'Biblioteca', icon_clear: 'https://mf-planejados.s3.amazonaws.com/Icon_biblioteca.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_biblioteca.svg',
+      to: '/#',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -76,6 +88,7 @@ export const menuItems = [
    },
    {
       text: 'Financeiro', icon_clear: 'icon_financeiro.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_financeiro.svg',
+      to: '/#',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -98,6 +111,7 @@ export const menuItems = [
    },
    {
       text: 'Marketing', icon_clear: 'icon_mkt.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_mkt.svg',
+      to: '/#',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
@@ -110,10 +124,16 @@ export const menuItems = [
             text: 'Pesquisa',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
+         {
+            to: '/marketing/imageManagement/editPages',
+            text: 'Gerenciamento de imagens',
+            // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
+         },
       ]
    },
    {
       text: 'Suporte', icon_clear: 'icon_suporte.svg', icon_dark: 'https://mf-planejados.s3.amazonaws.com/Icon_suporte.svg',
+      to: '/#',
       // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação'],
       items: [
          {
