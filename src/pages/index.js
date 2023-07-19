@@ -54,13 +54,13 @@ export default function Home() {
                      borderRadius: '8px',
                      boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                   }}
-                  heigth={{ xs: 200, xm: 480, md: 200, lg: 480 }}
+                  heigth={{ xs: 200, xm: 480, md: 200, lg: 280, xl: 400 }}
                   width={'auto'}
                />
             </Box>
             <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none',  }}>
                <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>Ultimas paginas acessadas...</Text>
-               <Box sx={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'nowrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: '' }}}>
+               <Box sx={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' }}}>
                   {menu?.map((group, index) =>
                      <ContentContainer key={`${group}-${index}`} sx={{
                         alignItems: 'center', backgroundColor: colorPalette.buttonColor,

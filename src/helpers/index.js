@@ -40,6 +40,17 @@ export const formatCPF = (cpf) => {
    return formattedCPF;
 }
 
+export const formatCNPJ = (cnpj) => {
+
+   const cleanedCNPJ = cnpj.replace(/\D/g, '');
+   const cnpjRegex = /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/;
+   const formattedCNPJ = cleanedCNPJ.replace(cnpjRegex, '$1.$2.$3/$4-$5');
+   // XX.XXX.XXX/0001-XX
+   return formattedCNPJ;
+}
+
+
+
 export const formatDate = (date) => {
    const newDate = new Date(date)
    const formattedDate = new Intl.DateTimeFormat("pt-BR")?.format(newDate);

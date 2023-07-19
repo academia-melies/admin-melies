@@ -49,10 +49,9 @@ export const UserHeader = (props) => {
                             backgroundImage: `url(${icons.goback})`,
                             filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                             transition: '.3s',
-                            width: 20,
-                            height: 20,
+                            aspectRatio: '1/1'
                         }}/>
-                        <Text bold small sx={{}}>Voltar</Text>
+                        <Text small sx={{}}>Voltar</Text>
                     </Box>
                 </Box>
                 <IconTheme flex />

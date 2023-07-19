@@ -4,7 +4,7 @@ import axios from "axios"
 import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField, FileInput } from "../../../atoms"
-import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
+import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, TableOfficeHours, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, deleteFile, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
@@ -67,6 +67,14 @@ export default function EditUser(props) {
     const [valueIdInterst, setValueIdInterst] = useState()
     const [bgPhoto, setBgPhoto] = useState({})
     const [filesUser, setFilesUser] = useState([])
+    const [officeHours, setOfficeHours] = useState([
+        { dia_semana: '2ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
+        { dia_semana: '3ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
+        { dia_semana: '4ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
+        { dia_semana: '5ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
+        { dia_semana: '6ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
+        { dia_semana: 'Sábado', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
+    ]);
 
     useEffect(() => {
         setPerfil(slug)
@@ -167,6 +175,23 @@ export default function EditUser(props) {
             setFilesUser(data)
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const getOfficeHours = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/officeHours/${id}`)
+            const { data = [] } = response
+            if (data.length > 0) {
+                setOfficeHours(data)
+                return
+            }
+        } catch (error) {
+            console.log(error)
+            return error
         } finally {
             setLoading(false)
         }
@@ -325,14 +350,13 @@ export default function EditUser(props) {
             getHistoric()
             getPhoto()
             getFileUser()
+            getOfficeHours()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
             setLoading(false)
         }
     }
-
-    console.log(filesUser)
 
     const handleChange = (value) => {
 
@@ -387,6 +411,10 @@ export default function EditUser(props) {
             [value.target.name]: value.target.value,
         }))
     }
+
+    const handleOfficeHours = (newData) => {
+        setOfficeHours(newData);
+    };
 
 
     const addInterest = () => {
@@ -623,6 +651,9 @@ export default function EditUser(props) {
                 if (fileCallback) {
                     const responseData = await api.patch(`/file/edit/${fileCallback}/${data?.userId}`);
                 }
+                if (officeHours) {
+                    const responseData = await api.post(`/officeHours/create/${data?.userId}`, { officeHours })
+                }
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
                     router.push(`/administrative/users/${data?.userId}`)
@@ -664,6 +695,12 @@ export default function EditUser(props) {
             }
             if (enrollmentData) {
                 const responseData = await editeEnrollment({ id, enrollmentData })
+            }
+            if (!officeHours.id_hr_trabalho || officeHours.id_hr_trabalho == '') {
+                const responseData = await api.post(`/officeHours/create/${id}`, { officeHours })
+            }
+            if (officeHours.id_hr_trabalho !== '') {
+                const responseData = await api.post(`/officeHours/update`, { officeHours })
             }
             if (response?.status === 201) {
                 alert.success('Usuário atualizado com sucesso.');
@@ -1203,63 +1240,73 @@ export default function EditUser(props) {
 
             {/* contrato */}
             {userData.perfil && userData.perfil.includes('funcionario') &&
-                <ContentContainer style={{ ...styles.containerContract, padding: showContract ? '40px' : '25px' }}>
-                    <Box sx={{
-                        display: 'flex', alignItems: 'center', padding: showContract ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
-                            opacity: 0.8,
-                            cursor: 'pointer'
-                        }
-                    }} onClick={() => setShowContract(!showContract)}>
-                        <Text title bold >Contrato</Text>
+                <>
+                    <ContentContainer style={{ ...styles.containerContract, padding: showContract ? '40px' : '25px' }}>
                         <Box sx={{
-                            ...styles.menuIcon,
-                            backgroundImage: `url(${icons.gray_arrow_down})`,
-                            transform: showContract ? 'rotate(0deg)' : 'rotate(-90deg)',
-                            transition: '.3s',
-                            "&:hover": {
+                            display: 'flex', alignItems: 'center', padding: showContract ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
                                 opacity: 0.8,
                                 cursor: 'pointer'
                             }
-                        }} />
-                    </Box>
-                    {showContract &&
-                        <>
-                            <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Cartão de Ponto' name='cartao_ponto' onChange={handleChangeContract} value={contract?.cartao_ponto || ''} label='Cartão de Ponto' sx={{ flex: 1, }} />
-                            </Box>
-                            <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
-                            <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao).split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
-                            </Box>
-                            <Box sx={styles.inputSection}>
-                                <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Serie' sx={{ flex: 1, }} />
-                                <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
-                            </Box>
-                            <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Banco' name='banco_1' onChange={handleChangeContract} value={contract?.banco_1 || ''} label='Banco' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Agência' name='agencia_1' onChange={handleChangeContract} value={contract?.agencia_1 || ''} label='Agência' sx={{ flex: 1, }} />
-                                <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_1} onSelect={(value) => setContract({ ...contract, tipo_conta_1: value })}
-                                    title="Tipo de conta" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                            </Box>
-                            <Box sx={styles.inputSection}>
-                                <TextInput placeholder='Banco 2' name='banco_2' onChange={handleChangeContract} value={contract?.banco_2 || ''} label='Banco 2' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
-                                <TextInput placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
-                                <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
-                                    title="Tipo de conta 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                            </Box>
-                        </>
-                    }
-                </ContentContainer>
-            }
+                        }} onClick={() => setShowContract(!showContract)}>
+                            <Text title bold >Contrato</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                transform: showContract ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                transition: '.3s',
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} />
+                        </Box>
+                        {showContract &&
+                            <>
+                                <Box sx={styles.inputSection}>
+                                    <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Cartão de Ponto' name='cartao_ponto' onChange={handleChangeContract} value={contract?.cartao_ponto || ''} label='Cartão de Ponto' sx={{ flex: 1, }} />
+                                </Box>
+                                <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
+                                <Box sx={styles.inputSection}>
+                                    <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao).split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
+                                </Box>
+                                <Box sx={styles.inputSection}>
+                                    <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Serie' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
+                                </Box>
+                                <Box sx={styles.inputSection}>
+                                    <TextInput placeholder='Banco' name='banco_1' onChange={handleChangeContract} value={contract?.banco_1 || ''} label='Banco' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Agência' name='agencia_1' onChange={handleChangeContract} value={contract?.agencia_1 || ''} label='Agência' sx={{ flex: 1, }} />
+                                    <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_1} onSelect={(value) => setContract({ ...contract, tipo_conta_1: value })}
+                                        title="Tipo de conta" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                </Box>
+                                <Box sx={styles.inputSection}>
+                                    <TextInput placeholder='Banco 2' name='banco_2' onChange={handleChangeContract} value={contract?.banco_2 || ''} label='Banco 2' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
+                                    <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
+                                        title="Tipo de conta 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                </Box>
+
+                                <ContentContainer style={{ boxShadow: 'none' }}>
+                                    <Box sx={{ display: 'flex', gap: 5, flexDirection: 'column' }}>
+                                        <Text bold title>Horario de trabalho</Text>
+                                        <TableOfficeHours data={officeHours} onChange={handleOfficeHours} />
+                                    </Box>
+                                </ContentContainer>
+
+                            </>
+                        }
+                    </ContentContainer>
+
+                </>}
 
             {userData.perfil && userData.perfil.includes('aluno') &&
                 <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>

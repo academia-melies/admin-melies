@@ -10,6 +10,8 @@ export { IconTheme } from "./iconTheme/IconTheme";
 export { CheckBoxComponent } from "./checkBox/CheckBox";
 export { CustomDropzone } from "./dropzone/Dropzone";
 export { Carousel } from "./carousel/Carousel";
+export { TableOfficeHours } from "./TableOffice/tableOffice";
+
 
 
 
