@@ -696,11 +696,11 @@ export default function EditUser(props) {
             if (enrollmentData) {
                 const responseData = await editeEnrollment({ id, enrollmentData })
             }
-            if (!officeHours.id_hr_trabalho || officeHours.id_hr_trabalho == '') {
+            if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
                 const responseData = await api.post(`/officeHours/create/${id}`, { officeHours })
             }
-            if (officeHours.id_hr_trabalho !== '') {
-                const responseData = await api.post(`/officeHours/update`, { officeHours })
+            if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
+                const responseData = await api.patch(`/officeHours/update`, { officeHours })
             }
             if (response?.status === 201) {
                 alert.success('Usuário atualizado com sucesso.');
@@ -709,6 +709,7 @@ export default function EditUser(props) {
             }
             alert.error('Tivemos um problema ao atualizar usuário.');
         } catch (error) {
+            console.log(error)
             alert.error('Tivemos um problema ao atualizar usuário.');
         } finally {
             setLoading(false)

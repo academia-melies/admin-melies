@@ -2,11 +2,10 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
-import { RadioItem, SectionHeader } from "../../../organisms"
+import { Box, ContentContainer, TextInput, Text, } from "../../../atoms"
+import { RadioItem, SectionHeader, SelectList } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createGrid, deleteGrid, editGrid } from "../../../validators/api-requests"
-import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditGrid(props) {
     const { setLoading, alert, colorPalette } = useAppContext()
@@ -16,10 +15,13 @@ export default function EditGrid(props) {
     const [gridData, setGridData] = useState([])
     const [planGridData, setPlanGridData] = useState([])
     const [disciplines, setDisciplines] = useState([])
+    const [courses, setCourses] = useState([])
+    const [semester, setSemester] = useState()
+
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
-    
-    
+
+
 
     const addPlanGrid = async () => {
         setLoading(true)
@@ -86,7 +88,30 @@ export default function EditGrid(props) {
 
     useEffect(() => {
         listDisciplines()
+        listCourses()
     }, [])
+
+    useEffect(() => {
+        async function autoCompleteName() {
+            let nameCourse = courses.filter((course) => course?.value === gridData?.curso_id).map((item) => item.label)
+            let nameGrid = `Grade - ${nameCourse}`
+            if (gridData?.curso_id) {
+                setGridData({ ...gridData, nome_grade: nameGrid })
+                setSemester()
+            }
+        }
+
+        async function getSemestersCourse() {
+            let semesterQnt = courses.filter((course) => course?.value === gridData?.curso_id).map((item) => item.duration)
+            if (gridData?.curso_id) {
+                setSemester(semesterQnt)
+            }
+        }
+
+        autoCompleteName()
+        getSemestersCourse()
+    }, [gridData?.curso_id])
+
 
     async function listDisciplines() {
         try {
@@ -98,6 +123,21 @@ export default function EditGrid(props) {
             }));
 
             setDisciplines(groupDisciplines);
+        } catch (error) {
+        }
+    }
+
+    async function listCourses() {
+        try {
+            const response = await api.get(`/courses`)
+            const { data } = response
+            const groupCourses = data.map(course => ({
+                label: course.nome_curso,
+                value: course?.id_curso,
+                duration: course?.duracao
+            }));
+
+            setCourses(groupCourses);
         } catch (error) {
         }
     }
@@ -197,6 +237,10 @@ export default function EditGrid(props) {
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Grade</Text>
                 </Box>
+                <SelectList fullWidth data={courses} valueSelection={gridData?.curso_id} onSelect={(value) => setGridData({ ...gridData, curso_id: value })}
+                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                />
                 <TextInput placeholder='Nome' name='nome_grade' onChange={handleChange} value={gridData?.nome_grade || ''} label='Nome da grade' sx={{ flex: 1, }} />
                 <RadioItem valueRadio={gridData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, ativo: parseInt(value) })} />
                 {!newGrid &&

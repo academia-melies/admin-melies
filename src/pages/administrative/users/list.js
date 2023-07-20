@@ -39,7 +39,7 @@ export default function ListUsers(props) {
             const { data = [] } = response;
             setUsers(data)
         } catch (error) {
-            console.log(error.response.data)
+            console.log(error)
         } finally {
             setLoading(false)
         }

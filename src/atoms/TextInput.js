@@ -13,16 +13,28 @@ export const TextInput = (props) => {
       <TextField label={label}
          {...props}
          InputProps={{
-            sx: { transition: 'background-color 1s', borderRadius: 2, fontSize: { xs: '14px', xm: '15px', md: '15px', lg: '15px' }, fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',  ...InputProps?.style, color: colorPalette.textColor, backgroundColor: colorPalette.inputColor }
+            sx: {
+               transition: 'background-color 1s',
+               borderRadius: 2, fontSize: { xs: '14px', xm: '15px', md: '15px', lg: '15px' },
+               fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',
+               color: colorPalette.textColor,
+               backgroundColor: colorPalette.inputColor,
+               ...InputProps?.style,
+            }
+           
          }}
-         InputLabelProps={{ 
-            sx: { color: colorPalette.textColor ,
-             fontSize: { xs: '14px',
-             xm: '15px',
-             md: '15px',
-             lg: '15px' },
-             fontFamily: 'MetropolisBold',
-             ...InputLabelProps?.style} 
+         InputLabelProps={{
+            sx: {
+               color: colorPalette.textColor,
+               fontSize: {
+                  xs: '14px',
+                  xm: '15px',
+                  md: '15px',
+                  lg: '15px'
+               },
+               fontFamily: 'MetropolisBold',
+               ...InputLabelProps?.style
+            }
          }}
       />
    )

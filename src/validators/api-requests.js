@@ -30,7 +30,7 @@ export const deleteUser = async (id) => {
       const response = await api.delete(`/user/delete/${id}`)
       return response
    } catch (error) {
-      console.log(error.response.data)
+      console.log(error)
       return error
    }
 }
@@ -96,7 +96,7 @@ export const deleteCourse = async (id) => {
       const response = await api.delete(`/course/delete/${id}`)
       return response
    } catch (error) {
-      console.log(error.response.data)
+      console.log(error)
       return error
    }
 }
@@ -124,7 +124,7 @@ export const deleteDiscipline = async (id) => {
       const response = await api.delete(`/discipline/delete/${id}`)
       return response
    } catch (error) {
-      console.log(error.response.data)
+      console.log(error)
       return error
    }
 }
@@ -152,7 +152,7 @@ export const deleteClass = async (id) => {
       const response = await api.delete(`/class/delete/${id}`)
       return response
    } catch (error) {
-      console.log(error.response.data)
+      console.log(error)
       return error
    }
 }
@@ -180,7 +180,7 @@ export const deleteGrid = async (id) => {
       const response = await api.delete(`/grid/delete/${id}`)
       return response
    } catch (error) {
-      console.log(error.response.data)
+      console.log(error)
       return error
    }
 }
