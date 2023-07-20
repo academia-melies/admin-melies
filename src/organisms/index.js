@@ -11,6 +11,7 @@ export { CheckBoxComponent } from "./checkBox/CheckBox";
 export { CustomDropzone } from "./dropzone/Dropzone";
 export { Carousel } from "./carousel/Carousel";
 export { TableOfficeHours } from "./TableOffice/tableOffice";
+export { SelectList } from './select/SelectList'
 
 
 

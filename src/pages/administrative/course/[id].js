@@ -140,16 +140,14 @@ export default function EditCourse(props) {
     ]
 
     const groupDuration = [
-        { label: '1 - Semestre', value: 1 },
-        { label: '2 - Semestres', value: 2 },
-        { label: '3 - Semestres', value: 3 },
-        { label: '4 - Semestres', value: 4 },
-        { label: '5 - Semestres', value: 5 },
-        { label: '6 - Semestres', value: 6 },
-        { label: '7 - Semestres', value: 7 },
-        { label: '8 - Semestres', value: 8 },
-        { label: '9 - Semestres', value: 9 },
-        { label: '10 - Semestres', value: 10 },
+        { label: '1 - Módulo', value: 1 },
+        { label: '2 - Módulos', value: 2 },
+        { label: '3 - Módulos', value: 3 },
+        { label: '4 - Módulos', value: 4 },
+        { label: '5 - Módulos', value: 5 },
+        { label: '6 - Módulos', value: 6 },
+        { label: '7 - Módulos', value: 7 },
+        { label: '8 - Módulos', value: 8 },
     ]
 
     const formatter = new Intl.NumberFormat('pt-BR', {

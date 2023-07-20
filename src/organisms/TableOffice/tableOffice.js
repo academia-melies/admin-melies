@@ -14,7 +14,7 @@ import { useAppContext } from '../../context/AppContext';
 export const TableOfficeHours = (props) => {
     const { data = [], onChange } = props;
     const { colorPalette, theme } = useAppContext();
-    
+
     const daysWeek = ['2ª Feira', '3ª Feira', '4ª Feira', '5ª Feira', '6ª Feira', 'Sábado'];
 
     // Time periods to loop through (Entrada and Saída)
@@ -65,10 +65,10 @@ export const TableOfficeHours = (props) => {
                                     {periodoIndex % 2 === 0 ? 'Entrada' : 'Saída'} {Math.floor(periodoIndex / 2) + 1}
                                 </TableCell>
                                 {data.map((row, diaIndex) => (
-                                    <TableCell key={diaIndex}>
+                                    <TableCell key={diaIndex} sx={{ textAlign: 'center', fontFamily: 'MetropolisBold' }}>
                                         <TextInput
                                             name={row.dia_semana}
-                                            value={row[periodo]}
+                                            value={row[periodo] !== '00:00:00' ? row[periodo] : '-'}
                                             onChange={(event) => handleChange(event, row.dia_semana, periodo)}
                                         />
                                     </TableCell>
