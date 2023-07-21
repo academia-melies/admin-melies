@@ -387,8 +387,8 @@ export default function CalendarComponent(props) {
                     <Box key={`${item}-${index}`} sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: '10px' }}>
                         <Box sx={{ width: 10, height: 10, aspectRatio: '1/1', backgroundColor: item.color }} />
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <Text>{item.title}</Text>
-                            {item.description && <Text>({item?.description})</Text>}
+                            <Text small>{item.title}</Text>
+                            {item.description && <Text small>({item?.description})</Text>}
                         </Box>
 
                     </Box>
@@ -396,9 +396,9 @@ export default function CalendarComponent(props) {
             </Box>
             {
                 showEventForm && (
-                    <Backdrop open={showEventForm} sx={{ zIndex: 99999, marginLeft: { md: '180px', lg: '280px' } }}>
-                        <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', width: 400 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, marginBottom: 2 }}>
+                    <Backdrop open={showEventForm} sx={{ zIndex: 99999 }}>
+                        <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, marginLeft: { md: '180px', lg: '280px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', width: 400 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 99999, marginBottom: 2 }}>
                                 <Text bold large>{selectedEvent ? "Editar evento" : "Adicionar evento"}</Text>
                                 <Box sx={{
                                     ...styles.menuIcon,
