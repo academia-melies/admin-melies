@@ -1,5 +1,5 @@
 
-export const feriados = [
+export const Holidays = [
     {
         title: 'Ano Novo',
         color: 'red',
@@ -79,6 +79,5 @@ export const feriados = [
         start: new Date(2023, 11, 25),
         end: new Date(2023, 11, 25)
     },
-    // Adicione mais feriados aqui...
 ];
 
