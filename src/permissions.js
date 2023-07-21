@@ -17,7 +17,7 @@ export const menuItems = [
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
          {
-            to: '/administrative/calendar/calendary',
+            to: '/administrative/calendar/calendar',
             text: 'Calendario',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
