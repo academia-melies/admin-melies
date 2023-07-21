@@ -10,6 +10,8 @@ import "react-big-calendar/lib/addons/dragAndDrop"; // Recurso de arrastar e sol
 import { useAppContext } from "../../../context/AppContext";
 import { Backdrop } from "@mui/material";
 import { icons } from "../../../organisms/layout/Colors";
+import { api } from "../../../api/api";
+import { feriados } from "./feriados";
 
 
 moment.locale("pt-br");
@@ -76,133 +78,37 @@ export default function CalendarComponent(props) {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showEventForm, setShowEventForm] = useState(false);
-    const [semester, setSemester] = useState('2º Semestre')
+    const [semester, setSemester] = useState()
     const [year, setYear] = useState(2023)
     const [defaultRangeDate, setDefaultRangeDate] = useState([])
+    const [filteredEvents, setFilteredEvents] = useState([]);
     const [eventData, setEventData] = useState({
         title: "",
         description: "",
         location: "",
         color: "#007BFF",
     });
-    const { setLoading, alert, colorPalette, matches } = useAppContext()
+    const { setLoading, alert, colorPalette, matches, user } = useAppContext()
+    let date = new Date(year, 6, 1);
+    const filter = (item) => {
+        return semester === '1º Semestre' ? (item && item.start < date) : (item && item.start >= date);
+    };
 
     useEffect(() => {
+        handleItems()
+    }, [])
+
+    const handleItems = async () => {
+        setLoading(true);
         const dataAtual = new Date();
         const anoAtual = dataAtual.getFullYear();
         setYear(anoAtual)
-    }, [])
+        setSemester('2º Semestre')
+        await handleEvents()
+        setLoading(false);
+    }
 
-    const messages = {
-        today: "Hoje",
-        previous: "Anterior",
-        next: "Próximo",
-        month: "Mês",
-        week: "Semana",
-        day: "Dia",
-        agenda: "Agenda",
-        date: "Data",
-        time: "Hora",
-        event: "Evento",
-    };
-
-    //   useEffect(() => {
-    //     // Fetch events from the server or local storage and set the events state
-    //     fetchEventsFromDatabase().then((data) => {
-    //       setEvents(data);
-    //     });
-    //   }, []);
-
-    const fetchEventsFromDatabase = async () => {
-        // Fetch events from the server and return the data
-        // ...
-    };
-
-    const saveEventToDatabase = async (event) => {
-        // Save the event to the server
-        // ...
-    };
-
-    const eventStyleGetter = (event, start, end, isSelected) => {
-        const style = {
-            backgroundColor: event.color,
-            borderRadius: "5px",
-            display: "block",
-            padding: "10px",
-            opacity: !isSelected && 0.6,
-            fontSize: '12px'
-        };
-        return {
-            style,
-        };
-    };
-
-    const handleAddEvent = (newEvent) => {
-        setEvents([...events, newEvent]);
-        saveEventToDatabase(newEvent);
-    };
-
-    const handleSelectEvent = (event) => {
-        setSelectedEvent(event);
-        setShowEventForm(true);
-        setEventData({
-            title: event.title,
-            description: event.description,
-            location: event.location,
-            color: event.color,
-        });
-    };
-
-    const handleDeleteEvent = () => {
-        setEvents(events.filter((event) => event !== selectedEvent));
-        setSelectedEvent(null);
-        setShowEventForm(false);
-        // Delete event from the database
-        // ...
-    };
-
-    const handleEditEvent = () => {
-        const updatedEvent = {
-            ...selectedEvent,
-            title: eventData.title,
-            description: eventData.description,
-            location: eventData.location,
-            color: eventData.color,
-        };
-        setEvents(events.map((event) => (event === selectedEvent ? updatedEvent : event)));
-        setSelectedEvent(null);
-        setShowEventForm(false);
-        // Update event in the database
-        // ...
-    };
-
-    const handleEventFormChange = (event) => {
-        const { name, value } = event.target;
-        setEventData((prevData) => ({
-            ...prevData,
-            [name]: name === "color" ? value : value,
-        }));
-    };
-
-    const handleEventFormSubmit = (event) => {
-        event.preventDefault();
-        if (selectedEvent) {
-            handleEditEvent();
-        } else {
-            const newEvent = {
-                start: eventData.start, // You need to set the start and end dates for the new event
-                end: eventData.end,
-                title: eventData.title,
-                description: eventData.description,
-                location: eventData.location,
-                color: eventData.color,
-                allDay: false, // Adjust this based on your use case
-            };
-            handleAddEvent(newEvent);
-        }
-    };
-
-    const defaultFirstSemester = [
+    const defaultYear = [
         {
             start: new Date(year, 0, 1), // January 2023
             end: new Date(year, 0, 31),
@@ -227,9 +133,6 @@ export default function CalendarComponent(props) {
             start: new Date(year, 5, 1), // Jun 2023
             end: new Date(year, 5, 31),
         },
-    ];
-
-    const defaultSecondSemester = [
         {
             start: new Date(year, 6, 1), // July 2023
             end: new Date(year, 6, 31),
@@ -256,27 +159,168 @@ export default function CalendarComponent(props) {
         },
     ];
 
+    const handleEvents = async () => {
+        try {
+            setLoading(true)
+            const response = await api.get(`/events`)
+            const { data } = response
+            if (data) {
+                const eventsMap = data?.map((event) => ({
+                    id_evento_calendario: event.id_evento_calendario,
+                    start: event.inicio, // Adicione o início e o fim do evento como propriedades start e end
+                    end: event.fim,
+                    title: event.titulo,
+                    description: event.descricao,
+                    location: event.local,
+                    color: event.color,
+                    allDay: false, // Ajuste isso com base no seu caso de uso
+                }));
+                setEvents([...eventsMap, ...feriados]);
+                return
+            }
+        } catch (error) {
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
     useEffect(() => {
-        const monthFilter = semester === '1º Semestre' ? defaultFirstSemester : defaultSecondSemester;
-        setDefaultRangeDate(monthFilter)
-    }, [semester])
+        setLoading(true)
+        setDefaultRangeDate(defaultYear)
+        const filtered = defaultRangeDate.filter(filter);
+        setFilteredEvents(filtered);
+        setLoading(false)
+
+    }, [semester]);
+
+    const messages = {
+        today: "Hoje",
+        previous: "Anterior",
+        next: "Próximo",
+        month: "Mês",
+        week: "Semana",
+        day: "Dia",
+        agenda: "Agenda",
+        date: "Data",
+        time: "Hora",
+        event: "Evento",
+    };
+
+    const handleCreateEvent = async (event) => {
+        console.log(event)
+        setLoading(true)
+        try {
+            const response = await api.post(`/event/create/${user?.id}`, { events: event })
+            console.log(response)
+            if (response.status === 201) {
+                alert.success('Evento criado!')
+                handleItems()
+            }
+        } catch (error) {
+            return error
+        } finally {
+            setLoading(false)
+        }
+    };
+
+    const eventStyleGetter = (event, start, end, isSelected) => {
+        const style = {
+            backgroundColor: event.color,
+            borderRadius: "5px",
+            display: "block",
+            padding: "10px",
+            opacity: !isSelected && 0.6,
+            fontSize: '12px'
+        };
+        return {
+            style,
+        };
+    };
+
+    const handleSelectEvent = (event) => {
+        setSelectedEvent(event);
+        setShowEventForm(true);
+        setEventData(event);
+    };
+
+    const handleDeleteEvent = async () => {
+        try {
+            setLoading(true)
+            const response = await api.delete(`/event/delete/${eventData.id_evento_calendario}`)
+            console.log(response)
+            const { status } = response
+            if (status === 200) {
+                alert.success('Evento deletado.')
+                handleItems()
+                return
+            }
+            alert.error('Ocorreu um erro ao deletar o evento')
+        } catch (error) {
+            return error
+        } finally {
+            setLoading(false)
+            setSelectedEvent(null);
+            setShowEventForm(false);
+        }
+    }
+
+    const handleEditEvent = async (event) => {
+
+        try {
+            setLoading(true)
+            const response = await api.patch(`/event/update`, { events: event })
+            const { status } = response
+            if (status === 201) {
+                alert.success('Evento atualizado.')
+                handleItems()
+                return
+            }
+            alert.error('Ocorreu um erro ao atualizar o evento')
+        } catch (error) {
+            return error
+        } finally {
+            setLoading(false)
+            setSelectedEvent(null);
+            setShowEventForm(false);
+        }
+    };
+
+    const handleEventFormChange = (event) => {
+        const { name, value } = event.target;
+        setEventData((prevData) => ({
+            ...prevData,
+            [name]: name === "color" ? value : value,
+        }));
+    };
+
+    const handleEventFormSubmit = (event) => {
+        event.preventDefault();
+
+        if (selectedEvent) {
+            handleEditEvent(eventData);
+        } else {
+            handleCreateEvent(eventData);
+        }
+
+        // Limpar o formulário após adicionar ou editar o evento
+        setEventData({
+            title: "",
+            description: "",
+            location: "",
+            color: "#007BFF",
+        });
+
+        // Fechar o formulário
+        setShowEventForm(false);
+    };
+
 
     const groupMonths = [
-        {
-            label: '1º Semestre', value: '1º Semestre'
-        },
+        { label: '1º Semestre', value: '1º Semestre' },
         { label: '2º Semestre', value: '2º Semestre' },
     ]
-
-    const defaultEvents = events.map((event) => ({
-        start: event.start, // Adicione o início e o fim do evento como propriedades start e end
-        end: event.end,
-        title: event.title,
-        description: event.description,
-        location: event.location,
-        color: event.color,
-        allDay: false, // Ajuste isso com base no seu caso de uso
-    }));
 
 
     return (
@@ -290,7 +334,7 @@ export default function CalendarComponent(props) {
             </ContentContainer>
 
             <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 5, }}>
-                {defaultRangeDate.map((month, index) => (
+                {filteredEvents?.filter(filter).map((month, index) => (
                     <Box key={`${month}-${index}`} sx={{
                         marginBottom: 2,
                         minHeight: 400,
@@ -300,9 +344,9 @@ export default function CalendarComponent(props) {
                         <Text bold title sx={{ textAlign: 'center' }}>{moment(month?.start).format('MMMM YYYY')} </Text>
                         <Calendar
                             localizer={localizer}
-                            defaultDate={moment(month?.start)}
+                            defaultDate={month?.start}
                             culture="pt-br"
-                            events={defaultEvents} // Use o conjunto de eventos padrão para todos os calendários
+                            events={events} // Use o conjunto de eventos padrão para todos os calendários
                             startAccessor="start" // Use "start" como acessor para o início do evento
                             endAccessor="end" // Use "end" como acessor para o fim do evento
                             selectable
@@ -338,12 +382,12 @@ export default function CalendarComponent(props) {
                     </Box>
                 ))}
             </Box>
-            <Box sx={{marginTop: 5}}>
-                <Text bold sx={{marginBottom: 3}}>Legenda</Text>
+            <Box sx={{ marginTop: 5 }}>
+                <Text bold sx={{ marginBottom: 3 }}>Legenda</Text>
                 {listEvents.map((item, index) => (
-                    <Box key={`${item}-${index}`} sx={{display: 'flex', gap: 2, alignItems: 'center', marginBottom: '10px' }}>
-                        <Box sx={{width: 10, height: 10, aspectRatio: '1/1', backgroundColor: item.color}}/>
-                        <Box sx={{display: 'flex', gap: 0.5}}>
+                    <Box key={`${item}-${index}`} sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: '10px' }}>
+                        <Box sx={{ width: 10, height: 10, aspectRatio: '1/1', backgroundColor: item.color }} />
+                        <Box sx={{ display: 'flex', gap: 0.5 }}>
                             <Text>{item.title}</Text>
                             {item.description && <Text>({item?.description})</Text>}
                         </Box>
@@ -408,26 +452,13 @@ export default function CalendarComponent(props) {
                                     onChange={handleEventFormChange}
                                 />
 
-                                {/* <button type="submit">{selectedEvent ? "Update Event" : "Add Event"}</button>
-                            {selectedEvent && <button onClick={handleDeleteEvent}>Delete Event</button>} */}
-
                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                     <Button
                                         small
                                         type="submit"
                                         text={selectedEvent ? "Atualizar" : "Adicionar"}
                                         style={{ padding: '5px 6px 5px 6px', width: 100 }}
-                                        onClick={
-                                            (event) => {
-                                                handleEventFormSubmit(event)
-                                                setShowEventForm(false)
-                                                setEventData({
-                                                    title: "",
-                                                    description: "",
-                                                    location: "",
-                                                    color: "#007BFF",
-                                                });
-                                            }}
+                                        onClick={(event) => handleEventFormSubmit(event)}
                                     />
                                     {selectedEvent &&
                                         <Button
