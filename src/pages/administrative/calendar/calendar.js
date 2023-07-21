@@ -4,14 +4,13 @@ import moment from "moment";
 import "moment/locale/pt-br";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms";
-import { SectionHeader, SelectList } from "../../../organisms";
+import { SectionHeader, SelectList, Holidays } from "../../../organisms";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"; // Estilo para o recurso de arrastar e soltar (se estiver usando)
 import "react-big-calendar/lib/addons/dragAndDrop"; // Recurso de arrastar e soltar (se estiver usando)
 import { useAppContext } from "../../../context/AppContext";
 import { Backdrop } from "@mui/material";
 import { icons } from "../../../organisms/layout/Colors";
 import { api } from "../../../api/api";
-import { feriados } from "./feriados";
 
 
 moment.locale("pt-br");
@@ -175,7 +174,7 @@ export default function CalendarComponent(props) {
                     color: event.color,
                     allDay: false, // Ajuste isso com base no seu caso de uso
                 }));
-                setEvents([...eventsMap, ...feriados]);
+                setEvents([...eventsMap, ...Holidays]);
                 return
             }
         } catch (error) {
