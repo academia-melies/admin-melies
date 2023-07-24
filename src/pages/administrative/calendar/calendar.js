@@ -18,54 +18,63 @@ const localizer = momentLocalizer(moment);
 
 const listEvents = [
     {
+        id: '01',
         title: "Feriado",
         description: "Escola fechada para todos, não tem aula nem funciona o adm",
         location: "",
-        color: "red",
+        color: "#FF0000",
     },
     {
+        id: '02',
         title: "Emenda de feriado",
         description: "Não tem aula, adm funciona normalmente",
         location: "",
-        color: "orange",
+        color: "#FF8C00",
     },
     {
+        id: '03',
         title: "Férias/recesso de professores e alunos",
         description: "Em Julho adm funciona das 9h ás 18h",
         location: "",
-        color: "yellow",
+        color: "#FFD700",
     },
     {
+        id: '04',
         title: "Inicio das aulas do semestre",
         description: "",
         location: "",
-        color: "green",
+        color: "#008000",
     },
     {
+        id: '05',
         title: "Evento, Semana acadêmica e Game Jam",
         description: "",
         location: "",
-        color: "pink",
+        color: "#FFC0CB",
     },
     {
+        id: '06',
         title: "Semana de aválicação",
         description: "",
         location: "",
-        color: "lightblue",
+        color: "#87CEFA",
     },
     {
+        id: '07',
         title: "Semana de substitutiva",
         description: "",
         location: "",
         color: "#86b8f5",
     },
     {
+        id: '08',
         title: "Semana de exame",
         description: "",
         location: "",
         color: "#5b969b",
     },
     {
+        id: '09',
         title: "Divulgação de resultados final",
         description: "",
         location: "",
@@ -80,6 +89,7 @@ export default function CalendarComponent(props) {
     const [semester, setSemester] = useState()
     const [year, setYear] = useState(2023)
     const [defaultRangeDate, setDefaultRangeDate] = useState([])
+    const [defaultEvents, setDefaultEvents] = useState([])
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [eventData, setEventData] = useState({
         title: "",
@@ -190,6 +200,7 @@ export default function CalendarComponent(props) {
         setDefaultRangeDate(defaultYear)
         const filtered = defaultRangeDate.filter(filter);
         setFilteredEvents(filtered);
+        listEventsDefault()
         setLoading(false)
 
     }, [semester]);
@@ -224,6 +235,18 @@ export default function CalendarComponent(props) {
         }
     };
 
+    async function listEventsDefault() {
+        try {
+            const groupEvents = listEvents.map(event => ({
+                label: event.title,
+                value: event?.id
+            }));
+
+            setDefaultEvents(groupEvents);
+        } catch (error) {
+        }
+    }
+
     const eventStyleGetter = (event, start, end, isSelected) => {
         const style = {
             backgroundColor: event.color,
@@ -237,6 +260,7 @@ export default function CalendarComponent(props) {
             style,
         };
     };
+
 
     const handleSelectEvent = (event) => {
         setSelectedEvent(event);
@@ -293,6 +317,23 @@ export default function CalendarComponent(props) {
             [name]: name === "color" ? value : value,
         }));
     };
+
+    const handleEventToSelect = (value) => {
+        console.log(value)
+        const data = listEvents.find((item) => item.title === value)
+        console.log(data)
+
+        setEventData((prevData) => ({
+            ...prevData,
+            title: data?.title,
+            description: data?.description,
+            location: data?.location,
+            color: data?.color,
+        }));
+
+        console.log(eventData)
+
+    }
 
     const handleEventFormSubmit = (event) => {
         event.preventDefault();
@@ -396,9 +437,9 @@ export default function CalendarComponent(props) {
             </Box>
             {
                 showEventForm && (
-                    <Backdrop open={showEventForm} sx={{ zIndex: 99999 }}>
+                    <Backdrop open={showEventForm} sx={{ zIndex: 999 }}>
                         <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, marginLeft: { md: '180px', lg: '280px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', width: 400 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 99999, marginBottom: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                                 <Text bold large>{selectedEvent ? "Editar evento" : "Adicionar evento"}</Text>
                                 <Box sx={{
                                     ...styles.menuIcon,
@@ -420,13 +461,23 @@ export default function CalendarComponent(props) {
                                 }} />
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <TextInput
+                                <SelectList
+                                    fullWidth
+                                    data={defaultEvents}
+                                    valueSelection={eventData?.title}
+                                    onSelect={(value) => handleEventToSelect(value)}
+                                    title="Evento"
+                                    filterOpition="label"
+                                    sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                {/* <TextInput
                                     name="title"
                                     value={eventData.title || ''}
                                     label='Nome do evento'
                                     onChange={handleEventFormChange}
                                     sx={{ flex: 1 }}
-                                />
+                                /> */}
                                 <TextInput
                                     name="description"
                                     value={eventData.description || ''}

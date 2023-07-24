@@ -18,6 +18,8 @@ export default function EditGrid(props) {
     const [courses, setCourses] = useState([])
     const [semester, setSemester] = useState()
 
+    console.log(gridData)
+
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -231,7 +233,6 @@ export default function EditGrid(props) {
                 deleteButton={!newGrid}
                 deleteButtonAction={() => handleDeleteGrid()}
             />
-
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Box>
@@ -241,68 +242,25 @@ export default function EditGrid(props) {
                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
-                <TextInput placeholder='Nome' name='nome_grade' onChange={handleChange} value={gridData?.nome_grade || ''} label='Nome da grade' sx={{ flex: 1, }} />
+                < Box sx={{ ...styles.inputSection }}>
+                    <TextInput placeholder='Nome' name='nome_grade' onChange={handleChange} value={gridData?.nome_grade || ''} label='Nome da grade' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Módulos' name='semestres' onChange={handleChange} value={semester || ''} label='Módulos' sx={{ flex: 1, }} />
+                </Box>
                 <RadioItem valueRadio={gridData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, ativo: parseInt(value) })} />
                 {!newGrid &&
-                    <>
-                        {planGridData && (Array.isArray(planGridData) ?
-                            planGridData.map((planGrid, index) => (
-                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }} key={`${planGrid}-${index}`}>
-                                    <TextInput placeholder='Disciplina' name="discipline" value={planGrid?.nome_disciplina || ''} label='Disciplina' sx={{ flex: 1 }} />
-                                    <Box sx={{
-                                        backgroundSize: 'cover',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center',
-                                        width: 25,
-                                        height: 25,
-                                        backgroundImage: `url(/icons/remove_icon.png)`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} onClick={() => deletePlanGrid(planGrid?.id_plano_grade)} />
-                                </Box>
-                            )) :
-                            <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                <TextInput placeholder='Disciplina' name="discipline" value={planGridData?.nome_disciplina || ''} label='Disciplina' sx={{ flex: 1 }} />
-                                <Box sx={{
-                                    backgroundSize: 'cover',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                    width: 25,
-                                    height: 25,
-                                    backgroundImage: `url(/icons/remove_icon.png)`,
-                                    transition: '.3s',
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => deletePlanGrid(planGridData?.id_plano_grade)} />
-                            </Box>
-                        )}
+                    Array.from({ length: semester }).map((_, index) => (
+                        <SemesterFields
+                            key={index}
+                            semesterNumber={index + 1}
+                            planGridData={planGridData}
+                            deletePlanGrid={deletePlanGrid}
+                            disciplines={disciplines}
+                            setGridData={setGridData}
+                            colorPalette={colorPalette}
+                            gridData={gridData}
+                        />
+                    ))}
 
-                        < Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                            <SelectList fullWidth data={disciplines} valueSelection={gridData?.disciplina_id} onSelect={(value) => setGridData({ ...gridData, disciplina_id: value })}
-                                title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-                            <Box sx={{
-                                backgroundSize: 'cover',
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center',
-                                width: 25,
-                                height: 25,
-                                backgroundImage: `url(/icons/include_icon.png)`,
-                                transition: '.3s',
-                                "&:hover": {
-                                    opacity: 0.8,
-                                    cursor: 'pointer'
-                                }
-                            }} onClick={() => addPlanGrid()} />
-                        </Box>
-                    </>
-                }
             </ContentContainer >
         </>
     )
@@ -331,3 +289,87 @@ const styles = {
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
     }
 }
+
+export const SemesterFields = ({
+    semesterNumber,
+    planGridData,
+    deletePlanGrid,
+    disciplines,
+    setGridData,
+    colorPalette,
+    gridData
+}) => (
+    <ContentContainer>
+        <Box>
+            <Text title bold style={{ padding: "0px 0px 20px 0px" }}>
+                {`${semesterNumber}º semestre`}
+            </Text>
+        </Box>
+        {planGridData.map((planGrid, index) => (
+            <Box sx={{ ...styles.inputSection, alignItems: "center" }} key={index}>
+                <TextInput
+                    placeholder="Disciplina"
+                    name={`discipline-${semesterNumber}-${index}`}
+                    value={planGrid?.nome_disciplina || ""}
+                    label="Disciplina"
+                    sx={{ flex: 1 }}
+                />
+                <Box
+                    sx={{
+                        backgroundSize: "cover",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                        width: 25,
+                        height: 25,
+                        backgroundImage: `url(/icons/remove_icon.png)`,
+                        transition: ".3s",
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: "pointer",
+                        },
+                    }}
+                    onClick={() => deletePlanGrid(planGrid?.id_plano_grade)}
+                />
+            </Box>
+        ))}
+        <Box sx={{ ...styles.inputSection, alignItems: "center" }}>
+            <SelectList
+                fullWidth
+                data={disciplines}
+                valueSelection={gridData[`disciplina_id-${semesterNumber}`]}
+                onSelect={(value) =>
+                    setGridData({
+                        ...gridData,
+                        [`disciplina_id-${semesterNumber}`]: value,
+                    })
+                }
+                title="Disciplina"
+                filterOpition="value"
+                sx={{ color: colorPalette.textColor, flex: 1 }}
+                inputStyle={{
+                    color: colorPalette.textColor,
+                    fontSize: "15px",
+                    fontFamily: "MetropolisBold",
+                }}
+            />
+            <Box
+                sx={{
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                    width: 25,
+                    height: 25,
+                    backgroundImage: `url(/icons/include_icon.png)`,
+                    transition: ".3s",
+                    "&:hover": {
+                        opacity: 0.8,
+                        cursor: "pointer",
+                    },
+                }}
+                onClick={() => addPlanGrid()}
+            />
+        </Box>
+    </ContentContainer>
+);
+
+
