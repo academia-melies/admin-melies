@@ -51,6 +51,8 @@ export default function ListGrid(props) {
         }
     }
 
+    console.log(gridList)
+
     const column = [
         // { key: 'id_grade', label: 'ID Grade' },
         { key: 'id_disciplina', label: 'ID Disciplina' },
@@ -69,7 +71,7 @@ export default function ListGrid(props) {
     return (
         <>
             <SectionHeader
-                title={`Grades (${gridList.length||'0'})`}
+                title={`Grades (${gridList.length || '0'})`}
                 newButton
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
@@ -90,6 +92,7 @@ export default function ListGrid(props) {
             {gridList ? (
                 gridList.filter(filter).map((item, index) => {
                     const gridData = item.disciplinas;
+                    const modulos = gridData.map(item => item.modulo)
                     const name = item.nome_grade;
 
                     return (
