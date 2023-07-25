@@ -16,21 +16,29 @@ export default function EditGrid(props) {
     const [planGridData, setPlanGridData] = useState([])
     const [disciplines, setDisciplines] = useState([])
     const [courses, setCourses] = useState([])
-    const [semester, setSemester] = useState()
-
-    console.log(gridData)
-
+    const [moduleData, setModuleData] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
-
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            await Promise.all([listDisciplines(), listCourses(), handleItems()]);
+        } catch (error) {
+            alert.error('Ocorreu um erro ao carregar as informações iniciais.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const addPlanGrid = async () => {
         setLoading(true)
         try {
-            const response = await api.post(`/gridplan/create`, { gridData })
+            const response = await api.post(`/gridplan/create/${id}`, { moduleData })
+            console.log(response)
             if (response?.status == 201) {
                 alert.success('Disciplina adicionada.');
+                setModuleData([])
                 handleItems()
             }
         } catch (error) {
@@ -79,40 +87,23 @@ export default function EditGrid(props) {
         }
     }
 
-    useEffect(() => {
-        (async () => {
-            if (newGrid) {
-                return
-            }
-            await handleItems();
-        })();
-    }, [id])
+    const handleChangeCourse = async (value) => {
+
+        let nameCourse = courses.filter((course) => course?.value === value).map((item) => item.label)
+        let nameGrid = `Grade - ${nameCourse}`
+        let [modulesQnt] = courses.filter((course) => course?.value === value).map((item) => item.duration)
+
+        setGridData({
+            ...gridData,
+            curso_id: value,
+            nome_grade: nameGrid,
+            modulos: modulesQnt
+        })
+    }
 
     useEffect(() => {
-        listDisciplines()
-        listCourses()
-    }, [])
-
-    useEffect(() => {
-        async function autoCompleteName() {
-            let nameCourse = courses.filter((course) => course?.value === gridData?.curso_id).map((item) => item.label)
-            let nameGrid = `Grade - ${nameCourse}`
-            if (gridData?.curso_id) {
-                setGridData({ ...gridData, nome_grade: nameGrid })
-                setSemester()
-            }
-        }
-
-        async function getSemestersCourse() {
-            let semesterQnt = courses.filter((course) => course?.value === gridData?.curso_id).map((item) => item.duration)
-            if (gridData?.curso_id) {
-                setSemester(semesterQnt)
-            }
-        }
-
-        autoCompleteName()
-        getSemestersCourse()
-    }, [gridData?.curso_id])
+        fetchData();
+    }, [id, newGrid]);
 
 
     async function listDisciplines() {
@@ -166,8 +157,10 @@ export default function EditGrid(props) {
 
     const handleCreateGrid = async () => {
         setLoading(true)
+        console.log(gridData)
         try {
             const response = await createGrid(gridData);
+            console.log(response)
             const { data } = response
             if (response?.status === 201) {
                 alert.success('Curso cadastrado com sucesso.');
@@ -238,17 +231,17 @@ export default function EditGrid(props) {
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Grade</Text>
                 </Box>
-                <SelectList fullWidth data={courses} valueSelection={gridData?.curso_id} onSelect={(value) => setGridData({ ...gridData, curso_id: value })}
+                <SelectList fullWidth data={courses} valueSelection={gridData?.curso_id} onSelect={(value) => handleChangeCourse(value)}
                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
                 < Box sx={{ ...styles.inputSection }}>
                     <TextInput placeholder='Nome' name='nome_grade' onChange={handleChange} value={gridData?.nome_grade || ''} label='Nome da grade' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Módulos' name='semestres' onChange={handleChange} value={semester || ''} label='Módulos' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Módulos' name='semestres' onChange={handleChange} value={gridData?.modulos || ''} label='Módulos' sx={{ flex: 1, }} />
                 </Box>
                 <RadioItem valueRadio={gridData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, ativo: parseInt(value) })} />
                 {!newGrid &&
-                    Array.from({ length: semester }).map((_, index) => (
+                    Array.from({ length: gridData?.modulos }).map((_, index) => (
                         <SemesterFields
                             key={index}
                             semesterNumber={index + 1}
@@ -258,6 +251,10 @@ export default function EditGrid(props) {
                             setGridData={setGridData}
                             colorPalette={colorPalette}
                             gridData={gridData}
+                            addPlanGrid={addPlanGrid}
+                            moduleData={moduleData}
+                            setModuleData={setModuleData}
+                            setPlanGridData={setPlanGridData}
                         />
                     ))}
 
@@ -290,29 +287,89 @@ const styles = {
     }
 }
 
-export const SemesterFields = ({
-    semesterNumber,
-    planGridData,
-    deletePlanGrid,
-    disciplines,
-    setGridData,
-    colorPalette,
-    gridData
-}) => (
-    <ContentContainer>
-        <Box>
-            <Text title bold style={{ padding: "0px 0px 20px 0px" }}>
-                {`${semesterNumber}º semestre`}
-            </Text>
-        </Box>
-        {planGridData.map((planGrid, index) => (
-            <Box sx={{ ...styles.inputSection, alignItems: "center" }} key={index}>
-                <TextInput
-                    placeholder="Disciplina"
-                    name={`discipline-${semesterNumber}-${index}`}
-                    value={planGrid?.nome_disciplina || ""}
-                    label="Disciplina"
-                    sx={{ flex: 1 }}
+export const SemesterFields = (props) => {
+    const {
+        semesterNumber,
+        planGridData,
+        deletePlanGrid,
+        disciplines,
+        setGridData,
+        colorPalette,
+        gridData,
+        addModuleData,
+        moduleData,
+        setModuleData,
+        setPlanGridData,
+        addPlanGrid
+    } = props
+
+    const filteredPlanGridData = planGridData.filter(planGrid => planGrid.modulo_grade === semesterNumber);
+
+    console.log(moduleData)
+    return (
+
+        <ContentContainer>
+            <Box>
+                <Text title bold style={{ padding: "0px 0px 20px 0px" }}>
+                    {`${semesterNumber}º semestre`}
+                </Text>
+            </Box>
+            {filteredPlanGridData?.map((planGrid, index) => {
+                return (
+                    <Box sx={{ ...styles.inputSection, alignItems: "center" }} key={planGrid.modulo_grade}>
+                        <SelectList
+                            clean={false}
+                            fullWidth={true}
+                            data={disciplines}
+                            valueSelection={planGrid?.id_disciplina}
+                            title="Disciplina"
+                            filterOpition="value"
+                            sx={{ color: colorPalette.textColor, flex: 1 }}
+                            inputStyle={{
+                                color: colorPalette.textColor,
+                                fontSize: "15px",
+                                fontFamily: "MetropolisBold",
+                            }}
+                        />
+                        <Box
+                            sx={{
+                                backgroundSize: "cover",
+                                backgroundRepeat: "no-repeat",
+                                backgroundPosition: "center",
+                                width: 25,
+                                height: 25,
+                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                transition: ".3s",
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: "pointer",
+                                },
+                            }}
+                            onClick={() => deletePlanGrid(planGrid?.id_plano_grade)}
+                        />
+                    </Box>
+                )
+            })}
+            <Box sx={{ ...styles.inputSection, alignItems: "center" }}>
+                <SelectList
+                    fullWidth
+                    data={disciplines}
+                    valueSelection={moduleData[`disciplina_id-${semesterNumber}`] || ''}
+                    onSelect={(value) =>
+                        setModuleData({
+                            ...moduleData,
+                            [`disciplina_id-${semesterNumber}`]: value,
+                            [`modulo_grade`]: semesterNumber
+                        })
+                    }
+                    title="Disciplina"
+                    filterOpition="value"
+                    sx={{ color: colorPalette.textColor, flex: 1 }}
+                    inputStyle={{
+                        color: colorPalette.textColor,
+                        fontSize: "15px",
+                        fontFamily: "MetropolisBold",
+                    }}
                 />
                 <Box
                     sx={{
@@ -321,55 +378,18 @@ export const SemesterFields = ({
                         backgroundPosition: "center",
                         width: 25,
                         height: 25,
-                        backgroundImage: `url(/icons/remove_icon.png)`,
+                        backgroundImage: `url(/icons/include_icon.png)`,
                         transition: ".3s",
                         "&:hover": {
                             opacity: 0.8,
                             cursor: "pointer",
                         },
                     }}
-                    onClick={() => deletePlanGrid(planGrid?.id_plano_grade)}
+                    onClick={() => addPlanGrid()}
                 />
             </Box>
-        ))}
-        <Box sx={{ ...styles.inputSection, alignItems: "center" }}>
-            <SelectList
-                fullWidth
-                data={disciplines}
-                valueSelection={gridData[`disciplina_id-${semesterNumber}`]}
-                onSelect={(value) =>
-                    setGridData({
-                        ...gridData,
-                        [`disciplina_id-${semesterNumber}`]: value,
-                    })
-                }
-                title="Disciplina"
-                filterOpition="value"
-                sx={{ color: colorPalette.textColor, flex: 1 }}
-                inputStyle={{
-                    color: colorPalette.textColor,
-                    fontSize: "15px",
-                    fontFamily: "MetropolisBold",
-                }}
-            />
-            <Box
-                sx={{
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                    width: 25,
-                    height: 25,
-                    backgroundImage: `url(/icons/include_icon.png)`,
-                    transition: ".3s",
-                    "&:hover": {
-                        opacity: 0.8,
-                        cursor: "pointer",
-                    },
-                }}
-                onClick={() => addPlanGrid()}
-            />
-        </Box>
-    </ContentContainer>
-);
+        </ContentContainer>
+    )
+}
 
 
