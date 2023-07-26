@@ -93,7 +93,6 @@ export default function ClassSheduleList(props) {
             const dataFormatada = dataAula.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const aulaDoDia = aulasPorDia.find(aula => aula.diaSemana === diaSemana);
             if (aulaDoDia) {
-                // const recorrenciaDia = dataFormatada.setDate(dataAula.getDate() + aulaDoDia.recorrencia); // Recorrencia: 7 dias
                 const professor = currentProfessors[aulaDoDia.disciplina];
                 const disciplina = aulaDoDia.disciplina;
 
