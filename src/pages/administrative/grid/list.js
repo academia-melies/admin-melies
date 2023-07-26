@@ -51,8 +51,6 @@ export default function ListGrid(props) {
         }
     }
 
-    console.log(gridList)
-
     const column = [
         // { key: 'id_grade', label: 'ID Grade' },
         { key: 'id_disciplina', label: 'ID Disciplina' },
@@ -92,8 +90,15 @@ export default function ListGrid(props) {
             {gridList ? (
                 gridList.filter(filter).map((item, index) => {
                     const gridData = item.disciplinas;
-                    const modulos = gridData.map(item => item.modulo)
                     const name = item.nome_grade;
+                    const disciplinesByModule = {};
+                    gridData.forEach((disciplina) => {
+                        const modulo = disciplina.modulo;
+                        if (!disciplinesByModule[modulo]) {
+                            disciplinesByModule[modulo] = [];
+                        }
+                        disciplinesByModule[modulo].push(disciplina);
+                    });
 
                     return (
                         <ContentContainer key={`${item}-${index}`}>
@@ -122,14 +127,19 @@ export default function ListGrid(props) {
                                 />
                             </Box>
                             {showGridTable[index] && (
-                                <Box sx={{}}>
-                                    <Table_V1
-                                        data={gridData}
-                                        columns={column}
-                                        columnActive={false}
-                                        columnId={'id_grade'}
-                                        center
-                                    />
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                    {Object.entries(disciplinesByModule).map(([modulo, disciplinas]) => (
+                                        <ContentContainer key={`modulo-${modulo}`}>
+                                            <Text bold style={{color: colorPalette.buttonColor}}>{`${modulo}º Semestre`}</Text>
+                                            <Table_V1
+                                                data={disciplinas}
+                                                columns={column}
+                                                columnActive={false}
+                                                columnId={'id_grade'}
+                                                center
+                                            />
+                                        </ContentContainer>
+                                    ))}
                                 </Box>
                             )}
                         </ContentContainer>

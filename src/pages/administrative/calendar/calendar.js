@@ -364,7 +364,7 @@ export default function CalendarComponent(props) {
 
 
     return (
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <>
             <SectionHeader title={`Calendario Geral`} />
             <ContentContainer>
                 <SelectList clean={false} fullWidth data={groupMonths} valueSelection={semester} onSelect={(value) => setSemester(value)}
@@ -563,7 +563,7 @@ export default function CalendarComponent(props) {
             padding: 5px;
           }
       `}</style>
-        </Box >
+        </ >
     );
 }
 
