@@ -82,16 +82,26 @@ export default function ClassSheduleList(props) {
     function gerarCronograma() {
         const datasAulas = getDatasAulas(rangeDate.dataInicio, rangeDate.dataFim);
         const aulasPorDiaSemana = {};
+        const currentProfessors = {};
+
+        aulasPorDia.forEach(aula => {
+            currentProfessors[aula.disciplina] = aula.primeiroPeriodoProfessor;
+        });
 
         for (const dataAula of datasAulas) {
             const diaSemana = dataAula.toLocaleDateString('pt-BR', { weekday: 'short' }).toLowerCase().split('.')[0];
             const dataFormatada = dataAula.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
             const aulaDoDia = aulasPorDia.find(aula => aula.diaSemana === diaSemana);
             if (aulaDoDia) {
                 // const recorrenciaDia = dataFormatada.setDate(dataAula.getDate() + aulaDoDia.recorrencia); // Recorrencia: 7 dias
-                const professor = (dataAula.getHours() < 12) ? aulaDoDia.primeiroPeriodoProfessor : aulaDoDia.segundoPeriodoProfessor;
+                const professor = currentProfessors[aulaDoDia.disciplina];
                 const disciplina = aulaDoDia.disciplina;
+
+                if (professor === aulaDoDia.primeiroPeriodoProfessor) {
+                    currentProfessors[disciplina] = aulaDoDia?.segundoPeriodoProfessor || aulaDoDia.primeiroPeriodoProfessor;
+                } else {
+                    currentProfessors[disciplina] = aulaDoDia.primeiroPeriodoProfessor;
+                }
 
                 const aula = {
                     dia: dataAula.toLocaleDateString('pt-BR', { weekday: 'long' }),
