@@ -16,7 +16,9 @@ export const Table_V1 = (props) => {
         columnActive = true,
         onSelect = () => { },
         center = false,
-        routerPush = true
+        routerPush = true,
+        sx = {},
+        tolltip = false
     } = props;
 
 
@@ -36,11 +38,9 @@ export const Table_V1 = (props) => {
         }
     };
 
-    const ativo = data?.map((item) => item.ativo >= 1 ? 'green' : 'red')
-
     return (
         <>
-            <Paper sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', }}>
+            <Paper sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', ...sx}}>
                 <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
@@ -68,7 +68,7 @@ export const Table_V1 = (props) => {
                                     },
                                 }}>
                                     {columns.map((column) => (
-                                        <Tooltip key={`${column}-${row}`} title={column.date ? formatDate(row[column?.key]) : row[column?.key || '-']} arrow>
+                                        <Tooltip key={`${column}-${row}`} title={tolltip ? '' : column.date ? formatDate(row[column?.key]) : row[column?.key || '-']} arrow>
                                             <TableCell
                                                 key={`${row.id}-${column.key}`}
                                                 sx={{

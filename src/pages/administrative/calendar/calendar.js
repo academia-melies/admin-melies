@@ -219,11 +219,9 @@ export default function CalendarComponent(props) {
     };
 
     const handleCreateEvent = async (event) => {
-        console.log(event)
         setLoading(true)
         try {
             const response = await api.post(`/event/create/${user?.id}`, { events: event })
-            console.log(response)
             if (response.status === 201) {
                 alert.success('Evento criado!')
                 handleItems()
@@ -272,7 +270,6 @@ export default function CalendarComponent(props) {
         try {
             setLoading(true)
             const response = await api.delete(`/event/delete/${eventData.id_evento_calendario}`)
-            console.log(response)
             const { status } = response
             if (status === 200) {
                 alert.success('Evento deletado.')
@@ -319,10 +316,8 @@ export default function CalendarComponent(props) {
     };
 
     const handleEventToSelect = (value) => {
-        console.log(value)
-        const data = listEvents.find((item) => item.title === value)
-        console.log(data)
 
+        const data = listEvents.find((item) => item.title === value)
         setEventData((prevData) => ({
             ...prevData,
             title: data?.title,
@@ -330,9 +325,6 @@ export default function CalendarComponent(props) {
             location: data?.location,
             color: data?.color,
         }));
-
-        console.log(eventData)
-
     }
 
     const handleEventFormSubmit = (event) => {

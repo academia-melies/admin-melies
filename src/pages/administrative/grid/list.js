@@ -130,7 +130,7 @@ export default function ListGrid(props) {
                                 <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                     {Object.entries(disciplinesByModule).map(([modulo, disciplinas]) => (
                                         <ContentContainer key={`modulo-${modulo}`}>
-                                            <Text bold style={{color: colorPalette.buttonColor}}>{`${modulo}º Semestre`}</Text>
+                                            <Text bold style={{color: colorPalette.buttonColor}}>{`${modulo}º Módulo`}</Text>
                                             <Table_V1
                                                 data={disciplinas}
                                                 columns={column}

@@ -35,7 +35,6 @@ export default function EditGrid(props) {
         setLoading(true)
         try {
             const response = await api.post(`/gridplan/create/${id}`, { moduleData })
-            console.log(response)
             if (response?.status == 201) {
                 alert.success('Disciplina adicionada.');
                 setModuleData([])
@@ -157,10 +156,8 @@ export default function EditGrid(props) {
 
     const handleCreateGrid = async () => {
         setLoading(true)
-        console.log(gridData)
         try {
             const response = await createGrid(gridData);
-            console.log(response)
             const { data } = response
             if (response?.status === 201) {
                 alert.success('Curso cadastrado com sucesso.');
@@ -305,13 +302,12 @@ export const SemesterFields = (props) => {
 
     const filteredPlanGridData = planGridData.filter(planGrid => planGrid.modulo_grade === semesterNumber);
 
-    console.log(moduleData)
     return (
 
         <ContentContainer>
             <Box>
                 <Text title bold style={{ padding: "0px 0px 20px 0px" }}>
-                    {`${semesterNumber}º semestre`}
+                    {`${semesterNumber}º Módulo`}
                 </Text>
             </Box>
             {filteredPlanGridData?.map((planGrid, index) => {
