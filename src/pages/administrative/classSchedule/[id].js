@@ -113,10 +113,10 @@ export default function EditClassSchedule(props) {
     }, [])
 
     useEffect(() => {
-        const classId = classScheduleData?.turma_id
-        const module = classScheduleData?.modulo_cronograma
+        const classId = classScheduleData?.turma_id || ''
+        const moduleClass = classScheduleData?.modulo_cronograma || ''
         const handleClassName = classes.filter((item) => item.value === classId).map((classData) => classData.label)
-        const title = `${handleClassName}-${module}SEM`
+        const title = `${handleClassName}-${moduleClass}SEM`
         setTitleSchedule(title)
     }, [classScheduleData?.modulo_cronograma, classScheduleData?.turma_id])
 
