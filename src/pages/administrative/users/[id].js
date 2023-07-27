@@ -130,7 +130,7 @@ export default function EditUser(props) {
     const getHistoric = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/user/historics/${id}`)
+            const response = await api.get(`/user/historical/${id}`)
             const { data } = response
             setArrayHistoric(data)
         } catch (error) {

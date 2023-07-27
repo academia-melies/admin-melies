@@ -1,59 +1,70 @@
 import { useEffect, useState } from "react";
 import { Box, ContentContainer, Text, TextInput } from "../../../atoms";
-import { SectionHeader } from "../../../organisms";
+import { SectionHeader, Table_V1 } from "../../../organisms";
 import { useAppContext } from "../../../context/AppContext";
+import { useRouter } from "next/router";
+import { icons } from "../../../organisms/layout/Colors";
 
 
 export default function ClassSheduleList(props) {
 
     const [dateClass, setDateClass] = useState([]);
+    const [showTableClass, setShowTableClass] = useState(false);
     const { setLoading, colorPalette } = useAppContext()
     const [rangeDate, setRangeDate] = useState({
         dataInicio: new Date('2023-07-01'),
-        dataFim: new Date('2024-07-01'),
+        dataFim: new Date('2023-12-04'),
     });
+    const router = useRouter()
+    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
     const aulasPorDia = [
         {
+            id: '01',
             diaSemana: 'seg',
-            disciplina: 'matematica',
-            primeiroPeriodoProfessor: 'João',
-            segundoPeriodoProfessor: 'Maria',
+            disciplina: 'Animação 2D',
+            primeiroPeriodoProfessor: 'Carlos Avelino dos Santos Reis',
+            // segundoPeriodoProfessor: 'Maria',
             recorrencia: 7
         },
         {
+            id: '02',
             diaSemana: 'ter',
-            disciplina: 'portugues',
-            primeiroPeriodoProfessor: 'Ana',
-            segundoPeriodoProfessor: 'Pedro',
+            disciplina: 'ACE: Primeiros Passos do Dinossauro',
+            primeiroPeriodoProfessor: 'Letícia Apolinário',
+            // segundoPeriodoProfessor: 'Pedro',
             recorrencia: 15
         },
         {
+            id: '03',
             diaSemana: 'qua',
-            disciplina: 'ciencias',
-            primeiroPeriodoProfessor: 'Carlos',
-            segundoPeriodoProfessor: 'Sandra',
+            disciplina: 'Pintura Digital',
+            primeiroPeriodoProfessor: 'Lika Yazawa Maekawa',
+            // segundoPeriodoProfessor: 'Sandra',
             recorrencia: 7
         },
         {
+            id: '04',
             diaSemana: 'qui',
-            disciplina: 'historia',
-            primeiroPeriodoProfessor: 'Roberto',
-            segundoPeriodoProfessor: 'Mariana',
+            disciplina: 'Introdução à Linguagem Audiovisual',
+            primeiroPeriodoProfessor: 'Diego Melem Gozze',
+            // segundoPeriodoProfessor: 'Mariana',
             recorrencia: 7
         },
+        // {
+        //     id: '05',
+        //     diaSemana: 'sex',
+        //     disciplina: 'geografia',
+        //     primeiroPeriodoProfessor: 'Lucas',
+        //     segundoPeriodoProfessor: 'Carla',
+        //     recorrencia: 7
+        // },
         {
-            diaSemana: 'sex',
-            disciplina: 'geografia',
-            primeiroPeriodoProfessor: 'Lucas',
-            segundoPeriodoProfessor: 'Carla',
-            recorrencia: 7
-        },
-        {
-            diaSemana: 'sab',
-            disciplina: 'educacao_fisica',
-            primeiroPeriodoProfessor: 'Gustavo',
-            segundoPeriodoProfessor: 'Julia',
+            id: '06',
+            diaSemana: 'sáb',
+            disciplina: 'Desenho',
+            primeiroPeriodoProfessor: 'William Mur',
+            // segundoPeriodoProfessor: 'Julia',
             recorrencia: 7
         },
     ];
@@ -81,7 +92,8 @@ export default function ClassSheduleList(props) {
 
     function gerarCronograma() {
         const datasAulas = getDatasAulas(rangeDate.dataInicio, rangeDate.dataFim);
-        const aulasPorDiaSemana = {};
+        const aulasPorDiaSemana = [];
+        // const aulasPorDiaSemana = {};
         const currentProfessors = {};
 
         aulasPorDia.forEach(aula => {
@@ -110,11 +122,13 @@ export default function ClassSheduleList(props) {
                     recorrencia: handleRecorrencia(aulaDoDia.recorrencia)
                 };
 
-                if (!aulasPorDiaSemana[diaSemana]) {
-                    aulasPorDiaSemana[diaSemana] = [];
-                }
+                // if (!aulasPorDiaSemana[diaSemana]) {
+                //     aulasPorDiaSemana[diaSemana] = [];
+                // }
 
-                aulasPorDiaSemana[diaSemana].push(aula);
+                // aulasPorDiaSemana[diaSemana].push(aula);
+                aulasPorDiaSemana.push(aula);
+
 
                 // if (aulaDoDia.recorrencia) {
 
@@ -139,15 +153,16 @@ export default function ClassSheduleList(props) {
                 //     }
                 // }
             }
-            const diasDaSemanaOrdenados = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
-            const aulasOrdenadas = {};
-            diasDaSemanaOrdenados.forEach((diaSemana) => {
-                if (aulasPorDiaSemana[diaSemana]) {
-                    aulasOrdenadas[diaSemana] = aulasPorDiaSemana[diaSemana];
-                }
-            });
 
-            setDateClass(aulasOrdenadas);
+            // const diasDaSemanaOrdenados = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+            // const aulasOrdenadas = {};
+            // diasDaSemanaOrdenados.forEach((diaSemana) => {
+            //     if (aulasPorDiaSemana[diaSemana]) {
+            //         aulasOrdenadas[diaSemana] = aulasPorDiaSemana[diaSemana];
+            //     }
+            // });
+
+            setDateClass(aulasPorDiaSemana);
         }
     }
 
@@ -158,12 +173,24 @@ export default function ClassSheduleList(props) {
         }));
     };
 
+    const column = [
+        { key: 'professor', label: 'Professor(a)' },
+        { key: 'disciplina', label: 'Matéria' },
+        { key: 'dia', avatar: true, label: 'Dia' },
+        { key: 'data', label: 'Data' },
+        // { key: 'recorrencia', label: 'Recorrência' },
+        { key: 'observacao', label: 'Observação' },
+
+    ];
+
 
 
     return (
         <>
             <SectionHeader
                 title="Cronograma de aulas"
+                newButton
+                newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, maxWidth: '500px' }}>
                 <TextInput
@@ -184,7 +211,7 @@ export default function ClassSheduleList(props) {
                     type="date"
                     label='Fim' />
             </Box>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {/* <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 {Object.keys(dateClass).map((diaSemana) => (
                     <ContentContainer key={diaSemana}>
                         <Text fontWeight="bold" fontSize="larger">{diaSemana}</Text>
@@ -211,7 +238,37 @@ export default function ClassSheduleList(props) {
                         ))}
                     </ContentContainer>
                 ))}
-            </Box>
+            </Box> */}
+            <ContentContainer>
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                    }
+                }} onClick={() => setShowTableClass(!showTableClass)}>
+                    <Text bold large>TAP01-1SEM</Text>
+                    <Box
+                        sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_arrow_down})`,
+                            transform: showTableClass ? 'rotate(0)' : 'rotate(-90deg)',
+                            transition: '.3s',
+                            width: 17,
+                            height: 17,
+                        }}
+                    />
+                </Box>
+                {showTableClass &&
+                    <Box sx={{ display: 'flex', flex: 1, backgroundColor: 'pink' }}>
+                        <Table_V1 data={dateClass} columns={column} columnId={'id'} columnActive={false} tolltip={true}
+                            sx={{ flex: 1 }} />
+                    </Box>
+                }
+            </ContentContainer>
         </>
     )
 }
@@ -222,7 +279,11 @@ const styles = {
         gap: 1,
         alignItems: 'center'
     },
-    title: {
-
+    menuIcon: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
     }
 }
