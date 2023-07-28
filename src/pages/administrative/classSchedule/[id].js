@@ -51,9 +51,9 @@ export default function EditClassSchedule(props) {
     async function handleSelectModule(value) {
 
         setClassScheduleData({ ...classScheduleData, modulo_cronograma: value })
-        let module = value;
+        let moduleClass = value;
         try {
-            const response = await api.get(`/classSchedule/disciplines/${classScheduleData?.turma_id}/${module}`)
+            const response = await api.get(`/classSchedule/disciplines/${classScheduleData?.turma_id}/${moduleClass}`)
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
                 label: disciplines.nome_disciplina,
