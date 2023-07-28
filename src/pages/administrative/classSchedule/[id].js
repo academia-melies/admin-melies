@@ -18,6 +18,7 @@ export default function EditClassSchedule(props) {
     const [modules, setModules] = useState([])
     const [classScheduleData, setClassScheduleData] = useState([])
     const [disciplines, setDisciplines] = useState([])
+    const [professors, setProfessors] = useState([])
     const [titleSchedule, setTitleSchedule] = useState('')
 
     const themeApp = useTheme()
@@ -47,9 +48,12 @@ export default function EditClassSchedule(props) {
         }
     }
 
-    async function listDisciplines() {
+    async function handleSelectModule(value) {
+
+        setClassScheduleData({ ...classScheduleData, modulo_cronograma: value })
+        let module = value;
         try {
-            const response = await api.get(`/disciplines/active`)
+            const response = await api.get(`/classSchedule/disciplines/${classScheduleData?.turma_id}/${module}`)
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
                 label: disciplines.nome_disciplina,
@@ -57,6 +61,7 @@ export default function EditClassSchedule(props) {
             }));
 
             setDisciplines(groupDisciplines);
+            listProfessor()
         } catch (error) {
         }
     }
@@ -73,6 +78,7 @@ export default function EditClassSchedule(props) {
                     const modules = handleModules(module);
                     setModules(modules);
                 }
+
                 setClassScheduleData({ ...classScheduleData, turma_id: value })
 
             } catch (error) {
@@ -98,6 +104,18 @@ export default function EditClassSchedule(props) {
         return moduleArray;
     }
 
+    async function listProfessor() {
+        const response = await api.get(`/classSchedule/disciplines/professor`)
+        const { data } = response
+        const groupProfessor = data.map(professor => ({
+            label: professor.nome,
+            value: professor?.id
+        }));
+
+        setProfessors(groupProfessor)
+        console.log(response)
+    }
+
     useEffect(() => {
         (async () => {
             if (newClassSchedule) {
@@ -109,8 +127,12 @@ export default function EditClassSchedule(props) {
 
     useEffect(() => {
         listClasses()
-        listDisciplines()
     }, [])
+
+    useEffect(() => {
+        listProfessor
+    }, [disciplines])
+
 
     useEffect(() => {
         const classId = classScheduleData?.turma_id || ''
@@ -162,11 +184,12 @@ export default function EditClassSchedule(props) {
     const handleCreate = async () => {
         setLoading(true)
         try {
-            const response = await api.post(`/classSchedule/create/${id}`);
-            const { data } = response
+            const response = await api.post(`/classSchedule/create`, { classScheduleData, classDays });
+            console.log(response)
+
             if (response?.status === 201) {
                 alert.success('Cronograma cadastrado com sucesso.');
-                router.push(`/administrative/classSchedule/${data}`)
+                // router.push(`/administrative/classSchedule/list`)
             }
         } catch (error) {
             alert.error('Tivemos um problema ao cadastrar o Cronograma.');
@@ -174,6 +197,10 @@ export default function EditClassSchedule(props) {
             setLoading(false)
         }
     }
+
+    console.log(classDays)
+    console.log(classScheduleData)
+
 
     const handleDelete = async () => {
         setLoading(true)
@@ -256,7 +283,7 @@ export default function EditClassSchedule(props) {
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                     < Box sx={{ ...styles.inputSection }}>
-                        <SelectList fullWidth data={modules} valueSelection={classScheduleData?.modulo_cronograma} onSelect={(value) => { setClassScheduleData({ ...classScheduleData, modulo_cronograma: value }) }}
+                        <SelectList fullWidth data={modules} valueSelection={classScheduleData?.modulo_cronograma} onSelect={(value) => { handleSelectModule(value) }}
                             title="Mòdulo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
@@ -309,11 +336,11 @@ export default function EditClassSchedule(props) {
                                         title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.professor_1} onSelect={(value) => handleDayDataChange(dayWeek, 'professor_1', value)}
+                                    <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor_1} onSelect={(value) => handleDayDataChange(dayWeek, 'professor_1', value)}
                                         title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.professor_2} onSelect={(value) => handleDayDataChange(dayWeek, 'professor_2', value)}
+                                    <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor_2} onSelect={(value) => handleDayDataChange(dayWeek, 'professor_2', value)}
                                         title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
