@@ -36,7 +36,7 @@ export default function EditUser(props) {
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
     const [classesInterest, setClassesInterest] = useState([])
-    const [fileCallback, setFileCallback] = useState()
+    const [fileCallback, setFileCallback] = useState([])
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
@@ -157,7 +157,7 @@ export default function EditUser(props) {
     const getPhotoNewUser = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/photo/${fileCallback}`)
+            const response = await api.get(`/photo/${fileCallback?.id_foto_perfil}`)
             const { data } = response
             setBgPhoto(data)
         } catch (error) {
@@ -208,7 +208,7 @@ export default function EditUser(props) {
     }, [id])
 
     useEffect(() => {
-        if (newUser && fileCallback) {
+        if (newUser && fileCallback?.id_foto_perfil) {
             getPhotoNewUser()
         }
     }, [fileCallback])
@@ -563,8 +563,8 @@ export default function EditUser(props) {
             return false
         }
 
-        if (!!userData?.ativo) {
-            alert?.error('O campo status é obrigatório')
+        if (!userData?.ativo) {
+            alert?.error('O campo banana é obrigatório')
             return false
         }
 
@@ -640,19 +640,32 @@ export default function EditUser(props) {
         if (checkRequiredFields()) {
             setLoading(true)
             try {
-                const response = await createUser(userData, arrayInterests, arrayHistoric);
+                const response = await createUser(userData, arrayInterests, arrayHistoric, usuario_id);
+                console.log(response)
                 const { data } = response
                 if (userData.perfil === 'funcionario') {
                     const responseData = await createContract(data?.userId, contract)
+                    console.log(responseData)
                 }
                 if (userData.perfil === 'aluno') {
                     const responseData = await createEnrollment(data?.userId, enrollmentData);
+                    console.log(responseData)
+
                 }
                 if (fileCallback) {
-                    const responseData = await api.patch(`/file/edit/${fileCallback}/${data?.userId}`);
+                    const responseData = await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`);
+                    console.log(responseData)
+
                 }
                 if (officeHours) {
                     const responseData = await api.post(`/officeHours/create/${data?.userId}`, { officeHours })
+                    console.log(responseData)
+
+                }
+                if (newUser && filesUser) {
+                    const responseData = await api.patch(`/file/editFiles/${data?.userId}`, { filesUser });
+                    console.log(responseData)
+
                 }
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
@@ -716,6 +729,19 @@ export default function EditUser(props) {
         }
 
     }
+
+    const handleChangeFilesUser = (field, fileId, filePreview) => {
+        setFilesUser((prevClassDays) => [
+            ...prevClassDays,
+            {
+                id_doc_usuario: fileId,
+                location: filePreview,
+                campo: field,
+            }
+        ]);
+    };
+
+    console.log('files user', filesUser)
 
     const groupPerfil = [
         { label: 'funcionario', value: 'funcionario' },
@@ -859,6 +885,8 @@ export default function EditUser(props) {
         { key: 'responsavel', label: 'Responsável' }
     ];
 
+
+
     return (
         <>
             <SectionHeader
@@ -891,11 +919,15 @@ export default function EditUser(props) {
                         usuarioId={id}
                         campo='foto_perfil'
                         tipo='foto'
-                        bgImage={bgPhoto.location}
+                        bgImage={bgPhoto?.location || fileCallback?.filePreview}
                         callback={(file) => {
                             if (file.status === 201 || file.status === 200) {
-                                setFileCallback(file?.id_foto_perfil)
-                                handleItems()
+                                setFileCallback({
+                                    status: file.status,
+                                    id_foto_perfil: file.fileId,
+                                    filePreview: file.filePreview
+                                })
+                                if (!newUser) { handleItems() }
                             }
                         }}
                     />
@@ -921,7 +953,7 @@ export default function EditUser(props) {
                         </Box>
                     </Box>
                     <Box sx={{ '&:hover': { opacity: 0.8, cursor: 'pointer' }, }}>
-                        <Avatar src={bgPhoto.location} sx={{
+                        <Avatar src={bgPhoto?.location || fileCallback?.filePreview} sx={{
                             height: 'auto',
                             borderRadius: '16px',
                             width: { xs: '100%', sm: 150, md: 150, lg: 180 },
@@ -1021,7 +1053,10 @@ export default function EditUser(props) {
                                 tipo='documento usuario'
                                 callback={(file) => {
                                     if (file.status === 201 || file.status === 200) {
-                                        handleItems()
+                                        if (!newUser) { handleItems() }
+                                        else {
+                                            handleChangeFilesUser('cpf', file.fileId, file.filePreview)
+                                        }
                                     }
                                 }}
                             />
@@ -1044,7 +1079,10 @@ export default function EditUser(props) {
                                         tipo='documento usuario'
                                         callback={(file) => {
                                             if (file.status === 201 || file.status === 200) {
-                                                handleItems()
+                                                if (!newUser) { handleItems() }
+                                                else {
+                                                    handleChangeFilesUser('estrangeiro', file.fileId, file.filePreview)
+                                                }
                                             }
                                         }}
                                     />
@@ -1163,7 +1201,10 @@ export default function EditUser(props) {
                                 tipo='documento usuario'
                                 callback={(file) => {
                                     if (file.status === 201 || file.status === 200) {
-                                        handleItems()
+                                        if (!newUser) { handleItems() }
+                                        else {
+                                            handleChangeFilesUser('historico/diploma', file.fileId, file.filePreview)
+                                        }
                                     }
                                 }}
                             />
@@ -1187,7 +1228,10 @@ export default function EditUser(props) {
                                     tipo='documento usuario'
                                     callback={(file) => {
                                         if (file.status === 201 || file.status === 200) {
-                                            handleItems()
+                                            if (!newUser) { handleItems() }
+                                            else {
+                                                handleChangeFilesUser('comprovante residencia', file.fileId, file.filePreview)
+                                            }
                                         }
                                     }}
                                 />
@@ -1220,7 +1264,10 @@ export default function EditUser(props) {
                                     tipo='documento usuario'
                                     callback={(file) => {
                                         if (file.status === 201 || file.status === 200) {
-                                            handleItems()
+                                            if (!newUser) { handleItems() }
+                                            else {
+                                                handleChangeFilesUser('rg', file.fileId, file.filePreview)
+                                            }
                                         }
                                     }}
                                 />
