@@ -113,7 +113,6 @@ export default function EditClassSchedule(props) {
         }));
 
         setProfessors(groupProfessor)
-        console.log(response)
     }
 
     useEffect(() => {
@@ -140,6 +139,7 @@ export default function EditClassSchedule(props) {
         const handleClassName = classes.filter((item) => item.value === classId).map((classData) => classData.label)
         const title = `${handleClassName}-${moduleClass}SEM`
         setTitleSchedule(title)
+        setClassScheduleData({ ...classScheduleData, nome_cronograma: title })
     }, [classScheduleData?.modulo_cronograma, classScheduleData?.turma_id])
 
 
@@ -185,7 +185,6 @@ export default function EditClassSchedule(props) {
         setLoading(true)
         try {
             const response = await api.post(`/classSchedule/create`, { classScheduleData, classDays });
-            console.log(response)
 
             if (response?.status === 201) {
                 alert.success('Cronograma cadastrado com sucesso.');
@@ -197,10 +196,6 @@ export default function EditClassSchedule(props) {
             setLoading(false)
         }
     }
-
-    console.log(classDays)
-    console.log(classScheduleData)
-
 
     const handleDelete = async () => {
         setLoading(true)
@@ -336,15 +331,15 @@ export default function EditClassSchedule(props) {
                                         title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor_1} onSelect={(value) => handleDayDataChange(dayWeek, 'professor_1', value)}
+                                    <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
                                         title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor_2} onSelect={(value) => handleDayDataChange(dayWeek, 'professor_2', value)}
+                                    <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
                                         title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.optativa} onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
+                                    <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.optativa_id} onSelect={(value) => handleDayDataChange(dayWeek, 'optativa_id', value)}
                                         title="Optativa" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
