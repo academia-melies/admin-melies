@@ -1316,8 +1316,8 @@ export default function EditUser(props) {
                                 </Box>
                                 <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
                                 <Box sx={styles.inputSection}>
-                                    <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao).split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
-                                    <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
                                 </Box>
                                 <Box sx={styles.inputSection}>
                                     <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
