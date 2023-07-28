@@ -10,6 +10,8 @@ export const CustomDropzone = (props) => {
 
     const { setLoading, alert, colorPalette } = useAppContext()
     const [filesDrop, setFilesDrop] = useState()
+    const [previewFile, setPreview] = useState()
+
     const {
         callback = () => { },
         usuario_id = null,
@@ -32,6 +34,7 @@ export const CustomDropzone = (props) => {
         }))
 
         setFilesDrop(uploadedFiles);
+        setPreview(uploadedFiles?.preview)
 
         // uploadedFiles.forEach(processUpload)
     }
@@ -70,17 +73,18 @@ export const CustomDropzone = (props) => {
     const handleUpload = async () => {
         setLoading(true);
 
+        let [filePreview] = filesDrop.map((item) => item.preview)
         for (const uploadedFile of filesDrop) {
             const formData = new FormData();
-            formData.append('file', uploadedFile.file, encodeURIComponent(uploadedFile.name));
-
+            formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
             try {
                 const response = await uploadFile({ formData, usuario_id, campo, tipo });
                 const { data = {}, status } = response;
-                const { id_foto_perfil } = data;
+                const { fileId } = data
                 let file = {
                     status,
-                    id_foto_perfil,
+                    fileId,
+                    filePreview
                 };
 
                 if (status === 201) {
