@@ -26,7 +26,7 @@ export default function EditClassSchedule(props) {
 
     const gerClassSchedule = async () => {
         try {
-            const response = await api.get(`/classSchedule/${id}`)
+            const response = await api.get(`/classSchedules/${id}`)
             const { data } = response
             setClassScheduleData(data)
         } catch (error) {
@@ -217,7 +217,7 @@ export default function EditClassSchedule(props) {
     const handleEdit = async () => {
         setLoading(true)
         try {
-            const response = await api.post(`/classSchedule/update/${id}`)
+            const response = await api.post(`/classSchedule/update/${id}`, { classScheduleData })
             if (response?.status === 201) {
                 alert.success('Cronograma atualizado com sucesso.');
                 handleItems()
@@ -347,16 +347,6 @@ export default function EditClassSchedule(props) {
                                         title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    {/* <TextInput
-                                        fullWidth
-                                        placeholder='Observação'
-                                        name='observacao_aula'
-                                        onChange={(event) => handleDayDataChange(dayWeek, 'observacao_aula', event.target.value)}
-                                        value={classDays[dayWeek]?.observacao_aula}
-                                        multiline
-                                        maxRows={2}
-                                        rows={2}
-                                        label='Observação' /> */}
                                 </Box>
                             </ContentContainer>
                         ) : null

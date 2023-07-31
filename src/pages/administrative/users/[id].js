@@ -641,30 +641,24 @@ export default function EditUser(props) {
             setLoading(true)
             try {
                 const response = await createUser(userData, arrayInterests, arrayHistoric, usuario_id);
-                console.log(response)
                 const { data } = response
                 if (userData.perfil === 'funcionario') {
                     const responseData = await createContract(data?.userId, contract)
-                    console.log(responseData)
                 }
                 if (userData.perfil === 'aluno') {
                     const responseData = await createEnrollment(data?.userId, enrollmentData);
-                    console.log(responseData)
 
                 }
                 if (fileCallback) {
                     const responseData = await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`);
-                    console.log(responseData)
 
                 }
                 if (officeHours) {
                     const responseData = await api.post(`/officeHours/create/${data?.userId}`, { officeHours })
-                    console.log(responseData)
 
                 }
                 if (newUser && filesUser) {
                     const responseData = await api.patch(`/file/editFiles/${data?.userId}`, { filesUser });
-                    console.log(responseData)
 
                 }
                 if (response?.status === 201) {
@@ -740,8 +734,6 @@ export default function EditUser(props) {
             }
         ]);
     };
-
-    console.log('files user', filesUser)
 
     const groupPerfil = [
         { label: 'funcionario', value: 'funcionario' },
