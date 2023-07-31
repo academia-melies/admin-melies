@@ -185,12 +185,12 @@ export default function EditClassSchedule(props) {
         setLoading(true)
         try {
             const response = await api.post(`/classSchedule/create`, { classScheduleData, classDays });
-
             if (response?.status === 201) {
                 alert.success('Cronograma cadastrado com sucesso.');
-                // router.push(`/administrative/classSchedule/list`)
+                router.push(`/administrative/classSchedule/list`)
             }
         } catch (error) {
+            console.log(error)
             alert.error('Tivemos um problema ao cadastrar o Cronograma.');
         } finally {
             setLoading(false)
@@ -247,7 +247,7 @@ export default function EditClassSchedule(props) {
 
     const groupFrequency = [
         { label: 'Semanal', value: 7 },
-        { label: 'Quinzenal', value: 15 },
+        { label: 'Quinzenal', value: 14 },
     ]
 
     const formatter = new Intl.NumberFormat('pt-BR', {

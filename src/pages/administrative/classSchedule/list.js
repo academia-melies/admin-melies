@@ -137,7 +137,7 @@ export default function ClassSheduleList(props) {
 
     const groupFrequency = [
         { label: 'Semanal', value: 7 },
-        { label: 'Quinzenal', value: 15 },
+        { label: 'Quinzenal', value: 14 },
     ]
 
     return (
