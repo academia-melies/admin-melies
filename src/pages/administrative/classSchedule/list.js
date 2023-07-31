@@ -97,7 +97,8 @@ export default function ClassSheduleList(props) {
             const response = await api.patch(`/classDay/update`, { classDaySelect })
             if (response?.status === 201) {
                 alert.success('Aula atualizada com sucesso.');
-                handleItems()
+                handleScheduleClass()
+                setShowClassDay(false)
                 return
             }
             alert.error('Tivemos um problema ao atualizar Aula.');
@@ -154,7 +155,7 @@ export default function ClassSheduleList(props) {
                     const idCronograma = item.id_cronograma
                     return (
                         <ContentContainer key={`${item}-${index}`}>
-                            <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -181,7 +182,7 @@ export default function ClassSheduleList(props) {
                                     />
                                 </Box>
                                 <Box sx={{ display: 'flex', justifyContent: 'end', gap: 1, alignItems: 'center' }}>
-                                    <Button small text='Editar' style={{ padding: '5px 6px 5px 6px', width: 80 }}onClick={() => router.push(`/administrative/classSchedule/${idCronograma}`)} />
+                                    <Button small text='Editar' style={{ padding: '5px 6px 5px 6px', width: 80 }} onClick={() => router.push(`/administrative/classSchedule/${idCronograma}`)} />
                                 </Box>
                             </Box>
                             {showClassSchedulesTable[index] && (

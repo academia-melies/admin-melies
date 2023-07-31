@@ -28,6 +28,15 @@ export default function EditClassSchedule(props) {
         try {
             const response = await api.get(`/classSchedules/${id}`)
             const { data } = response
+            if (data) {
+                const modulesClass = await api.get(`/class/modules/${data.turma_id}`)
+                let modulesResponse = modulesClass.data;
+                if (modulesClass.status === 201) {
+                    const [module] = modulesResponse.map((item) => item?.modulos)
+                    const modules = handleModules(module);
+                    setModules(modules);
+                }
+            }
             setClassScheduleData(data)
         } catch (error) {
             console.log(error)
@@ -146,7 +155,9 @@ export default function EditClassSchedule(props) {
     const handleItems = async () => {
         setLoading(true)
         try {
+            listClasses()
             await gerClassSchedule()
+
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Curso')
         } finally {
