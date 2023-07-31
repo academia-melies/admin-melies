@@ -1,176 +1,25 @@
 import { useEffect, useState } from "react";
-import { Box, ContentContainer, Text, TextInput } from "../../../atoms";
-import { SectionHeader, Table_V1 } from "../../../organisms";
+import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms";
+import { SectionHeader, SelectList, Table_V1 } from "../../../organisms";
 import { useAppContext } from "../../../context/AppContext";
 import { useRouter } from "next/router";
 import { Colors, icons } from "../../../organisms/layout/Colors";
 import { api } from "../../../api/api";
+import { Backdrop } from "@mui/material";
 
 
 export default function ClassSheduleList(props) {
 
     const [dateClass, setDateClass] = useState([]);
-    const [showTableClass, setShowTableClass] = useState(false);
-    const { setLoading, colorPalette } = useAppContext()
+    const [classDaySelect, setClassDaySelect] = useState([]);
+    const [showClassDay, setShowClassDay] = useState(false);
+    const [classScheduleId, setClassScheduleId] = useState();
+    const [disciplines, setDisciplines] = useState([])
+    const [professors, setProfessors] = useState([])
+    const { setLoading, colorPalette, matches, alert } = useAppContext()
     const [showClassSchedulesTable, setShowClassSchedulesTable] = useState({});
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-
-    // const aulasPorDia = [
-    //     {
-    //         id: '01',
-    //         diaSemana: 'seg',
-    //         disciplina: 'Animação 2D',
-    //         primeiroPeriodoProfessor: 'Carlos Avelino dos Santos Reis',
-    //         // segundoPeriodoProfessor: 'Maria',
-    //         recorrencia: 7
-    //     },
-    //     {
-    //         id: '02',
-    //         diaSemana: 'ter',
-    //         disciplina: 'ACE: Primeiros Passos do Dinossauro',
-    //         primeiroPeriodoProfessor: 'Letícia Apolinário',
-    //         // segundoPeriodoProfessor: 'Pedro',
-    //         recorrencia: 15
-    //     },
-    //     {
-    //         id: '03',
-    //         diaSemana: 'qua',
-    //         disciplina: 'Pintura Digital',
-    //         primeiroPeriodoProfessor: 'Lika Yazawa Maekawa',
-    //         // segundoPeriodoProfessor: 'Sandra',
-    //         recorrencia: 7
-    //     },
-    //     {
-    //         id: '04',
-    //         diaSemana: 'qui',
-    //         disciplina: 'Introdução à Linguagem Audiovisual',
-    //         primeiroPeriodoProfessor: 'Diego Melem Gozze',
-    //         // segundoPeriodoProfessor: 'Mariana',
-    //         recorrencia: 7
-    //     },
-    //     // {
-    //     //     id: '05',
-    //     //     diaSemana: 'sex',
-    //     //     disciplina: 'geografia',
-    //     //     primeiroPeriodoProfessor: 'Lucas',
-    //     //     segundoPeriodoProfessor: 'Carla',
-    //     //     recorrencia: 7
-    //     // },
-    //     {
-    //         id: '06',
-    //         diaSemana: 'sáb',
-    //         disciplina: 'Desenho',
-    //         primeiroPeriodoProfessor: 'William Mur',
-    //         // segundoPeriodoProfessor: 'Julia',
-    //         recorrencia: 7
-    //     },
-    // ];
-
-    // Função para obter as datas das aulas entre o período especificado
-
-    // function getDatasAulas(dataInicio, dataFim) {
-    //     const datasAulas = [];
-    //     let dataAtual = new Date(dataInicio);
-
-    //     while (dataAtual <= dataFim) {
-    //         datasAulas.push(new Date(dataAtual));
-    //         dataAtual.setDate(dataAtual.getDate() + 1);
-    //     }
-    //     return datasAulas;
-    // }
-
-    // useEffect(() => {
-    //     gerarCronograma()
-    // }, [rangeDate])
-
-    // const handleRecorrencia = (value) => {
-    //     let recorrenciaString = value <= 7 ? 'Semanal' : 'Quinzenal'
-    //     return recorrenciaString
-    // }
-
-    // function gerarCronograma() {
-    //     const datasAulas = getDatasAulas(rangeDate.dataInicio, rangeDate.dataFim);
-    //     const aulasPorDiaSemana = [];
-    //     // const aulasPorDiaSemana = {};
-    //     const currentProfessors = {};
-
-    //     aulasPorDia.forEach(aula => {
-    //         currentProfessors[aula.disciplina] = aula.primeiroPeriodoProfessor;
-    //     });
-
-    //     for (const dataAula of datasAulas) {
-    //         const diaSemana = dataAula.toLocaleDateString('pt-BR', { weekday: 'short' }).toLowerCase().split('.')[0];
-    //         const dataFormatada = dataAula.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    //         const aulaDoDia = aulasPorDia.find(aula => aula.diaSemana === diaSemana);
-    //         if (aulaDoDia) {
-    //             const professor = currentProfessors[aulaDoDia.disciplina];
-    //             const disciplina = aulaDoDia.disciplina;
-
-    //             if (professor === aulaDoDia.primeiroPeriodoProfessor) {
-    //                 currentProfessors[disciplina] = aulaDoDia?.segundoPeriodoProfessor || aulaDoDia.primeiroPeriodoProfessor;
-    //             } else {
-    //                 currentProfessors[disciplina] = aulaDoDia.primeiroPeriodoProfessor;
-    //             }
-
-    //             const aula = {
-    //                 dia: dataAula.toLocaleDateString('pt-BR', { weekday: 'long' }),
-    //                 data: dataFormatada,
-    //                 disciplina,
-    //                 professor,
-    //                 recorrencia: handleRecorrencia(aulaDoDia.recorrencia)
-    //             };
-
-    //             // if (!aulasPorDiaSemana[diaSemana]) {
-    //             //     aulasPorDiaSemana[diaSemana] = [];
-    //             // }
-
-    //             // aulasPorDiaSemana[diaSemana].push(aula);
-    //             aulasPorDiaSemana.push(aula);
-
-
-    //             // if (aulaDoDia.recorrencia) {
-
-    //             //     let dataRecorrencia = new Date(dataAula);
-    //             //     let recorrenciaCount = 1;
-
-    //             //     while (true) {
-    //             //         dataRecorrencia.setDate(dataRecorrencia.getDate() + aulaDoDia.recorrencia); // Recorrencia: 7 dias
-    //             //         if (dataRecorrencia > rangeDate.dataFim) {
-    //             //             break;
-    //             //         }
-    //             //         const dataFormatadaRecorrencia = dataRecorrencia.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    //             //         const aulaRecorrente = {
-    //             //             dia: dataRecorrencia.toLocaleDateString('pt-BR', { weekday: 'long' }),
-    //             //             data: dataFormatadaRecorrencia,
-    //             //             disciplina,
-    //             //             professor,
-    //             //             recorrencia: handleRecorrencia(aulaDoDia.recorrencia)
-    //             //         };
-    //             //         aulasPorDiaSemana[diaSemana].push(aulaRecorrente);
-    //             //         recorrenciaCount++;
-    //             //     }
-    //             // }
-    //         }
-
-    //         // const diasDaSemanaOrdenados = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
-    //         // const aulasOrdenadas = {};
-    //         // diasDaSemanaOrdenados.forEach((diaSemana) => {
-    //         //     if (aulasPorDiaSemana[diaSemana]) {
-    //         //         aulasOrdenadas[diaSemana] = aulasPorDiaSemana[diaSemana];
-    //         //     }
-    //         // });
-
-    //         setDateClass(aulasPorDiaSemana);
-    //     }
-    // }
-
-    // const handleChange = (event) => {
-    //     setRangeDate((prevValues) => ({
-    //         ...prevValues,
-    //         [event.target.name]: new Date(event.target.value), // Converta a data para um objeto Date
-    //     }));
-    // };
 
     const toggleClassTable = (index) => {
         setShowClassSchedulesTable(prevState => ({
@@ -193,9 +42,88 @@ export default function ClassSheduleList(props) {
         }
     }
 
+    const handleClassDay = async (req, res) => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/classDay/${classScheduleId}`)
+            const { data } = response
+            setClassDaySelect(data)
+            if (classDaySelect) {
+                const discipline = await api.get(`/classSchedule/disciplines/${classDaySelect?.turma_id}/${classDaySelect?.modulo_cronograma}`)
+                let disciplinesData = discipline.data;
+                const groupDisciplines = disciplinesData?.map(disciplines => ({
+                    label: disciplines?.nome_disciplina,
+                    value: disciplines?.id_disciplina
+                }));
+
+                setDisciplines(groupDisciplines);
+            }
+        } catch (error) {
+            console.log(error)
+            return
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function listProfessor() {
+        const response = await api.get(`/classSchedule/disciplines/professor`)
+        const { data } = response
+        const groupProfessor = data?.map(professor => ({
+            label: professor.nome,
+            value: professor?.id
+        }));
+
+        setProfessors(groupProfessor)
+    }
+
+
+    const handleClassesItem = async () => {
+        await handleClassDay()
+        await listProfessor()
+    }
+
     useEffect(() => {
         handleScheduleClass()
     }, [])
+
+    useEffect(() => {
+        handleClassesItem()
+    }, [classScheduleId])
+
+    const handleEditClassDay = async () => {
+        setLoading(true)
+        try {
+            const response = await api.patch(`/classDay/update`, { classDaySelect })
+            if (response?.status === 201) {
+                alert.success('Aula atualizada com sucesso.');
+                handleItems()
+                return
+            }
+            alert.error('Tivemos um problema ao atualizar Aula.');
+        } catch (error) {
+            console.log(error)
+            alert.error('Tivemos um problema ao atualizar Aula.');
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleChange = (value) => {
+
+        if (value.target.name === 'dt_aula') {
+
+            setClassDaySelect((prevValues) => ({
+                ...prevValues,
+                [value.target.name]: new Date(value.target.value)
+            }));
+        }
+
+        setClassDaySelect((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
 
     const column = [
         { key: 'professor', label: 'Professor(a)' },
@@ -207,7 +135,10 @@ export default function ClassSheduleList(props) {
 
     ];
 
-
+    const groupFrequency = [
+        { label: 'Semanal', value: 7 },
+        { label: 'Quinzenal', value: 15 },
+    ]
 
     return (
         <>
@@ -220,31 +151,38 @@ export default function ClassSheduleList(props) {
                 dateClass.map((item, index) => {
                     const classScheduleData = item.aulas;
                     const name = item.nome_cronograma;
+                    const idCronograma = item.id_cronograma
                     return (
                         <ContentContainer key={`${item}-${index}`}>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }}
-                                onClick={() => toggleClassTable(index)}
-                            >
-                                <Text bold>{name}</Text>
+                            <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
                                 <Box
                                     sx={{
-                                        ...styles.menuIcon,
-                                        backgroundImage: `url(${icons.gray_arrow_down})`,
-                                        transform: showClassSchedulesTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
-                                        transition: '.3s',
-                                        width: 17,
-                                        height: 17
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 4,
+                                        maxWidth: '30%',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
                                     }}
-                                />
+                                    onClick={() => toggleClassTable(index)}
+                                >
+                                    <Text bold>{name}</Text>
+                                    <Box
+                                        sx={{
+                                            ...styles.menuIcon,
+                                            backgroundImage: `url(${icons.gray_arrow_down})`,
+                                            transform: showClassSchedulesTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
+                                            transition: '.3s',
+                                            width: 17,
+                                            height: 17
+                                        }}
+                                    />
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'end', gap: 1, alignItems: 'center' }}>
+                                    <Button small text='Editar' style={{ padding: '5px 6px 5px 6px', width: 80 }}onClick={() => router.push(`/administrative/classSchedule/${idCronograma}`)} />
+                                </Box>
                             </Box>
                             {showClassSchedulesTable[index] && (
                                 <Box sx={{ ...styles.tableContainer, display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '500px', overflow: 'auto', borderRadius: '12px' }}>
@@ -254,7 +192,13 @@ export default function ClassSheduleList(props) {
                                         columnId={'id_aula'}
                                         columnActive={false}
                                         tolltip={true}
-                                        sx={{ flex: 1 }} />
+                                        sx={{ flex: 1 }}
+                                        onSelect={(value) => {
+                                            setClassScheduleId(value)
+                                            if (value) { setShowClassDay(true) }
+                                        }}
+                                        routerPush={false}
+                                    />
                                 </Box>
                             )}
                         </ContentContainer>
@@ -263,6 +207,100 @@ export default function ClassSheduleList(props) {
             ) : (
                 <Text>Não encontrei Cronogramas vinculadas a grade</Text>
             )}
+
+            {
+                <Backdrop open={showClassDay} sx={{ marginLeft: { md: '180px', lg: '0px' } }}>
+                    {showClassDay &&
+                        <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Text bold large>Editar Aula</Text>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(${icons.gray_close})`,
+                                    transition: '.3s',
+                                    zIndex: 999999999,
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => setShowClassDay(false)} />
+                            </Box>
+                            <ContentContainer>
+                                <Text bold title={true} style={{ color: colorPalette.buttonColor }}>aula - {classDaySelect?.dia_semana}</Text>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Box sx={styles.inputSection}>
+                                        <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.disciplina_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, disciplina_id: value })}
+                                            title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor1_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor1_id: value })}
+                                            title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                    </Box>
+                                    <Box sx={styles.inputSection}>
+                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor2_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor2_id: value })}
+                                            title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.optativa_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, optativa_id: value })}
+                                            title="Optativa" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                    </Box>
+                                    <Box sx={styles.inputSection}>
+                                        <TextInput
+                                            fullWidth
+                                            placeholder='Data'
+                                            name='dt_aula'
+                                            onChange={handleChange}
+                                            value={(classDaySelect?.dt_aula)?.split('T')[0] || ''}
+                                            label='Dia da semana'
+                                            type="date"
+                                        />
+                                        <TextInput
+                                            fullWidth
+                                            placeholder='Dia da semana'
+                                            name='dia_semana'
+                                            onChange={handleChange}
+                                            value={classDaySelect?.dia_semana || ''}
+                                            label='Dia da semana'
+                                        />
+                                    </Box>
+                                    <TextInput
+                                        fullWidth
+                                        placeholder='Módulo'
+                                        name='modulo_cronograma'
+                                        value={classDaySelect?.modulo_cronograma || ''}
+                                        label='Módulo'
+                                    />
+
+                                    <SelectList fullWidth data={groupFrequency} valueSelection={classDaySelect?.recorrencia} onSelect={(value) => setClassDaySelect({ ...classDaySelect, recorrencia: value })}
+                                        title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                    <TextInput
+                                        fullWidth
+                                        placeholder='Observação'
+                                        name='observacao_dia'
+                                        onChange={handleChange}
+                                        value={classDaySelect?.observacao_dia || ''}
+                                        label='Observação'
+                                        multiline
+                                        maxRows={2}
+                                        rows={2}
+                                    />
+                                </Box>
+                            </ContentContainer>
+                            <Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'end', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                    <Button text='atualizar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => handleEditClassDay()} />
+                                </Box>
+                            </Box>
+                        </ContentContainer>
+                    }
+                </Backdrop>
+            }
         </>
     )
 }
@@ -272,6 +310,13 @@ const styles = {
         display: 'flex',
         gap: 1,
         alignItems: 'center'
+    },
+    inputSection: {
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'space-around',
+        gap: 1.8,
+        flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
     },
     menuIcon: {
         backgroundSize: 'cover',
