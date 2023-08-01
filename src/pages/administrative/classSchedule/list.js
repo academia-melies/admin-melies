@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms";
-import { SectionHeader, SelectList, Table_V1 } from "../../../organisms";
+import { CheckBoxComponent, SectionHeader, SelectList, Table_V1 } from "../../../organisms";
 import { useAppContext } from "../../../context/AppContext";
 import { useRouter } from "next/router";
 import { Colors, icons } from "../../../organisms/layout/Colors";
 import { api } from "../../../api/api";
-import { Backdrop } from "@mui/material";
+import { Backdrop, useMediaQuery, useTheme } from "@mui/material";
 
 
 export default function ClassSheduleList(props) {
@@ -20,6 +20,9 @@ export default function ClassSheduleList(props) {
     const [showClassSchedulesTable, setShowClassSchedulesTable] = useState({});
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
+
+    const themeApp = useTheme()
+    const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
     const toggleClassTable = (index) => {
         setShowClassSchedulesTable(prevState => ({
@@ -47,9 +50,9 @@ export default function ClassSheduleList(props) {
         try {
             const response = await api.get(`/classDay/${classScheduleId}`)
             const { data } = response
-            setClassDaySelect(data)
-            if (classDaySelect) {
-                const discipline = await api.get(`/classSchedule/disciplines/${classDaySelect?.turma_id}/${classDaySelect?.modulo_cronograma}`)
+
+            if (data) {
+                const discipline = await api.get(`/classSchedule/disciplines/${data?.turma_id}/${data?.modulo_cronograma}`)
                 let disciplinesData = discipline.data;
                 const groupDisciplines = disciplinesData?.map(disciplines => ({
                     label: disciplines?.nome_disciplina,
@@ -58,6 +61,9 @@ export default function ClassSheduleList(props) {
 
                 setDisciplines(groupDisciplines);
             }
+
+            setClassDaySelect(data)
+
         } catch (error) {
             console.log(error)
             return
@@ -80,8 +86,9 @@ export default function ClassSheduleList(props) {
 
     const handleClassesItem = async () => {
         await handleClassDay()
-        await listProfessor()
+        listProfessor()
     }
+
 
     useEffect(() => {
         handleScheduleClass()
@@ -129,7 +136,7 @@ export default function ClassSheduleList(props) {
     const column = [
         { key: 'professor', label: 'Professor(a)' },
         { key: 'disciplina', label: 'Matéria' },
-        { key: 'optativa', label: 'Matéria Optativa' },
+        { key: 'optativa', label: 'Optativa' },
         { key: 'dia_semana', avatar: true, label: 'Dia' },
         { key: 'dt_aula', label: 'Data', date: true },
         { key: 'observacao_dia', label: 'Observação' },
@@ -140,6 +147,14 @@ export default function ClassSheduleList(props) {
         { label: 'Semanal', value: 7 },
         { label: 'Quinzenal', value: 14 },
     ]
+
+    const groupOptative = [
+        {
+            label: 'Optativa',
+            value: 'Optativa'
+        },
+    ]
+
 
     return (
         <>
@@ -234,18 +249,8 @@ export default function ClassSheduleList(props) {
                                             title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor1_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor1_id: value })}
-                                            title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
-                                    </Box>
-                                    <Box sx={styles.inputSection}>
-                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor2_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor2_id: value })}
-                                            title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
-                                        <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.optativa_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, optativa_id: value })}
-                                            title="Optativa" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor: value })}
+                                            title="Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
                                     </Box>
@@ -291,6 +296,12 @@ export default function ClassSheduleList(props) {
                                         maxRows={2}
                                         rows={2}
                                     />
+                                    <CheckBoxComponent
+                                        boxGroup={groupOptative}
+                                        valueChecked={classDaySelect?.optativa || ''}
+                                        horizontal={mobile ? false : true}
+                                        onSelect={(value) => setClassDaySelect({ ...classDaySelect, optativa: value })}
+                                        sx={{ width: 1 }} />
                                 </Box>
                             </ContentContainer>
                             <Box>
