@@ -268,6 +268,13 @@ export default function EditClassSchedule(props) {
 
     const diasDaSemanaOrdenados = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
+    const groupOptative = [
+        {
+            label: 'Optativa',
+            value: 'Optativa'
+        },
+    ]
+
     return (
         <>
             <SectionHeader
@@ -293,13 +300,11 @@ export default function EditClassSchedule(props) {
                             title="Mòdulo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
-                        {/* <TextInput placeholder='Modulo 1 - Arte visual e Animação 3D...' name='nome_cronograma' onChange={handleChange} value={classScheduleData?.nome_cronograma || ''} label='Nome do cronograma' sx={{ flex: 1, }} /> */}
                     </Box>
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput
                         fullWidth
-                        placeholder='Data de início'
                         name='dt_inicio_cronograma'
                         onChange={handleChange}
                         value={(classScheduleData?.dt_inicio_cronograma)?.split('T')[0] || ''}
@@ -350,14 +355,20 @@ export default function EditClassSchedule(props) {
                                         title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.optativa_id} onSelect={(value) => handleDayDataChange(dayWeek, 'optativa_id', value)}
+                                    {/* <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.optativa} onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
                                         title="Optativa" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
+                                    /> */}
                                     <SelectList fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
                                         title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
+                                    <CheckBoxComponent
+                                        boxGroup={groupOptative}
+                                        valueChecked={classDays[dayWeek]?.optativa}
+                                        horizontal={mobile ? false : true}
+                                        onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
+                                        sx={{ width: 1 }} />
                                 </Box>
                             </ContentContainer>
                         ) : null
