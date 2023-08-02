@@ -1,14 +1,14 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { Avatar, useMediaQuery, useTheme } from "@mui/material"
+import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createCourse, createEnrollment, createUser, deleteCourse, editContract, editCourse, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator, formatCEP, formatRg } from "../../../helpers"
+import { emailValidator, formatCEP, formatReal, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditCourse(props) {
@@ -18,6 +18,9 @@ export default function EditCourse(props) {
     const newCourse = id === 'new';
     const [courseData, setCourseData] = useState({})
     const [showRegistration, setShowRegistration] = useState(false)
+    const [showPaidIn, setShowPaidIn] = useState(false)
+    const [amountPaidIn, setAmountPaidIn] = useState()
+    const [installments, setInstallments] = useState()
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -25,7 +28,8 @@ export default function EditCourse(props) {
         try {
             const response = await api.get(`/course/${id}`)
             const { data } = response
-            setCourseData(data)
+            let value = formatarParaReal(data?.valor || '')
+            setCourseData({ ...data, valor: value })
         } catch (error) {
             console.log(error)
         }
@@ -52,11 +56,21 @@ export default function EditCourse(props) {
         }
     }
 
-    const handleChange = (value) => {
+    const handleBlurValue = (event) => {
+        const { value } = event.target;
+        let valueFormatted = formatter.format(value)
+        setCourseData({ ...courseData, valor: valueFormatted })
+    };
+
+    const handleChange = (event) => {
+
+        if (event.target.name === 'valor') {
+            event.target.value = event.target.value.replace(',', '.');
+        }
 
         setCourseData((prevValues) => ({
             ...prevValues,
-            [value.target.name]: value.target.value,
+            [event.target.name]: event.target.value,
         }))
     }
 
@@ -67,6 +81,17 @@ export default function EditCourse(props) {
         // }
         return true
     }
+
+    useEffect(() => {
+        let replaceValue = courseData?.valor?.replace("R$", "").replace(/\./g, "");
+        let dataValueReplaced = replaceValue?.replace(",", ".");
+        let valueCourse = parseFloat(dataValueReplaced);
+
+        let calcAmountPaidIn = valueCourse / installments;
+        if (calcAmountPaidIn) {
+            setAmountPaidIn(calcAmountPaidIn)
+        }
+    }, [showPaidIn, installments])
 
     const handleCreateCourse = async () => {
         setLoading(true)
@@ -150,10 +175,29 @@ export default function EditCourse(props) {
         { label: '8 - Módulos', value: 8 },
     ]
 
+    const groupInstallments = [
+        { label: '1x', value: 1 },
+        { label: '2x', value: 2 },
+        { label: '3x', value: 3 },
+        { label: '4x', value: 4 },
+        { label: '5x', value: 5 },
+        { label: '6x', value: 6 },
+        { label: '7x', value: 7 },
+        { label: '8x', value: 8 },
+    ]
+
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
-        currency: 'BRL'
+        currency: 'BRL',
     });
+
+    const formatarParaReal = (valor) => {
+        if (!valor || typeof valor !== 'number') {
+            return '';
+        }
+        return formatter.format(valor);
+    };
+
 
     return (
         <>
@@ -188,9 +232,50 @@ export default function EditCourse(props) {
                     <TextInput placeholder='Portaria MEC/Reconhecimento' name='pt_reconhecimento' onChange={handleChange} value={courseData?.pt_reconhecimento || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
-                <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Valor' name='valor' onChange={handleChange} value={courseData?.valor || ''} label='Valor' sx={{ flex: 1, }} />
+                <Box sx={{ ...styles.inputSection, alignItems: 'start' }}>
+                    <Box sx={{ display: 'flex', position: 'absolute', zIndex: 999, marginRight: 10, marginTop: 1.5 }}>
+                        <Button small text='parcelas' style={{ padding: '5px 6px 5px 6px' }} onClick={() => setShowPaidIn(true)} />
+                    </Box>
+                    <TextInput placeholder='Valor'
+                        name='valor'
+                        onChange={handleChange}
+                        value={courseData?.valor || ''}
+                        label='Valor' sx={{ flex: 1, }}
+                        onBlur={handleBlurValue}
+                    />
+
+                    {<Backdrop open={showPaidIn} sx={{zIndex: 999}}>
+                        <ContentContainer style={{marginLeft: { md: '180px', lg: '280px' }, zIndex: 999}}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(${icons.gray_close})`,
+                                    transition: '.3s',
+                                    zIndex: 999999999,
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => setShowPaidIn(false)} />
+                            </Box>
+
+                            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1, zIndex: 999 }}>
+
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                                    <Text bold small>Parcelado em até:</Text>
+                                    <SelectList fullWidth data={groupInstallments} valueSelection={installments} onSelect={(value) => setInstallments(value)}
+                                        filterOpition="value" sx={{ color: colorPalette.textColor, height: '30px', width: '95px' }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        minWidth={0}
+                                    />
+                                </Box>
+                                <Text bold large style={{ textAlign: 'start' }}>{amountPaidIn ? formatter.format(amountPaidIn) : '0,00'}</Text>
+                            </Box>
+                        </ContentContainer>
+                    </Backdrop>
+                    }
                     <TextInput placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={courseData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
+
                 </Box>
                 <RadioItem valueRadio={courseData?.nivel_curso} group={groupNivel} title="Nível do curso" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, nivel_curso: value })} sx={{ flex: 1, }} />
                 <RadioItem valueRadio={courseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, ativo: parseInt(value) })} />
