@@ -117,6 +117,8 @@ export default function ClassSheduleList(props) {
         }
     }
 
+    console.log(dateClass)
+
     const handleChange = (value) => {
 
         if (value.target.name === 'dt_aula') {
