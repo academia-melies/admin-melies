@@ -14,7 +14,8 @@ export const SelectList = (props) => {
         filterOpition,
         inputStyle,
         fullWidth = false,
-        clean = true
+        clean = true,
+        minWidth = 120
     } = props;
 
     const { colorPalette } = useAppContext()
@@ -22,7 +23,7 @@ export const SelectList = (props) => {
 
 
     return (
-        <Box sx={{ minWidth: 120, flex: fullWidth && 1 }}>
+        <Box sx={{ minWidth: minWidth, flex: fullWidth && 1 }}>
             <FormControl fullWidth>
                 <InputLabel sx={{ ...inputStyle }}>{title}</InputLabel>
                 <Select

@@ -75,3 +75,16 @@ export const formatCEP = (cep) => {
 
    return formattedCEP;
 }
+
+export const formatReal = (valor) => {
+   if (typeof valor !== 'number') {
+     return '';
+   }
+ 
+   const formatter = new Intl.NumberFormat('pt-BR', {
+     style: 'currency',
+     currency: 'BRL',
+   });
+ 
+   return formatter.format(valor);
+ };
