@@ -14,7 +14,7 @@ export default function EditClassSchedule(props) {
     const newClassSchedule = id === 'new';
     const [classes, setClasses] = useState([])
     const [classDays, setClassDays] = useState([])
-    const [daysWeekSelected, setDaysWeekSelected] = useState()
+    const [daysWeekSelected, setDaysWeekSelected] = useState('seg, ter, qua, qui, sex, sáb')
     const [modules, setModules] = useState([])
     const [classScheduleData, setClassScheduleData] = useState([])
     const [disciplines, setDisciplines] = useState([])
@@ -181,6 +181,13 @@ export default function EditClassSchedule(props) {
         }))
     }
 
+    // async function filterDataDaysClass() {
+    //     const classDaysData = Object.values(classDays);
+    //     const selectedDaysArray = daysWeekSelected.split(',').map((day) => day.trim());
+    //     const classDayFiltered = classDaysData.filter((item) => selectedDaysArray.includes(item.dia_semana));
+    //     return classDayFiltered
+    // }
+
     const handleDayDataChange = (dayWeek, field, value) => {
         setClassDays((prevClassDays) => ({
             ...prevClassDays,
@@ -340,7 +347,7 @@ export default function EditClassSchedule(props) {
 
                         return isSelected ? (
 
-                            <ContentContainer style={{ flex: { xs: '', xm: '', md: '', lg: lengthDays.length > 3 ? 1 : '' } }} key={dayWeek}>
+                            <ContentContainer style={{ flex: { xs: '', xm: '', md: '', lg: '', xl: lengthDays.length > 3 ? 1 : '' } }} key={dayWeek}>
                                 <Text bold title={true} style={{ color: colorPalette.buttonColor }}>{dayWeek}</Text>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.disciplina_id} onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value)}

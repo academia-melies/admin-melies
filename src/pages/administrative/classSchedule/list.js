@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { Colors, icons } from "../../../organisms/layout/Colors";
 import { api } from "../../../api/api";
 import { Backdrop, useMediaQuery, useTheme } from "@mui/material";
+import { formatDate } from "../../../helpers";
 
 
 export default function ClassSheduleList(props) {
@@ -168,6 +169,15 @@ export default function ClassSheduleList(props) {
                     const classScheduleData = item.aulas;
                     const name = item.nome_cronograma;
                     const idCronograma = item.id_cronograma
+
+                    const aulasPorDiaSemana = {};
+                    classScheduleData.forEach((classData) => {
+                        const diaSemana = classData.dia_semana;
+                        if (!aulasPorDiaSemana[diaSemana]) {
+                            aulasPorDiaSemana[diaSemana] = [];
+                        }
+                        aulasPorDiaSemana[diaSemana].push(classData);
+                    });
                     return (
                         <ContentContainer key={`${item}-${index}`}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -201,8 +211,8 @@ export default function ClassSheduleList(props) {
                                 </Box>
                             </Box>
                             {showClassSchedulesTable[index] && (
-                                <Box sx={{ ...styles.tableContainer, display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '500px', overflow: 'auto', borderRadius: '12px' }}>
-                                    <Table_V1
+                                <Box sx={{ ...styles.tableContainer, display: 'flex', gap: 2, maxHeight: '500px', overflow: 'auto', borderRadius: '12px' }}>
+                                    {/* <Table_V1
                                         data={classScheduleData}
                                         columns={column}
                                         columnId={'id_aula'}
@@ -214,7 +224,65 @@ export default function ClassSheduleList(props) {
                                             if (value) { setShowClassDay(true) }
                                         }}
                                         routerPush={false}
-                                    />
+                                    /> */}
+                                    {Object.entries(aulasPorDiaSemana).map(([diaSemana, aulas]) => (
+                                        <Box key={diaSemana} sx={{ flex: 1, padding: 2 }}>
+                                            <Text bold
+                                                style={{
+                                                    textAlign: 'center',
+                                                    margin: '0px 0px 10px 0px',
+                                                    backgroundColor: colorPalette.buttonColor,
+                                                    color: '#fff'
+                                                }}>
+                                                {diaSemana}
+                                            </Text>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: diaSemana.length > 3 && 1 }}>
+                                                {aulas.map((classData, index) => (
+                                                    <ContentContainer fullWidth key={`${index}-${classData}`} sx={{
+                                                        minHeight: '370px',
+                                                        transition: '0.3s',
+                                                        minWidth: '220px',
+                                                        "&:hover": {
+                                                            opacity: 0.8,
+                                                            cursor: 'pointer',
+                                                            transform: 'scale(0.9)',
+                                                        }
+                                                    }}
+                                                        onClick={() => {
+                                                            setClassScheduleId(classData.id_aula)
+                                                            if (classData.id_aula) { setShowClassDay(true) }
+                                                        }}
+                                                    >
+                                                        <Box sx={styles.containerClass}>
+                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Professor: </Text>
+                                                            <Text bold small>{classData?.professor}</Text>
+                                                        </Box>
+                                                        <Box sx={styles.containerClass}>
+                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Disciplina: </Text>
+                                                            <Text bold small>{classData?.disciplina}</Text>
+                                                        </Box>
+
+                                                        <Box sx={styles.containerClass}>
+                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Optativa: </Text>
+                                                            <Text bold small>{classData?.optativa || 'não'}</Text>
+                                                        </Box>
+                                                        <Box sx={styles.containerClass}>
+                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Dia da semana: </Text>
+                                                            <Text bold small>{classData?.dia_semana}</Text>
+                                                        </Box>
+                                                        <Box sx={styles.containerClass}>
+                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Data: </Text>
+                                                            <Text bold small>{formatDate(classData?.dt_aula)}</Text>
+                                                        </Box>
+                                                        <Box sx={styles.containerClass}>
+                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Observação: </Text>
+                                                            <Text bold small>{classData?.observacao_dia}</Text>
+                                                        </Box>
+                                                    </ContentContainer>
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    ))}
                                 </Box>
                             )}
                         </ContentContainer>
@@ -358,5 +426,9 @@ const styles = {
             backgroundColor: Colors.primary,
 
         },
+    },
+    containerClass: {
+        display: 'flex',
+        flexDirection: 'column'
     }
 }

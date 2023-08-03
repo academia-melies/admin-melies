@@ -13,12 +13,12 @@ export const menuItems = [
          },
          {
             to: '/administrative/users/list',
-            text: 'Usuarios',
+            text: 'Usuários',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
          {
             to: '/administrative/calendar/calendar',
-            text: 'Calendario',
+            text: 'Calendário',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
          {
@@ -43,7 +43,7 @@ export const menuItems = [
          },
          {
             to: '/administrative/classSchedule/list',
-            text: 'Cronograma de aulas',
+            text: 'Cronograma',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
       ]
@@ -126,7 +126,7 @@ export const menuItems = [
          },
          {
             to: '/marketing/imageManagement/editPages',
-            text: 'Gerenciamento de imagens',
+            text: 'Imagens',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
       ]
