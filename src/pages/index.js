@@ -40,7 +40,7 @@ export default function Home() {
                      bold
                      veryLarge
                      style={{ padding: { xs: '0', xm: '10px 0px 10px 0px', md: '10px 0px 10px 0px', lg: '10px 0px 10px 0px' }, display: 'flex', gap: 8 }}>
-                     Bem vindo,
+                     Bem-vindo,
                      <Text bold veryLarge style={{ color: colorPalette.buttonColor }}>
                         {user?.nome}!
                      </Text>
@@ -59,7 +59,7 @@ export default function Home() {
                />
             </Box>
             <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none',  }}>
-               <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>Ultimas paginas acessadas...</Text>
+               <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>Últimas páginas acessadas...</Text>
                <Box sx={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' }}}>
                   {menu?.map((group, index) =>
                      <ContentContainer key={`${group}-${index}`} sx={{

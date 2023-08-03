@@ -19,14 +19,14 @@ const localizer = momentLocalizer(moment);
 const listEvents = [
     {
         id: '01',
-        title: "Feriado",
+        title: "Feriádo",
         description: "Escola fechada para todos, não tem aula nem funciona o adm",
         location: "",
         color: "#FF0000",
     },
     {
         id: '02',
-        title: "Emenda de feriado",
+        title: "Emenda de feriádo",
         description: "Não tem aula, adm funciona normalmente",
         location: "",
         color: "#FF8C00",
@@ -47,14 +47,14 @@ const listEvents = [
     },
     {
         id: '05',
-        title: "Evento, Semana acadêmica e Game Jam",
+        title: "Evento",
         description: "",
         location: "",
         color: "#FFC0CB",
     },
     {
         id: '06',
-        title: "Semana de aválicação",
+        title: "Avalicação",
         description: "",
         location: "",
         color: "#87CEFA",
@@ -87,7 +87,9 @@ export default function CalendarComponent(props) {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showEventForm, setShowEventForm] = useState(false);
     const [semester, setSemester] = useState()
+    const [semesterSelect, setSemesterSelect] = useState()
     const [year, setYear] = useState(2023)
+    const [yearSelect, setYearSelect] = useState(2023)
     const [defaultRangeDate, setDefaultRangeDate] = useState([])
     const [defaultEvents, setDefaultEvents] = useState([])
     const [filteredEvents, setFilteredEvents] = useState([]);
@@ -113,6 +115,7 @@ export default function CalendarComponent(props) {
         const anoAtual = dataAtual.getFullYear();
         setYear(anoAtual)
         setSemester('2º Semestre')
+        setSemesterSelect('2º Semestre')
         await handleEvents()
         setLoading(false);
     }
@@ -194,16 +197,19 @@ export default function CalendarComponent(props) {
         }
     }
 
+    function handleFilter() {
+        setLoading(true);
+        setYear(yearSelect);
+        setSemester(semesterSelect);
+        setLoading(false);
+    }
 
     useEffect(() => {
-        setLoading(true)
-        setDefaultRangeDate(defaultYear)
-        const filtered = defaultRangeDate.filter(filter);
+        setDefaultRangeDate(defaultYear);
+        const filtered = defaultYear.filter(filter)
         setFilteredEvents(filtered);
-        listEventsDefault()
-        setLoading(false)
-
-    }, [semester]);
+        listEventsDefault();
+      }, [semester, year]);
 
     const messages = {
         today: "Hoje",
@@ -315,6 +321,7 @@ export default function CalendarComponent(props) {
         }));
     };
 
+
     const handleEventToSelect = (value) => {
 
         const data = listEvents.find((item) => item.title === value)
@@ -354,15 +361,27 @@ export default function CalendarComponent(props) {
         { label: '2º Semestre', value: '2º Semestre' },
     ]
 
-
     return (
         <>
             <SectionHeader title={`Calendario Geral`} />
             <ContentContainer>
-                <SelectList clean={false} fullWidth data={groupMonths} valueSelection={semester} onSelect={(value) => setSemester(value)}
-                    title="Vizualizar por:" filterOpition="value" sx={{ color: colorPalette.textColor, maxWidth: 280 }}
-                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                />
+                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                        <SelectList clean={false} data={groupMonths} valueSelection={semesterSelect} onSelect={(value) => setSemesterSelect(value)}
+                            title="Vizualizar por:" filterOpition="value" sx={{ color: colorPalette.textColor, maxWidth: 280 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <TextInput
+                            name="year"
+                            value={yearSelect || ''}
+                            label='Ano:'
+                            onChange={(event) => setYearSelect(event.target.value)}
+                            sx={{ flex: 1 }}
+                            type="number"
+                        />
+                    </Box>
+                    <Button small text='filtrar' style={{ height: 30, width: 80 }} onClick={() => handleFilter()} />
+                </Box>
             </ContentContainer>
 
             <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 5, }}>

@@ -735,6 +735,22 @@ export default function EditUser(props) {
         ]);
     };
 
+    const replicateToDaysWork = () => {
+        const firstWorkingHours = officeHours.find(day => day.dia_semana === '2ª Feira')
+        if (firstWorkingHours?.ent1 !== '') {
+            const updatedOfficeHours = officeHours.map(day => ({
+                ...day,
+                ent1: firstWorkingHours.ent1,
+                sai1: firstWorkingHours.sai1,
+                ent2: firstWorkingHours.ent2,
+                sai2: firstWorkingHours.sai2,
+                ent3: firstWorkingHours.ent3,
+                sai3: firstWorkingHours.sai3,
+            }))
+            setOfficeHours(updatedOfficeHours)
+        }
+    }
+
     const groupPerfil = [
         { label: 'funcionario', value: 'funcionario' },
         { label: 'aluno', value: 'aluno' },
@@ -1309,7 +1325,10 @@ export default function EditUser(props) {
                                 <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
                                 <Box sx={styles.inputSection}>
                                     <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
-                                    <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} onBlur={() => {
+                                        new Date(contract?.desligamento) > new Date(1001, 0, 1) &&
+                                            setUserData({ ...userData, ativo: 0, admin_melies: contract?.desligamento ? 0 : userData?.admin_melies })
+                                    }} />
                                 </Box>
                                 <Box sx={styles.inputSection}>
                                     <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
@@ -1337,7 +1356,12 @@ export default function EditUser(props) {
 
                                 <ContentContainer style={{ boxShadow: 'none' }}>
                                     <Box sx={{ display: 'flex', gap: 5, flexDirection: 'column' }}>
-                                        <Text bold title>Horario de trabalho</Text>
+                                        <Box sx={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                                            <Text bold title>Horario de trabalho</Text>
+                                            {officeHours && <Box sx={{ display: 'flex' }}>
+                                                <Button small text='replicar' style={{ padding: '5px 16px 5px 16px' }} onClick={replicateToDaysWork} />
+                                            </Box>}
+                                        </Box>
                                         <TableOfficeHours data={officeHours} onChange={handleOfficeHours} />
                                     </Box>
                                 </ContentContainer>

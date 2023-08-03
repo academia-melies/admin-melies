@@ -246,7 +246,7 @@ export default function EditCourse(props) {
 
                     {<Backdrop open={showPaidIn} sx={{zIndex: 999}}>
                         <ContentContainer style={{marginLeft: { md: '180px', lg: '280px' }, zIndex: 999}}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'end' }}>
                                 <Box sx={{
                                     ...styles.menuIcon,
                                     backgroundImage: `url(${icons.gray_close})`,
