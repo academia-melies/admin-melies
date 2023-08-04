@@ -39,8 +39,10 @@ export default function Home() {
       }
    }
 
+   console.log()
+
    useEffect(() => {
-      handleImages()
+      handleImages(imagesList)
    }, [])
 
    return (
@@ -68,7 +70,7 @@ export default function Home() {
                   <Text bold small>Se liga nas novidades...</Text>
                </Box>
                <Carousel
-                  data={imagesList.length > 0 ? imagesList : 'backgroundHome'}
+                  data={imagesList || backgroundHome}
                   style={{
                      backgroundColor: colorPalette.secondary,
                      borderRadius: '8px',
