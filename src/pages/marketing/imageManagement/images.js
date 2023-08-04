@@ -7,16 +7,9 @@ import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import Link from "next/link"
 
-// const screens = [
-//     { id: '01', screen: 'Login', images: [] },
-//     { id: '02', screen: 'Inicio - Banner rotativo', images: [] },
-//     { id: '02', screen: 'Menu Lateral', images: [] },
-// ]
-
 export default function ImagesAdm(props) {
     const { setLoading, colorPalette, user, alert } = useAppContext()
     const [imagesList, setImagesList] = useState([])
-    const [themeSelect, setThemeSelect] = useState()
     const [screens, setScreen] = useState([
         { id: '01', screen: 'Login', images: [] },
         { id: '02', screen: 'Inicio - Banner rotativo', images: [] },
@@ -24,7 +17,6 @@ export default function ImagesAdm(props) {
     ])
     const [filterData, setFilterData] = useState('')
     const router = useRouter()
-    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         item?.screen?.toLowerCase().includes(filterData?.toLowerCase())
     }

@@ -20,7 +20,7 @@ export default function Login() {
     const handleImages = async () => {
         try {
             const response = await getImageByScreen('Login')
-            if (response.status === 201) {
+            if (response.status === 200) {
                 setImagesList(response.data)
             }
         } catch (error) {
@@ -31,7 +31,6 @@ export default function Login() {
     useEffect(() => {
         handleImages()
     }, [])
-
 
     useEffect(() => {
         const themeAltern = theme ? setThemeName('dark') : setThemeName('clear')
@@ -189,12 +188,12 @@ export default function Login() {
                                 />
                             </Box>
                             <Box>
-                                {smallWidthDevice ? <Box sx={{ ...styles.favicon, backgroundImage: imagesList.filter(item => item?.tipo === theme ? 'tema-claro' : 'tema-escuro'), marginRight: 11, marginLeft: 0, }} />
-                                    :
-                                    <Box sx={{ ...styles.favicon, backgroundImage: imagesList.filter(item => item?.tipo === theme ? 'tema-claro' : 'tema-escuro') , marginRight: !notebookWidth ? 16 : 6, marginLeft: 0, width: !notebookWidth ? '140px' : '120px', }} />}
+                            {smallWidthDevice ? <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: 11, marginLeft: 0, }} />
+                                :
+                                <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: !notebookWidth ? 16 : 6, marginLeft: 0, width: !notebookWidth ? '140px' : '120px', }} />}
                             </Box>
                         </Box>
-                        {smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={14} />}
+                        {smallWidthDevice ? <></> : <CompanyLogo theme={theme} images={imagesList} size={14} />}
                     </ContentContainer>
                 </Box>
                 {/* <Box sx={{
@@ -219,22 +218,26 @@ export default function Login() {
     )
 }
 
-const CompanyLogo = ({ size = 14, style = {}, theme = {} }) => (
+const CompanyLogo = ({ size = 14, style = {}, theme = {}, images = [] }) => {
 
-    < Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        // justifyContent: 'center',
-        alignItems: 'end',
-        // height: '603px', width: '428px',
-        transition: 'background-color 1s',
-        flex: 1,
-        gap: 1,
-        ...style
-    }}>
-        <img src={theme ? "/icons/icon_login.png" : "/icons/icon_login_dark.png"} alt="Admin-melies" style={{ height: '100%', width: 'auto' }} />
-    </Box >
-);
+    const imageUrl = images.filter(item => item?.tipo === (theme ? 'tema-claro' : 'tema-escuro')).map(image => image?.location)
+
+    return (
+        < Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            // justifyContent: 'center',
+            alignItems: 'end',
+            // height: '603px', width: '428px',
+            transition: 'background-color 1s',
+            flex: 1,
+            gap: 1,
+            ...style
+        }}>
+            <img src={imageUrl} alt="Admin-melies" style={{ height: '100%', width: 'auto' }} />
+        </Box >
+    )
+};
 
 const styles = {
     favicon: {
