@@ -4,24 +4,44 @@ import { Box, ContentContainer, Text } from '../atoms'
 import { Carousel } from '../organisms'
 import { useAppContext } from '../context/AppContext'
 import { icons } from '../organisms/layout/Colors'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { menuItems } from '../permissions'
 import { useRouter } from 'next/router'
+import { getImageByScreen } from '../validators/api-requests'
 
 const inter = Inter({ subsets: ['latin'] })
 
 const backgroundHome = [
    { name: 'slide-1', location: 'https://adm-melies.s3.amazonaws.com/slide-3.jpg' },
    { name: 'slide-2', location: 'https://adm-melies.s3.amazonaws.com/slide-5.jpg' },
-   { name: 'slide-3', location: 'https://adm-melies.s3.amazonaws.com/slide-8.png' },
-
 ]
 
 export default function Home() {
 
-   const { user, colorPalette, theme } = useAppContext()
+   const { user, colorPalette, theme, setLoading } = useAppContext()
    const [menu, setMenu] = useState(menuItems)
+   const [imagesList, setImagesList] = useState([])
+
    const router = useRouter();
+
+
+   const handleImages = async () => {
+      setLoading(true)
+      try {
+         const response = await getImageByScreen('Inicio - Banner rotativo')
+         if (response.status === 200) {
+            setImagesList(response.data)
+         }
+      } catch (error) {
+         return error
+      } finally {
+         setLoading(false)
+      }
+   }
+
+   useEffect(() => {
+      handleImages()
+   }, [])
 
    return (
       <>
@@ -48,7 +68,7 @@ export default function Home() {
                   <Text bold small>Se liga nas novidades...</Text>
                </Box>
                <Carousel
-                  data={backgroundHome}
+                  data={imagesList.length > 0 ? imagesList : 'backgroundHome'}
                   style={{
                      backgroundColor: colorPalette.secondary,
                      borderRadius: '8px',
@@ -58,9 +78,9 @@ export default function Home() {
                   width={'auto'}
                />
             </Box>
-            <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none',  }}>
+            <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none', }}>
                <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>Últimas páginas acessadas...</Text>
-               <Box sx={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' }}}>
+               <Box sx={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' } }}>
                   {menu?.map((group, index) =>
                      <ContentContainer key={`${group}-${index}`} sx={{
                         alignItems: 'center', backgroundColor: colorPalette.buttonColor,

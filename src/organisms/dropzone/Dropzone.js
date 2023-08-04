@@ -5,12 +5,17 @@ import { uploadFile } from "../../validators/api-requests";
 import { Box, Button, ContentContainer, Text } from "../../atoms";
 import { useState } from "react";
 import { icons } from "../layout/Colors";
+import { CheckBoxComponent } from "../checkBox/CheckBox";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 export const CustomDropzone = (props) => {
 
     const { setLoading, alert, colorPalette } = useAppContext()
     const [filesDrop, setFilesDrop] = useState()
     const [previewFile, setPreview] = useState()
+    const [typeFile, setTypeFile] = useState('todos')
+    const themeApp = useTheme()
+    const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
     const {
         callback = () => { },
@@ -19,6 +24,10 @@ export const CustomDropzone = (props) => {
         tipo = null,
         bgImage = null,
         bgImageStyle = {},
+        propsDropzone = {},
+        images = false,
+        tela = null,
+        typeOpition = false
     } = props;
 
     const onDropFiles = async (files) => {
@@ -39,36 +48,11 @@ export const CustomDropzone = (props) => {
         // uploadedFiles.forEach(processUpload)
     }
 
-    // const processUpload = async (uploadedFile) => {
-    //     setLoading(true)
-
-    //     const formData = new FormData()
-
-    //     formData.append('file', uploadedFile.file, encodeURIComponent(uploadedFile.name))
-
-
-    //     try {
-    //         const response = await uploadFile({ formData, usuario_id, campo, tipo });
-    //         const { data = {}, status } = response;
-    //         const { id_foto_perfil } = data;
-    //         let file = {
-    //             status, id_foto_perfil
-    //         }
-
-    //         if (status === 201) {
-    //             alert.success('Upload relizado com sucesso.');
-    //             callback(file)
-    //             return file
-    //         }
-    //         alert.error('Tivemos um problema ao fazer upload do arquivo.');
-    //         return null
-    //     } catch (error) {
-    //         alert.error('Tivemos um problema ao fazer upload do arquivo.');
-    //         return null
-    //     } finally {
-    //         setLoading(false)
-    //     }
-    // }
+    const groupType = [
+        { label: 'tema-claro"', value: 'tema-claro' },
+        { label: 'tema-escuro', value: 'tema-escuro' },
+        { label: 'todos', value: 'todos' },
+    ]
 
     const handleUpload = async () => {
         setLoading(true);
@@ -78,7 +62,7 @@ export const CustomDropzone = (props) => {
             const formData = new FormData();
             formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
             try {
-                const response = await uploadFile({ formData, usuario_id, campo, tipo });
+                const response = await uploadFile({ formData, usuario_id, campo, tipo: typeOpition ? typeFile : tipo, images, tela });
                 const { data = {}, status } = response;
                 const { fileId } = data
                 let file = {
@@ -116,7 +100,6 @@ export const CustomDropzone = (props) => {
                     onDrop={onDropFiles}
                     addRemoveLinks={true}
                     removeLink={(file) => handleRemoveFile(file)}
-
                 >
                     {({ getRootProps, getInputProps, isDragActive, isDragReject }) => (
                         <Box {...getRootProps()}
@@ -124,7 +107,8 @@ export const CustomDropzone = (props) => {
                                 ...styles.dropZoneContainer,
                                 border: `2px dashed ${colorPalette.primary + 'aa'}`,
                                 backgroundColor: isDragActive && !isDragReject ? colorPalette.secondary : isDragReject ? '#ff000042' : colorPalette.primary,
-                                ...(bgImage ? { ...bgImageStyle, border: 'none' } : {})
+                                ...(bgImage ? { ...bgImageStyle, border: 'none' } : {}),
+                                ...propsDropzone.style
                             }}
                         >
                             <input {...getInputProps()} />
@@ -178,6 +162,16 @@ export const CustomDropzone = (props) => {
                                 ))}
                             </Box>
                         </ContentContainer>
+                        {typeOpition && <Box>
+                            <CheckBoxComponent
+                                valueChecked={typeFile}
+                                boxGroup={groupType}
+                                title="Tema *"
+                                horizontal={mobile ? false : true}
+                                onSelect={(value) => setTypeFile(value)}
+                                sx={{ flex: 1, }}
+                            />
+                        </Box>}
                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                             <Button small text='Salvar' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
                                 handleUpload()
@@ -227,8 +221,8 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 2,
-        flexDirection: 'column',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        flex: 1,
     },
     menuIcon: {
         backgroundSize: 'contain',
