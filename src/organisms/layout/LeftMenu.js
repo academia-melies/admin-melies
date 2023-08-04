@@ -8,6 +8,7 @@ import { Colors, icons } from "./Colors"
 import { useAppContext } from "../../context/AppContext"
 import { IconTheme } from "../iconTheme/IconTheme"
 import { getImageByScreen } from "../../validators/api-requests"
+import { DialogUserEdit } from "../userEdit/dialogEditUser"
 
 export const LeftMenu = ({ menuItems = [] }) => {
 
@@ -23,7 +24,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
    const [imagesList, setImagesList] = useState('')
    const [showMenuMobile, setShowMenuMobile] = useState(false)
    const [showChangePassword, setShowChangePassword] = useState(false)
-   const [showMenuUser, setShowMenuUser] = useState(false)
+   const [showDialogEditUser, setShowDialogEditUser] = useState(false)
    const [groupStates, setGroupStates] = useState(menuItems.map(() => false));
 
    const handleImages = async () => {
@@ -157,8 +158,9 @@ export const LeftMenu = ({ menuItems = [] }) => {
                               cursor: 'pointer'
                            }
                         }} onClick={() => {
-                           router.push(`/administrative/users/${user?.id}`)
+                           // router.push(`/administrative/users/${user?.id}`)
                            setShowUserOptions(!showUserOptions)
+                           setShowDialogEditUser(true)
                         }} />
                      </Box>
                   </Box>
@@ -315,6 +317,12 @@ export const LeftMenu = ({ menuItems = [] }) => {
                />
             </Box>
          </Box>
+         {showDialogEditUser && (
+            <DialogUserEdit
+               onClick={(value) => setShowDialogEditUser(value)}
+               value={showDialogEditUser}
+            />
+         )}
       </>
    )
 }
