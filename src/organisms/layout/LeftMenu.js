@@ -2,11 +2,12 @@ import { Avatar, useMediaQuery, useTheme } from "@mui/material"
 import Hamburger from "hamburger-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Box, Text } from "../../atoms"
 import { Colors, icons } from "./Colors"
 import { useAppContext } from "../../context/AppContext"
 import { IconTheme } from "../iconTheme/IconTheme"
+import { getImageByScreen } from "../../validators/api-requests"
 
 export const LeftMenu = ({ menuItems = [] }) => {
 
@@ -19,11 +20,29 @@ export const LeftMenu = ({ menuItems = [] }) => {
    const router = useRouter();
    const pathname = router.pathname === '/' ? null : router.asPath
    const [showUserOptions, setShowUserOptions] = useState(false)
-
+   const [imagesList, setImagesList] = useState('')
    const [showMenuMobile, setShowMenuMobile] = useState(false)
    const [showChangePassword, setShowChangePassword] = useState(false)
    const [showMenuUser, setShowMenuUser] = useState(false)
    const [groupStates, setGroupStates] = useState(menuItems.map(() => false));
+
+   const handleImages = async () => {
+      try {
+         const response = await getImageByScreen('Menu Lateral')
+         if (response.status === 200) {
+            const { data } = response
+            const [urlImage] = data.map((item) => item.location)
+            setImagesList(urlImage)
+         }
+      } catch (error) {
+         return error
+      }
+   }
+
+
+   useEffect(() => {
+      handleImages()
+   }, [])
 
    const handleGroupClick = (index) => {
       const newGroupStates = [...groupStates];
@@ -61,10 +80,11 @@ export const LeftMenu = ({ menuItems = [] }) => {
 
    return (
       <>
-         <Box sx={{ ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }),
-      width: { xs: '214px', sm: '214px', md: '180px', lg: '214px' },
-      }}>
-            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '214px', sm: '214px', md: '180px', lg: '214px' }, padding:{ xs: '10px 15px', sm: '10px 15px', md: '8px 10px', lg: '10px 15px' } }}>
+         <Box sx={{
+            ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }),
+            width: { xs: '214px', sm: '214px', md: '180px', lg: '214px' },
+         }}>
+            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '214px', sm: '214px', md: '180px', lg: '214px' }, padding: { xs: '10px 15px', sm: '10px 15px', md: '8px 10px', lg: '10px 15px' } }}>
                <Box sx={{
                   // backgroundSize: 'cover',
                   backgroundRepeat: 'no-repeat',
@@ -75,7 +95,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                   backgroundColor: colorPalette.secondary,
                   top: -40,
                   left: 0,
-                  backgroundImage: `url('https://mf-planejados.s3.amazonaws.com/banner.png')`,
+                  backgroundImage: `url(${imagesList})`,
                   borderRadius: '0px 0px 16px 16px'
                }} />
                <Box sx={{ ...styles.userBadgeContainer }}>
@@ -159,54 +179,71 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      </>
                   } */}
                </Box>
-               <Box sx={{ ...styles.boxMenu, ...(showMenuMobile && { overflowY: 'auto' })}}>
-               {menuItems.map((group, index) =>
-                  <Box key={`${group}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}
-                     onMouseEnter={() => !showMenuMobile && handleGroupMouseEnter(index)}
-                     onMouseLeave={() => !showMenuMobile && handleGroupMouseLeave(index)}
-                     onClick={() => showMenuMobile && handleGroupClick(index)}>
-                     {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
-                     <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 0.5,
-                        padding: `5px 5px`,
-                        width: '100%',
-                        borderRadius: 2,
-                        opacity: 0.8,
-                        "&:hover": {
-                           opacity: 0.8,
-                           cursor: 'pointer',
-                           backgroundColor: '#f0f0f0' + '22'
-                        }
-                     }} >
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                           <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
-                           <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
-                              {group.text}
-                           </Text>
-                        </Box>
+               <Box sx={{ ...styles.boxMenu, ...(showMenuMobile && { overflowY: 'auto' }) }}>
+                  {menuItems.map((group, index) =>
+                     <Box key={`${group}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}
+                        onMouseEnter={() => !showMenuMobile && handleGroupMouseEnter(index)}
+                        onMouseLeave={() => !showMenuMobile && handleGroupMouseLeave(index)}
+                        onClick={() => showMenuMobile && handleGroupClick(index)}>
+                        {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
                         <Box sx={{
-                           ...styles.menuIcon,
-                           backgroundImage: `url(${icons.gray_arrow_down})`,
-                           transform: showMenuMobile && groupStates[index] ? 'rotate(-0deg)' : 'rotate(-90deg)',
-                           transition: '.3s',
-                           marginLeft: !showMenuMobile && groupStates[index] ? 10 : 0,
-                           width: 17,
-                           height: 17,
+                           display: 'flex',
+                           alignItems: 'center',
+                           justifyContent: 'space-between',
+                           gap: 0.5,
+                           padding: `5px 5px`,
+                           width: '100%',
+                           borderRadius: 2,
+                           opacity: 0.8,
                            "&:hover": {
                               opacity: 0.8,
-                              cursor: 'pointer'
+                              cursor: 'pointer',
+                              backgroundColor: '#f0f0f0' + '22'
                            }
-                        }} />
-                     </Box>
-                     {!showMenuMobile ?
-                        <Box sx={{
-                           display: 'flex', flexDirection: 'column', position: 'absolute',
-                           marginLeft: { md: 16, lg: 20 }, padding: '8px'
-                        }}>
-                           <Box sx={{ marginLeft: 4, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, backgroundColor: colorPalette.secondary }}>
+                        }} >
+                           <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                              <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
+                                 {group.text}
+                              </Text>
+                           </Box>
+                           <Box sx={{
+                              ...styles.menuIcon,
+                              backgroundImage: `url(${icons.gray_arrow_down})`,
+                              transform: showMenuMobile && groupStates[index] ? 'rotate(-0deg)' : 'rotate(-90deg)',
+                              transition: '.3s',
+                              marginLeft: !showMenuMobile && groupStates[index] ? 10 : 0,
+                              width: 17,
+                              height: 17,
+                              "&:hover": {
+                                 opacity: 0.8,
+                                 cursor: 'pointer'
+                              }
+                           }} />
+                        </Box>
+                        {!showMenuMobile ?
+                           <Box sx={{
+                              display: 'flex', flexDirection: 'column', position: 'absolute',
+                              marginLeft: { md: 16, lg: 20 }, padding: '8px'
+                           }}>
+                              <Box sx={{ marginLeft: 4, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, backgroundColor: colorPalette.secondary }}>
+                                 {groupStates[index] && (
+                                    group.items.map((item, index) => {
+                                       return (
+                                          <MenuItem
+                                             currentPage={item.to === pathname}
+                                             key={`${index}_${item.to}`}
+                                             to={item.to}
+                                             text={item.text}
+                                             icon={item.icon}
+                                             onClick={() => setShowMenuMobile(false)}
+                                             slug={item.to}
+                                          />)
+                                    }
+                                    ))}
+                              </Box>
+                           </Box>
+                           : <>
                               {groupStates[index] && (
                                  group.items.map((item, index) => {
                                     return (
@@ -219,43 +256,26 @@ export const LeftMenu = ({ menuItems = [] }) => {
                                           onClick={() => setShowMenuMobile(false)}
                                           slug={item.to}
                                        />)
-                                 }
-                                 ))}
-                           </Box>
-                        </Box>
-                        : <>
-                           {groupStates[index] && (
-                              group.items.map((item, index) => {
-                                 return (
-                                    <MenuItem
-                                       currentPage={item.to === pathname}
-                                       key={`${index}_${item.to}`}
-                                       to={item.to}
-                                       text={item.text}
-                                       icon={item.icon}
-                                       onClick={() => setShowMenuMobile(false)}
-                                       slug={item.to}
-                                    />)
-                              }))}
-                        </>
-                     }
-                  </Box>
-               )}
+                                 }))}
+                           </>
+                        }
+                     </Box>
+                  )}
+               </Box>
+               <Box sx={{
+                  ...styles.icon,
+                  backgroundImage: !theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
+                  backgroundSize: 'contain',
+                  width: '107px',
+                  height: '51px',
+                  bottom: 60,
+                  position: 'absolute',
+                  "&:hover": {
+                     cursor: 'pointer', opacity: 0.8
+                  }
+               }} onClick={() => router.push('/')} />
             </Box>
-            <Box sx={{
-               ...styles.icon,
-               backgroundImage: !theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
-               backgroundSize: 'contain',
-               width: '107px',
-               height: '51px',
-               bottom: 60,
-               position: 'absolute',
-               "&:hover": {
-                  cursor: 'pointer', opacity: 0.8
-               }
-            }} onClick={() => router.push('/')} />
-         </Box>
-      </Box >
+         </Box >
 
          <Box sx={{ ...styles.menuResponsive, backgroundColor: theme ? '#fff' : colorPalette.primary + '88', gap: 2, }}>
             {/* <Box sx={{

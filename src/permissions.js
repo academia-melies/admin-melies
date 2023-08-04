@@ -125,7 +125,7 @@ export const menuItems = [
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },
          {
-            to: '/marketing/imageManagement/editPages',
+            to: '/marketing/imageManagement/images',
             text: 'Imagens',
             // permissions: ['Diretor', 'Financeiro', 'Admin', 'Cordenação']
          },

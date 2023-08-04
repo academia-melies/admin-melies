@@ -196,14 +196,20 @@ export const editGrid = async ({ id, gridData }) => {
 
 export const uploadFile = async (data) => {
 
-   const { formData, usuario_id = null, campo = null, tipo = null } = data;
+   const { formData, usuario_id = null, campo = null, tipo = null, images = false, tela = null } = data;
 
    let query = `?usuario_id=${usuario_id}`;
 
    if (campo) query += `&campo=${campo}`;
+   if (tela) query += `&tela=${tela}`;
+
    if (tipo) query += `&tipo=${tipo}`;
 
    try {
+      if (images) {
+         const response = await api.post(`/file/image/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+         return response
+      }
       const response = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
       return response
    } catch (error) {
@@ -221,6 +227,15 @@ export const deleteFile = async ({ fileId, usuario_id, campo, key }) => {
          return response
       }
       const response = await api.delete(`/file/delete/${fileId}${query}`)
+      return response
+   } catch (error) {
+      return error
+   }
+}
+
+export const getImageByScreen = async (screen) => {
+   try {
+      const response = await api.get(`/file/images/screen/${screen}`)
       return response
    } catch (error) {
       return error
