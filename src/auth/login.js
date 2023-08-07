@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import { useAppContext } from "../context/AppContext"
 import { emailValidator } from "../helpers"
 import { Colors, IconTheme } from "../organisms"
-import { Box, Button, ContentContainer, TextInput, Text } from "../atoms"
-import Image from "next/image"
+import { Box, ContentContainer, TextInput, Text } from "../atoms"
+import Button from '@mui/material/Button';
 import Head from "next/head"
 import { getImageByScreen } from "../validators/api-requests"
 
@@ -116,81 +116,104 @@ export default function Login() {
                             position: 'relative'
                         }}>
 
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
-                                {/* {!smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={40} />} */}
-                                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '62%', }}>
-                                    <Text bold style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: '35px', transition: 'background-color 1s' }}>Login</Text>
-                                    <Box sx={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s', borderRadius: '16px', padding: '2px 12px 2px 12px' }}>
-                                        <Text small bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', fontWeight: 'bold' }}>{'ADMIN'}</Text>
+                            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
+                                    {/* {!smallWidthDevice ? <></> : <CompanyLogo theme={theme} size={40} />} */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '62%', }}>
+                                        <Text bold style={{ color: !theme ? '#fff' : Colors.backgroundPrimary, fontSize: '35px', transition: 'background-color 1s' }}>Login</Text>
+                                        <Box sx={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s', borderRadius: '16px', padding: '2px 12px 2px 12px' }}>
+                                            <Text small bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', fontWeight: 'bold' }}>{'ADMIN'}</Text>
+                                        </Box>
                                     </Box>
+                                    <Box sx={{
+                                        display: 'flex', flexDirection: 'column', gap: 2, width: { xs: `80%`, xm: `80%`, md: '62.5%', lg: '62.5%' }, justifyContent: 'center',
+                                        // alignItems: 'center',
+                                    }}>
+                                        <TextInput
+                                            label='e-mail'
+                                            placeholder='email@outlook.com.br'
+                                            value={userData?.email || ''}
+                                            onChange={handleChange}
+                                            name='email'
+                                            margin='none'
+                                            type="email"
+                                            InputProps={{
+                                                style: {
+                                                    backgroundColor: !theme ? '#1B1829' : Colors.background,
+                                                    transition: 'background-color 1s',
+                                                    border: "none",
+                                                    color: !theme ? '#fff' : Colors.backgroundPrimary,
+                                                    outline: 'none',
+                                                    borderRadius: '16px',
+                                                    // // width: '280px',
+                                                }
+                                            }}
+                                            InputLabelProps={{
+                                                style: {
+                                                    color: !theme ? '#fff' : Colors.backgroundPrimary,
+                                                    transition: 'background-color 1s',
+                                                    // width: '280px',
+                                                }
+                                            }}
+                                        />
+                                        <TextInput
+                                            placeholder='******'
+                                            label='senha'
+                                            colorLabel={'#fff'}
+                                            value={userData.senha || ''}
+                                            onChange={handleChange}
+                                            name='senha'
+                                            type="password"
+                                            margin='none'
+                                            InputProps={{
+                                                style: {
+                                                    backgroundColor: !theme ? '#1B1829' : Colors.background,
+                                                    transition: 'background-color 1s',
+                                                    color: !theme ? '#ffffffbb' : Colors.backgroundPrimary,
+                                                    outline: 'none',
+                                                    borderRadius: '16px',
+                                                    // width: '280px',
+                                                }
+                                            }}
+                                            InputLabelProps={{
+                                                style: {
+                                                    color: !theme ? '#fff' : Colors.backgroundPrimary,
+                                                    transition: 'background-color 1s',
+                                                }
+                                            }}
+                                        />
+                                    </Box>
+                                    <Button
+                                        style={{
+                                            width: { xs: `80%`, xm: `80%`, md: '60%', lg: '60%' },
+                                            padding: '12px 80px',
+                                            marginBottom: 5,
+                                            borderRadius: '100px',
+                                            backgroundColor: colorPalette.buttonColor,
+                                            transition: 'background-color 1s',
+                                            "&:hover": {
+                                                backgroundColor: colorPalette.buttonColor + 'dd',
+                                                cursor: 'pointer'
+                                            },
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            color: '#f0f0f0',
+                                            // padding: { xs: `6px 10px`, xm: `8px 16px`, md: `8px 16px`, lg: `8px 16px` },
+                                            borderRadius: '100px',
+                                        }}
+                                        text='Entrar'
+                                        onClick={handleLogin}
+                                        type="submit"
+                                    >
+                                      <Text small bold style={{ color: 'inherit' }}>Entrar</Text>
+                                    </Button>
                                 </Box>
-                                <Box sx={{
-                                    display: 'flex', flexDirection: 'column', gap: 2, width: { xs: `80%`, xm: `80%`, md: '62.5%', lg: '62.5%' }, justifyContent: 'center',
-                                    // alignItems: 'center',
-                                }}>
-                                    <TextInput
-                                        label='e-mail'
-                                        placeholder='email@outlook.com.br'
-                                        value={userData?.email || ''}
-                                        onChange={handleChange}
-                                        name='email'
-                                        margin='none'
-                                        InputProps={{
-                                            style: {
-                                                backgroundColor: !theme ? '#1B1829' : Colors.background,
-                                                transition: 'background-color 1s',
-                                                border: "none",
-                                                color: !theme ? '#fff' : Colors.backgroundPrimary,
-                                                outline: 'none',
-                                                borderRadius: '16px',
-                                                // // width: '280px',
-                                            }
-                                        }}
-                                        InputLabelProps={{
-                                            style: {
-                                                color: !theme ? '#fff' : Colors.backgroundPrimary,
-                                                transition: 'background-color 1s',
-                                                // width: '280px',
-                                            }
-                                        }}
-                                    />
-                                    <TextInput
-                                        placeholder='******'
-                                        label='senha'
-                                        colorLabel={'#fff'}
-                                        value={userData.senha || ''}
-                                        onChange={handleChange}
-                                        name='senha'
-                                        type="password"
-                                        margin='none'
-                                        InputProps={{
-                                            style: {
-                                                backgroundColor: !theme ? '#1B1829' : Colors.background,
-                                                transition: 'background-color 1s',
-                                                color: !theme ? '#ffffffbb' : Colors.backgroundPrimary,
-                                                outline: 'none',
-                                                borderRadius: '16px',
-                                                // width: '280px',
-                                            }
-                                        }}
-                                        InputLabelProps={{
-                                            style: {
-                                                color: !theme ? '#fff' : Colors.backgroundPrimary,
-                                                transition: 'background-color 1s',
-                                            }
-                                        }}
-                                    />
-                                </Box>
-                                <Button
-                                    style={{ width: { xs: `80%`, xm: `80%`, md: '60%', lg: '60%' }, padding: '12px 20px', marginBottom: 5, borderRadius: '100px' }}
-                                    text='Entrar'
-                                    onClick={handleLogin}
-                                />
-                            </Box>
+                            </form>
                             <Box>
-                            {smallWidthDevice ? <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: 11, marginLeft: 0, }} />
-                                :
-                                <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: !notebookWidth ? 16 : 6, marginLeft: 0, width: !notebookWidth ? '140px' : '120px', }} />}
+                                {smallWidthDevice ? <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: 11, marginLeft: 0, }} />
+                                    :
+                                    <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: !notebookWidth ? 16 : 6, marginLeft: 0, width: !notebookWidth ? '140px' : '120px', }} />}
                             </Box>
                         </Box>
                         {smallWidthDevice ? <></> : <CompanyLogo theme={theme} images={imagesList} size={14} />}

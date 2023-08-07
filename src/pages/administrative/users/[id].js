@@ -12,7 +12,7 @@ import { emailValidator, formatCEP, formatCPF, formatRg } from "../../../helpers
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 
-export default function EditUser(props) {
+export default function EditUser() {
     const { setLoading, alert, colorPalette, user, setUser, matches } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
@@ -779,6 +779,11 @@ export default function EditUser(props) {
         { label: 'inativo', value: 0 },
     ]
 
+    const groupProfessor = [
+        { label: 'sim', value: 1 },
+        { label: 'não', value: 0 },
+    ]
+
     const groupCertificate = [
         { label: 'Sim', value: 1 },
         { label: 'Não', value: 0 },
@@ -1027,6 +1032,12 @@ export default function EditUser(props) {
                 </Box>
                 {showRegistration &&
                     <>
+                        <RadioItem valueRadio={userData?.professor}
+                         group={groupProfessor}
+                          title="Professor *"
+                           horizontal={mobile ? false : true}
+                            onSelect={(value) => setUserData({ ...userData, professor: parseInt(value) })} />
+
                         <Box sx={{ padding: '0px 0px 20px 0px' }}>
                             <CheckBoxComponent
                                 boxGroup={groupForeigner}
