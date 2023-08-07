@@ -114,7 +114,11 @@ export const LeftMenu = ({ menuItems = [] }) => {
                      <Avatar
                         sx={{ width: '65px', height: '65px', fontSize: 14, border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }}
                         src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`}
-                        onClick={() => router.push(`/administrative/users/${user?.id}`)} />
+                        onClick={() => {
+                           // router.push(`/administrative/users/${user?.id}`)
+                           setShowUserOptions(!showUserOptions)
+                           setShowDialogEditUser(true)
+                        }} />
                      <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff', fontFamily: 'MetropolisSemiBold' }}>{userName}</Text>
                      {/* <Box sx={{
                         ...styles.menuIcon,

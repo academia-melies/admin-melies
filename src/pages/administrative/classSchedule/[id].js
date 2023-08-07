@@ -329,59 +329,63 @@ export default function EditClassSchedule(props) {
                 </Box>
                 <RadioItem valueRadio={classScheduleData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setClassScheduleData({ ...classScheduleData, ativo: parseInt(value) })} />
             </ContentContainer>
-            <ContentContainer sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, backgroundColor: 'none', boxShadow: 'none' }}>
-                <Box>
-                    <CheckBoxComponent
-                        valueChecked={daysWeekSelected}
-                        boxGroup={groupDays}
-                        title="Selecione os dias de aula *"
-                        horizontal={mobile ? false : true}
-                        onSelect={(value) => setDaysWeekSelected(value)}
-                        sx={{ flex: 1, }}
-                    />
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'start', flexWrap: 'wrap' }}>
-                    {diasDaSemanaOrdenados.map((dayWeek) => {
-                        const isSelected = daysWeekSelected?.includes(dayWeek);
-                        const lengthDays = daysWeekSelected?.split(',')
 
-                        return isSelected ? (
+            {newClassSchedule &&
+                <ContentContainer sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, backgroundColor: 'none', boxShadow: 'none' }}>
+                    <Box>
+                        <CheckBoxComponent
+                            valueChecked={daysWeekSelected}
+                            boxGroup={groupDays}
+                            title="Selecione os dias de aula *"
+                            horizontal={mobile ? false : true}
+                            onSelect={(value) => setDaysWeekSelected(value)}
+                            sx={{ flex: 1, }}
+                        />
+                    </Box>
 
-                            <ContentContainer style={{ flex: { xs: '', xm: '', md: '', lg: '', xl: lengthDays.length > 3 ? 1 : '' } }} key={dayWeek}>
-                                <Text bold title={true} style={{ color: colorPalette.buttonColor }}>{dayWeek}</Text>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.disciplina_id} onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value)}
-                                        title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
-                                    <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
-                                        title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
-                                    <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
-                                        title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
-                                    {/* <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.optativa} onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'start', flexWrap: 'wrap' }}>
+                        {diasDaSemanaOrdenados.map((dayWeek) => {
+                            const isSelected = daysWeekSelected?.includes(dayWeek);
+                            const lengthDays = daysWeekSelected?.split(',')
+
+                            return isSelected ? (
+
+                                <ContentContainer style={{ flex: { xs: '', xm: '', md: '', lg: '', xl: lengthDays.length > 3 ? 1 : '' } }} key={dayWeek}>
+                                    <Text bold title={true} style={{ color: colorPalette.buttonColor }}>{dayWeek}</Text>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.disciplina_id} onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value)}
+                                            title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
+                                            title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
+                                            title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        {/* <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.optativa} onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
                                         title="Optativa" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     /> */}
-                                    <SelectList fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
-                                        title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
-                                    <CheckBoxComponent
-                                        boxGroup={groupOptative}
-                                        valueChecked={classDays[dayWeek]?.optativa}
-                                        horizontal={mobile ? false : true}
-                                        onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
-                                        sx={{ width: 1 }} />
-                                </Box>
-                            </ContentContainer>
-                        ) : null
-                    })}
-                </Box>
-            </ContentContainer>
+                                        <SelectList fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
+                                            title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <CheckBoxComponent
+                                            boxGroup={groupOptative}
+                                            valueChecked={classDays[dayWeek]?.optativa}
+                                            horizontal={mobile ? false : true}
+                                            onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
+                                            sx={{ width: 1 }} />
+                                    </Box>
+                                </ContentContainer>
+                            ) : null
+                        })}
+                    </Box>
+                </ContentContainer>
+            }
         </>
     )
 }
