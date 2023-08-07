@@ -26,6 +26,7 @@ export const DialogUserEdit = (props) => {
       photoProfile: false
    })
    const [fileCallback, setFileCallback] = useState([])
+   const [showEditPhoto, setShowEditPhoto] = useState(false)
    const handleChange = (value) => {
       setUserData((prevValues) => ({
          ...prevValues,
@@ -134,7 +135,9 @@ export const DialogUserEdit = (props) => {
                      }
                   }} onClick={() => onClick(false)} />
                </Box>
-               <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: 1, }}>
+               <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: 1, position: 'relative', transition: '.3s', }}
+                  onMouseEnter={() => setShowEditPhoto(true)}
+                  onMouseLeave={() => setShowEditPhoto(false)}>
                   {/* <Avatar
                      sx={{ width: '65px', height: '65px', fontSize: 14, border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }}
                      src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`}
@@ -146,9 +149,20 @@ export const DialogUserEdit = (props) => {
                      // fontSize: 14,
                      border: `1px solid #fff`,
                      cursor: 'pointer',
-                     '&hover': { opacity: 0.5 }
+                     transition: '.3s',
+                     '&hover': { opacity: 0.4 }
                   }}
-                     variant="square" onClick={() => setShowEditFiles({ ...showEditFile, photoProfile: true })} />
+                     variant="square" onClick={() => setShowEditFiles({ ...showEditFile, photoProfile: true })}
+                  />
+                  {showEditPhoto &&
+                     <Box sx={{ display: 'flex', position: 'absolute', justifyContent: 'center', alignItems: 'center', transition: '.3s', }}>
+                        <Button
+                           small
+                           style={{ borderRadius: '8px', padding: '5px 10px', transition: '.3s', }}
+                           text='editar'
+                           onClick={() => setShowEditFiles({ ...showEditFile, photoProfile: true })}
+                        />
+                     </Box>}
                   <Text bold>{userName}</Text>
                   <EditFile
                      columnId="id_foto_perfil"
