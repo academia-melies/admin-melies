@@ -284,7 +284,7 @@ export default function EditPermissions(props) {
                         const menu = item?.text;
                         const subMenus = item.items;
                         return (
-                            <ContentContainer style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <ContentContainer style={{ display: 'flex', flexDirection: 'column', gap: 2 }} key={`${item}-${index}`}>
 
                                 <Box
                                     sx={{
@@ -318,9 +318,10 @@ export default function EditPermissions(props) {
                                 </Box>
 
                                 {showScreens[index] && (
-                                    subMenus.map((menu) => {
+                                    subMenus.map((menu, index) => {
                                         return (
-                                            <Box sx={{ display: 'flex', alignItem: 'center', flexDirection: 'column', padding: '20px 0px 0px 30px' }}>
+                                            <Box sx={{ display: 'flex', alignItem: 'center', flexDirection: 'column', padding: '20px 0px 0px 30px' }}
+                                            key={`${item}-${index}`}>
                                                 <Text bold style={{ color: colorPalette.buttonColor }}>{menu.text}</Text>
                                                 <CheckBoxComponent
                                                     valueChecked={permissionGroup[menu]?.actionPermission}
