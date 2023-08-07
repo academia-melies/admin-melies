@@ -30,8 +30,9 @@ export const Carousel = (props) => {
                         backgroundRepeat: 'no-repeat',
                         backgroundPosition: 'center',
                         backgroundImage: `url('${item?.location}')`,
-                        width: 'width',
+                        width: '100%',
                         height: heigth,
+                        aspectRatio: '16/9',
                     }} />
                 </SwiperSlide>
             ))}
