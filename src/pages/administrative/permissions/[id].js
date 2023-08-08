@@ -22,34 +22,6 @@ const permissions = [
                 to: '/administrative/users/list',
                 text: 'Usuários',
             },
-            {
-                to: '/administrative/permissions/list',
-                text: 'Permissões',
-            },
-            {
-                to: '/administrative/calendar/calendar',
-                text: 'Calendário',
-            },
-            {
-                to: '/administrative/course/list',
-                text: 'Curso',
-            },
-            {
-                to: '/administrative/discipline/list',
-                text: 'Disciplina',
-            },
-            {
-                to: '/administrative/grid/list',
-                text: 'Grade',
-            },
-            {
-                to: '/administrative/class/list',
-                text: 'Turma',
-            },
-            {
-                to: '/administrative/classSchedule/list',
-                text: 'Cronograma',
-            },
         ]
     },
     {
@@ -137,7 +109,8 @@ const permissions = [
 ]
 
 export default function EditPermissions(props) {
-    const { setLoading, alert, colorPalette, theme } = useAppContext()
+    const { setLoading, alert, colorPalette, theme, user } = useAppContext()
+    let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
     const newPermissions = id === 'new';
@@ -146,16 +119,46 @@ export default function EditPermissions(props) {
     })
     const [actionPermission, setActionPermission] = useState('')
     const [showScreens, setShowScreens] = useState({});
+    const [menuItems, setMenuItems] = useState([]);
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
+    useEffect(() => {
+        const handleMenuItems = async () => {
+            try {
+                const response = await api.get(`/menuItems`)
+                const { data } = response
+                if (response.status === 200) {
+                    setMenuItems(data)
+                }
+            } catch (error) {
+                console.log(error)
+                return error
+            }
+        }
+        handleMenuItems()
+    }, [])
+
+    useEffect(() => {
+        (async () => {
+            if (newPermissions) {
+                return
+            }
+            await handleItems();
+        })();
+    }, [id])
+
     const getGroupPermission = async () => {
+        setLoading(true)
         try {
-            const response = await api.get(`/groupPermission/${id}`)
+            const response = await api.get(`/permission/${id}`)
             const { data } = response
-            setPermissionGroup(data)
+            data.map((item) => setPermissionGroup(item))
+
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -172,7 +175,7 @@ export default function EditPermissions(props) {
         try {
             await getGroupPermission()
         } catch (error) {
-            alert.error('Ocorreu um arro ao carregar A instituição')
+            alert.error('Ocorreu um arro ao carregar permissões')
         } finally {
             setLoading(false)
         }
@@ -185,52 +188,87 @@ export default function EditPermissions(props) {
             [value.target.name]: value.target.value,
         }))
     }
-    const handleScreenPermissionChange = (screen, action, value) => {
-        setPermissionGroup((prevPermissionGroup) => ({
-            ...prevPermissionGroup,
-            permissoes: {
-                ...prevPermissionGroup.permissoes,
-                [screen]: {
-                    ...prevPermissionGroup.permissoes[screen],
-                    [action]: value,
-                },
-            },
-        }));
+
+    // const handleScreenPermissionChange = (screen, action, value, item) => {
+    //     let validatePermissionExists = permissionGroup.permissoes.map(per => per.item === screen)
+    //     if(!validatePermissionExists){
+    //         setPermissionGroup((prevPermissionGroup) => ({
+    //             ...prevPermissionGroup,
+    //             permissoes: {
+    //                 ...prevPermissionGroup.permissoes,
+    //                 [screen]: {
+    //                     ...prevPermissionGroup.permissoes[screen],
+    //                     [action]: value,
+    //                     item: screen,
+    //                     item_id: item
+    //                 },
+    //             },
+    //         }));
+    //         return
+    //     }
+
+    //     setPermissionGroup((prevPermissionGroup) => ({
+    //         ...prevPermissionGroup,
+    //         permissoes: {
+    //             ...prevPermissionGroup.permissoes,
+    //             [screen]: {
+    //                 ...prevPermissionGroup.permissoes[screen],
+    //                 acao: value,
+    //                 item: screen,
+    //                 item_id: item
+    //             },
+    //         },
+    //     }));
+    // };
+
+    const handleScreenPermissionChange = (screen, action, value, item) => {
+        setPermissionGroup((prevPermissionGroup) => {
+            const updatedPermissions = prevPermissionGroup.permissoes.map(permission => {
+                if (permission.item === screen) {
+                    return { ...permission, acao: value };
+                }
+                return permission;
+            });
+
+            if (!updatedPermissions.some(permission => permission.item === screen)) {
+                updatedPermissions.push({ item: screen, acao: value, item_id: item });
+            }
+
+            return {
+                ...prevPermissionGroup,
+                permissoes: updatedPermissions,
+            };
+        });
     };
-
-
-    console.log(permissionGroup)
 
     const handleCreate = async () => {
         setLoading(true)
-        if (checkRequiredFields()) {
-            try {
-                const response = await api.post(`/institution/create`, { permissionGroup });
-                const { data } = response
-                console.group(data)
-                if (response?.status === 201) {
-                    alert.success('Instituição cadastrada com sucesso.');
-                    router.push(`/administrative/institution/${data?.institution}`)
-                }
-            } catch (error) {
-                alert.error('Tivemos um problema ao cadastrar Instituição.');
-            } finally {
-                setLoading(false)
+        try {
+            const response = await api.post(`/permission/create/${userId}`, { permissionGroup });
+            if (response?.status === 201) {
+                const { groupId } = response.data
+                alert.success('Permissões criadas com sucesso.');
+                router.push(`/administrative/permissions/${groupId}`)
             }
+        } catch (error) {
+            console.log(error)
+            alert.error('Tivemos um problema ao cadastrar Permissões.');
+        } finally {
+            setLoading(false)
         }
     }
 
     const handleDelete = async () => {
         setLoading(true)
         try {
-            const response = await api.delete(`/institution/delete/${id}`)
+            const response = await api.delete(`/permission/delete/${id}`)
             if (response?.status == 201) {
-                alert.success('Instituição excluída com sucesso.');
-                router.push(`/administrative/institution/list`)
+                alert.success('Permissões excluídas com sucesso.');
+                router.push(`/administrative/permission/list`)
             }
 
         } catch (error) {
-            alert.error('Tivemos um problema ao excluir Instituição.');
+            alert.error('Tivemos um problema ao excluir Permissões.');
             console.log(error)
         } finally {
             setLoading(false)
@@ -240,34 +278,34 @@ export default function EditPermissions(props) {
     const handleEdit = async () => {
         setLoading(true)
         try {
-            const response = await api.patch(`/institution/update/${id}`, { permissionGroup })
+            const response = await api.patch(`/permission/update/${userId}`, { permissionGroup })
             if (response?.status === 201) {
-                alert.success('Instituição atualizada com sucesso.');
+                alert.success('Permissões atualizada com sucesso.');
                 handleItems()
                 return
             }
-            alert.error('Tivemos um problema ao atualizar Instituição.');
+            alert.error('Tivemos um problema ao atualizar Permissões.');
         } catch (error) {
-            alert.error('Tivemos um problema ao atualizar Instituição.');
+            alert.error('Tivemos um problema ao atualizar Permissões.');
         } finally {
             setLoading(false)
         }
     }
-
-    const groupStatus = [
-        { label: 'ativo', value: 1 },
-        { label: 'inativo', value: 0 },
-    ]
 
     const groupPerfil = [
         { label: 'edição', value: 'edição' },
         { label: 'leitura', value: 'leitura' },
     ]
 
+    const groupStatus = [
+        { label: 'ativo', value: 1 },
+        { label: 'inativo', value: 0 },
+    ]
+
     return (
         <>
             <SectionHeader
-                title={permissionGroup.permissao || `Nova Permissão`}
+                title={permissionGroup?.permissao || `Nova Permissão`}
                 saveButton
                 saveButtonAction={newPermissions ? handleCreate : handleEdit}
                 deleteButton={!newPermissions}
@@ -279,8 +317,11 @@ export default function EditPermissions(props) {
                     <Text title style={{ padding: '0px 0px 20px 0px' }}>Lista de permissões</Text>
                 </Box>
                 <TextInput placeholder='ex: Master' name='permissao' onChange={handleChange} value={permissionGroup.permissao || ''} label='Permissão *' sx={{ flex: 1, }} />
+
+                <RadioItem valueRadio={permissionGroup?.ativo} group={groupStatus} title="Status *" horizontal={mobile ? false : true} onSelect={(value) => setPermissionGroup({ ...permissionGroup, ativo: parseInt(value) })} />
+
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {permissions.map((item, index) => {
+                    {menuItems?.map((item, index) => {
                         const menu = item?.text;
                         const subMenus = item.items;
                         return (
@@ -300,7 +341,7 @@ export default function EditPermissions(props) {
                                     }}
                                     onClick={() => toggleScreens(index)}>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                                        <Box sx={{ ...styles.icon, backgroundImage: `url(${item?.icon})`, width: 'auto', height: 20, aspectRatio: '1/1', filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                                        <Box sx={{ ...styles.icon, backgroundImage: `url(${item?.icon})`, width: item.text === 'Administrativo' ? 15 : 18, height: item.text === 'Administrativo' ? 24 : 18, aspectRatio: '1/1', filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
                                         <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
                                             {menu}
                                         </Text>
@@ -319,15 +360,34 @@ export default function EditPermissions(props) {
 
                                 {showScreens[index] && (
                                     subMenus.map((menu, index) => {
+
+                                        const groupPermissionsAction = {}; // Usar objeto em vez de array
+                                        const permissions = permissionGroup.permissoes;
+                                        permissions.forEach((permission) => {
+                                            if (permission.item === menu.text) {
+                                                if (!groupPermissionsAction[menu.text]) {
+                                                    groupPermissionsAction[menu.text] = '';
+                                                }
+                                                if (groupPermissionsAction[menu.text]) {
+                                                    groupPermissionsAction[menu.text] += ', ';
+                                                }
+                                                groupPermissionsAction[menu.text] += permission.acao;
+                                            }
+                                        });
+
+                                        const valueCheckedItem = groupPermissionsAction[menu.text] || '';
+
                                         return (
                                             <Box sx={{ display: 'flex', alignItem: 'center', flexDirection: 'column', padding: '20px 0px 0px 30px' }}
-                                            key={`${item}-${index}`}>
+                                                key={`${item}-${index}`}>
                                                 <Text bold style={{ color: colorPalette.buttonColor }}>{menu.text}</Text>
                                                 <CheckBoxComponent
-                                                    valueChecked={permissionGroup[menu]?.actionPermission}
+                                                    valueChecked={valueCheckedItem}
                                                     boxGroup={groupPerfil}
                                                     horizontal={mobile ? false : true}
-                                                    onSelect={(value) => handleScreenPermissionChange(menu.text, 'action', value)}
+                                                    onSelect={(value) => {
+                                                        handleScreenPermissionChange(menu.text, 'action', value, menu.id_item)
+                                                    }}
                                                     // handleDayDataChange(dayWeek, 'disciplina_id', value)
                                                     sx={{ flex: 1, }}
                                                 />
@@ -367,5 +427,14 @@ const styles = {
         justifyContent: 'space-around',
         gap: 1.8,
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
-    }
+    },
+    icon: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center center',
+        width: '15px',
+        height: '15px',
+        marginRight: '0px',
+        backgroundImage: `url('/favicon.svg')`,
+    },
 }

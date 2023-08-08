@@ -36,6 +36,8 @@ export default function EditUser() {
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
     const [classesInterest, setClassesInterest] = useState([])
+    const [groupPermissions, setGroupPermissions] = useState([])
+    const [permissionPerfil, setPermissionPerfil] = useState()
     const [fileCallback, setFileCallback] = useState([])
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
@@ -49,6 +51,7 @@ export default function EditUser() {
     const [showAddHistoric, setAddShowHistoric] = useState(false)
     const [showAddInterest, setAddShowInterest] = useState(false)
     const [showViewInterest, setShowViewInterest] = useState(false)
+    const [showPermissions, setShowPermissions] = useState(false)
     const [showEditFile, setShowEditFiles] = useState({
         photoProfile: false,
         cpf: false,
@@ -81,6 +84,7 @@ export default function EditUser() {
         findCountries()
         listCourses()
         listClassesInterest()
+        listPermissions()
     }, [slug])
 
     useEffect(() => {
@@ -294,6 +298,21 @@ export default function EditUser() {
             }));
 
             setClassesInterest(groupClass);
+        } catch (error) {
+        }
+    }
+
+    async function listPermissions() {
+
+        try {
+            const response = await api.get(`/permissions`)
+            const { data } = response
+            const groupPermissions = data.map(permission => ({
+                label: permission.permissao,
+                value: permission?.id_grupo_perm.toString()
+            }));
+
+            setGroupPermissions(groupPermissions);
         } catch (error) {
         }
     }
@@ -1032,10 +1051,48 @@ export default function EditUser() {
                 </Box>
                 {showRegistration &&
                     <>
+
+                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'start', marginTop: 2, flexDirection: 'column', padding: '0px 0px 20px 12px' }}>
+                            <Text bold small>Adicionar permissões:</Text>
+                            <Button small text='permissões' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowPermissions(true)} />
+                        </Box>
+
+                        <Backdrop open={showPermissions} sx={{ zIndex: 99999,  }}>
+
+                            <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'auto', marginLeft: { md: '180px', lg: '280px' }}}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                    <Text bold large>Permissões</Text>
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        backgroundImage: `url(${icons.gray_close})`,
+                                        transition: '.3s',
+                                        zIndex: 999999999,
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => setShowPermissions(false)} />
+                                </Box>
+                                <ContentContainer style={{ boxShadow: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'start'}}>
+                                        <Text bold>Grupo de permissões</Text>
+                                        <CheckBoxComponent
+                                            boxGroup={groupPermissions}
+                                            valueChecked={permissionPerfil || ''}
+                                            horizontal={false}
+                                            onSelect={(value) => {
+                                                setPermissionPerfil(value)
+                                            }}
+                                            sx={{ width: 1 }} />
+                                    </Box>
+                                </ContentContainer>
+                            </ContentContainer>
+                        </Backdrop>
+
                         <RadioItem valueRadio={userData?.professor}
-                         group={groupProfessor}
-                          title="Professor *"
-                           horizontal={mobile ? false : true}
+                            group={groupProfessor}
+                            title="Professor *"
+                            horizontal={mobile ? false : true}
                             onSelect={(value) => setUserData({ ...userData, professor: parseInt(value) })} />
 
                         <Box sx={{ padding: '0px 0px 20px 0px' }}>
@@ -1545,10 +1602,10 @@ export default function EditUser() {
                 </ContentContainer >
             }
 
-            <Backdrop open={showInterest} sx={{ zIndex: 99999, marginLeft: { md: '180px', lg: '280px' } }}>
+            <Backdrop open={showInterest} sx={{ zIndex: 99999,  }}>
 
                 {showInterest &&
-                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', }}>
+                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', marginLeft: { md: '180px', lg: '280px' }}}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                             <Text bold large>Interesses</Text>
                             <Box sx={{
@@ -1749,9 +1806,9 @@ export default function EditUser() {
                 }
             </Backdrop>
 
-            <Backdrop open={showHistoric} sx={{ zIndex: 99999, marginLeft: { md: '180px', lg: '0px' } }}>
+            <Backdrop open={showHistoric} sx={{ zIndex: 99999,  }}>
                 {showHistoric &&
-                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', }}>
+                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '280px' }, overflowY: matches && 'auto', }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                             <Text bold large>Observações</Text>
                             <Box sx={{
@@ -1954,8 +2011,8 @@ export const EditFile = (props) => {
     }
 
     return (
-        <Backdrop open={open} sx={{ zIndex: 99999, marginLeft: { md: '180px', lg: '0px' } }}>
-            <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'scroll', }}>
+        <Backdrop open={open} sx={{ zIndex: 99999,  }}>
+            <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll', }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
                     <Text bold>{title}</Text>
                     <Box sx={{
