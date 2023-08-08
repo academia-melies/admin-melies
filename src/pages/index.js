@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { menuItems } from '../permissions'
 import { useRouter } from 'next/router'
 import { getImageByScreen } from '../validators/api-requests'
+import { api } from '../api/api'
 
 const inter = Inter({ subsets: ['latin'] })
 

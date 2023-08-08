@@ -11,28 +11,21 @@ export default function GroupPermissions(props) {
     const { setLoading, colorPalette } = useAppContext()
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-    // const filter = (item) => {
-    //     if (filterAtive === 'todos') {
-    //         return item?.nome_instituicao?.toLowerCase().includes(filterData?.toLowerCase())
-    //     } else {
-    //         return item?.ativo === filterAtive && (item?.nome_instituicao?.toLowerCase().includes(filterData?.toLowerCase()));
-    //     }
-    // };
 
     useEffect(() => {
-        getPermissions();
+        gerPermissions();
     }, []);
 
-    const getPermissions = async () => {
+    const gerPermissions = async () => {
         setLoading(true)
         try {
-            const response = await api.get('/groupPermissions')
-            const { data = [] } = response;
+            const response = await api.get(`/permissions`)
+            const { data } = response
             setGroupPermissionsList(data)
         } catch (error) {
             console.log(error)
-        } finally {
-            setLoading(false)
+        } finally{
+        setLoading(false)
         }
     }
 
@@ -41,6 +34,11 @@ export default function GroupPermissions(props) {
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
     ]
+
+    const column = [
+        { key: 'id_grupo_perm', label: 'ID' },
+        { key: 'permissao', label: 'Permissão' },
+    ];
 
     return (
         <>
@@ -54,9 +52,13 @@ export default function GroupPermissions(props) {
                 <SearchBar placeholder='Master, professor..' style={{ padding: '15px', }} onChange={setFilterData} />
             </Box>
 
-            <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
-                <Text bold>Não existem permissões cadastradas</Text>
-            </Box>
+            {groupPermissionsList.length > 0 ?
+                <Table_V1 data={groupPermissionsList} columns={column} columnId={'id_grupo_perm'} />
+                :
+                <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
+                    <Text bold>Não foi encontrado permissões.</Text>
+                </Box>
+            }
 
         </>
     )

@@ -9,8 +9,9 @@ import { useAppContext } from "../../context/AppContext"
 import { IconTheme } from "../iconTheme/IconTheme"
 import { getImageByScreen } from "../../validators/api-requests"
 import { DialogUserEdit } from "../userEdit/dialogEditUser"
+import { api } from "../../api/api"
 
-export const LeftMenu = ({ menuItems = [] }) => {
+export const LeftMenu = ({  }) => {
 
    const { logout, user, colorPalette, theme } = useAppContext();
    const name = user?.nome?.split(' ');
@@ -25,8 +26,25 @@ export const LeftMenu = ({ menuItems = [] }) => {
    const [showMenuMobile, setShowMenuMobile] = useState(false)
    const [showChangePassword, setShowChangePassword] = useState(false)
    const [showDialogEditUser, setShowDialogEditUser] = useState(false)
-   const [groupStates, setGroupStates] = useState(menuItems.map(() => false));
+   const [menuItems, setMenuItems] = useState([]);
 
+   useEffect(() => {
+      const handleMenuItems = async () => {
+          try {
+              const response = await api.get(`/menuItems`)
+              const { data } = response
+              if (response.status === 200) {
+                  setMenuItems(data)
+              }
+          } catch (error) {
+              console.log(error)
+              return error
+          }
+      }
+      handleMenuItems()
+  }, [])
+
+  const [groupStates, setGroupStates] = useState(menuItems.map(() => false));
    const handleImages = async () => {
       try {
          const response = await getImageByScreen('Menu Lateral')
@@ -208,7 +226,7 @@ export const LeftMenu = ({ menuItems = [] }) => {
                            }
                         }} >
                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                              <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon})`, width: group.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
                               <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
                                  {group.text}
                               </Text>
@@ -347,7 +365,7 @@ const MenuItem = (props) => {
    return (
       <>
          <Link
-            href={to}
+            href={to || '/#'}
             onClick={onClick}
             style={{ display: 'flex', width: '100%' }}
          >

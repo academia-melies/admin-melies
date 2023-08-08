@@ -3,8 +3,10 @@ import { Box } from '../atoms'
 import { useAppContext } from '../context/AppContext'
 import { ProtectRoute } from '../context/ProtectRoute'
 import { Colors, LeftMenu, UserHeader } from '../organisms'
-import { menuItems } from '../permissions'
+// import { menuItems } from '../permissions'
 import '../styles/Home.module.css'
+import { useEffect, useState } from 'react'
+import { api } from '../api/api'
 
 const PagesRoute = ({ Component, pageProps }) => {
 
@@ -22,7 +24,7 @@ const PagesRoute = ({ Component, pageProps }) => {
             </Head>
             <ProtectRoute>
                 <Box sx={{ ...styles.bodyContainer, backgroundColor: colorPalette.primary }}>
-                    <LeftMenu menuItems={menuItems} />
+                    <LeftMenu />
                     <UserHeader />
                     <Box sx={{ ...styles.contentContainer, backgroundColor: colorPalette.primary, transition: 'background-color 1s' }}>
                         <Component {...pageProps} />
