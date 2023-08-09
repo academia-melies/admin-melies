@@ -666,20 +666,21 @@ export default function EditUser() {
                 }
                 if (userData.perfil === 'aluno') {
                     const responseData = await createEnrollment(data?.userId, enrollmentData);
-
                 }
                 if (fileCallback) {
                     const responseData = await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`);
-
                 }
                 if (officeHours) {
                     const responseData = await api.post(`/officeHours/create/${data?.userId}`, { officeHours })
-
                 }
                 if (newUser && filesUser) {
                     const responseData = await api.patch(`/file/editFiles/${data?.userId}`, { filesUser });
-
                 }
+
+                // if(permissionPerfil){
+                //     const responseData = await api.patch(`/permissionPerfil/create/${id}`, { permissionPerfil })
+                // }
+
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
                     router.push(`/administrative/users/${data?.userId}`)
@@ -728,6 +729,7 @@ export default function EditUser() {
             if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
                 const responseData = await api.patch(`/officeHours/update`, { officeHours })
             }
+
             if (response?.status === 201) {
                 alert.success('Usuário atualizado com sucesso.');
                 handleItems()
@@ -737,10 +739,29 @@ export default function EditUser() {
         } catch (error) {
             console.log(error)
             alert.error('Tivemos um problema ao atualizar usuário.');
+            return error;
         } finally {
             setLoading(false)
         }
 
+    }
+
+    const handleAddPermission = async () => {
+        setLoading(true)
+        try {
+
+            if (permissionPerfil) {
+                // const responseData = await api.post(`/permissionPerfil/create/${id}`, { permissionPerfil })
+                alert.info('Permissões do usuário atualizadas.');
+            }
+
+        } catch (error) {
+            console.log(error)
+            alert.error('Tivemos um problema ao atualizar as permissões.');
+            return error;
+        } finally {
+            setLoading(false)
+        }
     }
 
     const handleChangeFilesUser = (field, fileId, filePreview) => {
@@ -1057,9 +1078,9 @@ export default function EditUser() {
                             <Button small text='permissões' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowPermissions(true)} />
                         </Box>
 
-                        <Backdrop open={showPermissions} sx={{ zIndex: 99999,  }}>
+                        <Backdrop open={showPermissions} sx={{ zIndex: 99999, }}>
 
-                            <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'auto', marginLeft: { md: '180px', lg: '280px' }}}>
+                            <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'auto', marginLeft: { md: '180px', lg: '280px' } }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                                     <Text bold large>Permissões</Text>
                                     <Box sx={{
@@ -1074,7 +1095,7 @@ export default function EditUser() {
                                     }} onClick={() => setShowPermissions(false)} />
                                 </Box>
                                 <ContentContainer style={{ boxShadow: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'start'}}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
                                         <Text bold>Grupo de permissões</Text>
                                         <CheckBoxComponent
                                             boxGroup={groupPermissions}
@@ -1084,6 +1105,19 @@ export default function EditUser() {
                                                 setPermissionPerfil(value)
                                             }}
                                             sx={{ width: 1 }} />
+                                    </Box>
+
+                                    <Box style={{ display: 'flex' }}>
+                                        <Button
+                                            style={{ width: '50%', marginRight: 1 }}
+                                            text='Salvar'
+                                            onClick={() => handleAddPermission()}
+                                        />
+                                        <Button secondary
+                                            style={{ width: '50%', }}
+                                            text='Cancelar'
+                                            onClick={() => setShowPermissions(false)}
+                                        />
                                     </Box>
                                 </ContentContainer>
                             </ContentContainer>
@@ -1602,10 +1636,10 @@ export default function EditUser() {
                 </ContentContainer >
             }
 
-            <Backdrop open={showInterest} sx={{ zIndex: 99999,  }}>
+            <Backdrop open={showInterest} sx={{ zIndex: 99999, }}>
 
                 {showInterest &&
-                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', marginLeft: { md: '180px', lg: '280px' }}}>
+                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', marginLeft: { md: '180px', lg: '280px' } }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                             <Text bold large>Interesses</Text>
                             <Box sx={{
@@ -1806,7 +1840,7 @@ export default function EditUser() {
                 }
             </Backdrop>
 
-            <Backdrop open={showHistoric} sx={{ zIndex: 99999,  }}>
+            <Backdrop open={showHistoric} sx={{ zIndex: 99999, }}>
                 {showHistoric &&
                     <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '280px' }, overflowY: matches && 'auto', }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
@@ -2011,7 +2045,7 @@ export const EditFile = (props) => {
     }
 
     return (
-        <Backdrop open={open} sx={{ zIndex: 99999,  }}>
+        <Backdrop open={open} sx={{ zIndex: 99999, }}>
             <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll', }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
                     <Text bold>{title}</Text>
