@@ -25,6 +25,7 @@ export const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [dataBox, setDataBox] = useState(false)
+    const [userPermissions, setUserPermissions] = useState()
     const matches = useMediaQuery('(min-width: 1080px) and (max-width: 1320px)');
     const [colorPalette, setColorPalette] = useState({
         primary: '',
@@ -61,7 +62,11 @@ export const AppProvider = ({ children }) => {
                     const response = await api.post('/user/loginToken')
                     const { data } = response;
                     const { userData, getPhoto } = data;
-                    if (userData) setUser({ ...userData, getPhoto });
+
+                    if (userData) {
+                        setUser({ ...userData, getPhoto })
+                        setUserPermissions(userData?.permissoes)
+                    }
                     else setUser(null);
                 }
             } catch (error) {
@@ -78,6 +83,7 @@ export const AppProvider = ({ children }) => {
             setLoading(true)
             const response = await api.post('/user/login', { email, senha })
             const { userData } = response.data
+            setUserPermissions(userData?.permissoes)
             if (userData.admin_melies < 1) {
                 return 0
             }
@@ -138,7 +144,8 @@ export const AppProvider = ({ children }) => {
                 theme,
                 setTheme,
                 directoryIcons,
-                matches
+                matches,
+                userPermissions
             }}
         >
             {children}

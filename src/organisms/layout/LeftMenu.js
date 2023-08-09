@@ -11,9 +11,9 @@ import { getImageByScreen } from "../../validators/api-requests"
 import { DialogUserEdit } from "../userEdit/dialogEditUser"
 import { api } from "../../api/api"
 
-export const LeftMenu = ({  }) => {
+export const LeftMenu = ({ }) => {
 
-   const { logout, user, colorPalette, theme } = useAppContext();
+   const { logout, user, colorPalette, theme, userPermissions } = useAppContext();
    const name = user?.nome?.split(' ');
    const firstName = name[0];
    const lastName = name[name.length - 1];
@@ -26,25 +26,27 @@ export const LeftMenu = ({  }) => {
    const [showMenuMobile, setShowMenuMobile] = useState(false)
    const [showChangePassword, setShowChangePassword] = useState(false)
    const [showDialogEditUser, setShowDialogEditUser] = useState(false)
+
    const [menuItems, setMenuItems] = useState([]);
 
    useEffect(() => {
       const handleMenuItems = async () => {
-          try {
-              const response = await api.get(`/menuItems`)
-              const { data } = response
-              if (response.status === 200) {
-                  setMenuItems(data)
-              }
-          } catch (error) {
-              console.log(error)
-              return error
-          }
+         try {
+            const response = await api.get(`/menuItems`)
+            const { data } = response
+            if (response.status === 200) {
+               setMenuItems(data)
+            }
+         } catch (error) {
+            console.log(error)
+            return error
+         }
       }
       handleMenuItems()
-  }, [])
+   }, [])
 
-  const [groupStates, setGroupStates] = useState(menuItems.map(() => false));
+
+   const [groupStates, setGroupStates] = useState(menuItems.map(() => false));
    const handleImages = async () => {
       try {
          const response = await getImageByScreen('Menu Lateral')
@@ -204,87 +206,96 @@ export const LeftMenu = ({  }) => {
                   } */}
                </Box>
                <Box sx={{ ...styles.boxMenu, ...(showMenuMobile && { overflowY: 'auto' }) }}>
-                  {menuItems.map((group, index) =>
-                     <Box key={`${group}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}
-                        onMouseEnter={() => !showMenuMobile && handleGroupMouseEnter(index)}
-                        onMouseLeave={() => !showMenuMobile && handleGroupMouseLeave(index)}
-                        onClick={() => showMenuMobile && handleGroupClick(index)}>
-                        {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
-                        <Box sx={{
-                           display: 'flex',
-                           alignItems: 'center',
-                           justifyContent: 'space-between',
-                           gap: 0.5,
-                           padding: `5px 5px`,
-                           width: '100%',
-                           borderRadius: 2,
-                           opacity: 0.8,
-                           "&:hover": {
-                              opacity: 0.8,
-                              cursor: 'pointer',
-                              backgroundColor: '#f0f0f0' + '22'
-                           }
-                        }} >
-                           <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon})`, width: group.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
-                              <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
-                                 {group.text}
-                              </Text>
-                           </Box>
-                           <Box sx={{
-                              ...styles.menuIcon,
-                              backgroundImage: `url(${icons.gray_arrow_down})`,
-                              transform: showMenuMobile && groupStates[index] ? 'rotate(-0deg)' : 'rotate(-90deg)',
-                              transition: '.3s',
-                              marginLeft: !showMenuMobile && groupStates[index] ? 10 : 0,
-                              width: 17,
-                              height: 17,
-                              "&:hover": {
+                  {menuItems.map((group, index) => {
+                     const visibleItems = group.items.filter(item =>
+                        item.permissoes.some(permission => userPermissions.some(userPerm => userPerm.id_grupo_perm === permission.grupo_perm_id))
+                     );
+                     if (visibleItems.length > 0) {
+                        return (
+                           <Box key={`${group}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}
+                              onMouseEnter={() => !showMenuMobile && handleGroupMouseEnter(index)}
+                              onMouseLeave={() => !showMenuMobile && handleGroupMouseLeave(index)}
+                              onClick={() => showMenuMobile && handleGroupClick(index)}>
+                              {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
+                              <Box sx={{
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 justifyContent: 'space-between',
+                                 gap: 0.5,
+                                 padding: `5px 5px`,
+                                 width: '100%',
+                                 borderRadius: 2,
                                  opacity: 0.8,
-                                 cursor: 'pointer'
-                              }
-                           }} />
-                        </Box>
-                        {!showMenuMobile ?
-                           <Box sx={{
-                              display: 'flex', flexDirection: 'column', position: 'absolute',
-                              marginLeft: { md: 16, lg: 20 }, padding: '8px'
-                           }}>
-                              <Box sx={{ marginLeft: 4, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, backgroundColor: colorPalette.secondary }}>
-                                 {groupStates[index] && (
-                                    group.items.map((item, index) => {
-                                       return (
-                                          <MenuItem
-                                             currentPage={item.to === pathname}
-                                             key={`${index}_${item.to}`}
-                                             to={item.to}
-                                             text={item.text}
-                                             icon={item.icon}
-                                             onClick={() => setShowMenuMobile(false)}
-                                             slug={item.to}
-                                          />)
+                                 "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer',
+                                    backgroundColor: '#f0f0f0' + '22'
+                                 }
+                              }} >
+                                 <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
+                                    <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon})`, width: group.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                                    <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
+                                       {group.text}
+                                    </Text>
+                                 </Box>
+                                 <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(${icons.gray_arrow_down})`,
+                                    transform: showMenuMobile && groupStates[index] ? 'rotate(-0deg)' : 'rotate(-90deg)',
+                                    transition: '.3s',
+                                    marginLeft: !showMenuMobile && groupStates[index] ? 10 : 0,
+                                    width: 17,
+                                    height: 17,
+                                    "&:hover": {
+                                       opacity: 0.8,
+                                       cursor: 'pointer'
                                     }
-                                    ))}
+                                 }} />
                               </Box>
+                              {!showMenuMobile ?
+                                 <Box sx={{
+                                    display: 'flex', flexDirection: 'column', position: 'absolute',
+                                    marginLeft: { md: 16, lg: 20 }, padding: '8px'
+                                 }}>
+                                    <Box sx={{ marginLeft: 4, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, backgroundColor: colorPalette.secondary }}>
+                                       {groupStates[index] && (
+                                          group.items.filter(item =>
+                                             item.permissoes.some(permission => userPermissions.some(userPerm => userPerm.id_grupo_perm === permission.grupo_perm_id)))
+                                             .map((item, index) => {
+                                                return (
+                                                   <MenuItem
+                                                      currentPage={item.to === pathname}
+                                                      key={`${index}_${item.to}`}
+                                                      to={item.to}
+                                                      text={item.text}
+                                                      icon={item.icon}
+                                                      onClick={() => setShowMenuMobile(false)}
+                                                      slug={item.to}
+                                                   />)
+                                             }
+                                             ))}
+                                    </Box>
+                                 </Box>
+                                 : <>
+                                    {groupStates[index] && (
+                                       group.items.map((item, index) => {
+                                          return (
+                                             <MenuItem
+                                                currentPage={item.to === pathname}
+                                                key={`${index}_${item.to}`}
+                                                to={item.to}
+                                                text={item.text}
+                                                icon={item.icon}
+                                                onClick={() => setShowMenuMobile(false)}
+                                                slug={item.to}
+                                             />)
+                                       }))}
+                                 </>
+                              }
                            </Box>
-                           : <>
-                              {groupStates[index] && (
-                                 group.items.map((item, index) => {
-                                    return (
-                                       <MenuItem
-                                          currentPage={item.to === pathname}
-                                          key={`${index}_${item.to}`}
-                                          to={item.to}
-                                          text={item.text}
-                                          icon={item.icon}
-                                          onClick={() => setShowMenuMobile(false)}
-                                          slug={item.to}
-                                       />)
-                                 }))}
-                           </>
-                        }
-                     </Box>
-                  )}
+                        )
+                     }
+                  })}
                </Box>
                <Box sx={{
                   ...styles.icon,
