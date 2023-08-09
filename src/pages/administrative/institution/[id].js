@@ -150,7 +150,7 @@ export default function EditInstitution(props) {
         <>
             <SectionHeader
                 perfil={institutionData?.modalidade_curso}
-                title={institutionData?.nome_curso || `Novo Curso`}
+                title={institutionData?.nome_curso || `Instituição`}
                 saveButton
                 saveButtonAction={newInstitution ? handleCreateInstitution : handleEditInstitution}
                 deleteButton={!newInstitution}
@@ -168,20 +168,20 @@ export default function EditInstitution(props) {
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Mantenedora' name='mantenedora' onChange={handleChange} value={institutionData?.mantenedora || ''} label='Mantenedora' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Mantido' name='mantida' onChange={handleChange} value={institutionData?.mantida || ''} label='Mantido' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Mantida' name='mantida' onChange={handleChange} value={institutionData?.mantida || ''} label='Mantida' sx={{ flex: 1, }} />
                 </Box>
                 <Text bold>Presencial</Text>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Portaria MEC/Credenciamento' name='pt_cred_pres' onChange={handleChange} value={institutionData?.pt_cred_pres || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Portaria de Credenciamento' name='pt_cred_pres' onChange={handleChange} value={institutionData?.pt_cred_pres || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Data' name='dt_cred_pres' onChange={handleChange} value={(institutionData?.dt_cred_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                    <TextInput placeholder='Portaria MEC/Reconhecimento' name='pt_rec_pres' onChange={handleChange} value={institutionData?.pt_rec_pres || ''} label='Portaria MEC/Autorização' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Portaria de Recredenciamento' name='pt_rec_pres' onChange={handleChange} value={institutionData?.pt_rec_pres || ''} label='Portaria de Recredenciamento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Data' name='dt_rec_pres' onChange={handleChange} value={(institutionData?.dt_rec_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
                 <Text bold>EAD</Text>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Portaria MEC/Credenciamento' name='pt_cred_ead' onChange={handleChange} value={institutionData?.pt_cred_ead || ''} label='Portaria MEC/Autorização' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Portaria de Credenciamento' name='pt_rec_ead' onChange={handleChange} value={institutionData?.pt_rec_ead || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Data' name='dt_cred_ead' onChange={handleChange} value={(institutionData?.dt_cred_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                    <TextInput placeholder='Portaria MEC/Reconhecimento' name='pt_rec_ead' onChange={handleChange} value={institutionData?.pt_rec_ead || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Portaria de Recredenciamento' name='pt_cred_ead' onChange={handleChange} value={institutionData?.pt_cred_ead || ''} label='Portaria de Recredenciamento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Data' name='dt_rec_ead' onChange={handleChange} value={(institutionData?.dt_rec_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
                 <RadioItem valueRadio={institutionData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setInstitutionData({ ...institutionData, ativo: parseInt(value) })} />

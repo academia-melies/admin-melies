@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Avatar, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -241,6 +241,17 @@ export default function EditPermissions(props) {
         });
     };
 
+    const selectAllSubmenuPermissions = (subMenus) => {
+
+        subMenus.forEach(menu => {
+            const value = 'leitura, edição'; // Defina as ações selecionadas para todos os itens
+            handleScreenPermissionChange(menu.text, value, menu.id_item);
+        });
+    };
+
+
+
+
     const handleCreate = async () => {
         setLoading(true)
         try {
@@ -340,12 +351,20 @@ export default function EditPermissions(props) {
                                         }
                                     }}
                                     onClick={() => toggleScreens(index)}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5 }}>
-                                        <Box sx={{ ...styles.icon, backgroundImage: `url(${item?.icon})`, width: item.text === 'Administrativo' ? 15 : 18, height: item.text === 'Administrativo' ? 24 : 18, aspectRatio: '1/1', filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
-                                        <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
-                                            {menu}
-                                        </Text>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 5, alignItems: 'center', }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5, alignItems: 'center', }}>
+                                            <Box sx={{ ...styles.icon, backgroundImage: `url(${item?.icon})`, width: item.text === 'Administrativo' ? 15 : 18, height: item.text === 'Administrativo' ? 24 : 18, aspectRatio: '1/1', filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                                            <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s', }}>
+                                                {menu}
+                                            </Text>
+                                        </Box>
+                                        {/* <Button small text="selecionar tudo" sx={{zIndex: 9999}} onClick={(event) => {
+                                           event.preventDefault();
+                                           event.stopPropagation(); 
+                                            selectAllSubmenuPermissions(subMenus)}
+                                            } /> */}
                                     </Box>
+                                    
                                     <Box
                                         sx={{
                                             ...styles.menuIcon,

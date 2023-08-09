@@ -22,7 +22,38 @@ export default function EditUser() {
     const [userData, setUserData] = useState({
         tipo_deficiencia: '',
         autismo: '',
-        superdotacao: ''
+        superdotacao: '',
+        cpf: '',
+        naturalidade: '',
+        nacionalidade: '',
+        estado_civil: '',
+        conjuge: '',
+        email_melies: '',
+        dependente: '',
+        nome_pai: '',
+        nome_mae: '',
+        escolaridade: '',
+        genero: '',
+        cor_raca: '',
+        deficiencia: '',
+        doc_estrangeiro: '',
+        pais_origem: 'Brasil',
+        telefone_emergencia: '',
+        professor: 0,
+        rg: '',
+        expedicao: '2001-01-01',
+        orgao: '',
+        uf_rg: '',
+        titulo: '',
+        zona: '',
+        secao: '',
+        rua: '',
+        cidade: '',
+        uf: '',
+        bairro: '',
+        cep: '',
+        complemento: '',
+        numero: ''
     })
     const [contract, setContract] = useState({})
     const [enrollmentData, setEnrollmentData] = useState({
@@ -38,6 +69,7 @@ export default function EditUser() {
     const [classesInterest, setClassesInterest] = useState([])
     const [groupPermissions, setGroupPermissions] = useState([])
     const [permissionPerfil, setPermissionPerfil] = useState()
+    const [permissionPerfilBefore, setPermissionPerfilBefore] = useState()
     const [fileCallback, setFileCallback] = useState([])
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
@@ -200,6 +232,25 @@ export default function EditUser() {
             setLoading(false)
         }
     }
+
+    const getPermissionUser = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/permissionPerfil/${id}`)
+            const { data } = response
+            if (response.status === 200) {
+                setPermissionPerfil(data)
+                setPermissionPerfilBefore(data)
+                return
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
 
     useEffect(() => {
@@ -370,6 +421,7 @@ export default function EditUser() {
             getPhoto()
             getFileUser()
             getOfficeHours()
+            getPermissionUser()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -582,10 +634,10 @@ export default function EditUser() {
             return false
         }
 
-        if (!userData?.ativo) {
-            alert?.error('O campo banana é obrigatório')
-            return false
-        }
+        // if (!userData?.ativo) {
+        //     alert?.error('O campo banana é obrigatório')
+        //     return false
+        // }
 
         if (!userData?.naturalidade) {
             alert?.error('O campo naturalidade é obrigatório')
@@ -677,9 +729,10 @@ export default function EditUser() {
                     const responseData = await api.patch(`/file/editFiles/${data?.userId}`, { filesUser });
                 }
 
-                // if(permissionPerfil){
-                //     const responseData = await api.patch(`/permissionPerfil/create/${id}`, { permissionPerfil })
-                // }
+                const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
+                if (permissionsToAdd.length > 0) {
+                    const responseData = await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
+                }
 
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
@@ -750,10 +803,22 @@ export default function EditUser() {
         setLoading(true)
         try {
 
-            if (permissionPerfil) {
-                // const responseData = await api.post(`/permissionPerfil/create/${id}`, { permissionPerfil })
-                alert.info('Permissões do usuário atualizadas.');
+            const currentPermissions = permissionPerfil.split(',').map(id => parseInt(id));
+            const previousPermissions = permissionPerfilBefore.split(',').map(id => parseInt(id));
+
+            const permissionsToAdd = currentPermissions.filter(id => !previousPermissions.includes(id));
+            const permissionsToRemove = previousPermissions.filter(id => !currentPermissions.includes(id));
+
+            if (permissionsToAdd.length > 0) {
+                const responseData = await api.post(`/permissionPerfil/create/${id}`, { permissionsToAdd })
             }
+
+            if (permissionsToRemove.length > 0) {
+                const permissionsToRemoveString = permissionsToRemove.join(','); // Converta o array em uma string
+                const responseData = await api.delete(`/permissionPerfil/remove/${id}?permissions=${permissionsToRemoveString}`);
+            }
+
+            alert.info('Permissões do usuário atualizadas.');
 
         } catch (error) {
             console.log(error)
@@ -792,9 +857,9 @@ export default function EditUser() {
     }
 
     const groupPerfil = [
-        { label: 'funcionario', value: 'funcionario' },
-        { label: 'aluno', value: 'aluno' },
-        { label: 'interessado', value: 'interessado' },
+        { label: 'Funcionário', value: 'funcionario' },
+        { label: 'Aluno', value: 'aluno' },
+        { label: 'Interessado', value: 'interessado' },
     ]
 
     const groupCivil = [
@@ -806,6 +871,7 @@ export default function EditUser() {
     ]
 
     const groupEscolaridade = [
+        { label: 'Ensino fundamental (incompleto)', value: 'Ensino fundamental (incompleto)' },
         { label: 'Ensino fundamental', value: 'Ensino fundamental' },
         { label: 'Ensino médio', value: 'Ensino médio' },
         { label: 'Superior (Graduação)', value: 'Superior (Graduação)' },
@@ -912,8 +978,8 @@ export default function EditUser() {
 
     const groupAutism = [
         {
-            label: 'Trasntorno global do desenvolvimento (TGD)/Transtorno do espectro autista (TEA)',
-            value: 'Trasntorno global do desenvolvimento (TGD)/Transtorno do espectro autista (TEA)'
+            label: 'Transtorno global do desenvolvimento (TGD)/Transtorno do espectro autista (TEA)',
+            value: 'Transtorno global do desenvolvimento (TGD)/Transtorno do espectro autista (TEA)'
         },
     ]
 
@@ -944,7 +1010,7 @@ export default function EditUser() {
         <>
             <SectionHeader
                 perfil={userData?.perfil}
-                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionario' || userData.perfil === 'aluno' && 'Aluno' || userData.perfil === 'interessado' && 'Interessado' || 'Usuario'}`}
+                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionário' || userData.perfil === 'aluno' && 'Aluno' || userData.perfil === 'interessado' && 'Interessado' || 'Usuário'}`}
                 saveButton
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
@@ -988,7 +1054,7 @@ export default function EditUser() {
                 <Box sx={{ ...styles.inputSection, whiteSpace: 'nowrap', alignItems: 'end', gap: 4 }}>
                     <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
                         <Box sx={{ ...styles.inputSection }}>
-                            <TextInput placeholder='Nome' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nome Completo' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome Completo *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
                             <TextInput placeholder='Nome Social' name='nome_social' onChange={handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
                             <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail *' sx={{ flex: 1, }} />
                         </Box>
@@ -1074,7 +1140,6 @@ export default function EditUser() {
                     <>
 
                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'start', marginTop: 2, flexDirection: 'column', padding: '0px 0px 20px 12px' }}>
-                            <Text bold small>Adicionar permissões:</Text>
                             <Button small text='permissões' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowPermissions(true)} />
                         </Box>
 
@@ -1111,7 +1176,9 @@ export default function EditUser() {
                                         <Button
                                             style={{ width: '50%', marginRight: 1 }}
                                             text='Salvar'
-                                            onClick={() => handleAddPermission()}
+                                            onClick={() => {
+                                                !newUser ? handleAddPermission() : alert.info('Permissões atualizadas')
+                                            }}
                                         />
                                         <Button secondary
                                             style={{ width: '50%', }}
@@ -1198,7 +1265,7 @@ export default function EditUser() {
                                     />
                                 </FileInput>
                             }
-                            <TextInput placeholder='Naturalidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade *' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Cidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade *' sx={{ flex: 1, }} />
 
                             <SelectList fullWidth data={countries} valueSelection={userData?.pais_origem} onSelect={(value) => setUserData({ ...userData, pais_origem: value })}
                                 title="Pais de origem *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -1215,17 +1282,17 @@ export default function EditUser() {
                         <Box sx={styles.inputSection}>
 
                             <SelectList fullWidth data={groupRacaCor} valueSelection={userData.cor_raca} onSelect={(value) => setUserData({ ...userData, cor_raca: value })}
-                                title="Cor/raça *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                title="Etnia *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
                             <SelectList fullWidth data={groupGender} valueSelection={userData?.genero} onSelect={(value) => setUserData({ ...userData, genero: value })}
-                                title="Genêro *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                title="Gênero *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
                             <SelectList fullWidth data={groupDisability} valueSelection={userData?.deficiencia} onSelect={(value) => setUserData({ ...userData, deficiencia: value })}
-                                title="Deficiência *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                title="Deficiência Física*" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
@@ -1387,7 +1454,7 @@ export default function EditUser() {
                             <TextInput placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão *' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
-                            <TextInput placeholder='Titulo de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Titulo de Eleitor' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
                             <TextInput placeholder='Zona' name='zona' onChange={handleChange} value={userData?.zona || ''} label='Zona' sx={{ flex: 1, }} />
                             <TextInput placeholder='Seção' name='secao' onChange={handleChange} value={userData?.secao || ''} label='Seção' sx={{ flex: 1, }} />
                         </Box>
@@ -1424,7 +1491,7 @@ export default function EditUser() {
                                     <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' sx={{ flex: 1, }} />
                                     <TextInput placeholder='Cartão de Ponto' name='cartao_ponto' onChange={handleChangeContract} value={contract?.cartao_ponto || ''} label='Cartão de Ponto' sx={{ flex: 1, }} />
                                 </Box>
-                                <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} />
+                                {/* <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} /> */}
                                 <Box sx={styles.inputSection}>
                                     <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
                                     <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} onBlur={() => {
@@ -1434,7 +1501,7 @@ export default function EditUser() {
                                 </Box>
                                 <Box sx={styles.inputSection}>
                                     <TextInput placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
-                                    <TextInput placeholder='Serie' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Serie' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Série' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Série' sx={{ flex: 1, }} />
                                     <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
                                 </Box>
                                 <Box sx={styles.inputSection}>
@@ -1459,7 +1526,7 @@ export default function EditUser() {
                                 <ContentContainer style={{ boxShadow: 'none' }}>
                                     <Box sx={{ display: 'flex', gap: 5, flexDirection: 'column' }}>
                                         <Box sx={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                                            <Text bold title>Horario de trabalho</Text>
+                                            <Text bold title>Horário de trabalho</Text>
                                             {officeHours && <Box sx={{ display: 'flex' }}>
                                                 <Button small text='replicar' style={{ padding: '5px 16px 5px 16px' }} onClick={replicateToDaysWork} />
                                             </Box>}

@@ -66,20 +66,20 @@ export default function ListUsers(props) {
     const listUser = [
         { label: 'Todos', value: 'todos' },
         { label: 'Aluno', value: 'aluno' },
-        { label: 'Funcionario', value: 'funcionario' },
+        { label: 'Funcionário', value: 'funcionario' },
         { label: 'Interessado', value: 'interessado' },
     ]
 
     return (
         <>
             <SectionHeader
-                title={`${perfil === 'todos' ? 'Usuarios' : (perfil.charAt(0).toUpperCase() + perfil.slice(1)) } (${usersList.filter(filter)?.length})`}
+                title={`${perfil === 'todos' ? 'Usuários' : (perfil.charAt(0).toUpperCase() + perfil.slice(1)) } (${usersList.filter(filter)?.length})`}
                 newButton
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             {/* <Text bold>Buscar por: </Text> */}
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <SearchBar placeholder='João, Robert, Renato, etc.' style={{ padding: '15px', }} onChange={setFilterData} />
+                <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ padding: '15px', }} onChange={setFilterData} />
                 <Box>
                     <SelectList
                         fullWidth
