@@ -211,22 +211,9 @@ export default function ClassSheduleList(props) {
                                 </Box>
                             </Box>
                             {showClassSchedulesTable[index] && (
-                                <Box sx={{ ...styles.tableContainer, display: 'flex', gap: 2, maxHeight: '500px', overflow: 'auto', borderRadius: '12px' }}>
-                                    {/* <Table_V1
-                                        data={classScheduleData}
-                                        columns={column}
-                                        columnId={'id_aula'}
-                                        columnActive={false}
-                                        tolltip={true}
-                                        sx={{ flex: 1 }}
-                                        onSelect={(value) => {
-                                            setClassScheduleId(value)
-                                            if (value) { setShowClassDay(true) }
-                                        }}
-                                        routerPush={false}
-                                    /> */}
+                                <Box sx={{ ...styles.tableContainer, display: 'flex', maxHeight: '500px', overflow: 'auto', borderRadius: '12px' }}>
                                     {Object.entries(aulasPorDiaSemana).map(([diaSemana, aulas]) => (
-                                        <Box key={diaSemana} sx={{ flex: 1, padding: 2 }}>
+                                        <Box key={diaSemana} sx={{ padding: 2 }}>
                                             <Text bold
                                                 style={{
                                                     textAlign: 'center',
@@ -239,9 +226,10 @@ export default function ClassSheduleList(props) {
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: diaSemana.length > 3 && 1 }}>
                                                 {aulas.map((classData, index) => (
                                                     <ContentContainer fullWidth key={`${index}-${classData}`} sx={{
-                                                        minHeight: '370px',
+                                                        // maxHeight: '370px',
                                                         transition: '0.3s',
-                                                        minWidth: '220px',
+                                                        // maxWidth: '160px',
+                                                        flex: diaSemana.length > 3 && 1,
                                                         "&:hover": {
                                                             opacity: 0.8,
                                                             cursor: 'pointer',
@@ -262,14 +250,14 @@ export default function ClassSheduleList(props) {
                                                             <Text bold small>{classData?.disciplina}</Text>
                                                         </Box>
 
-                                                        <Box sx={styles.containerClass}>
+                                                        {/* <Box sx={styles.containerClass}>
                                                             <Text bold small style={{ color: colorPalette.buttonColor }}>Optativa: </Text>
                                                             <Text bold small>{classData?.optativa || 'não'}</Text>
-                                                        </Box>
-                                                        <Box sx={styles.containerClass}>
+                                                        </Box> */}
+                                                        {/* <Box sx={styles.containerClass}>
                                                             <Text bold small style={{ color: colorPalette.buttonColor }}>Dia da semana: </Text>
                                                             <Text bold small>{classData?.dia_semana}</Text>
-                                                        </Box>
+                                                        </Box> */}
                                                         <Box sx={styles.containerClass}>
                                                             <Text bold small style={{ color: colorPalette.buttonColor }}>Data: </Text>
                                                             <Text bold small>{formatDate(classData?.dt_aula)}</Text>

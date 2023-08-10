@@ -13,56 +13,62 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 
 export default function EditUser() {
-    const { setLoading, alert, colorPalette, user, setUser, matches } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setUser, matches, theme } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
     const newUser = id === 'new';
     const [perfil, setPerfil] = useState('')
+    const [fileCallback, setFileCallback] = useState([])
+    const [bgPhoto, setBgPhoto] = useState({})
     const [userData, setUserData] = useState({
-        tipo_deficiencia: '',
-        autismo: '',
-        superdotacao: '',
-        cpf: '',
-        naturalidade: '',
-        nacionalidade: '',
-        estado_civil: '',
-        conjuge: '',
-        email_melies: '',
-        dependente: '',
-        nome_pai: '',
-        nome_mae: '',
-        escolaridade: '',
-        genero: '',
-        cor_raca: '',
-        deficiencia: '',
-        doc_estrangeiro: '',
+        autista: null,
+        superdotacao: null,
+        cpf: null,
+        naturalidade: null,
+        nacionalidade: null,
+        estado_civil: null,
+        conjuge: null,
+        email_melies: null,
+        nome_pai: null,
+        nome_mae: null,
+        escolaridade: null,
+        genero: null,
+        cor_raca: null,
+        deficiencia: null,
+        doc_estrangeiro: null,
         pais_origem: 'Brasil',
-        telefone_emergencia: '',
+        telefone_emergencia: null,
         professor: 0,
-        rg: '',
+        rg: null,
         expedicao: '2001-01-01',
-        orgao: '',
-        uf_rg: '',
-        titulo: '',
-        zona: '',
-        secao: '',
-        rua: '',
-        cidade: '',
-        uf: '',
-        bairro: '',
-        cep: '',
-        complemento: '',
-        numero: ''
+        orgao: null,
+        uf_rg: null,
+        titulo: null,
+        zona: null,
+        secao: null,
+        rua: null,
+        cidade: null,
+        uf: null,
+        bairro: null,
+        cep: null,
+        complemento: null,
+        numero: null,
+        ativo: 1,
+        admin_melies: 0,
+        login: null,
+        nascimento: null,
+        tipo_deficiencia: null,
+        nome_emergencia: null,
+        foto_perfil_id: bgPhoto?.location || fileCallback?.filePreview || null
     })
     const [contract, setContract] = useState({})
     const [enrollmentData, setEnrollmentData] = useState({
-        status: '',
-        motivo_desistencia: '',
+        status: null,
+        motivo_desistencia: null,
         dt_desistencia: null,
-        certificado_emitido: '',
+        certificado_emitido: null,
     })
-    const [showRegistration, setShowRegistration] = useState(false)
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
@@ -70,7 +76,6 @@ export default function EditUser() {
     const [groupPermissions, setGroupPermissions] = useState([])
     const [permissionPerfil, setPermissionPerfil] = useState()
     const [permissionPerfilBefore, setPermissionPerfilBefore] = useState()
-    const [fileCallback, setFileCallback] = useState([])
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
@@ -78,12 +83,16 @@ export default function EditUser() {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [interests, setInterests] = useState({});
     const [arrayInterests, setArrayInterests] = useState([])
-    const [showInterest, setShowInterest] = useState(false)
-    const [showHistoric, setShowHistoric] = useState(false)
-    const [showAddHistoric, setAddShowHistoric] = useState(false)
-    const [showAddInterest, setAddShowInterest] = useState(false)
-    const [showViewInterest, setShowViewInterest] = useState(false)
-    const [showPermissions, setShowPermissions] = useState(false)
+    const [showSections, setShowSections] = useState({
+        registration: false,
+        interest: false,
+        historic: false,
+        addHistoric: false,
+        addInterest: false,
+        viewInterest: false,
+        permissions: false,
+        accessData: false
+    })
     const [showEditFile, setShowEditFiles] = useState({
         photoProfile: false,
         cpf: false,
@@ -98,17 +107,18 @@ export default function EditUser() {
         responsavel: user?.nome
     });
     const [arrayHistoric, setArrayHistoric] = useState([])
+    const [arrayDependent, setArrayDependent] = useState([])
+    const [dependent, setDependent] = useState({})
     const [valueIdHistoric, setValueIdHistoric] = useState()
     const [valueIdInterst, setValueIdInterst] = useState()
-    const [bgPhoto, setBgPhoto] = useState({})
     const [filesUser, setFilesUser] = useState([])
     const [officeHours, setOfficeHours] = useState([
-        { dia_semana: '2ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
-        { dia_semana: '3ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
-        { dia_semana: '4ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
-        { dia_semana: '5ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
-        { dia_semana: '6ª Feira', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
-        { dia_semana: 'Sábado', ent1: '', sai1: '', ent2: '', sai2: '', ent3: '', sai3: '' },
+        { dia_semana: '2ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
+        { dia_semana: '3ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
+        { dia_semana: '4ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
+        { dia_semana: '5ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
+        { dia_semana: '6ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
+        { dia_semana: 'Sábado', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
     ]);
 
     useEffect(() => {
@@ -127,7 +137,8 @@ export default function EditUser() {
         try {
             const response = await api.get(`/user/${id}`)
             const { data } = response
-            setUserData(data)
+            setUserData(data.response)
+            setArrayDependent(data.dependents)
         } catch (error) {
             console.log(error)
         }
@@ -397,10 +408,10 @@ export default function EditUser() {
                 firstEmail = `${firstName}01@melies.com.br`;
             }
 
-            setUserData((prevValues) => ({
-                ...prevValues,
-                email_melies: firstEmail.toLowerCase(),
-            }))
+            // setUserData((prevValues) => ({
+            //     ...prevValues,
+            //     email_melies: firstEmail.toLowerCase(),
+            // }))
         } catch (error) {
         }
     }
@@ -487,9 +498,29 @@ export default function EditUser() {
         setOfficeHours(newData);
     };
 
+    const handleChangeDependent = (value) => {
+        setDependent((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    };
 
     const addInterest = () => {
-        setArrayInterests((prevArray) => [...prevArray, { [value.target.name]: value.target.value }])
+        if (!interests.curso_id) {
+            alert.error('Por favor, selecione o curso de interesse.')
+            return
+        }
+
+        setArrayInterests((prevArray) => [
+            ...prevArray,
+            {
+                curso_id: interests.curso_id,
+                turma_id: interests.turma_id,
+                periodo_interesse: interests.periodo_interesse,
+                observacao_int: interests.observacao_int || '',
+            }
+        ]);
+
         setInterests({})
     }
 
@@ -540,7 +571,20 @@ export default function EditUser() {
 
 
     const addHistoric = () => {
-        setArrayHistoric((prevArray) => [...prevArray, { [value.target.name]: value.target.value }])
+        if (!historicData?.dt_ocorrencia || !historicData?.responsavel || !historicData?.ocorrencia) {
+            alert.error('Por favor, preencha os campos antes de adicionar.')
+            return
+        }
+
+        setArrayHistoric((prevArray) => [
+            ...prevArray,
+            {
+                dt_ocorrencia: historicData?.dt_ocorrencia,
+                responsavel: historicData?.responsavel,
+                ocorrencia: historicData?.ocorrencia,
+            }
+        ]);
+
         setHistoricData({})
     }
 
@@ -619,89 +663,92 @@ export default function EditUser() {
             return false
         }
 
-        if (userData?.senha !== userData?.confirmar_senha) {
-            alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
-            return false
-        }
+        if (!userData.perfil.includes('interessado')) {
+            if (userData?.senha !== userData?.confirmar_senha) {
+                alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
+                return false
+            }
 
-        if (!userData?.telefone) {
-            alert?.error('O campo telefone é obrigatório')
-            return false
-        }
+            if (!userData?.telefone) {
+                alert?.error('O campo telefone é obrigatório')
+                return false
+            }
 
-        if (!userData?.perfil) {
-            alert?.error('O campo perfil é obrigatório')
-            return false
-        }
+            if (!userData?.perfil) {
+                alert?.error('O campo perfil é obrigatório')
+                return false
+            }
 
-        // if (!userData?.ativo) {
-        //     alert?.error('O campo banana é obrigatório')
-        //     return false
-        // }
+            // if (!userData?.ativo) {
+            //     alert?.error('O campo banana é obrigatório')
+            //     return false
+            // }
 
-        if (!userData?.naturalidade) {
-            alert?.error('O campo naturalidade é obrigatório')
-            return false
-        }
+            if (!userData?.naturalidade) {
+                alert?.error('O campo naturalidade é obrigatório')
+                return false
+            }
 
-        if (!userData?.pais_origem) {
-            alert?.error('O campo País de origem é obrigatório')
-            return false
-        }
+            if (!userData?.pais_origem) {
+                alert?.error('O campo País de origem é obrigatório')
+                return false
+            }
 
-        if (!userData?.nacionalidade) {
-            alert?.error('O campo nacionalidade é obrigatório')
-            return false
-        }
+            if (!userData?.nacionalidade) {
+                alert?.error('O campo nacionalidade é obrigatório')
+                return false
+            }
 
-        if (!userData?.cor_raca) {
-            alert?.error('O campo Cor e raça é obrigatório')
-            return false
-        }
+            if (!userData?.cor_raca) {
+                alert?.error('O campo Cor e raça é obrigatório')
+                return false
+            }
 
-        if (!userData?.genero) {
-            alert?.error('O campo gênero é obrigatório')
-            return false
-        }
+            if (!userData?.genero) {
+                alert?.error('O campo gênero é obrigatório')
+                return false
+            }
 
-        if (!userData?.deficiencia) {
-            alert.error('O campo deficiência é obrigatório')
-            return false
-        }
+            if (!userData?.deficiencia) {
+                alert.error('O campo deficiência é obrigatório')
+                return false
+            }
 
-        if (!userData?.estado_civil) {
-            alert.error('O campo Estado cívil é obrigatório')
-            return false
-        }
+            if (!userData?.estado_civil) {
+                alert.error('O campo Estado cívil é obrigatório')
+                return false
+            }
 
-        if (!userData?.escolaridade) {
-            alert.error('O campo escolaridade é obrigatório')
-            return false
-        }
+            if (!userData?.escolaridade) {
+                alert.error('O campo escolaridade é obrigatório')
+                return false
+            }
 
-        if (!userData?.cep) {
-            alert.error('O campo CEP é obrigatório')
-            return false
-        }
+            if (!userData?.cep) {
+                alert.error('O campo CEP é obrigatório')
+                return false
+            }
 
-        if (!userData?.telefone) {
-            alert.error('O campo numero é obrigatório')
-            return false
-        }
+            if (!userData?.telefone) {
+                alert.error('O campo numero é obrigatório')
+                return false
+            }
 
-        if (!userData?.cidade) {
-            alert.error('O campo cidade é obrigatório')
-            return false
-        }
+            if (!userData?.cidade) {
+                alert.error('O campo cidade é obrigatório')
+                return false
+            }
 
-        if (!userData?.rg) {
-            alert.error('O campo RG é obrigatório')
-            return false
-        }
+            if (!userData?.rg) {
+                alert.error('O campo RG é obrigatório')
+                return false
+            }
 
-        if (!userData?.cpf) {
-            alert.error('O campo CPF é obrigatório')
-            return false
+            if (!userData?.cpf) {
+                alert.error('O campo CPF é obrigatório')
+                return false
+            }
+            return true
         }
 
         return true
@@ -713,30 +760,38 @@ export default function EditUser() {
             try {
                 const response = await createUser(userData, arrayInterests, arrayHistoric, usuario_id);
                 const { data } = response
-                if (userData.perfil === 'funcionario') {
+                if (userData?.perfil?.includes('funcionario')) {
                     const responseData = await createContract(data?.userId, contract)
+
                 }
-                if (userData.perfil === 'aluno') {
+                if (userData?.perfil?.includes('aluno')) {
                     const responseData = await createEnrollment(data?.userId, enrollmentData);
+
                 }
                 if (fileCallback) {
                     const responseData = await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`);
+
                 }
                 if (officeHours) {
                     const responseData = await api.post(`/officeHours/create/${data?.userId}`, { officeHours })
+
                 }
                 if (newUser && filesUser) {
                     const responseData = await api.patch(`/file/editFiles/${data?.userId}`, { filesUser });
+
                 }
 
-                const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
-                if (permissionsToAdd.length > 0) {
-                    const responseData = await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
+                if (permissionPerfil) {
+                    const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
+
+                    if (permissionsToAdd.length > 0) {
+                        const responseData = await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
+                    }
                 }
 
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    router.push(`/administrative/users/${data?.userId}`)
+                    // if (data?.userId) router.push(`/administrative/users/${data?.userId}`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
@@ -853,6 +908,70 @@ export default function EditUser() {
                 sai3: firstWorkingHours.sai3,
             }))
             setOfficeHours(updatedOfficeHours)
+        }
+    }
+
+    const addDependent = () => {
+        setArrayDependent((prevArray) => [...prevArray, { nome_dependente: dependent.nome_dependente }])
+        setDependent({ nome_dependente: '' })
+    }
+
+    const deleteDependent = (index) => {
+
+        if (newUser) {
+            setArrayDependent((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
+
+    const handleAddDependent = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/user/dependent/create/${id}`, { dependent })
+            if (response?.status === 201) {
+                alert.success('Dependente incluido')
+                setDependent({})
+                handleItems()
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleDeleteDependent = async (id_dependente) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/user/dependent/delete/${id_dependente}`)
+            if (response?.status === 200) {
+                alert.success('Dependente removido.');
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a Habilidade selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleEditDependent = async (id_dependente) => {
+        setLoading(true)
+        try {
+            const response = await api.patch(`/user/dependent/update/${id_dependente}`, { dependent })
+            if (response?.status === 201) {
+                alert.success('Dependente Atualizado')
+                setDependent({})
+                handleItems()
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -1010,7 +1129,7 @@ export default function EditUser() {
         <>
             <SectionHeader
                 perfil={userData?.perfil}
-                title={userData?.nome || `Novo ${userData.perfil === 'funcionario' && 'Funcionário' || userData.perfil === 'aluno' && 'Aluno' || userData.perfil === 'interessado' && 'Interessado' || 'Usuário'}`}
+                title={userData?.nome || `Novo ${userData?.perfil === 'funcionario' && 'Funcionário' || userData?.perfil === 'aluno' && 'Aluno' || userData?.perfil === 'interessado' && 'Interessado' || 'Usuário'}`}
                 saveButton
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
@@ -1056,12 +1175,9 @@ export default function EditUser() {
                         <Box sx={{ ...styles.inputSection }}>
                             <TextInput placeholder='Nome Completo' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome Completo *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
                             <TextInput placeholder='Nome Social' name='nome_social' onChange={handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
-                            <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail *' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={{ ...styles.inputSection }}>
-                            <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login *' sx={{ flex: 1, }} />
-                            <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
-                            {/* <TextInput placeholder='Telefone' name='telefone' onChange={handleChange} value={userData?.telefone || ''} label='Telefone *' sx={{ flex: 1, }} /> */}
+                            <TextInput placeholder='E-mail' name='email' onChange={handleChange} value={userData?.email || ''} label='E-mail *' sx={{ flex: 1, }} />
                             <PhoneInputField
                                 label='Telefone *'
                                 name='telefone'
@@ -1096,54 +1212,90 @@ export default function EditUser() {
                     />
                 </Box>
                 <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25, padding: '0px 0px 20px 15px' }}>
-                    {!newUser &&
-                        <>
-                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Text bold small>Lista de interesses:</Text>
-                                <Button small text='interesses' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowInterest(!showInterest)} />
-                            </Box>
 
-                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Text bold small>Observações do {userData.perfil}:</Text>
-                                <Button small text='observação' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowHistoric(!showHistoric)} />
-                            </Box>
-                        </>
+                    {userData?.perfil?.includes('interessado') &&
+                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                            <Text bold small>Lista de interesses:</Text>
+                            <Button small text='interesses' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, interest: true })} />
+                        </Box>}
+                    {!newUser &&
+                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                            <Text bold small>Observações do {userData.perfil}:</Text>
+                            <Button small text='observação' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, historic: true })} />
+                        </Box>
                     }
+
                 </Box>
-                {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
+                {/* {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
                     <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
                     <TextInput placeholder='Confirmar senha' name='confirmar_senha' onChange={handleChange} value={userData?.confirmar_senha || ''} type="password" label='Confirmar senha' sx={{ flex: 1, }} />
-                </Box>}
+                </Box>} */}
 
                 <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, ativo: parseInt(value), admin_melies: value < 1 ? parseInt(value) : userData?.admin_melies })} />
-                <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />
+                {/* <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} /> */}
+            </ContentContainer>
+
+
+            <ContentContainer style={{ ...styles.containerRegister, padding: showSections.accessData ? '40px' : '25px' }}>
+                <Box sx={{
+                    display: 'flex', alignItems: 'center', gap: 1, padding: showSections.accessData ? '0px 0px 20px 0px' : '0px', "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                    },
+                    justifyContent: 'space-between'
+                }} onClick={() => setShowSections({ ...showSections, accessData: !showSections.accessData })}>
+                    <Text title bold >Dados de acesso</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        transform: showSections.accessData ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: '.3s',
+                    }} />
+                </Box>
+                {showSections.accessData &&
+                    <>
+                        <Box sx={{ ...styles.inputSection, whiteSpace: 'nowrap', alignItems: 'end', gap: 4 }}>
+                            <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
+                                <Box sx={{ ...styles.inputSection }}>
+                                    <TextInput placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login *' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
+                                </Box>
+                            </Box>
+                        </Box>
+                        {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
+                            <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Confirmar senha' name='confirmar_senha' onChange={handleChange} value={userData?.confirmar_senha || ''} type="password" label='Confirmar senha' sx={{ flex: 1, }} />
+                        </Box>}
+                        <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />
+                    </>}
             </ContentContainer>
 
 
             {/* dados_pessoais */}
-            <ContentContainer style={{ ...styles.containerRegister, padding: showRegistration ? '40px' : '25px' }}>
+            <ContentContainer style={{ ...styles.containerRegister, padding: showSections.registration ? '40px' : '25px' }}>
                 <Box sx={{
-                    display: 'flex', alignItems: 'center', gap: 1, padding: showRegistration ? '0px 0px 20px 0px' : '0px', "&:hover": {
+                    display: 'flex', alignItems: 'center', gap: 1, padding: showSections.registration ? '0px 0px 20px 0px' : '0px', "&:hover": {
                         opacity: 0.8,
                         cursor: 'pointer'
-                    }
-                }} onClick={() => setShowRegistration(!showRegistration)}>
+                    },
+                    justifyContent: 'space-between'
+                }} onClick={() => setShowSections({ ...showSections, registration: !showSections.registration })}>
                     <Text title bold >Cadastro Completo</Text>
                     <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: `url(${icons.gray_arrow_down})`,
-                        transform: showRegistration ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transform: showSections.registration ? 'rotate(0deg)' : 'rotate(-90deg)',
                         transition: '.3s',
                     }} />
                 </Box>
-                {showRegistration &&
+                {showSections.registration &&
                     <>
 
                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'start', marginTop: 2, flexDirection: 'column', padding: '0px 0px 20px 12px' }}>
-                            <Button small text='permissões' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowPermissions(true)} />
+                            <Button small text='permissões' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, permissions: true })} />
                         </Box>
 
-                        <Backdrop open={showPermissions} sx={{ zIndex: 99999, }}>
+                        <Backdrop open={showSections.permissions} sx={{ zIndex: 99999, }}>
 
                             <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'auto', marginLeft: { md: '180px', lg: '280px' } }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
@@ -1157,7 +1309,7 @@ export default function EditUser() {
                                             opacity: 0.8,
                                             cursor: 'pointer'
                                         }
-                                    }} onClick={() => setShowPermissions(false)} />
+                                    }} onClick={() => setShowSections({ ...showSections, permissions: false })} />
                                 </Box>
                                 <ContentContainer style={{ boxShadow: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
@@ -1183,7 +1335,7 @@ export default function EditUser() {
                                         <Button secondary
                                             style={{ width: '50%', }}
                                             text='Cancelar'
-                                            onClick={() => setShowPermissions(false)}
+                                            onClick={() => setShowSections({ ...showSections, permissions: false })}
                                         />
                                     </Box>
                                 </ContentContainer>
@@ -1267,11 +1419,11 @@ export default function EditUser() {
                             }
                             <TextInput placeholder='Cidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade *' sx={{ flex: 1, }} />
 
-                            <SelectList fullWidth data={countries} valueSelection={userData?.pais_origem} onSelect={(value) => setUserData({ ...userData, pais_origem: value })}
+                            <SelectList fullWidth data={countries} valueSelection={userData?.pais_origem || ''} onSelect={(value) => setUserData({ ...userData, pais_origem: value })}
                                 title="Pais de origem *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
-                            <SelectList fullWidth data={groupNationality} valueSelection={userData?.nacionalidade} onSelect={(value) => setUserData({ ...userData, nacionalidade: value })}
+                            <SelectList fullWidth data={groupNationality} valueSelection={userData?.nacionalidade || ''} onSelect={(value) => setUserData({ ...userData, nacionalidade: value })}
                                 title="Nacionalidade *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
@@ -1345,20 +1497,92 @@ export default function EditUser() {
 
                         {/* <TextInput placeholder='Estado Cívil' name='estado_civil' onChange={handleChange} value={userData?.estado_civil || ''} label='Estado Cívil' /> */}
                         <TextInput placeholder='E-mail Méliès' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail Méliès' />
-                        <TextInput placeholder='Dependente' name='dependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} />
+                        {/* <TextInput placeholder='Dependente' name='dependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} /> */}
+
+
+                        <Box sx={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Text bold style={{ padding: '0px 0px 0px 10px' }}>Dependentes</Text>
+                            {arrayDependent.map((dep, index) => (
+                                <>
+
+                                    <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                        <TextInput placeholder='Nome' name={`nome_dependente-${index}`} onChange={handleChangeDependent} value={dep.nome_dependente} sx={{ flex: 1 }} />
+
+                                        <Box sx={{
+                                            backgroundSize: 'cover',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center',
+                                            width: 25,
+                                            height: 25,
+                                            backgroundImage: `url(/icons/remove_icon.png)`,
+                                            transition: '.3s',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => {
+                                            newUser ? deleteDependent(index) : handleDeleteDependent(dep?.id_dependente)
+                                        }} />
+                                        {/* <Box sx={{
+                                            backgroundSize: 'cover',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center',
+                                            width: 25,
+                                            height: 25,
+                                            backgroundImage: `url(/icons/edit_icon.png)`,
+                                            transition: '.3s',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => {
+                                            !newUser && dependent && handleEditDependent(dep?.id_dependente)
+                                        }} /> */}
+                                    </Box>
+                                </>
+                            ))}
+                            <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                <TextInput placeholder='Nome' name={`nome_dependente`} onChange={handleChangeDependent} value={dependent.nome_dependente} sx={{ flex: 1 }} />
+                                <Box sx={{
+                                    backgroundSize: 'cover',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                    width: 25,
+                                    height: 25,
+                                    borderRadius: '50%',
+                                    backgroundImage: `url(/icons/include_icon.png)`,
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => {
+                                    newUser ? addDependent() : handleAddDependent()
+                                }} />
+                            </Box>
+                        </Box>
+
+
                         <Box sx={styles.inputSection}>
                             {userData?.estado_civil === 'Casado' && <TextInput placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
                             <TextInput placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' sx={{ flex: 1, }} />
                             <TextInput placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe *' sx={{ flex: 1, }} />
-                            <PhoneInputField
-                                label='Telefone de emergência'
-                                placeholder='(11) 91234-6789'
-                                name='telefone_emergencia'
-                                onChange={(phone) => setUserData({ ...userData, telefone_emergencia: phone })}
-                                value={userData?.telefone_emergencia}
-                                sx={{ flex: 1, }}
-                            />
+
                         </Box>
+                        <ContentContainer>
+                            <Text large bold >Contato de Emergência</Text>
+                            <Box sx={styles.inputSection}>
+                                <TextInput placeholder='Nome' name='nome_emergencia' onChange={handleChange} value={userData?.nome_emergencia || ''} label='Nome' sx={{ flex: 1, }} />
+                                <PhoneInputField
+                                    label='Telefone de emergência'
+                                    placeholder='(11) 91234-6789'
+                                    name='telefone_emergencia'
+                                    onChange={(phone) => setUserData({ ...userData, telefone_emergencia: phone })}
+                                    value={userData?.telefone_emergencia}
+                                    sx={{ flex: 1, }}
+                                />
+                            </Box>
+                        </ContentContainer>
                         <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, schoolRecord: value })} style={{ alignItems: 'center' }}>
                             <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, escolaridade: value })} />
                             <EditFile
@@ -1471,7 +1695,8 @@ export default function EditUser() {
                             display: 'flex', alignItems: 'center', padding: showContract ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
                                 opacity: 0.8,
                                 cursor: 'pointer'
-                            }
+                            },
+                            justifyContent: 'space-between'
                         }} onClick={() => setShowContract(!showContract)}>
                             <Text title bold >Contrato</Text>
                             <Box sx={{
@@ -1547,7 +1772,8 @@ export default function EditUser() {
                         display: 'flex', alignItems: 'center', padding: showEnrollment ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
                             opacity: 0.8,
                             cursor: 'pointer'
-                        }
+                        },
+                        justifyContent: 'space-between'
                     }} onClick={() => setShowEnrollment(!showEnrollment)}>
                         <Text title bold >Matrícula</Text>
                         <Box sx={{
@@ -1703,11 +1929,16 @@ export default function EditUser() {
                 </ContentContainer >
             }
 
-            <Backdrop open={showInterest} sx={{ zIndex: 99999, }}>
+            <Backdrop open={showSections.interest} sx={{ zIndex: 999 }}>
 
-                {showInterest &&
-                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', marginLeft: { md: '180px', lg: '280px' } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                {showSections.interest &&
+                    <ContentContainer style={{
+                        maxWidth: { md: '800px', lg: '1980px' },
+                        maxHeight: { md: '180px', lg: '1280px' },
+                        overflowY: matches && 'auto',
+                        marginLeft: { md: '180px', lg: '280px' }
+                    }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Text bold large>Interesses</Text>
                             <Box sx={{
                                 ...styles.menuIcon,
@@ -1719,9 +1950,9 @@ export default function EditUser() {
                                     opacity: 0.8,
                                     cursor: 'pointer'
                                 }
-                            }} onClick={() => setShowInterest(!showInterest)} />
+                            }} onClick={() => setShowSections({ ...showSections, interest: false })} />
                         </Box>
-                        <ContentContainer style={{ boxShadow: 'none', zIndex: 999999, overflowY: matches && 'auto', }}>
+                        <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
                             <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px', zIndex: 999999999 }}>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Curso</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Turma</Text>
@@ -1734,18 +1965,18 @@ export default function EditUser() {
 
                                     <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                         <SelectList fullWidth data={courses} valueSelection={interest?.curso_id}
-                                            title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                            title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             clean={false}
                                         />
                                         <SelectList data={classesInterest} valueSelection={interest?.turma_id}
-                                            title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                            title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             clean={false}
                                         />
                                         <SelectList data={grouperiod} valueSelection={interest?.periodo_interesse}
-                                            title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999, }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                            title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             clean={false}
                                         />
                                         <TextInput
@@ -1763,7 +1994,8 @@ export default function EditUser() {
                                             width: 25,
                                             height: 25,
                                             backdropFilter: 'inherit',
-                                            backgroundImage: `url(${icons.search})`,
+                                            backgroundImage: `url(${icons.edit})`,
+                                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                                             transition: '.3s',
                                             zIndex: 999999999,
                                             "&:hover": {
@@ -1772,7 +2004,7 @@ export default function EditUser() {
                                             }
                                         }} onClick={() => {
                                             setValueIdInterst(interest.id_interesse)
-                                            setShowViewInterest(true)
+                                            setShowSections({ ...showSections, viewInterest: true })
                                         }} />
                                         {newUser &&
                                             <Box sx={{
@@ -1796,13 +2028,17 @@ export default function EditUser() {
                                 </>
                             ))}
 
-                            {!showAddInterest && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setAddShowInterest(!showAddInterest)} />
+                            {!showSections.addInterest && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, addInterest: true })} />
+                                <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
+                                    alert.info('Lista de Interesses salva.')
+                                    setShowSections({ ...showSections, interest: false })
+                                }} />
                             </Box>}
 
-                            {showAddInterest &&
+                            {showSections.addInterest &&
                                 <ContentContainer style={{ overflowY: matches && 'auto' }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <Text bold style={{ padding: '5px 0px 8px 0px' }}>Novo Interesse</Text>
                                         <Box sx={{
                                             ...styles.menuIcon,
@@ -1815,7 +2051,7 @@ export default function EditUser() {
                                                 opacity: 0.8,
                                                 cursor: 'pointer'
                                             }
-                                        }} onClick={() => setAddShowInterest(false)} />
+                                        }} onClick={() => setShowSections({ ...showSections, addInterest: false })} />
                                     </Box>
                                     <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                         <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => setInterests({ ...interests, curso_id: value })}
@@ -1844,14 +2080,14 @@ export default function EditUser() {
                                     />
                                     <Button small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
                                         newUser ? addInterest() : handleAddInterest()
-                                        setAddShowInterest(false)
+                                        setShowSections({ ...showSections, addInterest: false })
                                     }} />
                                 </ContentContainer>
                             }
 
-                            {showViewInterest &&
+                            {showSections.viewInterest &&
                                 <ContentContainer style={{ overflowY: matches && 'auto' }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <Text bold style={{ padding: '5px 0px 8px 0px' }}>Interesse</Text>
                                         <Box sx={{
                                             ...styles.menuIcon,
@@ -1864,25 +2100,25 @@ export default function EditUser() {
                                                 opacity: 0.8,
                                                 cursor: 'pointer'
                                             }
-                                        }} onClick={() => setShowViewInterest(false)} />
+                                        }} onClick={() => setShowSections({ ...showSections, viewInterest: false })} />
                                     </Box>
                                     {arrayInterests.filter((item) => item.id_interesse === valueIdInterst).map((interest, index) => (
                                         <>
 
                                             <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                                 <SelectList fullWidth data={courses} valueSelection={interest?.curso_id}
-                                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                     clean={false}
                                                 />
                                                 <SelectList data={classesInterest} valueSelection={interest?.turma_id}
-                                                    title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999 }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                                    title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                     clean={false}
                                                 />
                                                 <SelectList data={grouperiod} valueSelection={interest?.periodo_interesse}
-                                                    title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, zIndex: 9999, }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', zIndex: 9999999999 }}
+                                                    title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                     clean={false}
                                                 />
                                             </Box>
@@ -1897,7 +2133,7 @@ export default function EditUser() {
                                             />
                                             <Button small secondary text='excluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
                                                 handleDeleteInterest(interest?.id_interesse)
-                                                setShowViewInterest(false)
+                                                setShowSections({ ...showSections, viewInterest: false })
                                             }} />
                                         </>
                                     ))}
@@ -1907,8 +2143,8 @@ export default function EditUser() {
                 }
             </Backdrop>
 
-            <Backdrop open={showHistoric} sx={{ zIndex: 99999, }}>
-                {showHistoric &&
+            <Backdrop open={showSections.historic} sx={{ zIndex: 99999, }}>
+                {showSections.historic &&
                     <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '280px' }, overflowY: matches && 'auto', }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                             <Text bold large>Observações</Text>
@@ -1921,7 +2157,7 @@ export default function EditUser() {
                                     opacity: 0.8,
                                     cursor: 'pointer'
                                 }
-                            }} onClick={() => setShowHistoric(!showHistoric)} />
+                            }} onClick={() => setShowSections({ ...showSections, historic: false })} />
                         </Box>
                         <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
                             <Table_V1 columns={columnHistoric}
@@ -1932,11 +2168,11 @@ export default function EditUser() {
                                 routerPush={false}
                             />
 
-                            {!showAddHistoric && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setAddShowHistoric(!showAddHistoric)} />
+                            {!showSections.addHistoric && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, addHistoric: true })} />
                             </Box>}
 
-                            {showAddHistoric &&
+                            {showSections.addHistoric &&
                                 <>
                                     <ContentContainer style={{ overflowY: matches && 'auto', }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
@@ -1952,7 +2188,7 @@ export default function EditUser() {
                                                     opacity: 0.8,
                                                     cursor: 'pointer'
                                                 }
-                                            }} onClick={() => setAddShowHistoric(false)} />
+                                            }} onClick={() => setShowSections({ ...showSections, addHistoric: false })} />
                                         </Box>
                                         <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                             <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historicData?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
@@ -1972,7 +2208,7 @@ export default function EditUser() {
 
                                         <Button small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
                                             newUser ? addHistoric() : handleAddHistoric()
-                                            setAddShowHistoric(!showAddHistoric)
+                                            setShowSections({ ...showSections, addHistoric: false })
                                         }} />
                                     </ContentContainer>
                                 </>}
