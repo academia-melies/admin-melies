@@ -46,7 +46,7 @@ export const PhoneInputField = (props) => {
                 left: 12,
                 backgroundColor: 'inherit',
                 top: -8,
-                zIndex: 9999
+                zIndex: 999
             }}>{label}</Text>
 
             <PhoneInput
