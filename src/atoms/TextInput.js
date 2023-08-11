@@ -21,15 +21,16 @@ export const TextInput = (props) => {
                color: colorPalette.textColor,
                backgroundColor: colorPalette.inputColor,
                ...InputProps?.style,
+               maxHeight: '45px',
             },
          }}
          InputLabelProps={
             props.type === "date"
                ? {
-                  shrink: true, // Faz com que o rótulo encolha como se estivesse focado
+                  shrink: true,
                   style: {
                      color: colorPalette.textColor,
-                     fontSize: { xs: '14px', xm: '15px', md: '15px', lg: '15px' },
+                     fontSize: { xs: '13px', xm: '14px', md: '14px', lg: '14px' },
                      fontFamily: 'MetropolisBold',
                      zIndex: 999
                   },
@@ -38,10 +39,10 @@ export const TextInput = (props) => {
                   sx: {
                      color: colorPalette.textColor,
                      fontSize: {
-                        xs: '14px',
-                        xm: '15px',
-                        md: '15px',
-                        lg: '15px'
+                        xs: '16px',
+                        xm: '14px',
+                        md: '14px',
+                        lg: '14px'
                      },
                      fontFamily: 'MetropolisBold',
                      zIndex: 999,
@@ -56,7 +57,7 @@ export const TextInput = (props) => {
 const styles = {
    date: {
       // display: 'none',
-      display: 'block', // Exibe o rótulo como um elemento de bloco
+      display: 'block', 
       fontSize: { xs: '14px', xm: '15px', md: '15px', lg: '15px' },
       fontFamily: 'MetropolisBold',
    }

@@ -16,7 +16,7 @@ export const SearchBar = (props) => {
             <input
             label = 'maça'
                placeholder={placeholder}
-               style={{ ...styles.searchBar, ...style, ...sx, }}
+               style={{ ...styles.searchBar, ...style, ...sx, height: '40px'}}
                onChange={({ target }) => setTimeout(() => onChange(target.value), 10)}
             />
          </Box>
@@ -81,7 +81,7 @@ const styles = {
       overflow: 'hidden',
       gap: 2,
       padding: `0px 1px`,
-      minHeight: 56,
+      height: '45px'
    },
    searchBar: {
       border: 'none',

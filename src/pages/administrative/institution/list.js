@@ -69,8 +69,8 @@ export default function ListInstitution(props) {
                     onSelect={(value) => setFilterAtive(value)}
                     title="status"
                     filterOpition="value"
-                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, flex: 1 }}
-                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, }}
+                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px',  }}
                     clean={false}
                 />
             </Box>
