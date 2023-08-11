@@ -76,6 +76,7 @@ export const PhoneInputField = (props) => {
                     borderRadius: '8px',
                     fontFamily: 'MetropolisRegular',
                     backgroundColor: colorPalette.inputColor,
+                    height: '45px',
                 }}
             />
         </Box >

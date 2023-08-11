@@ -99,7 +99,7 @@ export default function ListUsers(props) {
                     onSelect={(value) => setFilterAtive(value)}
                     title="status"
                     filterOpition="value"
-                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, flex: 1 }}
+                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor}}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                     clean={false}
                 />

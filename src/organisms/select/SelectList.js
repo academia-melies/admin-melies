@@ -23,15 +23,15 @@ export const SelectList = (props) => {
 
 
     return (
-        <Box sx={{ minWidth: minWidth, flex: fullWidth && 1 }}>
+        <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px", }}>
             <FormControl fullWidth>
                 <InputLabel sx={{ ...inputStyle }}>{title}</InputLabel>
                 <Select
-                    sx={{ borderRadius: "8px", backgroundColor: colorPalette.inputColor, ...sx }}
+                    sx={{ borderRadius: "8px", backgroundColor: colorPalette.inputColor, height: 45, color: colorPalette.textColor, ...sx, maxHeight: 45 }}
                     value={valueSelection}
                     label={title}
                     onChange={(event) => onSelect(event.target.value)}
-                    endAdornment={clean ? 
+                    endAdornment={clean ?
                         <InputAdornment position="end">
                             {valueSelection && (
                                 <Box
