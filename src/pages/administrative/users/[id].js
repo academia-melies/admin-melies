@@ -7,13 +7,13 @@ import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField, FileIn
 import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, TableOfficeHours, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
-import { createContract, createEnrollment, createUser, deleteFile, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
+import { createContract, createEnrollment, createUser, deleteFile, deleteUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
 import { emailValidator, formatCEP, formatCPF, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 
 export default function EditUser() {
-    const { setLoading, alert, colorPalette, user, setUser, matches, theme } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setUser, matches, theme, setShowConfirmationDialog } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -791,7 +791,7 @@ export default function EditUser() {
 
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    // if (data?.userId) router.push(`/administrative/users/${data?.userId}`)
+                    if (data?.userId) router.push(`/administrative/users/${data?.userId}`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
@@ -807,11 +807,10 @@ export default function EditUser() {
         setLoading(true)
         try {
             const response = await deleteUser(id)
-            if (response?.status == 201) {
+            if (response?.status == 200) {
                 alert.success('Usuário excluído com sucesso.');
-                router.push(`/administrative/users`)
+                router.push(`/administrative/users/list`)
             }
-
         } catch (error) {
             alert.error('Tivemos um problema ao excluir usuário.');
             console.log(error)
@@ -1133,7 +1132,8 @@ export default function EditUser() {
                 saveButton
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
-                deleteButtonAction={() => handleDeleteUser()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteUser })}
+
             />
 
             {/* usuario */}
