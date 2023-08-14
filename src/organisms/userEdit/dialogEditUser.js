@@ -243,7 +243,7 @@ export const DialogUserEdit = (props) => {
                <Box style={{ display: 'flex' }}>
                   <Button
                      style={{ width: '50%', marginRight: 1 }}
-                     text='Alterar senha'
+                     text='Salvar'
                      onClick={handleChangeUserData}
                   />
                   <Button secondary

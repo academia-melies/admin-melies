@@ -212,7 +212,7 @@ export default function ClassSheduleList(props) {
                             {showClassSchedulesTable[index] && (
                                 <Box sx={{ ...styles.tableContainer, display: 'flex', maxHeight: '500px', overflow: 'auto', borderRadius: '12px' }}>
                                     {Object.entries(aulasPorDiaSemana).map(([diaSemana, aulas]) => (
-                                        <Box key={diaSemana} sx={{ padding: 2 }}>
+                                        <Box key={diaSemana} sx={{ padding: 2, flex: diaSemana.length > 3 && 1 }}>
                                             <Text bold
                                                 style={{
                                                     textAlign: 'center',
@@ -222,13 +222,13 @@ export default function ClassSheduleList(props) {
                                                 }}>
                                                 {diaSemana}
                                             </Text>
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: diaSemana.length > 3 && 1 }}>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: diaSemana.length > 2 && 1 }}>
                                                 {aulas.map((classData, index) => (
                                                     <ContentContainer fullWidth key={`${index}-${classData}`} sx={{
                                                         // maxHeight: '370px',
                                                         transition: '0.3s',
                                                         // maxWidth: '160px',
-                                                        flex: diaSemana.length > 3 && 1,
+                                                        flex: diaSemana.length > 2 && 1,
                                                         "&:hover": {
                                                             opacity: 0.8,
                                                             cursor: 'pointer',
@@ -241,8 +241,12 @@ export default function ClassSheduleList(props) {
                                                         }}
                                                     >
                                                         <Box sx={styles.containerClass}>
-                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Professor: </Text>
-                                                            <Text bold small>{classData?.professor}</Text>
+                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Professor 1: </Text>
+                                                            <Text bold small>{classData?.professor1}</Text>
+                                                        </Box>
+                                                        <Box sx={styles.containerClass}>
+                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Professor 2: </Text>
+                                                            <Text bold small>{classData?.professor2}</Text>
                                                         </Box>
                                                         <Box sx={styles.containerClass}>
                                                             <Text bold small style={{ color: colorPalette.buttonColor }}>Disciplina: </Text>
@@ -299,16 +303,21 @@ export default function ClassSheduleList(props) {
                             <ContentContainer>
                                 <Text bold title={true} style={{ color: colorPalette.buttonColor }}>aula - {classDaySelect?.dia_semana}</Text>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.disciplina_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, disciplina_id: value })}
+                                        title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
                                     <Box sx={styles.inputSection}>
-                                        <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.disciplina_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, disciplina_id: value })}
-                                            title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
+                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor1} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor: value })}
+                                            title="Professor 1" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor: value })}
-                                            title="Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor2} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor: value })}
+                                            title="Professor 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
                                     </Box>
+
                                     <Box sx={styles.inputSection}>
                                         <TextInput
                                             fullWidth
@@ -351,12 +360,12 @@ export default function ClassSheduleList(props) {
                                         maxRows={2}
                                         rows={2}
                                     />
-                                    <CheckBoxComponent
+                                    {/* <CheckBoxComponent
                                         boxGroup={groupOptative}
                                         valueChecked={classDaySelect?.optativa || ''}
                                         horizontal={mobile ? false : true}
                                         onSelect={(value) => setClassDaySelect({ ...classDaySelect, optativa: value })}
-                                        sx={{ width: 1 }} />
+                                        sx={{ width: 1 }} /> */}
                                 </Box>
                             </ContentContainer>
                             <Box>

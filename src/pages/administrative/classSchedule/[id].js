@@ -274,13 +274,6 @@ export default function EditClassSchedule(props) {
 
     const diasDaSemanaOrdenados = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
-    const groupOptative = [
-        {
-            label: 'Optativa',
-            value: 'Optativa'
-        },
-    ]
-
     return (
         <>
             <SectionHeader
@@ -364,20 +357,10 @@ export default function EditClassSchedule(props) {
                                             title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        {/* <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.optativa} onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
-                                        title="Optativa" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    /> */}
                                         <SelectList fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
                                             title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <CheckBoxComponent
-                                            boxGroup={groupOptative}
-                                            valueChecked={classDays[dayWeek]?.optativa}
-                                            horizontal={mobile ? false : true}
-                                            onSelect={(value) => handleDayDataChange(dayWeek, 'optativa', value)}
-                                            sx={{ width: 1 }} />
                                     </Box>
                                 </ContentContainer>
                             ) : null
