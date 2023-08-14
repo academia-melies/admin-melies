@@ -1,7 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, ContentContainer, Text } from "../../../atoms"
-import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
 import { CustomDropzone, SearchBar, SectionHeader } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"

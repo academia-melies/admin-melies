@@ -20,7 +20,6 @@ export default function EditClassSchedule(props) {
     const [disciplines, setDisciplines] = useState([])
     const [professors, setProfessors] = useState([])
     const [titleSchedule, setTitleSchedule] = useState('')
-
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 

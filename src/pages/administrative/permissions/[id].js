@@ -1,112 +1,11 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Avatar, useMediaQuery, useTheme } from "@mui/material"
+import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
-import { SelectList } from "../../../organisms/select/SelectList"
-import { formatCNPJ } from "../../../helpers"
 import { icons } from "../../../organisms/layout/Colors"
-
-const permissions = [
-    {
-        text: 'Administrativo',
-        icon: 'https://mf-planejados.s3.amazonaws.com/icon_adm_dark.svg',
-        items: [
-            {
-                to: '/administrative/institution/list',
-                text: 'Instituição',
-            },
-            {
-                to: '/administrative/users/list',
-                text: 'Usuários',
-            },
-        ]
-    },
-    {
-        text: 'Acadêmico',
-        icon: 'https://mf-planejados.s3.amazonaws.com/Icon_academico.svg',
-        items: [
-            {
-                to: '/#',
-                text: 'Nota',
-            },
-            {
-                to: '/#',
-                text: 'Frequência',
-            },
-        ]
-    },
-    {
-        text: 'Biblioteca',
-        icon: 'https://mf-planejados.s3.amazonaws.com/Icon_biblioteca.svg',
-        items: [
-            {
-                to: '/#',
-                text: 'Cadastro',
-
-            },
-            {
-                to: '/#',
-                text: 'Empréstimo',
-            },
-        ]
-    },
-    {
-        text: 'Financeiro',
-        icon: 'https://mf-planejados.s3.amazonaws.com/Icon_financeiro.svg',
-        items: [
-            {
-                to: '/#',
-                text: 'Contas',
-
-            },
-            {
-                to: '/#',
-                text: 'Valores',
-            },
-            {
-                to: '/#',
-                text: 'Relatórios',
-            },
-        ]
-    },
-    {
-        text: 'Marketing',
-        icon: 'https://mf-planejados.s3.amazonaws.com/Icon_mkt.svg',
-        to: '/#',
-        items: [
-            {
-                to: '/#',
-                text: 'Contato',
-            },
-            {
-                to: '/#',
-                text: 'Pesquisa',
-            },
-            {
-                to: '/marketing/imageManagement/images',
-                text: 'Imagens',
-            },
-        ]
-    },
-    {
-        text: 'Suporte',
-        icon: 'https://mf-planejados.s3.amazonaws.com/Icon_suporte.svg',
-        to: '/#',
-        items: [
-            {
-                to: '/#',
-                text: 'Solicitações',
-            },
-            {
-                to: '/#',
-                text: 'Patrimônio',
-            },
-        ]
-    },
-]
 
 export default function EditPermissions(props) {
     const { setLoading, alert, colorPalette, theme, user } = useAppContext()
@@ -117,7 +16,6 @@ export default function EditPermissions(props) {
     const [permissionGroup, setPermissionGroup] = useState({
         permissoes: []
     })
-    const [actionPermission, setActionPermission] = useState('')
     const [showScreens, setShowScreens] = useState({});
     const [menuItems, setMenuItems] = useState([]);
     const themeApp = useTheme()

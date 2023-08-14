@@ -1,14 +1,12 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import axios from "axios"
-import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
+import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
+import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
-import { createContract, createCourse, createEnrollment, createUser, deleteCourse, editContract, editCourse, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator, formatCEP, formatReal, formatRg } from "../../../helpers"
+import { createCourse, deleteCourse, editCourse} from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditCourse(props) {
@@ -17,7 +15,6 @@ export default function EditCourse(props) {
     const { id, slug } = router.query;
     const newCourse = id === 'new';
     const [courseData, setCourseData] = useState({})
-    const [showRegistration, setShowRegistration] = useState(false)
     const [showPaidIn, setShowPaidIn] = useState(false)
     const [amountPaidIn, setAmountPaidIn] = useState()
     const [installments, setInstallments] = useState()

@@ -116,7 +116,7 @@ export const DialogUserEdit = (props) => {
          >
             <ContentContainer style={{
                ...styles.box, zIndex: 99999, marginLeft: { md: '180px', lg: '280px', xl: '214px' }, gap: 5, display: 'flex',
-               maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '680px', lg: '900px', xl: '1280px' }, overflowY: matches && 'auto',
+               maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '90%', lg: '680px', xl: '1280px' }, overflowY: { md: 'scroll', lg: 'auto', xl: matches && 'auto' },
             }}>
                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', width: '100%', position: 'relative' }}>
                   <Text bold={true} title={true}>Informações pessoais</Text>

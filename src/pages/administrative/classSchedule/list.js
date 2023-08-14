@@ -21,7 +21,6 @@ export default function ClassSheduleList(props) {
     const [showClassSchedulesTable, setShowClassSchedulesTable] = useState({});
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 

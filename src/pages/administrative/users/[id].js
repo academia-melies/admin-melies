@@ -13,7 +13,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 
 export default function EditUser() {
-    const { setLoading, alert, colorPalette, user, setUser, matches, theme, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, colorPalette, user, matches, theme, setShowConfirmationDialog } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
