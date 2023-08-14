@@ -1,18 +1,22 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Avatar, useMediaQuery, useTheme } from "@mui/material"
+import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
+import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
-import { SelectList } from "../../../organisms/select/SelectList"
 import { formatCNPJ } from "../../../helpers"
 
 export default function EditInstitution(props) {
-    const { setLoading, alert, colorPalette } = useAppContext()
+    const { setLoading, alert, colorPalette, user } = useAppContext()
+    let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
     const newInstitution = id === 'new';
+    const [arrayRecognitionP, setArrayRecognitionP] = useState([])
+    const [arrayRecognitionEad, setArrayRecognitionEad] = useState([])
+    const [recognitionP, setRecognitionP] = useState({})
+    const [recognitionEad, setRecognitionEad] = useState({})
     const [institutionData, setInstitutionData] = useState({
         nome_instituicao: '',
         cnpj: '',
@@ -32,12 +36,30 @@ export default function EditInstitution(props) {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
     const getInstitution = async () => {
+        setLoading(true)
         try {
             const response = await api.get(`/institution/${id}`)
             const { data } = response
             setInstitutionData(data)
         } catch (error) {
             console.log(error)
+            return error
+        } finally{}
+        setLoading(false)
+    }
+
+    const getRecognition = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/recognitions/${id}`)
+            const { recognitionEad, recognitionP } = response?.data
+            if (recognitionEad) setArrayRecognitionEad(recognitionEad)
+            if (recognitionP) setArrayRecognitionP(recognitionP)
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally{
+            setLoading(false)
         }
     }
 
@@ -55,6 +77,7 @@ export default function EditInstitution(props) {
         setLoading(true)
         try {
             await getInstitution()
+            getRecognition()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar A instituição')
         } finally {
@@ -87,9 +110,9 @@ export default function EditInstitution(props) {
         setLoading(true)
         if (checkRequiredFields()) {
             try {
-                const response = await api.post(`/institution/create`, { institutionData });
+                const response = await api.post(`/institution/create/${userId}`, { institutionData, arrayRecognitionP, arrayRecognitionEad });
                 const { data } = response
-                console.group(data)
+
                 if (response?.status === 201) {
                     alert.success('Instituição cadastrada com sucesso.');
                     router.push(`/administrative/institution/${data?.institution}`)
@@ -136,6 +159,109 @@ export default function EditInstitution(props) {
         }
     }
 
+    const handleChangeRecognitionP = (value) => {
+        setRecognitionP((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    };
+
+    const addRecognitionP = () => {
+        setArrayRecognitionP((prevArray) => [...prevArray, { ren_reconhecimento_p: recognitionP.ren_reconhecimento_p, dt_renovacao_rec_p: recognitionP.dt_renovacao_rec_p }])
+        setRecognitionP({ ren_reconhecimento_p: '', dt_renovacao_rec_p: '' })
+    }
+
+    const deleteRecognitionP = (index) => {
+
+        if (newInstitution) {
+            setArrayRecognitionP((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
+
+
+    //EAD
+    const handleChangeRecognitionEad = (value) => {
+        setRecognitionEad((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    };
+
+    const addRecognitionEad = () => {
+        setArrayRecognitionEad((prevArray) => [...prevArray, { ren_reconhecimento_ead: recognitionEad.ren_reconhecimento_ead, dt_renovacao_rec_ead: recognitionEad.dt_renovacao_rec_ead }])
+        setRecognitionEad({ ren_reconhecimento_ead: '', dt_renovacao_rec_ead: '' })
+    }
+
+    const deleteRecognitionEad = (index) => {
+
+        if (newInstitution) {
+            setArrayRecognitionEad((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
+
+    const handleAddRecognition = async () => {
+        setLoading(true)
+        let recognitionData = {};
+
+        try {
+            if (Object.keys(recognitionEad).length > 0) {
+                recognitionData = recognitionEad;
+                const response = await api.post(`/institution/recognition/create/${id}/${userId}?modality=ead`, { recognitionData })
+                if (response?.status === 201) {
+                    alert.success('Renovação adicionada')
+                    setRecognitionEad({ ren_reconhecimento_ead: '', dt_renovacao_rec_ead: '' })
+                    handleItems()
+                }
+            };
+            if (Object.keys(recognitionP).length > 0) {
+                recognitionData = recognitionP;
+                const response = await api.post(`/institution/recognition/create/${id}/${userId}?modality=presencial`, { recognitionData })
+                if (response?.status === 201) {
+                    alert.success('Renovação adicionada')
+                    setRecognitionP({ ren_reconhecimento_p: '', dt_renovacao_rec_p: '' })
+                    handleItems()
+                }
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleDeleteRecognition = async (id_renovacao_rec) => {
+        setLoading(true)
+        try {
+            if (recognitionEad) {
+                const response = await api.delete(`/institution/recognition/delete/${id_renovacao_rec}?modality=ead`)
+                if (response?.status === 200) {
+                    alert.success('Renovação excluida.');
+                    handleItems()
+                }
+            }
+            if (recognitionP) {
+                const response = await api.delete(`/institution/recognition/delete/${id_renovacao_rec}?modality=presencial`)
+                if (response?.status === 200) {
+                    alert.success('Renovação excluida.');
+                    handleItems()
+                }
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a Habilidade selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const groupStatus = [
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
@@ -171,11 +297,57 @@ export default function EditInstitution(props) {
                     <TextInput placeholder='Mantida' name='mantida' onChange={handleChange} value={institutionData?.mantida || ''} label='Mantida' sx={{ flex: 1, }} />
                 </Box>
                 <Text bold>Presencial</Text>
-                <Box sx={styles.inputSection}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
                     <TextInput placeholder='Portaria de Credenciamento' name='pt_cred_pres' onChange={handleChange} value={institutionData?.pt_cred_pres || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Data' name='dt_cred_pres' onChange={handleChange} value={(institutionData?.dt_cred_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                    <TextInput label="Data" placeholder='Data' name='dt_cred_pres' onChange={handleChange} value={(institutionData?.dt_cred_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                     <TextInput placeholder='Portaria de Recredenciamento' name='pt_rec_pres' onChange={handleChange} value={institutionData?.pt_rec_pres || ''} label='Portaria de Recredenciamento' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Data' name='dt_rec_pres' onChange={handleChange} value={(institutionData?.dt_rec_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                    <TextInput label="Data" placeholder='Data' name='dt_rec_pres' onChange={handleChange} value={(institutionData?.dt_rec_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+
+                </Box>
+                <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
+                    {arrayRecognitionP.map((rec, index) => (
+                        <>
+                            <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                <TextInput label="Renovação do Reconhecimento" placeholder='Renovação do Reconhecimento' name={`ren_reconhecimento_p-${index}`} onChange={handleChangeRecognitionP} value={rec.ren_reconhecimento_p} sx={{ flex: 1 }} />
+                                <TextInput label="Data" placeholder='Data' name={`dt_renovacao_rec_p-${index}`} onChange={handleChangeRecognitionP} value={(rec?.dt_renovacao_rec_p)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                <Box sx={{
+                                    backgroundSize: 'cover',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                    width: 25,
+                                    height: 25,
+                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => {
+                                    newInstitution ? deleteRecognitionP(index) : handleDeleteRecognition(rec?.id_renovacao_rec_p)
+                                }} />
+                            </Box>
+                        </>
+                    ))}
+                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                        <TextInput label="Renovação do Reconhecimento" placeholder='Renovação do Reconhecimento' name={`ren_reconhecimento_p`} onChange={handleChangeRecognitionP} value={recognitionP.ren_reconhecimento_p} sx={{ flex: 1 }} />
+                        <TextInput label="Data" placeholder='Data' name='dt_renovacao_rec_p' onChange={handleChangeRecognitionP} value={(recognitionP?.dt_renovacao_rec_p)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                        <Box sx={{
+                            backgroundSize: 'cover',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'center',
+                            width: 25,
+                            height: 25,
+                            borderRadius: '50%',
+                            backgroundImage: `url(/icons/include_icon.png)`,
+                            transition: '.3s',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            newInstitution ? addRecognitionP() : handleAddRecognition()
+                        }} />
+                    </Box>
                 </Box>
                 <Text bold>EAD</Text>
                 <Box sx={styles.inputSection}>
@@ -183,6 +355,51 @@ export default function EditInstitution(props) {
                     <TextInput placeholder='Data' name='dt_cred_ead' onChange={handleChange} value={(institutionData?.dt_cred_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                     <TextInput placeholder='Portaria de Recredenciamento' name='pt_rec_ead' onChange={handleChange} value={institutionData?.pt_rec_ead || ''} label='Portaria de Recredenciamento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Data' name='dt_rec_ead' onChange={handleChange} value={(institutionData?.dt_rec_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                </Box>
+                <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
+                    {arrayRecognitionEad.map((rec, index) => (
+                        <>
+                            <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                <TextInput label="Renovação do Reconhecimento" placeholder='Renovação do Reconhecimento' name={`ren_reconhecimento_ead-${index}`} onChange={handleChangeRecognitionEad} value={rec.ren_reconhecimento_ead} sx={{ flex: 1 }} />
+                                <TextInput label="Data" placeholder='Data' name={`dt_renovacao_rec_ead-${index}`} onChange={handleChangeRecognitionEad} value={(rec?.dt_renovacao_rec_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                <Box sx={{
+                                    backgroundSize: 'cover',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                    width: 25,
+                                    height: 25,
+                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => {
+                                    newInstitution ? deleteRecognitionEad(index) : handleDeleteRecognition(rec?.id_renovacao_rec_ead)
+                                }} />
+                            </Box>
+                        </>
+                    ))}
+                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                        <TextInput label="Renovação do Reconhecimento" placeholder='Renovação do Reconhecimento' name={`ren_reconhecimento_ead`} onChange={handleChangeRecognitionEad} value={recognitionEad.ren_reconhecimento_ead} sx={{ flex: 1 }} />
+                        <TextInput label="Data" placeholder='Data' name='dt_renovacao_rec_ead' onChange={handleChangeRecognitionEad} value={(recognitionEad?.dt_renovacao_rec_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                        <Box sx={{
+                            backgroundSize: 'cover',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'center',
+                            width: 25,
+                            height: 25,
+                            borderRadius: '50%',
+                            backgroundImage: `url(/icons/include_icon.png)`,
+                            transition: '.3s',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            newInstitution ? addRecognitionEad() : handleAddRecognition()
+                        }} />
+                    </Box>
                 </Box>
                 <RadioItem valueRadio={institutionData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setInstitutionData({ ...institutionData, ativo: parseInt(value) })} />
             </ContentContainer>
@@ -209,7 +426,7 @@ const styles = {
         flex: 1,
         display: 'flex',
         justifyContent: 'space-around',
-        gap: 1.8,
+        gap: 1,
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
     }
 }

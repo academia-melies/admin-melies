@@ -1,10 +1,7 @@
-import { useTheme } from "@mui/system"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, ContentContainer, Text } from "../../../atoms"
-import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
-import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
-import { api } from "../../../api/api"
+import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
@@ -13,10 +10,8 @@ export default function ListGrid(props) {
     const [gridList, setGrid] = useState([])
     const [filterData, setFilterData] = useState('')
     const [showGridTable, setShowGridTable] = useState({});
-
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
-    const [gradeQnt, setGradeQnt] = useState()
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {

@@ -1,10 +1,7 @@
-import { useTheme } from "@mui/system"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Text } from "../../../atoms"
-import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
-import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
-import { api } from "../../../api/api"
+import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -15,8 +12,6 @@ export default function ListUsers(props) {
     const [perfil, setPerfil] = useState('todos')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
-    const [screen, setScreen] = useState('users')
-    const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
