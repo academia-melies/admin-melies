@@ -12,6 +12,7 @@ export default function ListUsers(props) {
     const [perfil, setPerfil] = useState('todos')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
+    const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
@@ -68,7 +69,7 @@ export default function ListUsers(props) {
     return (
         <>
             <SectionHeader
-                title={`${perfil === 'todos' ? 'Usuários' : (perfil.charAt(0).toUpperCase() + perfil.slice(1)) } (${usersList.filter(filter)?.length})`}
+                title={`${perfil === 'todos' ? 'Usuários' : (perfil.charAt(0).toUpperCase() + perfil.slice(1))} (${usersList.filter(filter)?.length})`}
                 newButton
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
@@ -94,13 +95,13 @@ export default function ListUsers(props) {
                     onSelect={(value) => setFilterAtive(value)}
                     title="status"
                     filterOpition="value"
-                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor}}
+                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                     clean={false}
                 />
             </Box>
             {usersList.length > 0 ?
-                <Table_V1 data={usersList?.filter(filter)} columns={column} columnId={'id'}/>
+                <Table_V1 data={usersList?.filter(filter)} columns={column} columnId={'id'} />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não foi encontrado usuarios {perfil}</Text>
