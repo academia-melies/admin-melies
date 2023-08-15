@@ -17,14 +17,18 @@ export const CheckBoxComponent = (props) => {
     const { colorPalette, theme } = useAppContext()
     const [selectedValues, setSelectedValues] = useState([]);
 
+    console.log(selectedValues)
+    console.log(valueChecked)
     useEffect(() => {
         if (valueChecked !== '') {
             const initialValues = valueChecked.split(',').map((value) => value.trim());
             setSelectedValues(initialValues);
+            return
         }
     }, [valueChecked]);
 
     useEffect(() => {
+    
         const formattedValue = selectedValues.join(', ');
         onSelect(formattedValue);
     }, [selectedValues]);

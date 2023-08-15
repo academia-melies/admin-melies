@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
@@ -141,14 +141,21 @@ export default function EditPermissions(props) {
 
     const selectAllSubmenuPermissions = (subMenus) => {
 
+        const isAnyCheckboxUnchecked = subMenus.some(menu => {
+            const permissions = permissionGroup.permissoes;
+            const permission = permissions.find(permission => permission.item === menu.text);
+            return permission && permission.acao !== 'leitura, edição';
+        });
+
+        const value = isAnyCheckboxUnchecked ? 'leitura, edição' : '';
+
         subMenus.forEach(menu => {
-            const value = 'leitura, edição'; // Defina as ações selecionadas para todos os itens
-            handleScreenPermissionChange(menu.text, value, menu.id_item);
+            // const value = 'leitura, edição'; // Defina as ações selecionadas para todos os itens
+            handleScreenPermissionChange(menu.text, 'action', value, menu.id_item)
         });
     };
 
-
-
+    console.log(permissionGroup)
 
     const handleCreate = async () => {
         setLoading(true)
@@ -256,11 +263,11 @@ export default function EditPermissions(props) {
                                                 {menu}
                                             </Text>
                                         </Box>
-                                        {/* <Button small text="selecionar tudo" sx={{zIndex: 9999}} onClick={(event) => {
+                                        <Button small text="selecionar tudo" sx={{zIndex: 9999}} onClick={(event) => {
                                            event.preventDefault();
                                            event.stopPropagation(); 
                                             selectAllSubmenuPermissions(subMenus)}
-                                            } /> */}
+                                            } />
                                     </Box>
                                     
                                     <Box
@@ -299,7 +306,7 @@ export default function EditPermissions(props) {
                                                 key={`${item}-${index}`}>
                                                 <Text bold style={{ color: colorPalette.buttonColor }}>{menu.text}</Text>
                                                 <CheckBoxComponent
-                                                    valueChecked={valueCheckedItem}
+                                                    valueChecked={valueCheckedItem || ''}
                                                     boxGroup={groupPerfil}
                                                     horizontal={mobile ? false : true}
                                                     onSelect={(value) => {
