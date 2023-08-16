@@ -44,11 +44,12 @@ export const Button = (props) => {
             },
             ...(secondary && {
                backgroundColor: 'transparent',
-               color: colorPalette.textColor,
-               border: `1px solid ${!theme ? '#fff': 'black'}`,
+               color: colorPalette.buttonColor,
+               // border: `1px solid ${!theme ? '#fff': 'black'}`,
+               border: `1px solid ${colorPalette.buttonColor}`,
                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                "&:hover": {
-                  backgroundColor: '#8B0000' + '66',
+                  backgroundColor: colorPalette.buttonColor + '33',
                   cursor: 'pointer'
                }
             }),

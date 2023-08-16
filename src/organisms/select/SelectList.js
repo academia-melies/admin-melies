@@ -27,7 +27,7 @@ export const SelectList = (props) => {
             <FormControl fullWidth>
                 <InputLabel sx={{ ...inputStyle }}>{title}</InputLabel>
                 <Select
-                    sx={{ borderRadius: "8px", backgroundColor: colorPalette.inputColor, height: 45, color: colorPalette.textColor, ...sx, maxHeight: 45 }}
+                    sx={{ borderRadius: "8px", backgroundColor: colorPalette.inputColor, height: 45, color: colorPalette.textColor, ...sx, maxHeight: 45, transition: 'background-color 1s' }}
                     value={valueSelection}
                     label={title}
                     onChange={(event) => onSelect(event.target.value)}
