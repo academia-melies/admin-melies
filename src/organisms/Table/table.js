@@ -24,10 +24,11 @@ export const Table_V1 = (props) => {
 
     const { colorPalette, theme } = useAppContext()
     const router = useRouter();
-    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
+    const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
+    const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
     const handleRowClick = (id) => {
-        router.push(`/administrative/${pathname}/${id}`);
+        router.push(`/${menu}/${subMenu}/${id}`);
     };
 
     const getRowBackground = (index) => {
@@ -44,7 +45,7 @@ export const Table_V1 = (props) => {
                 <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
-                            <TableRow style={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s', }}>
+                            <TableRow style={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s' }}>
                                 {columns.map((column) => (
                                     <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
                                 ))}

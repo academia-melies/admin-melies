@@ -1,6 +1,9 @@
 import { TextField } from "@mui/material";
 import { Colors } from "../organisms";
 import { useAppContext } from "../context/AppContext";
+import InputAdornment from '@mui/material/InputAdornment';
+import { Box } from "./Box";
+import { Text } from "./Text";
 
 
 export const TextInput = (props) => {
@@ -23,6 +26,12 @@ export const TextInput = (props) => {
                ...InputProps?.style,
                maxHeight: props.multiline ? 'none' : '45px',
             },
+            
+            startAdornment: props.type === "coin" && (
+               <InputAdornment position="start">
+                  <Text>R$ </Text>
+               </InputAdornment>
+            ),
          }}
          InputLabelProps={
             props.type === "date"
@@ -34,7 +43,7 @@ export const TextInput = (props) => {
                      fontFamily: 'MetropolisBold',
                      zIndex: 99
                   },
-                  sx:{
+                  sx: {
                      zIndex: 99
                   }
                }
