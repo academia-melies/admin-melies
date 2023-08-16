@@ -230,8 +230,8 @@ export default function EditCourse(props) {
                     <TextInput placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
                 <Box sx={{ ...styles.inputSection, alignItems: 'start' }}>
-                    <Box sx={{ display: 'flex', position: 'absolute', zIndex: 999, marginRight: 10, marginTop: 1.5 }}>
-                        <Button small text='parcelas' style={{ padding: '5px 6px 5px 6px' }} onClick={() => setShowPaidIn(true)} />
+                    <Box sx={{ display: 'flex', position: 'absolute', zIndex: 999, marginRight: 12, marginTop: 1, gap: 1 }}>
+                        <Button small text='parcelas' style={{ padding: '5px 12px 5px 12px' }} onClick={() => setShowPaidIn(true)} />
                     </Box>
                     <TextInput placeholder='Valor'
                         name='valor'
@@ -242,8 +242,9 @@ export default function EditCourse(props) {
                     />
 
                     {<Backdrop open={showPaidIn} sx={{zIndex: 999}}>
-                        <ContentContainer style={{marginLeft: { md: '180px', lg: '280px' }, zIndex: 999}}>
-                            <Box sx={{ display: 'flex', justifyContent: 'end' }}>
+                        <ContentContainer style={{marginLeft: { md: '180px', lg: '280px' }, zIndex: 9999}}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Text bold large> Parcelas</Text>
                                 <Box sx={{
                                     ...styles.menuIcon,
                                     backgroundImage: `url(${icons.gray_close})`,
@@ -256,13 +257,13 @@ export default function EditCourse(props) {
                                 }} onClick={() => setShowPaidIn(false)} />
                             </Box>
 
-                            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1, zIndex: 999 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1, zIndex: 99999 }}>
 
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, zIndex: 99999 }}>
                                     <Text bold small>Parcelado em até:</Text>
                                     <SelectList fullWidth data={groupInstallments} valueSelection={installments} onSelect={(value) => setInstallments(value)}
                                         filterOpition="value" sx={{ color: colorPalette.textColor, height: '30px', width: '95px' }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold',  }}
                                         minWidth={0}
                                     />
                                 </Box>

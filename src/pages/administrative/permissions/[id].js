@@ -123,21 +123,22 @@ export default function EditPermissions(props) {
         setPermissionGroup((prevPermissionGroup) => {
             const updatedPermissions = prevPermissionGroup.permissoes.map(permission => {
                 if (permission.item === screen) {
-                    return { ...permission, acao: value };
+                    return { ...permission, acao: value !== null ? value : null }
                 }
                 return permission;
             });
-
+    
             if (!updatedPermissions.some(permission => permission.item === screen)) {
-                updatedPermissions.push({ item: screen, acao: value, item_id: item });
+                updatedPermissions.push({ item: screen, acao: value !== null ? value : null, item_id: item });
             }
-
+    
             return {
                 ...prevPermissionGroup,
                 permissoes: updatedPermissions,
             };
         });
     };
+    
 
     const selectAllSubmenuPermissions = (subMenus) => {
 
@@ -147,15 +148,12 @@ export default function EditPermissions(props) {
             return permission && permission.acao !== 'leitura, edição';
         });
 
-        const value = isAnyCheckboxUnchecked ? 'leitura, edição' : '';
+        const value = isAnyCheckboxUnchecked ? 'leitura, edição' : null;
 
         subMenus.forEach(menu => {
-            // const value = 'leitura, edição'; // Defina as ações selecionadas para todos os itens
             handleScreenPermissionChange(menu.text, 'action', value, menu.id_item)
         });
     };
-
-    console.log(permissionGroup)
 
     const handleCreate = async () => {
         setLoading(true)
@@ -255,7 +253,11 @@ export default function EditPermissions(props) {
                                             cursor: 'pointer'
                                         }
                                     }}
-                                    onClick={() => toggleScreens(index)}>
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        toggleScreens(index)
+                                    }}>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 5, alignItems: 'center', }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5, alignItems: 'center', }}>
                                             <Box sx={{ ...styles.icon, backgroundImage: `url(${item?.icon})`, width: item.text === 'Administrativo' ? 15 : 18, height: item.text === 'Administrativo' ? 24 : 18, aspectRatio: '1/1', filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
@@ -263,13 +265,14 @@ export default function EditPermissions(props) {
                                                 {menu}
                                             </Text>
                                         </Box>
-                                        <Button small text="selecionar tudo" sx={{zIndex: 9999}} onClick={(event) => {
-                                           event.preventDefault();
-                                           event.stopPropagation(); 
-                                            selectAllSubmenuPermissions(subMenus)}
-                                            } />
+                                        <Button small text="selecionar tudo" sx={{ zIndex: 9999 }} onClick={(event) => {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                            selectAllSubmenuPermissions(subMenus)
+                                        }
+                                        } />
                                     </Box>
-                                    
+
                                     <Box
                                         sx={{
                                             ...styles.menuIcon,
@@ -306,13 +309,12 @@ export default function EditPermissions(props) {
                                                 key={`${item}-${index}`}>
                                                 <Text bold style={{ color: colorPalette.buttonColor }}>{menu.text}</Text>
                                                 <CheckBoxComponent
-                                                    valueChecked={valueCheckedItem || ''}
+                                                    valueChecked={valueCheckedItem}
                                                     boxGroup={groupPerfil}
                                                     horizontal={mobile ? false : true}
                                                     onSelect={(value) => {
                                                         handleScreenPermissionChange(menu.text, 'action', value, menu.id_item)
                                                     }}
-                                                    // handleDayDataChange(dayWeek, 'disciplina_id', value)
                                                     sx={{ flex: 1, }}
                                                 />
                                             </Box>
