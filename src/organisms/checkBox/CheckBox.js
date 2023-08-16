@@ -17,13 +17,13 @@ export const CheckBoxComponent = (props) => {
     const { colorPalette, theme } = useAppContext()
     const [selectedValues, setSelectedValues] = useState([]);
 
-    console.log(selectedValues)
-    console.log(valueChecked)
     useEffect(() => {
-        if (valueChecked !== '') {
-            const initialValues = valueChecked.split(',').map((value) => value.trim());
+        if (valueChecked !== '' && valueChecked !== null) {
+            const cleanedValue = valueChecked.replace(/null/g, ''); // Remover todas as ocorrências de 'null'
+            const initialValues = cleanedValue !== '' ? cleanedValue.split(',').map((value) => value.trim()) : [];
             setSelectedValues(initialValues);
-            return
+        } else if (valueChecked === null) {
+            setSelectedValues([]);
         }
     }, [valueChecked]);
 

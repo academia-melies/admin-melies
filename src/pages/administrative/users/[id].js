@@ -1357,7 +1357,6 @@ export default function EditUser() {
                                 onSelect={(value) => {
                                     setForeigner(value)
                                     setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : 'Brasileira Nata' })
-                                    console.log(value)
                                 }}
                                 sx={{ width: 1 }} />
                         </Box>
