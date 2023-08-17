@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
-import { RadioItem, SectionHeader } from "../../../organisms"
+import { ContainDropzone, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createCourse, deleteCourse, editCourse } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -15,6 +15,7 @@ export default function EditSoftwares(props) {
     const { id, slug } = router.query;
     const newSoftware = id === 'new';
     const [softwareData, setSoftwareData] = useState({})
+    const [contractData, setContractData] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -26,6 +27,19 @@ export default function EditSoftwares(props) {
             setSoftwareData({ ...data, valor_licenca: value })
         } catch (error) {
             console.log(error)
+        }
+    }
+
+    const getContracts = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/contract/service/${id}`)
+            const { data } = response
+            setContractData(data)
+        } catch (error) {
+            console.log(error)
+        } finally{
+        setLoading(false)
         }
     }
 
@@ -43,6 +57,7 @@ export default function EditSoftwares(props) {
         setLoading(true)
         try {
             await getSoftware()
+            getContracts()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Software')
         } finally {
@@ -206,6 +221,20 @@ export default function EditSoftwares(props) {
                 </Box>
                 <RadioItem valueRadio={softwareData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setSoftwareData({ ...softwareData, ativo: parseInt(value) })} />
             </ContentContainer>
+            {!newSoftware &&
+                <ContainDropzone
+                    title="Contrato"
+                    data={contractData}
+                    callback={(file) => {
+                        if (file.status === 201 || file === 200) {
+                            handleItems()
+                        }
+                    }}
+                    screen={'software'}
+                    servicoId={id}
+                    userId={userId}
+                />
+            }
         </>
     )
 }

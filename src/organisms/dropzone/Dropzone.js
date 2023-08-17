@@ -27,7 +27,11 @@ export const CustomDropzone = (props) => {
         propsDropzone = {},
         images = false,
         tela = null,
-        typeOpition = false
+        typeOpition = false,
+        servicoId,
+        screen,
+        contract = false,
+        preview = true
     } = props;
 
     const onDropFiles = async (files) => {
@@ -62,7 +66,10 @@ export const CustomDropzone = (props) => {
             const formData = new FormData();
             formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
             try {
-                const response = await uploadFile({ formData, usuario_id, campo, tipo: typeOpition ? typeFile : tipo, images, tela });
+                const response = await uploadFile({
+                    formData, usuario_id, campo, tipo: typeOpition ? typeFile : tipo, images, tela,
+                    contract, servicoId, screen
+                });
                 const { data = {}, status } = response;
                 const { fileId } = data
                 let file = {
