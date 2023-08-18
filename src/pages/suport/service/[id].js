@@ -396,96 +396,99 @@ export default function EditService(props) {
                         />
                     )}
                 </Box>
-                {!showRenewel?.historicRenewal &&
-                    <Button text='Renovações' small={true} onClick={() => { setShowRenewal({ ...showRenewel, historicRenewal: true }) }} />
-                }
-                {showRenewel?.historicRenewal &&
-                    <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
-                        <ContentContainer gap={3}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
-                                <Text bold large>Histórico de Renovação</Text>
-                                <Box sx={{
-                                    ...styles.menuIcon,
-                                    backgroundImage: `url(${icons.gray_close})`,
-                                    transition: '.3s',
-                                    zIndex: 999999999,
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => setShowRenewal({ ...showRenewel, historicRenewal: false })} />
-                            </Box>
-                            {arrayRenewal.length > 0 ?
-                                arrayRenewal.map((ren, index) => (
-                                    <>
-                                        <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                {!newService &&
+                    <>
+                        {!showRenewel?.historicRenewal &&
+                            <Button text='Renovações' small={true} onClick={() => { setShowRenewal({ ...showRenewel, historicRenewal: true }) }} />
+                        }
+                        {showRenewel?.historicRenewal &&
+                            <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
+                                <ContentContainer gap={3}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                        <Text bold large>Histórico de Renovação</Text>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            backgroundImage: `url(${icons.gray_close})`,
+                                            transition: '.3s',
+                                            zIndex: 999999999,
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => setShowRenewal({ ...showRenewel, historicRenewal: false })} />
+                                    </Box>
+                                    {arrayRenewal.length > 0 ?
+                                        arrayRenewal.map((ren, index) => (
+                                            <>
+                                                <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                                    <TextInput
+                                                        placeholder='0.00'
+                                                        name={`reajuste-${index}`}
+                                                        type="coin"
+                                                        value={(ren?.reajuste) || ''}
+                                                        label='Reajuste' sx={{ flex: 1, }}
+                                                    />
+                                                    <TextInput label="Data da Renovação" placeholder='Data da Renovação' name={`dt_renovacao-${index}`} value={(ren?.dt_renovacao)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                                    <TextInput label="Data da Expiração" placeholder='Data da Expiração' name={`dt_expiracao_r-${index}`} value={(ren?.dt_expiracao_r)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                                    <Box sx={{
+                                                        backgroundSize: 'cover',
+                                                        backgroundRepeat: 'no-repeat',
+                                                        backgroundPosition: 'center',
+                                                        width: 25,
+                                                        height: 25,
+                                                        backgroundImage: `url(/icons/remove_icon.png)`,
+                                                        transition: '.3s',
+                                                        "&:hover": {
+                                                            opacity: 0.8,
+                                                            cursor: 'pointer'
+                                                        }
+                                                    }} onClick={() => {
+                                                        handleDeleteRenewal(ren?.id_renovacao_s)
+                                                    }} />
+                                                </Box>
+                                            </>
+                                        ))
+                                        : <Text small>Este serviço não possui renovações ou reajustes.</Text>}
+                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                        <Button text='Novo' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: true }) }} />
+                                        {showRenewel?.newRenewal &&
+                                            <Button text='Cancelar' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: false }) }} />
+                                        }
+                                    </Box>
+                                    {showRenewel?.newRenewal &&
+                                        <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                             <TextInput
                                                 placeholder='0.00'
-                                                name={`reajuste-${index}`}
+                                                name="reajuste"
                                                 type="coin"
-                                                value={(ren?.reajuste) || ''}
+                                                value={renewalData?.reajuste || ''}
+                                                onChange={handleChangeRenewal}
                                                 label='Reajuste' sx={{ flex: 1, }}
                                             />
-                                            <TextInput label="Data da Renovação" placeholder='Data da Renovação' name={`dt_renovacao-${index}`} value={(ren?.dt_renovacao)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                                            <TextInput label="Data da Expiração" placeholder='Data da Expiração' name={`dt_expiracao_r-${index}`} value={(ren?.dt_expiracao_r)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                            <TextInput label="Data da Renovação" placeholder='Data da Renovação' name="dt_renovacao" value={(renewalData?.dt_renovacao)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
+                                            <TextInput label="Data da Expiração" placeholder='Data da Expiração' name="dt_expiracao_r" value={(renewalData?.dt_expiracao_r)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
                                             <Box sx={{
                                                 backgroundSize: 'cover',
                                                 backgroundRepeat: 'no-repeat',
                                                 backgroundPosition: 'center',
                                                 width: 25,
                                                 height: 25,
-                                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                                borderRadius: '50%',
+                                                backgroundImage: `url(/icons/include_icon.png)`,
                                                 transition: '.3s',
                                                 "&:hover": {
                                                     opacity: 0.8,
                                                     cursor: 'pointer'
                                                 }
                                             }} onClick={() => {
-                                                handleDeleteRenewal(ren?.id_renovacao_s)
+                                                handleAddRenewal()
                                             }} />
                                         </Box>
-                                    </>
-                                ))
-                                : <Text small>Este serviço não possui renovações ou reajustes.</Text>}
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                <Button text='Novo' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: true }) }} />
-                                {showRenewel?.newRenewal &&
-                                    <Button text='Cancelar' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: false }) }} />
-                                }
+                                    }
+                                </ContentContainer>
                             </Box>
-                            {showRenewel?.newRenewal &&
-                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                    <TextInput
-                                        placeholder='0.00'
-                                        name="reajuste"
-                                        type="coin"
-                                        value={renewalData?.reajuste || ''}
-                                        onChange={handleChangeRenewal}
-                                        label='Reajuste' sx={{ flex: 1, }}
-                                    />
-                                    <TextInput label="Data da Renovação" placeholder='Data da Renovação' name="dt_renovacao" value={(renewalData?.dt_renovacao)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
-                                    <TextInput label="Data da Expiração" placeholder='Data da Expiração' name="dt_expiracao_r" value={(renewalData?.dt_expiracao_r)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
-                                    <Box sx={{
-                                        backgroundSize: 'cover',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center',
-                                        width: 25,
-                                        height: 25,
-                                        borderRadius: '50%',
-                                        backgroundImage: `url(/icons/include_icon.png)`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} onClick={() => {
-                                        handleAddRenewal()
-                                    }} />
-                                </Box>
-                            }
-                        </ContentContainer>
-                    </Box>
-                }
+                        }
+                    </>}
                 <RadioItem valueRadio={serviceData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setServiceData({ ...serviceData, ativo: parseInt(value) })} />
             </ContentContainer>
             {!newService &&
