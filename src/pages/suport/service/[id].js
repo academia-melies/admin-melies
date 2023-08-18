@@ -7,6 +7,7 @@ import { ContainDropzone, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createCourse, deleteCourse, editCourse } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { icons } from "../../../organisms/layout/Colors"
 
 export default function EditService(props) {
     const { setLoading, alert, colorPalette, user } = useAppContext()
@@ -29,6 +30,13 @@ export default function EditService(props) {
         ativo: 1,
     })
     const [contractData, setContractData] = useState([])
+    const [arrayRenewal, setArrayRenewal] = useState([])
+    const [renewalData, setRenewalData] = useState({})
+    const [showNewRenewal, setShowNewRenewal] = useState(false)
+    const [showRenewel, setShowRenewal] = useState({
+        historicRenewal: false,
+        newRenewal: false
+    })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -38,15 +46,36 @@ export default function EditService(props) {
             const { data } = response
             let value = data?.valor.toFixed(2) || ''
             setServiceData({ ...data, valor: value })
+            return data
         } catch (error) {
             console.log(error)
         }
     }
 
-    const getContracts = async () => {
+    const getRenewal = async () => {
         setLoading(true)
         try {
-            let query = `?screen=${serviceData?.tipo_servico}`;
+            const response = await api.get(`/services/renewal/${id}`)
+            const { data } = response
+            if (data) {
+                const formattedValue = data.map(item => ({
+                    ...item,
+                    reajuste: item.reajuste.toFixed(2)
+                }));
+                setArrayRenewal(formattedValue)
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const getContracts = async (tipo_servico) => {
+        setLoading(true)
+        try {
+            let query = `?screen=${tipo_servico}`;
             const response = await api.get(`/contract/service/${id}${query}`)
             const { data } = response
             setContractData(data)
@@ -58,23 +87,24 @@ export default function EditService(props) {
     }
 
     useEffect(() => {
-        (async () => {
-            if (newService) {
-                return
-            }
-            await handleItems();
-        })();
-    }, [id])
+        if (!newService) {
+            handleItems();
+        }
+    }, [id]);
 
 
     const handleItems = async () => {
         setLoading(true)
         try {
-            await getService()
+            const serviceResponse = await getService()
+            await getRenewal()
+            if (serviceResponse) {
+                await getContracts(serviceResponse.tipo_servico)
+            }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar serviço')
         } finally {
-            getContracts()
+
             setLoading(false)
         }
     }
@@ -195,6 +225,72 @@ export default function EditService(props) {
         }
     }
 
+
+    const handleChangeRenewal = (event) => {
+        if (event.target.name === 'reajuste') {
+            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                event.target.value = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
+                const decimalValue = rawValue.slice(-2); // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValue = `${intValue}.${decimalValue}`;
+                event.target.value = formattedValue;
+            }
+
+            setRenewalData((prevValues) => ({
+                ...prevValues,
+                [event.target.name]: event.target.value,
+            }));
+
+            return;
+        }
+
+        setRenewalData((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }))
+    };
+
+    const handleAddRenewal = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/services/renewal/create/${id}/${userId}`, { renewalData })
+            if (response?.status === 201) {
+                alert.success('Renovação adicionada')
+                setRenewalData({ reajuste: '', dt_renovacao: '', dt_expiracao_r: '' })
+                handleItems()
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleDeleteRenewal = async (id_renovacao_s) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/services/renewal/delete/${id_renovacao_s}`)
+            if (response?.status === 200) {
+                alert.success('Renovação excluida.');
+                setShowRenewal({ ...showRenewel, newRenewal: false, historicRenewal: false })
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a Renovação selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const groupStatus = [
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
@@ -283,7 +379,7 @@ export default function EditService(props) {
                         name='valor'
                         type="coin"
                         onChange={handleChange}
-                        value={serviceData?.valor || ''}
+                        value={(serviceData?.valor) || ''}
                         label='Valor' sx={{ flex: 1, }}
                     />
                     {serviceData?.tipo_servico === 'Software' &&
@@ -300,6 +396,96 @@ export default function EditService(props) {
                         />
                     )}
                 </Box>
+                {!showRenewel?.historicRenewal &&
+                    <Button text='Renovações' small={true} onClick={() => { setShowRenewal({ ...showRenewel, historicRenewal: true }) }} />
+                }
+                {showRenewel?.historicRenewal &&
+                    <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
+                        <ContentContainer gap={3}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                <Text bold large>Histórico de Renovação</Text>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(${icons.gray_close})`,
+                                    transition: '.3s',
+                                    zIndex: 999999999,
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => setShowRenewal({ ...showRenewel, historicRenewal: false })} />
+                            </Box>
+                            {arrayRenewal.length > 0 ?
+                                arrayRenewal.map((ren, index) => (
+                                    <>
+                                        <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                            <TextInput
+                                                placeholder='0.00'
+                                                name={`reajuste-${index}`}
+                                                type="coin"
+                                                value={(ren?.reajuste) || ''}
+                                                label='Reajuste' sx={{ flex: 1, }}
+                                            />
+                                            <TextInput label="Data da Renovação" placeholder='Data da Renovação' name={`dt_renovacao-${index}`} value={(ren?.dt_renovacao)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                            <TextInput label="Data da Expiração" placeholder='Data da Expiração' name={`dt_expiracao_r-${index}`} value={(ren?.dt_expiracao_r)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                            <Box sx={{
+                                                backgroundSize: 'cover',
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'center',
+                                                width: 25,
+                                                height: 25,
+                                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                                transition: '.3s',
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
+                                                }
+                                            }} onClick={() => {
+                                                handleDeleteRenewal(ren?.id_renovacao_s)
+                                            }} />
+                                        </Box>
+                                    </>
+                                ))
+                                : <Text small>Este serviço não possui renovações ou reajustes.</Text>}
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Button text='Novo' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: true }) }} />
+                                {showRenewel?.newRenewal &&
+                                    <Button text='Cancelar' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: false }) }} />
+                                }
+                            </Box>
+                            {showRenewel?.newRenewal &&
+                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                    <TextInput
+                                        placeholder='0.00'
+                                        name="reajuste"
+                                        type="coin"
+                                        value={renewalData?.reajuste || ''}
+                                        onChange={handleChangeRenewal}
+                                        label='Reajuste' sx={{ flex: 1, }}
+                                    />
+                                    <TextInput label="Data da Renovação" placeholder='Data da Renovação' name="dt_renovacao" value={(renewalData?.dt_renovacao)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
+                                    <TextInput label="Data da Expiração" placeholder='Data da Expiração' name="dt_expiracao_r" value={(renewalData?.dt_expiracao_r)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
+                                    <Box sx={{
+                                        backgroundSize: 'cover',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
+                                        width: 25,
+                                        height: 25,
+                                        borderRadius: '50%',
+                                        backgroundImage: `url(/icons/include_icon.png)`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => {
+                                        handleAddRenewal()
+                                    }} />
+                                </Box>
+                            }
+                        </ContentContainer>
+                    </Box>
+                }
                 <RadioItem valueRadio={serviceData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setServiceData({ ...serviceData, ativo: parseInt(value) })} />
             </ContentContainer>
             {!newService &&
