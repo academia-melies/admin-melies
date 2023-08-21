@@ -387,7 +387,7 @@ const MenuItem = (props) => {
                borderRadius: 2,
                color: 'inherit',
                transition: '.2s',
-               ...(currentPage ?
+               ...(currentPage && to != null ?
                   {
                      // border: `1px solid ${Colors.orange}`,
                      // backgroundColor: colorPalette.buttonColor,
@@ -412,7 +412,7 @@ const MenuItem = (props) => {
                         "&:hover": {
                            color: colorPalette.buttonColor,
                         },
-                        ...(currentPage &&
+                        ...(currentPage && to != null &&
                         {
                            color: colorPalette.buttonColor,
                         }

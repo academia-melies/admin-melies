@@ -17,7 +17,7 @@ export default function EditCourse(props) {
     const [courseData, setCourseData] = useState({})
     const [showPaidIn, setShowPaidIn] = useState(false)
     const [amountPaidIn, setAmountPaidIn] = useState()
-    const [installments, setInstallments] = useState()
+    const [installments, setInstallments] = useState(1)
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -179,8 +179,6 @@ export default function EditCourse(props) {
         { label: '4x', value: 4 },
         { label: '5x', value: 5 },
         { label: '6x', value: 6 },
-        { label: '7x', value: 7 },
-        { label: '8x', value: 8 },
     ]
 
     const formatter = new Intl.NumberFormat('pt-BR', {
