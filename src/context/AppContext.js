@@ -7,6 +7,7 @@ import { getDialogPosition } from "../helpers";
 import { Alert, Colors } from "../organisms";
 import { api } from "../api/api";
 import { LoadingIcon } from "../organisms/loading/Loading";
+import { versions } from "../config/config";
 
 const MAX_CONFIRMATION_DIALOG_WITH = 220;
 
@@ -54,6 +55,10 @@ export const AppProvider = ({ children }) => {
         const now = new Date();
         return now.getTime() + hours * 60 * 60 * 1000;
     };
+
+    const latestVersion  = versions[versions.length - 1];
+    const latestVersionNumber = latestVersion .version;
+    const latestVersionBuildDate = latestVersion .build;
 
     useEffect(() => {
         async function loadUserFromCookies() {
@@ -150,7 +155,8 @@ export const AppProvider = ({ children }) => {
                 directoryIcons,
                 matches,
                 userPermissions,
-                notificationUser, setNotificationUser
+                notificationUser, setNotificationUser,
+                latestVersionNumber
             }}
         >
             {children}

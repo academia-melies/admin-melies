@@ -13,7 +13,7 @@ import { api } from "../../api/api"
 
 export const LeftMenu = ({ }) => {
 
-   const { logout, user, colorPalette, theme, userPermissions } = useAppContext();
+   const { logout, user, colorPalette, theme, userPermissions, latestVersionNumber } = useAppContext();
    const name = user?.nome?.split(' ');
    const firstName = name[0];
    const lastName = name[name.length - 1];
@@ -303,27 +303,17 @@ export const LeftMenu = ({ }) => {
                   backgroundSize: 'contain',
                   width: '107px',
                   height: '51px',
-                  bottom: 60,
+                  bottom: 70,
                   position: 'absolute',
                   "&:hover": {
                      cursor: 'pointer', opacity: 0.8
                   }
                }} onClick={() => router.push('/')} />
+            <Text style={{bottom: 45, left: 20, position: 'absolute', color: 'gray'}}>version {latestVersionNumber}</Text>
             </Box>
          </Box >
 
          <Box sx={{ ...styles.menuResponsive, backgroundColor: theme ? '#fff' : colorPalette.primary + '88', gap: 2, }}>
-            {/* <Box sx={{
-               ...styles.menuIcon,
-               backgroundImage: `url('/icons/notification_icon.png')`,
-               width: 20,
-               filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-               height: 17,
-               "&:hover": {
-                  opacity: 0.8,
-                  cursor: 'pointer'
-               }
-            }} /> */}
 
             <IconTheme flex />
 
