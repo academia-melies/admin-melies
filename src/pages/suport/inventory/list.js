@@ -224,7 +224,7 @@ export const TableResume = (props) => {
                             })
 
                             return (
-                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
+                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }} key={index}>
                                     <table key={`${index}-${item}`} style={{ borderCollapse: 'collapse', width: '100%' }}>
                                         <thead>
                                             <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
