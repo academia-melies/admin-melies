@@ -1,36 +1,50 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../../atoms"
+import { Box, ContentContainer, Text } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
-import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { icons } from "../../../organisms/layout/Colors"
+import { api } from "../../../api/api"
 
 export default function ListInventory(props) {
-    const [softwareList, setSoftwareList] = useState([])
+    const [inventoryList, setInventoryList] = useState([])
     const [filterData, setFilterData] = useState('')
+    const [showInventoryTable, setShowInventoryTable] = useState({});
+    const [roomSelected, setRoomSelected] = useState();
+    const [showResume, setShowResume] = useState(false);
+    const [rooms, setRooms] = useState([])
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
-            return item?.nome_software?.toLowerCase().includes(filterData?.toLowerCase());
+            return item?.sala?.toLowerCase().includes(filterData?.toLowerCase());
         } else {
-            return item?.ativo === filterAtive && (item?.nome_software?.toLowerCase().includes(filterData?.toLowerCase()));
+            return item?.ativo === filterAtive && (item?.sala?.toLowerCase().includes(filterData?.toLowerCase()));
         }
     };
 
+    const toggleGridTable = (index) => {
+        setShowInventoryTable(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
+    };
+
     useEffect(() => {
-        getSoftwares();
+        getInventory();
+        listSchoolRooms()
     }, []);
 
-    const getSoftwares = async () => {
+    const getInventory = async () => {
         setLoading(true)
         try {
-            const response = await api.get('/softwares')
-            const { data} = response;
-            setSoftwareList(data)
+            const response = await api.get('/inventoryItems')
+            console.log(response)
+            const { data = [] } = response;
+            setInventoryList(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -38,12 +52,25 @@ export default function ListInventory(props) {
         }
     }
 
+    async function listSchoolRooms() {
+        try {
+            const response = await api.get(`/schoolRooms`)
+            const { data } = response
+            const groupRooms = data.map(room => ({
+                label: room.sala,
+                value: room?.id_sala
+            }));
+
+            setRooms(groupRooms);
+        } catch (error) {
+        }
+    }
+
     const column = [
-        { key: 'id_software', label: 'ID' },
-        { key: 'nome_software', label: 'Software'},
-        { key: 'desenvolvedor', label: 'Desenvolvedor(a)'},
-        { key: 'inicio_licenca', label: 'Inicio', date: true },
-        { key: 'fim_licenca', label: 'Fim', date: true }
+        { key: 'id_inventario_item', label: 'ID' },
+        { key: 'tipo_ativo', label: 'Item/Ativo' },
+        { key: 'especificacoes', label: 'Especificações' },
+        { key: 'patrimonio', label: 'Patrimônio' },
     ];
 
     const listAtivo = [
@@ -55,13 +82,21 @@ export default function ListInventory(props) {
     return (
         <>
             <SectionHeader
-                title={`Softwares (${softwareList.filter(filter)?.length || '0'})`}
+                title={`Inventário (${inventoryList.length || '0'})`}
                 newButton
                 newButtonAction={() => router.push(`/suport/${pathname}/new`)}
             />
+                <TableResume
+                    roomSelected={roomSelected}
+                    setRoomSelected={setRoomSelected}
+                    inventoryList={inventoryList}
+                    rooms={rooms}
+                />
+
+
             <Text bold>Buscar por: </Text>
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <SearchBar placeholder='AutoDesk, Adobe...' style={{ padding: '15px', }} onChange={setFilterData} />
+                <SearchBar placeholder='Computador, monitor..' style={{ padding: '15px', }} onChange={setFilterData} />
                 <SelectList
                     data={listAtivo}
                     valueSelection={filterAtive}
@@ -73,13 +108,153 @@ export default function ListInventory(props) {
                     clean={false}
                 />
             </Box>
-            {softwareList.length > 0 ?
-                <Table_V1 data={softwareList?.filter(filter)} columns={column} columnId={'id_software'}/>
-                :
-                <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
-                    <Text bold>Não conseguimos encontrar nenhum Software</Text>
-                </Box>
+            {
+                inventoryList ? (
+                    inventoryList.filter(filter).map((item, index) => {
+                        const inventoryData = item.items_inventario;
+                        const name = item.sala;
+                        const inventoryItemsRooms = {};
+                        inventoryData.forEach((inventory) => {
+                            const room = inventory.room;
+                            if (!inventoryItemsRooms[room]) {
+                                inventoryItemsRooms[room] = [];
+                            }
+                            inventoryItemsRooms[room].push(inventory);
+                        });
+
+                        return (
+                            <ContentContainer key={`${item}-${index}`}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: 4,
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }}
+                                    onClick={() => toggleGridTable(index)}
+                                >
+                                    <Box>
+                                        <Text bold>{name}</Text>
+                                        <Text small>{item?.andar}</Text>
+                                    </Box>
+                                    <Box
+                                        sx={{
+                                            ...styles.menuIcon,
+                                            backgroundImage: `url(${icons.gray_arrow_down})`,
+                                            transform: showInventoryTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
+                                            transition: '.3s',
+                                            width: 17,
+                                            height: 17
+                                        }}
+                                    />
+                                </Box>
+                                {showInventoryTable[index] && (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        {Object.entries(inventoryItemsRooms).map(([room, inventoryItems]) => (
+                                            <Box key={`room-${room}`}>
+                                                <Table_V1
+                                                    data={inventoryItems}
+                                                    columns={column}
+                                                    columnActive={false}
+                                                    columnId={'id_inventario_item'}
+                                                    center
+                                                />
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                )}
+                            </ContentContainer>
+                        );
+                    })
+                ) : (
+                    <Text>Não encontrei disciplinas vinculadas a grade</Text>
+                )
             }
         </>
+    )
+}
+
+const styles = {
+    menuIcon: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
+    }
+}
+
+export const TableResume = (props) => {
+    const {
+        roomSelected,
+        setRoomSelected,
+        inventoryList = [],
+        rooms
+    } = props
+
+    const { setLoading, colorPalette } = useAppContext()
+
+    return (
+        <ContentContainer sx={{ display: 'flex', flexDirection: 'column', maxWidth: '400px', gap: 2.5 }}>
+            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                <Text bold style={{ color: colorPalette.buttonColor }}>Resumo de ativos por sala</Text>
+            </Box>
+            <SelectList fullWidth data={rooms} valueSelection={roomSelected} onSelect={(value) => setRoomSelected(value)}
+                title="Sala de aula" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+            />
+            {roomSelected &&
+                <Box>
+                    {
+                        inventoryList?.filter(item => item.id_sala === roomSelected).map((item, index) => {
+                            const inventoryData = item.items_inventario;
+                            const itemCountByType = {};
+
+                            inventoryData.forEach(inventory => {
+                                const activeType = inventory.tipo_ativo;
+                                if (itemCountByType[activeType]) {
+                                    itemCountByType[activeType]++;
+                                } else {
+                                    itemCountByType[activeType] = 1;
+                                }
+                            })
+
+                            return (
+                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
+                                    <table key={`${index}-${item}`} style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Tipo de Ativo</th>
+                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Quantidade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.entries(itemCountByType).map(([tipoAtivo, count]) => (
+                                                <tr key={tipoAtivo}>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor }}>{tipoAtivo}</td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center' }}>{count}</td>
+                                                </tr>
+                                            ))}
+                                            {Object.keys(itemCountByType).length === 0 && (
+                                                <tr>
+                                                    <td colSpan="2" style={{ textAlign: 'center', padding: '8px', border: '1px solid gray' }}>Essa sala não possui ativos</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )
+                        })
+                    }
+                    {inventoryList?.filter(item => item.id_sala === roomSelected).length === 0 && (
+                        <Text small>Essa sala não possui ativos</Text>
+                    )}
+                </Box >
+            }
+        </ContentContainer >
     )
 }
