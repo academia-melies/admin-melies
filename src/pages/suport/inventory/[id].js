@@ -13,17 +13,21 @@ export default function EditInventory(props) {
     const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
-    const newSoftware = id === 'new';
-    const [softwareData, setSoftwareData] = useState({})
+    const newInventoryItem = id === 'new';
+    const [inventoryData, setInventoryData] = useState({
+        ativo: 1,
+        especificacoes: '',
+        patrimonio: null,
+    })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [rooms, setRooms] = useState([])
 
-    const getSoftware = async () => {
+    const getInventoryItem = async () => {
         try {
-            const response = await api.get(`/software/${id}`)
+            const response = await api.get(`/inventory/${id}`)
             const { data } = response
-            let value = data?.valor_licenca.toFixed(2) || ''
-            setSoftwareData({ ...data, valor_licenca: value })
+            setInventoryData(data)
         } catch (error) {
             console.log(error)
         }
@@ -31,102 +35,97 @@ export default function EditInventory(props) {
 
     useEffect(() => {
         (async () => {
-            if (newSoftware) {
+            if (newInventoryItem) {
                 return
             }
             await handleItems();
         })();
     }, [id])
 
+    useEffect(() => {
+        listSchoolRooms()
+    }, [])
+
+    async function listSchoolRooms() {
+        try {
+            const response = await api.get(`/schoolRooms`)
+            const { data } = response
+            const groupRooms = data.map(room => ({
+                label: room.sala,
+                value: room?.id_sala
+            }));
+
+            setRooms(groupRooms);
+        } catch (error) {
+        }
+    }
 
     const handleItems = async () => {
         setLoading(true)
         try {
-            await getSoftware()
+            await getInventoryItem()
         } catch (error) {
-            alert.error('Ocorreu um arro ao carregar Software')
+            alert.error('Ocorreu um arro ao carregar Item do inventário')
         } finally {
             setLoading(false)
         }
     }
 
     const handleChange = (event) => {
-        if (event.target.name === 'valor_licenca') {
-            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
-            if (rawValue === '') {
-                event.target.value = '';
-            } else {
-                let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
-                const decimalValue = rawValue.slice(-2); // Parte decimal
-
-                if (intValue === '0' && rawValue.length > 2) {
-                    intValue = '';
-                }
-
-                const formattedValue = `${intValue}.${decimalValue}`;
-                event.target.value = formattedValue;
-            }
-
-            setSoftwareData((prevValues) => ({
-                ...prevValues,
-                [event.target.name]: event.target.value,
-            }));
-
-            return;
-        }
-
-        setSoftwareData((prevValues) => ({
+        setInventoryData((prevValues) => ({
             ...prevValues,
             [event.target.name]: event.target.value,
         }));
     };
 
-    const handleCreateSoftware = async () => {
+    const handleCreateItem = async () => {
         setLoading(true)
         try {
-            const response = await api.post(`/software/create`, { softwareData, userId });
+            const response = await api.post(`/inventory/create/${userId}`, { inventoryData });
+            console.log(response)
             const { data } = response
             if (response?.status === 201) {
-                alert.success('Software cadastrado com sucesso.');
-                router.push(`/suport/software/${data?.software}`)
+                alert.success('Item cadastrado no inventário com sucesso.');
+                router.push(`/suport/inventory/${data?.inventory}`)
             }
         } catch (error) {
-            alert.error('Tivemos um problema ao cadastrar o Software.');
+            alert.error('Tivemos um problema ao cadastrar o Item.');
         } finally {
             setLoading(false)
         }
     }
 
-    const handleDeleteSoftware = async () => {
+    const handleDeleteInventory = async () => {
         setLoading(true)
         try {
-            const response = await api.delete(`/software/delete/${id}`)
+            const response = await api.delete(`/inventory/delete/${id}`)
             if (response?.status === 200) {
-                alert.success('Software excluído com sucesso.');
-                router.push(`/suport/software/list`)
+                alert.success('Item excluído com sucesso.');
+                router.push(`/suport/inventory/list`)
             }
 
         } catch (error) {
-            alert.error('Tivemos um problema ao excluir o Software.');
+            alert.error('Tivemos um problema ao excluir o Item.');
             console.log(error)
         } finally {
             setLoading(false)
         }
     }
 
-    const handleEditSoftware = async () => {
+    const handleEditInventory = async () => {
         setLoading(true)
         try {
-            const response = await api.patch(`/software/update/${id}`, { softwareData })
+            const response = await api.patch(`/inventory/update/${id}`, { inventoryData })
             if (response?.status === 201) {
-                alert.success('Software atualizado com sucesso.');
+                alert.success('Item atualizado com sucesso.');
                 handleItems()
                 return
             }
-            alert.error('Tivemos um problema ao atualizar Software.');
+            alert.error('Tivemos um problema ao atualizar Item.');
         } catch (error) {
-            alert.error('Tivemos um problema ao atualizar Software.');
+            alert.error('Tivemos um problema ao atualizar Item.');
+            return error
         } finally {
             setLoading(false)
         }
@@ -137,11 +136,12 @@ export default function EditInventory(props) {
         { label: 'inativo', value: 0 },
     ]
 
-    const groupContract = [
-        { label: 'Mensal', value: 'Mensal' },
-        { label: 'Semestral', value: 'Semestral' },
-        { label: 'Anual', value: 'Anual' },
-        { label: 'Vitálicio', value: 'Vitálicio' },
+    const groupAtivo = [
+        { label: 'Computador', value: 'Computador' },
+        { label: 'Monitor', value: 'Monitor' },
+        { label: 'TV', value: 'TV' },
+        { label: 'Ar Condicionado', value: 'Ar Condicionado' },
+        { label: 'Cadeira', value: 'Cadeira' },
     ]
 
     const groupTypeLicency = [
@@ -165,46 +165,41 @@ export default function EditInventory(props) {
     return (
         <>
             <SectionHeader
-                perfil={softwareData?.desenvolvedor}
-                title={softwareData?.nome_software || `Novo Software`}
+                perfil={inventoryData?.sala_id ? (rooms?.filter(item => item.value === inventoryData?.sala_id).map(room => room.label)) : ''}
+                title={inventoryData?.tipo_ativo || `Novo Ativo`}
                 saveButton
-                saveButtonAction={newSoftware ? handleCreateSoftware : handleEditSoftware}
-                deleteButton={!newSoftware}
-                deleteButtonAction={() => handleDeleteSoftware()}
+                saveButtonAction={newInventoryItem ? handleCreateItem : handleEditInventory}
+                deleteButton={!newInventoryItem}
+                deleteButtonAction={() => handleDeleteInventory()}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Software</Text>
+                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Ativo/Item</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Nome' name='nome_software' onChange={handleChange} value={softwareData?.nome_software || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput placeholder='TPA ...' name='desenvolvedor' onChange={handleChange} value={softwareData?.desenvolvedor || ''} label='Desenvolvedor' sx={{ flex: 1, }} />
-                </Box>
-                <Box sx={styles.inputSection}>
-                    <SelectList fullWidth data={groupTypeLicency} valueSelection={softwareData?.tipo_licenciamento} onSelect={(value) => setSoftwareData({ ...softwareData, tipo_licenciamento: value })}
-                        title="Tipo de licenciamento" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                    <SelectList fullWidth data={groupAtivo} valueSelection={inventoryData?.tipo_ativo} onSelect={(value) => setInventoryData({ ...inventoryData, tipo_ativo: value })}
+                        title="Tipo de ativo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
-                    <SelectList fullWidth data={groupContract} valueSelection={softwareData?.tipo_contrato} onSelect={(value) => setSoftwareData({ ...softwareData, tipo_contrato: value })}
-                        title="Tipo de contrato" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                    <TextInput placeholder='Patrimônio' name='patrimonio' onChange={handleChange} value={inventoryData?.patrimonio || ''} label='Patrimônio' sx={{ flex: 1, }} />
+                    <SelectList fullWidth data={rooms} valueSelection={inventoryData?.sala_id} onSelect={(value) => setInventoryData({ ...inventoryData, sala_id: value })}
+                        title="Sala de aula" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
-                    <TextInput placeholder='Inicio' name='inicio_licenca' onChange={handleChange} value={(softwareData?.inicio_licenca)?.split('T')[0] || ''} type="date" label='Inicio' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Fim' name='fim_licenca' onChange={handleChange} value={(softwareData?.fim_licenca)?.split('T')[0] || ''} label='Fim' type="date" sx={{ flex: 1, }} />
                 </Box>
-                <Box sx={{ ...styles.inputSection, alignItems: 'start' }}>
-                    <TextInput
-                        placeholder='0.00'
-                        name='valor_licenca'
-                        type="coin"
-                        onChange={handleChange}
-                        value={softwareData?.valor_licenca || ''}
-                        label='Valor' sx={{ flex: 1, }}
-                    />
-                    <TextInput placeholder='Quantidade de Licenças' name='qnt_licenca' onChange={handleChange} type="number" value={softwareData?.qnt_licenca || ''} label='Quantidade de Licenças' sx={{ flex: 1, }} />
-                </Box>
-                <RadioItem valueRadio={softwareData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setSoftwareData({ ...softwareData, ativo: parseInt(value) })} />
+                <TextInput
+                    placeholder='Especificações'
+                    name='especificacoes'
+                    onChange={handleChange}
+                    value={inventoryData?.especificacoes || ''}
+                    label='Especificações'
+                    multiline
+                    maxRows={4}
+                    rows={3}
+                    sx={{ flex: 1, }}
+                />
+                <RadioItem valueRadio={inventoryData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setInventoryData({ ...inventoryData, ativo: parseInt(value) })} />
             </ContentContainer>
         </>
     )

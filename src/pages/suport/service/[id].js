@@ -396,12 +396,12 @@ export default function EditService(props) {
                         />
                     )}
                 </Box>
-                {!newService &&
+                {
+                    !newService &&
                     <>
-                        {!showRenewel?.historicRenewal &&
+                        {!showRenewel?.historicRenewal ?
                             <Button text='Renovações' small={true} onClick={() => { setShowRenewal({ ...showRenewel, historicRenewal: true }) }} />
-                        }
-                        {showRenewel?.historicRenewal &&
+                            :
                             <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
                                 <ContentContainer gap={3}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
@@ -488,9 +488,10 @@ export default function EditService(props) {
                                 </ContentContainer>
                             </Box>
                         }
-                    </>}
+                    </>
+                }
                 <RadioItem valueRadio={serviceData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setServiceData({ ...serviceData, ativo: parseInt(value) })} />
-            </ContentContainer>
+            </ContentContainer >
             {!newService &&
                 <ContainDropzone
                     title="Contrato"
