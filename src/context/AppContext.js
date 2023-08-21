@@ -24,6 +24,10 @@ export const AppProvider = ({ children }) => {
 
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [notificationUser, setNotificationUser] = useState({
+        msg: '',
+        vizualized: false
+    })
     const [dataBox, setDataBox] = useState(false)
     const [userPermissions, setUserPermissions] = useState()
     const matches = useMediaQuery('(min-width: 1080px) and (max-width: 1320px)');
@@ -46,7 +50,6 @@ export const AppProvider = ({ children }) => {
 
     const router = useRouter()
     const alert = new ShowAlert(setAlertData)
-
     const calculateExpiration = (hours) => {
         const now = new Date();
         return now.getTime() + hours * 60 * 60 * 1000;
@@ -66,6 +69,7 @@ export const AppProvider = ({ children }) => {
                     if (userData) {
                         setUser({ ...userData, getPhoto })
                         setUserPermissions(userData?.permissoes)
+                        setNotificationUser({vizualized: true, msg: `Bem-vindo ${userData?.nome} ao novo portal administrativo da Méliès. 🎉` })
                     }
                     else setUser(null);
                 }
@@ -145,7 +149,8 @@ export const AppProvider = ({ children }) => {
                 setTheme,
                 directoryIcons,
                 matches,
-                userPermissions
+                userPermissions,
+                notificationUser, setNotificationUser
             }}
         >
             {children}

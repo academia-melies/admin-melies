@@ -16,8 +16,14 @@ export default function EditInventory(props) {
     const newInventoryItem = id === 'new';
     const [inventoryData, setInventoryData] = useState({
         ativo: 1,
-        especificacoes: '',
+        observacoes_ativo: '',
         patrimonio: null,
+        hd: null,
+        memoria: null,
+        placa_video: null,
+        processador: null,
+        fonte: null,
+        nome_ativo: null,
     })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
@@ -83,7 +89,6 @@ export default function EditInventory(props) {
         setLoading(true)
         try {
             const response = await api.post(`/inventory/create/${userId}`, { inventoryData });
-            console.log(response)
             const { data } = response
             if (response?.status === 201) {
                 alert.success('Item cadastrado no inventário com sucesso.');
@@ -144,18 +149,6 @@ export default function EditInventory(props) {
         { label: 'Cadeira', value: 'Cadeira' },
     ]
 
-    const groupTypeLicency = [
-        { label: 'Servidor local', value: 'Servidor local' },
-        { label: 'Nuvem', value: 'Nuvem' },
-    ]
-
-    const groupNivel = [
-        { label: 'Bacharelado', value: 'Bacharelado' },
-        { label: 'Tecnólogo', value: 'Tecnólogo' },
-        { label: 'Pós-Graduação', value: 'Pós-Graduação' },
-        { label: 'Extensão', value: 'Extensão' },
-    ]
-
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -182,18 +175,28 @@ export default function EditInventory(props) {
                         title="Tipo de ativo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
+                    <TextInput placeholder='DELL OPITIPLEX 780..' name='nome_ativo' onChange={handleChange} value={inventoryData?.nome_ativo || ''} label='Nome/Equipamento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Patrimônio' name='patrimonio' onChange={handleChange} value={inventoryData?.patrimonio || ''} label='Patrimônio' sx={{ flex: 1, }} />
                     <SelectList fullWidth data={rooms} valueSelection={inventoryData?.sala_id} onSelect={(value) => setInventoryData({ ...inventoryData, sala_id: value })}
                         title="Sala de aula" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
+                {inventoryData?.tipo_ativo?.includes('Computador') &&
+                    <Box sx={styles.inputSection}>
+                        <TextInput placeholder='HD' name='hd' onChange={handleChange} value={inventoryData?.hd || ''} label='HD' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Memória' name='memoria' onChange={handleChange} value={inventoryData?.memoria || ''} label='Memória' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Placa de video' name='placa_video' onChange={handleChange} value={inventoryData?.placa_video || ''} label='Placa de video' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Processador' name='processador' onChange={handleChange} value={inventoryData?.processador || ''} label='Processador' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Fonte' name='fonte' onChange={handleChange} value={inventoryData?.fonte || ''} label='Fonte' sx={{ flex: 1, }} />
+                    </Box>
+                }
                 <TextInput
-                    placeholder='Especificações'
-                    name='especificacoes'
+                    placeholder='Observações'
+                    name='observacoes_ativo'
                     onChange={handleChange}
-                    value={inventoryData?.especificacoes || ''}
-                    label='Especificações'
+                    value={inventoryData?.observacoes_ativo || ''}
+                    label='Observações'
                     multiline
                     maxRows={4}
                     rows={3}

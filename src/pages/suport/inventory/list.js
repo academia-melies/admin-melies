@@ -13,6 +13,7 @@ export default function ListInventory(props) {
     const [showInventoryTable, setShowInventoryTable] = useState({});
     const [roomSelected, setRoomSelected] = useState();
     const [showResume, setShowResume] = useState(false);
+    const [lengthData, setLengthData] = useState()
     const [rooms, setRooms] = useState([])
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
@@ -42,7 +43,6 @@ export default function ListInventory(props) {
         setLoading(true)
         try {
             const response = await api.get('/inventoryItems')
-            console.log(response)
             const { data = [] } = response;
             setInventoryList(data)
         } catch (error) {
@@ -68,9 +68,14 @@ export default function ListInventory(props) {
 
     const column = [
         { key: 'id_inventario_item', label: 'ID' },
-        { key: 'tipo_ativo', label: 'Item/Ativo' },
-        { key: 'especificacoes', label: 'Especificações' },
+        { key: 'nome_ativo', label: 'Nome' },
+        // { key: 'tipo_ativo', label: 'Item/Ativo' },
+        { key: 'observacoes_ativo', label: 'Especificações' },
         { key: 'patrimonio', label: 'Patrimônio' },
+        { key: 'memoria', label: 'Memória' },
+        { key: 'processador', label: 'Processador' },
+        { key: 'placa_video', label: 'Placa de Video' },
+
     ];
 
     const listAtivo = [
@@ -82,16 +87,16 @@ export default function ListInventory(props) {
     return (
         <>
             <SectionHeader
-                title={`Inventário (${inventoryList.length || '0'})`}
+                title={`Inventário (${inventoryList?.filter(filter).reduce((total, item) => total + item.items_inventario.length, 0) || '0'})`}
                 newButton
                 newButtonAction={() => router.push(`/suport/${pathname}/new`)}
             />
-                <TableResume
-                    roomSelected={roomSelected}
-                    setRoomSelected={setRoomSelected}
-                    inventoryList={inventoryList}
-                    rooms={rooms}
-                />
+            <TableResume
+                roomSelected={roomSelected}
+                setRoomSelected={setRoomSelected}
+                inventoryList={inventoryList}
+                rooms={rooms}
+            />
 
 
             <Text bold>Buscar por: </Text>
@@ -159,9 +164,7 @@ export default function ListInventory(props) {
                                                 <Table_V1
                                                     data={inventoryItems}
                                                     columns={column}
-                                                    columnActive={false}
                                                     columnId={'id_inventario_item'}
-                                                    center
                                                 />
                                             </Box>
                                         ))}
@@ -197,6 +200,7 @@ export const TableResume = (props) => {
     } = props
 
     const { setLoading, colorPalette } = useAppContext()
+    
 
     return (
         <ContentContainer sx={{ display: 'flex', flexDirection: 'column', maxWidth: '400px', gap: 2.5 }}>
@@ -228,7 +232,7 @@ export const TableResume = (props) => {
                                     <table key={`${index}-${item}`} style={{ borderCollapse: 'collapse', width: '100%' }}>
                                         <thead>
                                             <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Tipo de Ativo</th>
+                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ativo</th>
                                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Quantidade</th>
                                             </tr>
                                         </thead>
