@@ -663,93 +663,93 @@ export default function EditUser() {
             return false
         }
 
-        if (!userData.perfil.includes('interessado')) {
-            if (userData?.senha !== userData?.confirmar_senha) {
-                alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
-                return false
-            }
+        // if (!userData.perfil.includes('interessado')) {
+        //     if (userData?.senha !== userData?.confirmar_senha) {
+        //         alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
+        //         return false
+        //     }
 
-            if (!userData?.telefone) {
-                alert?.error('O campo telefone é obrigatório')
-                return false
-            }
+        //     if (!userData?.telefone) {
+        //         alert?.error('O campo telefone é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.perfil) {
-                alert?.error('O campo perfil é obrigatório')
-                return false
-            }
+        //     if (!userData?.perfil) {
+        //         alert?.error('O campo perfil é obrigatório')
+        //         return false
+        //     }
 
-            // if (!userData?.ativo) {
-            //     alert?.error('O campo banana é obrigatório')
-            //     return false
-            // }
+        //     // if (!userData?.ativo) {
+        //     //     alert?.error('O campo banana é obrigatório')
+        //     //     return false
+        //     // }
 
-            if (!userData?.naturalidade) {
-                alert?.error('O campo naturalidade é obrigatório')
-                return false
-            }
+        //     if (!userData?.naturalidade) {
+        //         alert?.error('O campo naturalidade é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.pais_origem) {
-                alert?.error('O campo País de origem é obrigatório')
-                return false
-            }
+        //     if (!userData?.pais_origem) {
+        //         alert?.error('O campo País de origem é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.nacionalidade) {
-                alert?.error('O campo nacionalidade é obrigatório')
-                return false
-            }
+        //     if (!userData?.nacionalidade) {
+        //         alert?.error('O campo nacionalidade é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.cor_raca) {
-                alert?.error('O campo Cor e raça é obrigatório')
-                return false
-            }
+        //     if (!userData?.cor_raca) {
+        //         alert?.error('O campo Cor e raça é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.genero) {
-                alert?.error('O campo gênero é obrigatório')
-                return false
-            }
+        //     if (!userData?.genero) {
+        //         alert?.error('O campo gênero é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.deficiencia) {
-                alert.error('O campo deficiência é obrigatório')
-                return false
-            }
+        //     if (!userData?.deficiencia) {
+        //         alert.error('O campo deficiência é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.estado_civil) {
-                alert.error('O campo Estado cívil é obrigatório')
-                return false
-            }
+        //     if (!userData?.estado_civil) {
+        //         alert.error('O campo Estado cívil é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.escolaridade) {
-                alert.error('O campo escolaridade é obrigatório')
-                return false
-            }
+        //     if (!userData?.escolaridade) {
+        //         alert.error('O campo escolaridade é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.cep) {
-                alert.error('O campo CEP é obrigatório')
-                return false
-            }
+        //     if (!userData?.cep) {
+        //         alert.error('O campo CEP é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.telefone) {
-                alert.error('O campo numero é obrigatório')
-                return false
-            }
+        //     if (!userData?.telefone) {
+        //         alert.error('O campo numero é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.cidade) {
-                alert.error('O campo cidade é obrigatório')
-                return false
-            }
+        //     if (!userData?.cidade) {
+        //         alert.error('O campo cidade é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.rg) {
-                alert.error('O campo RG é obrigatório')
-                return false
-            }
+        //     if (!userData?.rg) {
+        //         alert.error('O campo RG é obrigatório')
+        //         return false
+        //     }
 
-            if (!userData?.cpf) {
-                alert.error('O campo CPF é obrigatório')
-                return false
-            }
-            return true
-        }
+        //     if (!userData?.cpf) {
+        //         alert.error('O campo CPF é obrigatório')
+        //         return false
+        //     }
+        //     return true
+        // }
 
         return true
     }
@@ -758,7 +758,7 @@ export default function EditUser() {
         if (checkRequiredFields()) {
             setLoading(true)
             try {
-                const response = await createUser(userData, arrayInterests, arrayHistoric, usuario_id);
+                const response = await createUser(userData, arrayInterests, arrayHistoric, usuario_id)
                 const { data } = response
                 if (userData?.perfil?.includes('funcionario')) {
                     const responseData = await createContract(data?.userId, contract)
@@ -791,7 +791,7 @@ export default function EditUser() {
 
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    if (data?.userId) router.push(`/administrative/users/${data?.userId}`)
+                    // if (data?.userId) router.push(`/administrative/users/${data?.userId}`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
@@ -1220,7 +1220,7 @@ export default function EditUser() {
                         </Box>}
                     {!newUser &&
                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                            <Text bold small>Observações do {userData.perfil}:</Text>
+                            <Text bold small>Observações do {userData?.perfil}:</Text>
                             <Button small text='observação' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, historic: true })} />
                         </Box>
                     }
@@ -1236,23 +1236,23 @@ export default function EditUser() {
             </ContentContainer>
 
 
-            <ContentContainer style={{ ...styles.containerRegister, padding: showSections.accessData ? '40px' : '25px' }}>
+            <ContentContainer style={{ ...styles.containerRegister, padding: showSections?.accessData ? '40px' : '25px' }}>
                 <Box sx={{
-                    display: 'flex', alignItems: 'center', gap: 1, padding: showSections.accessData ? '0px 0px 20px 0px' : '0px', "&:hover": {
+                    display: 'flex', alignItems: 'center', gap: 1, padding: showSections?.accessData ? '0px 0px 20px 0px' : '0px', "&:hover": {
                         opacity: 0.8,
                         cursor: 'pointer'
                     },
                     justifyContent: 'space-between'
-                }} onClick={() => setShowSections({ ...showSections, accessData: !showSections.accessData })}>
+                }} onClick={() => setShowSections({ ...showSections, accessData: !showSections?.accessData })}>
                     <Text title bold >Dados de acesso</Text>
                     <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: `url(${icons.gray_arrow_down})`,
-                        transform: showSections.accessData ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transform: showSections?.accessData ? 'rotate(0deg)' : 'rotate(-90deg)',
                         transition: '.3s',
                     }} />
                 </Box>
-                {showSections.accessData &&
+                {showSections?.accessData &&
                     <>
                         <Box sx={{ ...styles.inputSection, whiteSpace: 'nowrap', alignItems: 'end', gap: 4 }}>
                             <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
