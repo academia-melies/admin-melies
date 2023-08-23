@@ -836,35 +836,36 @@ export default function EditUser() {
     }
 
     const handleEditUser = async () => {
+        if (checkRequiredFields()) {
+            setLoading(true)
+            try {
+                const response = await editeUser({ id, userData })
+                if (contract) {
+                    const responseData = await editContract({ id, contract })
+                }
+                if (enrollmentData) {
+                    const responseData = await editeEnrollment({ id, enrollmentData })
+                }
+                if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
+                    const responseData = await api.post(`/officeHours/create/${id}`, { officeHours })
+                }
+                if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
+                    const responseData = await api.patch(`/officeHours/update`, { officeHours })
+                }
 
-        setLoading(true)
-        try {
-            const response = await editeUser({ id, userData })
-            if (contract) {
-                const responseData = await editContract({ id, contract })
+                if (response?.status === 201) {
+                    alert.success('Usuário atualizado com sucesso.');
+                    handleItems()
+                    return
+                }
+                alert.error('Tivemos um problema ao atualizar usuário.');
+            } catch (error) {
+                console.log(error)
+                alert.error('Tivemos um problema ao atualizar usuário.');
+                return error;
+            } finally {
+                setLoading(false)
             }
-            if (enrollmentData) {
-                const responseData = await editeEnrollment({ id, enrollmentData })
-            }
-            if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
-                const responseData = await api.post(`/officeHours/create/${id}`, { officeHours })
-            }
-            if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
-                const responseData = await api.patch(`/officeHours/update`, { officeHours })
-            }
-
-            if (response?.status === 201) {
-                alert.success('Usuário atualizado com sucesso.');
-                handleItems()
-                return
-            }
-            alert.error('Tivemos um problema ao atualizar usuário.');
-        } catch (error) {
-            console.log(error)
-            alert.error('Tivemos um problema ao atualizar usuário.');
-            return error;
-        } finally {
-            setLoading(false)
         }
 
     }
