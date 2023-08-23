@@ -35,6 +35,7 @@
     "react-input-mask": "^2.0.4",
     "react-phone-number-input": "^3.3.0",
     "react-router-dom": "^6.8.2",
+    "react-to-print": "^2.14.13",
     "swiper": "^10.0.4",
     "yarn": "^1.22.19"
   },
