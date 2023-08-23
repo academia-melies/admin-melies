@@ -674,6 +674,11 @@ export default function EditUser() {
             return false
         }
 
+        if (userData?.senha !== userData?.confirmar_senha) {
+            alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
+            return false
+        }
+
         // if (!userData.perfil.includes('interessado')) {
         //     if (userData?.senha !== userData?.confirmar_senha) {
         //         alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
@@ -1941,8 +1946,8 @@ export default function EditUser() {
                     }
                 </ContentContainer >
             }
-            <Box sx={{display: 'flex', flex: 1, justifyContent: 'flex-end'}}>
-                <Button text={'Salvar'} style={{ width: 150}} onClick={() => { newUser ? handleCreateUser : handleEditUser }} />
+            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
+                <Button text={'Salvar'} style={{ width: 150 }} onClick={() => { newUser ? handleCreateUser() : handleEditUser() }} />
             </Box>
             <Backdrop open={showSections.interest} sx={{ zIndex: 999 }}>
 
