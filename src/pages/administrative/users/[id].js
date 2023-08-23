@@ -60,7 +60,8 @@ export default function EditUser() {
         nascimento: null,
         tipo_deficiencia: null,
         nome_emergencia: null,
-        foto_perfil_id: bgPhoto?.location || fileCallback?.filePreview || null
+        foto_perfil_id: bgPhoto?.location || fileCallback?.filePreview || null,
+        nome_social: null
     })
     const [contract, setContract] = useState({})
     const [enrollmentData, setEnrollmentData] = useState({
@@ -138,6 +139,16 @@ export default function EditUser() {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             setUserData(data.response)
+            // setArrayDependent(data.dependents)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const getDependent = async () => {
+        try {
+            const response = await api.get(`/user/dependent/${id}`)
+            const { data } = response
             setArrayDependent(data.dependents)
         } catch (error) {
             console.log(error)
@@ -386,7 +397,6 @@ export default function EditUser() {
     //     let dataNascimento = nascimento;
     //     let plugin = 'CPF';
 
-
     //     try {
     //         const response = await axios.get(`https://www.sintegraws.com.br/api/v1/execute-api.php?token=${token_access}&cpf=${cpf}&data-nascimento=${dataNascimento}&plugin=${plugin}`)
     //         const { data } = response;
@@ -433,6 +443,7 @@ export default function EditUser() {
             getFileUser()
             getOfficeHours()
             getPermissionUser()
+            getDependent()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -791,7 +802,7 @@ export default function EditUser() {
 
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    // if (data?.userId) router.push(`/administrative/users/${data?.userId}`)
+                    if (data?.userId) router.push(`/administrative/users/${data?.userId}`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
@@ -933,7 +944,7 @@ export default function EditUser() {
             if (response?.status === 201) {
                 alert.success('Dependente incluido')
                 setDependent({})
-                handleItems()
+                getDependent()
             }
         } catch (error) {
             console.log(error)
@@ -948,7 +959,7 @@ export default function EditUser() {
             const response = await api.delete(`/user/dependent/delete/${id_dependente}`)
             if (response?.status === 200) {
                 alert.success('Dependente removido.');
-                handleItems()
+                getDependent()
             }
         } catch (error) {
             alert.error('Ocorreu um erro ao remover a Habilidade selecionada.');
@@ -1329,7 +1340,9 @@ export default function EditUser() {
                                             style={{ width: '50%', marginRight: 1 }}
                                             text='Salvar'
                                             onClick={() => {
-                                                !newUser ? handleAddPermission() : alert.info('Permissões atualizadas')
+                                                !newUser ? handleAddPermission() :
+                                                    alert.info('Permissões atualizadas')
+                                                setShowSections({ ...showSections, permissions: false })
                                             }}
                                         />
                                         <Button secondary
@@ -1928,7 +1941,9 @@ export default function EditUser() {
                     }
                 </ContentContainer >
             }
-
+            <Box sx={{display: 'flex', flex: 1, justifyContent: 'flex-end'}}>
+                <Button text={'Salvar'} style={{ width: 150}} onClick={() => { newUser ? handleCreateUser : handleEditUser }} />
+            </Box>
             <Backdrop open={showSections.interest} sx={{ zIndex: 999 }}>
 
                 {showSections.interest &&
