@@ -674,7 +674,7 @@ export default function EditUser() {
             return false
         }
 
-        if (userData?.senha !== userData?.confirmar_senha) {
+        if (userData?.nova_senha !== userData?.confirmar_senha) {
             alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
             return false
         }
