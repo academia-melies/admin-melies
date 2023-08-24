@@ -6,7 +6,7 @@ import { CheckBoxComponent, SectionHeader } from "../../../../organisms";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useAppContext } from "../../../../context/AppContext";
 
-export default function interestEnroll() {
+export default function InterestEnroll() {
     const router = useRouter();
     const { setLoading } = useAppContext()
     const { id, interest } = router.query;
