@@ -111,28 +111,56 @@ export const UserHeader = (props) => {
                             cursor: 'pointer'
                         }
                     }} onClick={() => logout()} />
-                    {showNotification &&  notificationUser?.vizualized &&
-                        <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -120, top: 28, width: 220, padding: '8px 12px' }}>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Text xsmall>{notificationUser.msg}</Text>
-                                <Box sx={{
-                                    ...styles.menuIcon,
-                                    width: 12,
-                                    height: 12,
-                                    backgroundImage: `url(${icons.gray_close})`,
-                                    transition: '.3s',
-                                    aspectRatio: '1/1',
-                                    zIndex: 999999999,
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => {
-                                    setShowNotification(false)
-                                    setNotificationUser({ ...notificationUser, vizualized: false })
-                                }} />
-                            </Box>
-                        </ContentContainer>}
+                    {showNotification &&
+                        <>
+                            {notificationUser?.vizualized ?
+                                <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -120, top: 28, width: 220, padding: '8px 12px' }}>
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        <Text xsmall>{notificationUser.msg}</Text>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 12,
+                                            height: 12,
+                                            backgroundImage: `url(${icons.gray_close})`,
+                                            transition: '.3s',
+                                            aspectRatio: '1/1',
+                                            zIndex: 999999999,
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => {
+                                            setShowNotification(false)
+                                            setNotificationUser({ ...notificationUser, vizualized: false })
+                                        }} />
+                                    </Box>
+                                </ContentContainer>
+
+                                :
+                                <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -120, top: 28, width: 220, padding: '8px 12px' }}>
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        <Text xsmall>Você não possui novas notificações.</Text>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 12,
+                                            height: 12,
+                                            backgroundImage: `url(${icons.gray_close})`,
+                                            transition: '.3s',
+                                            aspectRatio: '1/1',
+                                            zIndex: 999999999,
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => {
+                                            setShowNotification(false)
+                                            setNotificationUser({ ...notificationUser, vizualized: false })
+                                        }} />
+                                    </Box>
+                                </ContentContainer>
+                            }
+                        </>
+                    }
                 </Box>
             </Box>
         </>
