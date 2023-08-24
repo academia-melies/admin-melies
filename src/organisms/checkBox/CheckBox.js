@@ -11,7 +11,8 @@ export const CheckBoxComponent = (props) => {
         horizontal = false,
         label,
         boxGroup = [],
-        valueChecked = ''
+        valueChecked = '',
+        padding = true
     } = props;
 
     const { colorPalette, theme } = useAppContext()
@@ -28,7 +29,7 @@ export const CheckBoxComponent = (props) => {
     }, [valueChecked]);
 
     useEffect(() => {
-    
+
         const formattedValue = selectedValues.join(', ');
         onSelect(formattedValue);
     }, [selectedValues]);
@@ -48,22 +49,28 @@ export const CheckBoxComponent = (props) => {
     };
 
     return (
-        <FormControl sx={{ padding: '5px 13px', }}>
+        <FormControl sx={{ padding: padding ? '5px 13px' : '', gap: 1.8}}>
             <FormLabel sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}>{title}</FormLabel>
-            <FormGroup sx={{ gap: 1, ...style, ...sx }} row={horizontal}>
+            <FormGroup sx={{ ...style, ...sx }} row={horizontal}>
                 {boxGroup?.map((item) => (
                     <FormControlLabel
                         key={item.value}
                         value={item?.value}
                         control={
                             <Checkbox
-                                sx={{ color: colorPalette.textColor, }}
+                                sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}
                                 onChange={() => handleCheckboxChange(item.value)}
                                 checked={getChecked(item.value)}
                             />
                         }
                         label={item?.label}
-                        sx={{ color: colorPalette.textColor, }} />
+                        sx={{
+                            '& .MuiTypography-root': {
+                                fontFamily: 'MetropolisRegular',
+                                color: colorPalette.textColor,
+                                fontSize: '13px'
+                            }
+                        }} />
                 ))
                 }
             </FormGroup>

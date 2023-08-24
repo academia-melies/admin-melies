@@ -1943,6 +1943,7 @@ export default function EditUser() {
                                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 /> */}
+                            <Button text="Nova matrícula" style={{ width: 150 }} onClick={() => router.push(`/administrative/users/${id}/enrollStudent`)} />
                         </>
                     }
                 </ContentContainer >
@@ -1974,7 +1975,7 @@ export default function EditUser() {
                             }} onClick={() => setShowSections({ ...showSections, interest: false })} />
                         </Box>
                         <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
-                            <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px', zIndex: 999999999 }}>
+                            <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px', zIndex: 999999999, width: '80%' }}>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Curso</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Turma</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Periodo</Text>
@@ -2027,6 +2028,18 @@ export default function EditUser() {
                                             setValueIdInterst(interest.id_interesse)
                                             setShowSections({ ...showSections, viewInterest: true })
                                         }} />
+                                        {interest?.turma_id && <Button small text="Matricular" sx={{
+                                            // width: 25,
+                                            transition: '.3s',
+                                            zIndex: 999999999,
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => {
+                                            let query = `?interest=${interest.id_interesse}`;
+                                            router.push(`/administrative/users/${id}/enrollStudent${query}`)
+                                        }} />}
                                         {newUser &&
                                             <Box sx={{
                                                 backgroundSize: 'cover',
