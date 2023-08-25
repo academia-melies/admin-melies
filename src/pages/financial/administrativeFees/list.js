@@ -51,6 +51,7 @@ export default function ListAdministrativeFeesEdit(props) {
         onAfterPrint: () => alert.info('Tabela exportada em PDF.')
     })
 
+
     const column = [
         { key: 'id_taxa_adm', label: 'ID' },
         { key: 'ensino_graduacao_taxa', label: 'Ensino Graduação Presencial' },
