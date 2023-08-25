@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import React, { useRef } from "react"
 import { ContentContainer, Box, Text, Button } from "../../../../atoms"
 import { useAppContext } from "../../../../context/AppContext"
 import { useReactToPrint } from "react-to-print"
