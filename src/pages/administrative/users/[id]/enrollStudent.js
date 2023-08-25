@@ -5,9 +5,9 @@ import { useRef, useEffect, useState } from "react";
 import { CheckBoxComponent, SectionHeader, SelectList } from "../../../../organisms";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useAppContext } from "../../../../context/AppContext";
-import { ContractStudentComponent } from "./contractStudent";
 import { useReactToPrint } from "react-to-print";
 import { formatDate } from "../../../../helpers";
+import { ContractStudentComponent } from "../../../../organisms/contractStudent/contractStudent";
 
 export default function InterestEnroll() {
     const router = useRouter();

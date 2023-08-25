@@ -1,8 +1,8 @@
 import React, { useRef } from "react"
-import { ContentContainer, Box, Text, Button } from "../../../../atoms"
-import { useAppContext } from "../../../../context/AppContext"
+import { ContentContainer, Box, Text, Button } from "../../atoms"
+import { useAppContext } from "../../context/AppContext"
 import { useReactToPrint } from "react-to-print"
-import { formatDate, formatTimeStamp } from "../../../../helpers"
+import { formatDate, formatTimeStamp } from "../../helpers"
 
 export const ContractStudentComponent = (props) => {
 
