@@ -1230,7 +1230,7 @@ export default function EditUser() {
                 </Box>
                 <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25, padding: '0px 0px 20px 15px' }}>
 
-                    {userData?.perfil?.includes('interessado') &&
+                    {(userData?.perfil?.includes('interessado') || userData?.perfil?.includes('aluno') || arrayInterests?.length > 0) &&
                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                             <Text bold small>Lista de interesses:</Text>
                             <Button small text='interesses' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, interest: true })} />
