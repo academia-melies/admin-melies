@@ -12,21 +12,28 @@ export const TextInput = (props) => {
 
    return (
       <TextField
+         autoComplete='off'
+         id="fieldssss"
          label={label}
          {...props}
          InputProps={{
+            autocomplete: 'no',
+            autoComplete: 'off',
+            form: {
+               autocomplete: 'off',
+            },
             sx: {
                transition: 'background-color 1s',
                disableUnderline: true,
                borderRadius: 2,
                fontSize: { xs: '14px', xm: '15px', md: '15px', lg: '15px' },
                fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',
+               ...InputProps?.style,
                color: colorPalette.textColor,
                backgroundColor: colorPalette.inputColor,
-               ...InputProps?.style,
                maxHeight: props.multiline ? 'none' : '45px',
             },
-            
+
             startAdornment: props.type === "coin" && (
                <InputAdornment position="start">
                   <Text>R$ </Text>

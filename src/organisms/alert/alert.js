@@ -29,14 +29,14 @@ const getColors = (alertType) => {
 
 export const Alert = (props) => {
 
-   const defaultTimer = props.type === 'success' ? 5 : 5
+   const defaultTimer = props.type === 'success' ? 5 : 12
 
    const [timer, setTimer] = useState(defaultTimer)
    const theme = getColors(props.type)
 
    useEffect(() => setTimer(defaultTimer), [props.active])
    useEffect(() => {
-      if (props.type !== 'error') {
+      if (props.type === 'success' ) {
          if (props.active && timer > 0) {
             setTimeout(() => setTimer(prev => prev - 0.015), 15)
             return

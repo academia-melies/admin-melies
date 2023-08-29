@@ -6,7 +6,7 @@ import { formatDate, formatTimeStamp } from "../../helpers"
 
 export const ContractStudentComponent = (props) => {
 
-    const { userData, children } = props
+    const { userData, children, responsiblePayerData } = props
     const { colorPalette, alert } = useAppContext()
     const contractService = useRef()
 
@@ -73,29 +73,29 @@ export const ContractStudentComponent = (props) => {
                         <TextInput label="Em caso de emergência:" />
                         <Box sx={styles.containerValues}>
                             <TextInput label="Cel. emergência:" data={userData?.telefone_emergencia} />
-                            <TextInput label="Empresa/Nome do Resp:" data={''} />
+                            <TextInput label="Empresa/Nome do Resp:" data={responsiblePayerData.nome_resp || ''} />
                         </Box>
                         <Box sx={{ flex: 1, marginTop: 5 }}>
                             <Box sx={{ backgroundColor: colorPalette.buttonColor, flex: 1 }}>
                                 <TextInput label="Dados do(a) Responsável / Empresa / Pagante" style={{ title: { color: '#fff' } }} />
                             </Box>
-                            <TextInput label="Endereço:" data={''} />
+                            <TextInput label="Endereço:" data={responsiblePayerData.end_resp || ''} />
                             <Box sx={styles.containerValues}>
-                                <TextInput label="Número:" data={''} />
-                                <TextInput label="CEP:" data={''} />
-                                <TextInput label="Complemento:" data={''} />
+                                <TextInput label="Número:" data={responsiblePayerData.numero_resp || ''} />
+                                <TextInput label="CEP:" data={responsiblePayerData.cep_resp || ''} />
+                                <TextInput label="Complemento:" data={responsiblePayerData.compl_resp || ''} />
                             </Box>
                             <Box sx={styles.containerValues}>
-                                <TextInput label="Bairro:" data={''} />
-                                <TextInput label="Cidade:" data={''} />
-                                <TextInput label="Estado:" data={''} />
-                                <TextInput label="País:" data={''} />
+                                <TextInput label="Bairro:" data={responsiblePayerData.bairro_resp || ''} />
+                                <TextInput label="Cidade:" data={responsiblePayerData.cidade_resp || ''} />
+                                <TextInput label="Estado:" data={responsiblePayerData.estado_resp || ''} />
+                                <TextInput label="País:" data={responsiblePayerData.pais_resp || ''} />
                             </Box>
-                            <TextInput label="E-mail:" data={''} />
+                            <TextInput label="E-mail:" data={responsiblePayerData.email_resp || ''} />
                             <Box sx={styles.containerValues}>
-                                <TextInput label="Telefone:" data={''} />
-                                <TextInput label="CPF / CNPJ:" data={''} />
-                                <TextInput label="RG:" data={''} />
+                                <TextInput label="Telefone:" data={responsiblePayerData.telefone_resp || ''} />
+                                <TextInput label="CPF / CNPJ:" data={responsiblePayerData.cpf_resp || ''} />
+                                <TextInput label="RG:" data={responsiblePayerData.rg_resp || ''} />
                             </Box>
                         </Box>
                     </Box>

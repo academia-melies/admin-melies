@@ -1,3 +1,4 @@
+import axios from "axios";
 
 export const getRandomInt = (min, max) => {
    min = Math.ceil(min);
@@ -78,13 +79,52 @@ export const formatCEP = (cep) => {
 
 export const formatReal = (valor) => {
    if (typeof valor !== 'number') {
-     return '';
+      return '';
    }
- 
+
    const formatter = new Intl.NumberFormat('pt-BR', {
-     style: 'currency',
-     currency: 'BRL',
+      style: 'currency',
+      currency: 'BRL',
    });
- 
+
    return formatter.format(valor);
- };
+};
+
+export async function findCEP(cep) {
+   try {
+      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+      const { data } = response;
+      return data;
+
+      // setUserData((prevValues) => ({
+      //    ...prevValues,
+      //    rua: data.logradouro,
+      //    cidade: data.localidade,
+      //    uf: data.uf,
+      //    bairro: data.bairro,
+      // }))
+   } catch (error) {
+      return error
+   }
+
+}
+
+export const calculationAge = (dateOfBirth) => {
+   const currentDate = new Date();
+   const birthDate = new Date(dateOfBirth);
+
+   // Calculating the age difference
+   let ageDifference = currentDate.getFullYear() - birthDate.getFullYear();
+
+   // Check if the birthday hasn't occurred yet this year
+   if (
+     currentDate.getMonth() < birthDate.getMonth() ||
+     (currentDate.getMonth() === birthDate.getMonth() &&
+      currentDate.getDate() < birthDate.getDate())
+   ) {
+     ageDifference--;
+   }
+
+   // Checking if the user is 18 years or older
+   return ageDifference >= 18;
+}
