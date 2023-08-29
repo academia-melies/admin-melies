@@ -12,6 +12,7 @@ export default function ListUsers(props) {
     const [perfil, setPerfil] = useState('todos')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
+    const [filterEnrollStatus, setFilterEnrollStatus] = useState('todos')
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
@@ -59,6 +60,14 @@ export default function ListUsers(props) {
         { label: 'Inativo', value: 0 },
     ]
 
+    const listEnrollStatus = [
+        { label: 'Todos', value: 'todos' },
+        { label: 'Pendente de nota', value: 'Pendente de nota' },
+        { label: 'Reprovado', value: 'Reprovado' },
+        { label: 'Aprovado - Pendente de pré-matrícula', value: 'Aprovado - Pendente de pré-matrícula' },
+        { label: 'Matriculado', value: 'Matriculado' },
+    ]
+
     const listUser = [
         { label: 'Todos', value: 'todos' },
         { label: 'Aluno', value: 'aluno' },
@@ -75,8 +84,10 @@ export default function ListUsers(props) {
             />
             {/* <Text bold>Buscar por: </Text> */}
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ padding: '15px', }} onChange={setFilterData} />
-                <Box>
+                <Box sx={{display: 'flex', flex: 1}}>
+                    <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ padding: '15px', }} onChange={setFilterData} />
+                </Box>
+                <Box sx={{display: 'flex', flex: 1, flexDirection: 'row', gap: 1}}>
                     <SelectList
                         fullWidth
                         data={listUser}
@@ -88,17 +99,29 @@ export default function ListUsers(props) {
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                         clean={false}
                     />
+
+                    <SelectList
+                        data={listAtivo}
+                        valueSelection={filterAtive}
+                        onSelect={(value) => setFilterAtive(value)}
+                        title="status"
+                        filterOpition="value"
+                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                        clean={false}
+                    />
+                    <SelectList
+                    fullWidth
+                        data={listEnrollStatus}
+                        valueSelection={filterEnrollStatus}
+                        onSelect={(value) => setFilterEnrollStatus(value)}
+                        title="situação/matrícula"
+                        filterOpition="value"
+                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                        clean={false}
+                    />
                 </Box>
-                <SelectList
-                    data={listAtivo}
-                    valueSelection={filterAtive}
-                    onSelect={(value) => setFilterAtive(value)}
-                    title="status"
-                    filterOpition="value"
-                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
-                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                    clean={false}
-                />
             </Box>
             {usersList.length > 0 ?
                 <Table_V1 data={usersList?.filter(filter)} columns={column} columnId={'id'} />

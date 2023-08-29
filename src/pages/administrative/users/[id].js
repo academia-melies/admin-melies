@@ -80,6 +80,12 @@ export default function EditUser() {
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
+    const [showSelectiveProcess, setShowSelectiveProcess] = useState(false)
+    const [selectiveProcessData, setSelectiveProcessData] = useState({
+        agendamento_processo: '',
+        nota_processo: '',
+        status_processo: '',
+    })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [interests, setInterests] = useState({});
@@ -112,6 +118,7 @@ export default function EditUser() {
     const [dependent, setDependent] = useState({})
     const [valueIdHistoric, setValueIdHistoric] = useState()
     const [valueIdInterst, setValueIdInterst] = useState()
+    const [testSelectiveProcess, setTestSelectiveProcess] = useState('')
     const [filesUser, setFilesUser] = useState([])
     const [officeHours, setOfficeHours] = useState([
         { dia_semana: '2ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
@@ -479,6 +486,29 @@ export default function EditUser() {
             ...prevValues,
             [value.target.name]: value.target.value,
         }))
+    }
+
+    const handleChangeSelectiveProcess = (event) => {
+
+
+        setSelectiveProcessData((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }))
+    }
+
+    const handleBlurNota = (event) => {
+
+        let nota = event.target.value;
+
+        if (nota >= 51) {
+            setSelectiveProcessData({ ...selectiveProcessData, status_processo: 'Aprovado - pré-matricula' })
+            return
+        }
+        if (nota < 50) {
+            setSelectiveProcessData({ ...selectiveProcessData, status_processo: 'Reprovado' })
+            return
+        }
     }
 
     const handleChangeEnrollment = (value) => {
@@ -1067,6 +1097,14 @@ export default function EditUser() {
         { label: 'Conta Corrente', value: 'Conta Corrente' },
         { label: 'Conta salário', value: 'Conta salário' },
         { label: 'Conta poupança', value: 'Conta poupança' }
+    ]
+
+    const groupStatusProcess = [
+        { label: 'Aprovado - pré-matricula', value: 'Aprovado - pré-matricula' },
+        { label: 'Reprovado', value: 'Reprovado' },
+        { label: 'Pendente de nota', value: 'Pendente de nota' },
+        // { label: 'Enviado', value: 'Enviado' },
+        // { label: 'Enviado', value: 'Enviado' },
     ]
 
     const grouperiod = [
@@ -1943,11 +1981,93 @@ export default function EditUser() {
                                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 /> */}
-                            <Button text="Nova matrícula" style={{ width: 150 }} onClick={() => setShowSections({...showSections, interest: true})} />
+                            <Button text="Nova matrícula" style={{ width: 150 }} onClick={() => setShowSections({ ...showSections, interest: true })} />
                         </>
                     }
                 </ContentContainer >
             }
+
+
+
+            {userData.perfil && (userData.perfil.includes('aluno') || userData.perfil.includes('interessado')) &&
+                <>
+                    <ContentContainer style={{ ...styles.containerContract, padding: showSelectiveProcess ? '40px' : '25px' }}>
+                        <Box sx={{
+                            display: 'flex', alignItems: 'center', padding: showSelectiveProcess ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            },
+                            justifyContent: 'space-between'
+                        }} onClick={() => setShowSelectiveProcess(!showSelectiveProcess)}>
+                            <Text title bold >Processo seletivo</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                transform: showSelectiveProcess ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                transition: '.3s',
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} />
+                        </Box>
+                        {showSelectiveProcess &&
+                            <>
+                                <Box sx={{ display: 'flex', gap: 3, flex: 1, flexDirection: 'column' }}>
+
+                                    <Box sx={{ ...styles.inputSection, maxWidth: 280 }}>
+                                        <TextInput name='agendamento_processo' onChange={handleChangeSelectiveProcess} type="datetime-local" value={(selectiveProcessData?.agendamento_processo) || ''} label='Data do agendamento' sx={{ flex: 1, }} />
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '10px 0px 10px 5px', flexDirection: 'column' }}>
+                                        <Text bold>Redação:</Text>
+                                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
+                                            <Button text="enviar" onClick={() => console.log('enviar')} style={{ width: 120, height: 30 }} />
+                                            <Button secondary text="re-enviar" onClick={() => console.log('enviar')} style={{ width: 120, height: 30 }} />
+                                        </Box>
+                                    </Box>
+
+                                    {/* {testSelectiveProcess && */}
+                                    <>
+                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
+                                            <Text bold>Prova - Redação:</Text>
+                                            <Box sx={{
+                                                ...styles.menuIcon,
+                                                backgroundImage: `url('${icons.file}')`,
+                                                transition: '.3s',
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
+                                                }
+                                            }} onClick={() => console.log('redação')} />
+                                        </Box>
+
+                                        <Box sx={styles.inputSection}>
+                                            <TextInput placeholder='Nota da prova' name='nota_processo' onBlur={handleBlurNota} type="number" onChange={handleChangeSelectiveProcess} value={selectiveProcessData?.nota_processo || ''} label='Nota da prova' sx={{ flex: 1, }} />
+                                            <SelectList fullWidth data={groupStatusProcess} valueSelection={selectiveProcessData?.status_processo} onSelect={(value) => setSelectiveProcessData({ ...selectiveProcessData, status_processo: value })}
+                                                title="Status processo seletivo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                            />
+                                        </Box>
+
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '10px 0px 10px 5px', flexDirection: 'column' }}>
+                                            <Text bold>Pré-Matrícula/Cadastro:</Text>
+                                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
+                                                <Button text="enviar" onClick={() => console.log('enviar')} style={{ width: 120, height: 30 }} />
+                                                <Button secondary text="re-enviar" onClick={() => console.log('enviar')} style={{ width: 120, height: 30 }} />
+                                            </Box>
+                                        </Box>
+                                    </>
+                                    {/* } */}
+                                </Box>
+                            </>
+                        }
+                    </ContentContainer>
+
+                </>
+            }
+
+
+
             <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
                 <Button text={'Salvar'} style={{ width: 150 }} onClick={() => { newUser ? handleCreateUser() : handleEditUser() }} />
             </Box>
