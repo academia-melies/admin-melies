@@ -1943,7 +1943,7 @@ export default function EditUser() {
                                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 /> */}
-                            <Button text="Nova matrícula" style={{ width: 150 }} onClick={() => router.push(`/administrative/users/${id}/enrollStudent`)} />
+                            <Button text="Nova matrícula" style={{ width: 150 }} onClick={() => setShowSections({...showSections, interest: true})} />
                         </>
                     }
                 </ContentContainer >

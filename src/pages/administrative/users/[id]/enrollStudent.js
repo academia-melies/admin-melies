@@ -28,6 +28,7 @@ export default function InterestEnroll() {
     const [classData, setClassData] = useState({})
     const [valuesContract, setValuesContract] = useState([])
     const [paymentForm, setPaymentForm] = useState({})
+    const [responsiblePayerData, setResponsiblePayerData] = useState({})
     const [updatedScreen, setUpdatedScreen] = useState(false)
 
 
@@ -65,6 +66,7 @@ export default function InterestEnroll() {
                     valuesContract={valuesContract}
                     paymentForm={paymentForm}
                     updatedScreen={updatedScreen}
+                    responsiblePayerData={responsiblePayerData}
                 />
                 <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Button secondary text="Voltar" onClick={() => pushRouteScreen(0, 'interesse >')} style={{ width: 120 }} />
@@ -108,6 +110,21 @@ export default function InterestEnroll() {
             const response = await api.get(`/user/interest/${interest}`)
             const { data } = response
             setInterestData(data)
+            return data
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleResponsible = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/responsible/${id}`)
+            const { data } = response
+            setResponsiblePayerData(data)
             return data
         } catch (error) {
             console.log(error)
@@ -186,6 +203,7 @@ export default function InterestEnroll() {
                 await handleValuesCourse(interests?.curso_id)
                 await handleCourseData(interests?.curso_id)
                 await handleClassData(interests?.turma_id)
+                await handleResponsible()
             }
         } catch (error) {
             console.log(error)
@@ -272,7 +290,7 @@ export const Payment = (props) => {
         valuesCourse,
         setValuesContract,
         setPaymentForm,
-        valuesContract,
+        responsiblePayerData,
         updatedScreen
     } = props
 
@@ -456,8 +474,21 @@ export const Payment = (props) => {
 
                     <ContentContainer fullWidth gap={4}>
                         <Text bold title>Dados do pagante</Text>
-                        <Box>
-
+                        <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
+                            <Box sx={{ ...styles.inputSection }}>
+                                <TextInput placeholder='Nome Completo' name='nome_resp' onChange={handleChange} value={userData?.nome || ''} label='Nome Completo *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
+                                <TextInput placeholder='E-mail' name='email_resp' onChange={handleChange} value={userData?.email_resp || ''} label='E-mail *' sx={{ flex: 1, }} />
+                                <PhoneInputField
+                                    label='Telefone *'
+                                    name='telefone_resp'
+                                    onChange={(phone) => setUserData({ ...userData, telefone_resp: phone })}
+                                    value={userData?.telefone_resp}
+                                    sx={{ flex: 1, }}
+                                />
+                            </Box>
+                            <TextInput placeholder='Nome Social' name='end_resp' onChange={handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
+                            <Box sx={{ ...styles.inputSection }}>
+                            </Box>
                         </Box>
                     </ContentContainer>
 
@@ -529,7 +560,7 @@ export const ContractStudent = (props) => {
 
 
 
-    const { colorPalette, setLoading} = useAppContext()
+    const { colorPalette, setLoading } = useAppContext()
     const [paymentData, setPaymentData] = useState([])
     const [userData, setUserData] = useState({})
     const contractService = useRef()
@@ -542,8 +573,8 @@ export const ContractStudent = (props) => {
             setUserData(response)
         } catch (error) {
             return error
-        } finally{
-        setLoading(false)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -708,5 +739,12 @@ export const styles = {
     },
     textDataPayments: {
         // flex: 1
-    }
+    },
+    inputSection: {
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'space-around',
+        gap: 1.8,
+        flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
+    },
 }
