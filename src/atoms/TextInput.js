@@ -41,7 +41,7 @@ export const TextInput = (props) => {
             ),
          }}
          InputLabelProps={
-            props.type === "date"
+            props.type === "date" || props.type === "datetime-local"
                ? {
                   shrink: true,
                   style: {
