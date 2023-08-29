@@ -74,7 +74,6 @@ export const AppProvider = ({ children }) => {
                     if (userData) {
                         setUser({ ...userData, getPhoto })
                         setUserPermissions(userData?.permissoes)
-                        setNotificationUser({vizualized: true, msg: `Bem-vindo ${userData?.nome} ao novo portal administrativo da Méliès. 🎉` })
                     }
                     else setUser(null);
                 }
@@ -102,6 +101,7 @@ export const AppProvider = ({ children }) => {
                 localStorage.setItem('token', userData?.token);
                 api.defaults.headers.Authorization = `Bearer ${userData?.token}`
                 setUser({ ...userData, getPhoto });
+                setNotificationUser({vizualized: true, msg: `Bem-vindo ${userData?.nome} ao novo portal administrativo da Méliès. 🎉` })
                 router.push('/');
                 return response
             }
