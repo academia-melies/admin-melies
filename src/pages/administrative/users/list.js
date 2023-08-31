@@ -65,6 +65,7 @@ export default function ListUsers(props) {
         { label: 'Pendente de nota', value: 'Pendente de nota' },
         { label: 'Reprovado', value: 'Reprovado' },
         { label: 'Aprovado - Pendente de pré-matrícula', value: 'Aprovado - Pendente de pré-matrícula' },
+        { label: 'Aprovado - Em análise', value: 'Aprovado - Em análise' },
         { label: 'Matriculado', value: 'Matriculado' },
     ]
 

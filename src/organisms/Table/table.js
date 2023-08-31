@@ -2,7 +2,7 @@ import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody
 import React from "react";
 import { useRouter } from "next/router";
 import { formatDate, formatTimeStamp } from "../../helpers";
-import { Box } from "../../atoms";
+import { Box, Button } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
 
 export const Table_V1 = (props) => {
@@ -18,11 +18,12 @@ export const Table_V1 = (props) => {
         center = false,
         routerPush = true,
         sx = {},
-        tolltip = false
+        tolltip = false,
+        onDelete = false,
     } = props;
 
 
-    const { colorPalette, theme } = useAppContext()
+    const { colorPalette, theme, setShowConfirmationDialog } = useAppContext()
     const router = useRouter();
     const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
     const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
@@ -41,7 +42,7 @@ export const Table_V1 = (props) => {
 
     return (
         <>
-            <Paper sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', ...sx}}>
+            <Paper sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', ...sx }}>
                 <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
@@ -52,13 +53,16 @@ export const Table_V1 = (props) => {
                                 {columnActive &&
                                     <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>ativo</TableCell>
                                 }
+                                {onDelete &&
+                                    <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}></TableCell>
+                                }
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {data?.map((row, index) => (
                                 <TableRow key={row.id} onClick={() => {
                                     routerPush ? handleRowClick(row[columnId])
-                                    : onSelect(row[columnId])
+                                        : onSelect(row[columnId])
                                 }} sx={{
                                     ...styles.bodyRow,
                                     transition: 'background-color 1s',
@@ -118,6 +122,23 @@ export const Table_V1 = (props) => {
                                             style={{ backgroundColor: row.ativo >= 1 ? 'green' : 'red', boxShadow: row.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
                                         />
                                     </TableCell>
+                                    }
+                                    {onDelete &&
+                                        <TableCell>
+                                            <Button small text="deletar" style={{
+                                                backgroundColor: 'red',
+                                                color: '#fff',
+                                                transition: 'background-color 1s',
+                                                "&:hover": {
+                                                    backgroundColor: 'red' + 'dd',
+                                                    cursor: 'pointer'
+                                                },
+                                                width: '80px',
+                                                borderRadius: '5px'
+                                            }} onClick={() => {
+                                                onSelect(row[columnId])
+                                            }} />
+                                        </TableCell>
                                     }
                                 </TableRow>
                             ))}
