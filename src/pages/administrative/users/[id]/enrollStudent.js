@@ -140,7 +140,7 @@ export default function InterestEnroll() {
     const handleValuesCourse = async (courseId) => {
         setLoading(true)
         try {
-            const response = await api.get(`/coursePrices/course/${courseId}`)
+            const response = await api.get(`/coursePrices/course/historic/${courseId}`)
             const { data } = response
             setValuesCourse(data)
             return data
@@ -385,10 +385,12 @@ export const Payment = (props) => {
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
     const [disciplineDispensedPorcent, setDisciplineDispensedPorcent] = useState()
     const [valueParcel, setValueParcel] = useState()
+    const [groupDaysForPay, setGroupDaysForPay] = useState()
     const [totalParcel, setTotalParcel] = useState()
     const [dispensedDisciplines, setDispensedDisciplines] = useState()
     const [discountDispensed, setDiscountDispensed] = useState()
     const [numberOfInstallments, setNumberOfInstallments] = useState(6)
+    const [dayForPayment, setDayForPayment] = useState(1)
     const initialTypePaymentsSelected = Array.from({ length: numberOfInstallments }, () => ({ tipo: '', valor_parcela: '', n_parcela: null, data_pagamento: '' }));
     const [typePaymentsSelected, setTypePaymentsSelected] = useState(initialTypePaymentsSelected);
     const [globalTypePaymentsSelected, setGlobalTypePaymentsSelected] = useState('');
@@ -428,10 +430,18 @@ export const Payment = (props) => {
             value: index + 1
         }))
 
+        const updatedDayForPayment = Array.from({ length: 28 }, (_, index) => ({
+            label: index + 1,
+            value: index + 1
+        }))
+
+        setGroupDaysForPay(updatedDayForPayment)
         setValueParcel(parcelValue)
         setTotalParcel(updatedNumberParcel)
 
     }, [numberOfInstallments, totalValueFinnaly])
+
+
 
     const handleAllSelectTypePayment = (value) => {
         setGlobalTypePaymentsSelected(value);
@@ -464,7 +474,6 @@ export const Payment = (props) => {
             return updatedTypePaymentsSelected;
         });
     };
-
 
 
     const handleChange = (event) => {
@@ -623,6 +632,10 @@ export const Payment = (props) => {
                                 <Text bold>Valor Total com desconto:</Text>
                                 <Text>{formatter.format(totalValueFinnaly)}</Text>
                             </Box>
+                            <SelectList fullWidth data={groupDaysForPay} valueSelection={dayForPayment || ''} onSelect={(value) => setDayForPayment(value)}
+                                title="Selecione o dia do vencimento *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
                         </Box>
                     </ContentContainer>
 
@@ -748,7 +761,11 @@ export const Payment = (props) => {
                                     {Array.from({ length: numberOfInstallments }, (_, index) => {
                                         const installmentNumber = index + 1;
                                         const paymentDate = new Date();
-                                        paymentDate.setDate(paymentDate.getDate() + index * 30); // Incrementing date by 30 days interval
+                                        const currentDay = paymentDate.getDate();
+                                        const selectedDay = dayForPayment;
+
+                                        paymentDate.setDate(selectedDay);
+                                        paymentDate.setMonth(paymentDate.getMonth() + (index + 1)); // Incrementing date by 30 days interval
                                         const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR'); // You can adjust the locale if needed
 
                                         return (
@@ -922,8 +939,14 @@ export const ContractStudent = (props) => {
                         }
                         {valuesContract.descontoAdicional &&
                             <Box sx={styles.containerValues}>
-                                <Text small style={styles.textDataPayments} bold>DESCONTO:</Text>
+                                <Text small style={styles.textDataPayments} bold>DESCONTO (adicional):</Text>
                                 <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.descontoAdicional)}</Text>
+                            </Box>
+                        }
+                         {valuesContract.descontoAdicional && valuesContract.descontoDispensadas > 0 &&
+                            <Box sx={styles.containerValues}>
+                                <Text small style={styles.textDataPayments} bold>DESCONTO TOTAL:</Text>
+                                <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.descontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))}</Text>
                             </Box>
                         }
                         {valuesContract.valorFinal &&

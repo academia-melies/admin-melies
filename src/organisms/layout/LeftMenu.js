@@ -119,6 +119,11 @@ export const LeftMenu = ({ }) => {
                   backgroundImage: `url(${imagesList})`,
                   borderRadius: '0px 0px 16px 16px'
                }} />
+               {user?.professor === 1 &&
+                  <Box sx={{ position: 'absolute', top: -20, left: 8, padding: '2px 5px 2px 5px', backgroundColor: colorPalette.buttonColor, justifyContent: 'center', alignItems: 'center' }}>
+                     <Text bold xsmall>Professor</Text>
+                  </Box>
+               }
                <Box sx={{ ...styles.userBadgeContainer }}>
                   <Box sx={{
                      display: 'flex',
@@ -309,7 +314,7 @@ export const LeftMenu = ({ }) => {
                      cursor: 'pointer', opacity: 0.8
                   }
                }} onClick={() => router.push('/')} />
-            <Text style={{bottom: 45, left: 20, position: 'absolute', color: 'gray'}}>version {latestVersionNumber}</Text>
+               <Text style={{ bottom: 45, left: 20, position: 'absolute', color: 'gray' }}>version {latestVersionNumber}</Text>
             </Box>
          </Box >
 
