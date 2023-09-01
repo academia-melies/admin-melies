@@ -8,9 +8,10 @@ import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, TableOffic
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, deleteFile, deleteUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator, formatCEP, formatCPF, formatRg } from "../../../helpers"
+import { emailValidator, formatCEP, formatCPF, formatDate, formatRg } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
+import { da } from "date-fns/locale"
 
 export default function EditUser() {
     const { setLoading, alert, colorPalette, user, matches, theme, setShowConfirmationDialog } = useAppContext()
@@ -64,12 +65,7 @@ export default function EditUser() {
         nome_social: null
     })
     const [contract, setContract] = useState({})
-    const [enrollmentData, setEnrollmentData] = useState({
-        status: null,
-        motivo_desistencia: null,
-        dt_desistencia: null,
-        certificado_emitido: null,
-    })
+    const [enrollmentData, setEnrollmentData] = useState([])
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
@@ -98,7 +94,8 @@ export default function EditUser() {
         addInterest: false,
         viewInterest: false,
         permissions: false,
-        accessData: false
+        accessData: false,
+        editEnroll: false
     })
     const [showEditFile, setShowEditFiles] = useState({
         photoProfile: false,
@@ -128,6 +125,10 @@ export default function EditUser() {
         { dia_semana: '6ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
         { dia_semana: 'Sábado', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
     ]);
+    const [showEnrollTable, setShowEnrollTable] = useState({})
+    const [enrollmentStudentEditId, setEnrollmentStudentEditId] = useState()
+    const [enrollmentStudentEditData, setEnrollmentStudentEditData] = useState({})
+
 
     useEffect(() => {
         setPerfil(slug)
@@ -176,6 +177,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/enrollment/${id}`)
             const { data } = response
+            console.log(data)
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)
@@ -519,6 +521,14 @@ export default function EditUser() {
         }))
     }
 
+    const handleChangeEnrollmentEdit = (value) => {
+
+        setEnrollmentStudentEditData((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
+
     const handleChangeHistoric = (value) => {
 
         setHistoricData((prevValues) => ({
@@ -810,10 +820,10 @@ export default function EditUser() {
                     const responseData = await createContract(data?.userId, contract)
 
                 }
-                if (userData?.perfil?.includes('aluno')) {
-                    const responseData = await createEnrollment(data?.userId, enrollmentData);
+                // if (userData?.perfil?.includes('aluno')) {
+                //     const responseData = await createEnrollment(data?.userId, enrollmentData);
 
-                }
+                // }
                 if (fileCallback) {
                     const responseData = await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`);
 
@@ -873,9 +883,9 @@ export default function EditUser() {
                 if (contract) {
                     const responseData = await editContract({ id, contract })
                 }
-                if (enrollmentData) {
-                    const responseData = await editeEnrollment({ id, enrollmentData })
-                }
+                // if (enrollmentData) {
+                //     const responseData = await editeEnrollment({ id, enrollmentData })
+                // }
                 if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
                     const responseData = await api.post(`/officeHours/create/${id}`, { officeHours })
                 }
@@ -1016,6 +1026,50 @@ export default function EditUser() {
             }
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const toggleEnrollTable = (index) => {
+        setShowEnrollTable(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
+    };
+
+
+    const handleEnrollStudentById = async (id) => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/enrollment/edit/${id}`)
+            const { data } = response
+            if (data) {
+                setEnrollmentStudentEditData(data)
+            }
+
+        } catch (error) {
+            return error
+        } finally{
+            setLoading(false)
+        }
+    }
+
+
+    const handleEnrollStudentEdit = async () => {
+        setLoading(true)
+        try {
+            if (enrollmentStudentEditData) {
+                const responseData = await editeEnrollment({ enrollmentStudentEditId, enrollmentStudentEditData })
+
+                if (responseData.status === 201) {
+                    setShowSections({ ...showSections, editEnroll: false })
+                    getEnrollment()
+                }
+            }
+
+        } catch (error) {
+            return error
         } finally {
             setLoading(false)
         }
@@ -1176,8 +1230,6 @@ export default function EditUser() {
         { key: 'dt_ocorrencia', label: 'Data', date: true },
         { key: 'responsavel', label: 'Responsável' }
     ];
-
-
 
     return (
         <>
@@ -1832,7 +1884,7 @@ export default function EditUser() {
                         },
                         justifyContent: 'space-between'
                     }} onClick={() => setShowEnrollment(!showEnrollment)}>
-                        <Text title bold >Matrícula</Text>
+                        <Text title bold >Matrículas</Text>
                         <Box sx={{
                             ...styles.menuIcon,
                             backgroundImage: `url(${icons.gray_arrow_down})`,
@@ -1845,147 +1897,253 @@ export default function EditUser() {
                         }} />
                     </Box>
                     {showEnrollment &&
-                        <>
-                            <Box sx={styles.inputSection}>
-                                <SelectList fullWidth data={classesInterest} valueSelection={enrollmentData?.turma_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, turma_id: value })}
-                                    title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                                <TextInput placeholder='Pendências' name='pendencia_aluno' onChange={handleChangeEnrollment} value={enrollmentData?.pendencia_aluno || ''} label='Pendências' sx={{ flex: 1, }} />
-                            </Box>
-                            <Box sx={styles.inputSection}>
-                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
-                                    <Text bold>Contrato do aluno:</Text>
-                                    <Box sx={{
-                                        ...styles.menuIcon,
-                                        backgroundImage: `url('${icons.file}')`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} onClick={() => setShowEditFiles({ ...showEditFile, contractStudent: true })} />
-                                    <Box sx={{
-                                        ...styles.menuIcon,
-                                        width: 22,
-                                        height: 22,
-                                        backgroundImage: `url('${icons.print}')`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} />
-                                    <Box sx={{
-                                        ...styles.menuIcon,
-                                        width: 22,
-                                        height: 22,
-                                        backgroundImage: `url('${icons.send}')`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} />
-                                    <EditFile
-                                        columnId="id_doc_usuario"
-                                        open={showEditFile.contractStudent}
-                                        newUser={newUser}
-                                        onSet={(set) => {
-                                            setShowEditFiles({ ...showEditFile, contractStudent: set })
-                                        }}
-                                        title='Contrato do aluno'
-                                        text='Faça o upload do contrato do aluno, depois clique em salvar.'
-                                        textDropzone='Arraste ou clique para selecionar a foto/arquivo que deseja'
-                                        fileData={filesUser?.filter((file) => file.campo === 'contrato aluno')}
-                                        usuarioId={id}
-                                        campo='contrato aluno'
-                                        tipo='documento usuario'
-                                        callback={(file) => {
-                                            if (file.status === 201 || file.status === 200) {
-                                                handleItems()
-                                            }
-                                        }}
-                                    />
-                                </Box>
-                            </Box>
-                            <Box sx={styles.inputSection}>
-                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
-                                    <Text bold>Boleto:</Text>
-                                    <Box sx={{
-                                        ...styles.menuIcon,
-                                        width: 22,
-                                        height: 22,
-                                        backgroundImage: `url('${icons.print}')`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} />
-                                    <Box sx={{
-                                        ...styles.menuIcon,
-                                        backgroundImage: `url('${icons.file}')`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} />
-                                    <Box sx={{
-                                        ...styles.menuIcon,
-                                        width: 22,
-                                        height: 22,
-                                        backgroundImage: `url('${icons.send}')`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} />
-                                </Box>
-                            </Box>
-                            <Box sx={styles.inputSection}>
-                                <TextInput name='dt_inicio' onChange={handleChangeEnrollment} type="date" value={(enrollmentData?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
-                                <TextInput name='dt_final' onChange={handleChangeEnrollment} type="date" value={(enrollmentData?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
-                                <SelectList fullWidth data={groupSituation} valueSelection={enrollmentData?.status} onSelect={(value) => setEnrollmentData({ ...enrollmentData, status: value })}
-                                    title="Status/Situação" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                            </Box>
-                            {
-                                enrollmentData.status?.includes('Desistente') &&
-                                <>
+                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
 
-                                    <CheckBoxComponent
-                                        valueChecked={enrollmentData?.motivo_desistencia || ''}
-                                        boxGroup={groupReasonsDroppingOut}
-                                        title="Motivo da desistência"
-                                        horizontal={mobile ? false : true}
-                                        onSelect={(value) => setEnrollmentData({
-                                            ...enrollmentData,
-                                            motivo_desistencia: value
-                                        })}
-                                        sx={{ width: 1 }}
-                                    />
-                                    <TextInput name='dt_desistencia' onChange={handleChangeEnrollment} type="date" value={(enrollmentData?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
-                                </>
-                            }
-                            <RadioItem valueRadio={enrollmentData?.certificado_emitido}
-                                group={groupCertificate}
-                                title="Certificado emitido:"
-                                horizontal={mobile ? false : true}
-                                onSelect={(value) => setEnrollmentData({ ...enrollmentData, certificado_emitido: parseInt(value) })} />
+                            {enrollmentData ?
+                                enrollmentData?.map((item, index) => {
+                                    const className = classesInterest?.filter(turma => turma.value === item?.turma_id).map(name => name.label);
+                                    const startDate = formatDate(item.dt_inicio)
+                                    const title = `${className} - ${startDate}`
+                                    return (
 
-                            {/* <SelectList fullWidth data={courses} valueSelection={enrollmentData?.curso_id} onSelect={(value) => setEnrollmentData({ ...enrollmentData, curso_id: value })}
-                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                /> */}
-                            <Button text="Nova matrícula" style={{ width: 150 }} onClick={() => setShowSections({ ...showSections, interest: true })} />
-                        </>
+                                        <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    }
+                                                }}
+                                                onClick={() => toggleEnrollTable(index)}
+                                            >
+                                                <Text bold style={{ color: colorPalette.buttonColor }}>{title}</Text>
+                                                <Box
+                                                    sx={{
+                                                        ...styles.menuIcon,
+                                                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                        transform: showEnrollTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
+                                                        transition: '.3s',
+                                                        width: 17,
+                                                        height: 17
+                                                    }}
+                                                />
+                                            </Box>
+                                            {showEnrollTable[index] && (
+                                                <ContentContainer>
+
+                                                    <Box sx={styles.inputSection}>
+                                                        <SelectList fullWidth data={classesInterest} valueSelection={item?.turma_id} clean={false}
+                                                            title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                        />
+                                                        <TextInput placeholder='Pendências' name='pendencia_aluno' value={item?.pendencia_aluno || ''} label='Pendências' sx={{ flex: 1, }} />
+                                                    </Box>
+                                                    <Box sx={styles.inputSection}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
+                                                            <Text bold>Contrato do aluno:</Text>
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                backgroundImage: `url('${icons.file}')`,
+                                                                transition: '.3s',
+                                                                "&:hover": {
+                                                                    opacity: 0.8,
+                                                                    cursor: 'pointer'
+                                                                }
+                                                            }} onClick={() => setShowEditFiles({ ...showEditFile, contractStudent: true })} />
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                width: 22,
+                                                                height: 22,
+                                                                backgroundImage: `url('${icons.print}')`,
+                                                                transition: '.3s',
+                                                                "&:hover": {
+                                                                    opacity: 0.8,
+                                                                    cursor: 'pointer'
+                                                                }
+                                                            }} />
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                width: 22,
+                                                                height: 22,
+                                                                backgroundImage: `url('${icons.send}')`,
+                                                                transition: '.3s',
+                                                                "&:hover": {
+                                                                    opacity: 0.8,
+                                                                    cursor: 'pointer'
+                                                                }
+                                                            }} />
+                                                            <EditFile
+                                                                columnId="id_doc_usuario"
+                                                                open={showEditFile.contractStudent}
+                                                                newUser={newUser}
+                                                                onSet={(set) => {
+                                                                    setShowEditFiles({ ...showEditFile, contractStudent: set })
+                                                                }}
+                                                                title='Contrato do aluno'
+                                                                text='Faça o upload do contrato do aluno, depois clique em salvar.'
+                                                                textDropzone='Arraste ou clique para selecionar a foto/arquivo que deseja'
+                                                                fileData={filesUser?.filter((file) => file.campo === 'contrato aluno')}
+                                                                usuarioId={id}
+                                                                campo='contrato aluno'
+                                                                tipo='documento usuario'
+                                                                callback={(file) => {
+                                                                    if (file.status === 201 || file.status === 200) {
+                                                                        handleItems()
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                    </Box>
+                                                    <Box sx={styles.inputSection}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
+                                                            <Text bold>Boleto:</Text>
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                width: 22,
+                                                                height: 22,
+                                                                backgroundImage: `url('${icons.print}')`,
+                                                                transition: '.3s',
+                                                                "&:hover": {
+                                                                    opacity: 0.8,
+                                                                    cursor: 'pointer'
+                                                                }
+                                                            }} />
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                backgroundImage: `url('${icons.file}')`,
+                                                                transition: '.3s',
+                                                                "&:hover": {
+                                                                    opacity: 0.8,
+                                                                    cursor: 'pointer'
+                                                                }
+                                                            }} />
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                width: 22,
+                                                                height: 22,
+                                                                backgroundImage: `url('${icons.send}')`,
+                                                                transition: '.3s',
+                                                                "&:hover": {
+                                                                    opacity: 0.8,
+                                                                    cursor: 'pointer'
+                                                                }
+                                                            }} />
+                                                        </Box>
+                                                    </Box>
+                                                    <Box sx={styles.inputSection}>
+                                                        <TextInput name='dt_inicio' type="date" value={(item?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
+                                                        <TextInput name='dt_final' type="date" value={(item?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
+                                                        <SelectList fullWidth data={groupSituation} valueSelection={item?.status} clean={false}
+                                                            title="Status/Situação" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                        />
+                                                    </Box>
+                                                    {
+                                                        enrollmentData.status?.includes('Desistente') &&
+                                                        <>
+
+                                                            <CheckBoxComponent
+                                                                valueChecked={item?.motivo_desistencia || ''}
+                                                                boxGroup={groupReasonsDroppingOut}
+                                                                title="Motivo da desistência"
+                                                                horizontal={mobile ? false : true}
+                                                                sx={{ width: 1 }}
+                                                            />
+                                                            <TextInput name='dt_desistencia' type="date" value={(item?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
+                                                        </>
+                                                    }
+                                                    <RadioItem valueRadio={item?.certificado_emitido}
+                                                        group={groupCertificate}
+                                                        title="Certificado emitido:"
+                                                        horizontal={mobile ? false : true}
+                                                    />
+                                                    <Button secondary small text="editar matrícula" style={{}} onClick={() => {
+                                                        setEnrollmentStudentEditId(item?.id_matricula)
+                                                        handleEnrollStudentById(item?.id_matricula)
+                                                        setShowSections({ ...showSections, editEnroll: true })
+                                                    }} />
+                                                </ContentContainer>
+                                            )}
+                                        </Box>
+
+                                    )
+                                })
+                                :
+                                <Text light> Não encontramos matrículas cadastradas.</Text>}
+                            <Button text="Nova matrícula" style={{ width: 150, marginTop: 3 }} onClick={() => setShowSections({ ...showSections, interest: true })} />
+                        </Box>
                     }
+
                 </ContentContainer >
             }
+
+            <Backdrop open={showSections?.editEnroll} sx={{ zIndex: 999 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+                    <ContentContainer>
+                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                            <Text bold>Editar Matrícula</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_close})`,
+                                transition: '.3s',
+                                zIndex: 999999999,
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} onClick={() => setShowSections({ ...showSections, editEnroll: false })} />
+                        </Box>
+
+                        <Box sx={styles.inputSection}>
+                            <SelectList fullWidth data={classesInterest} valueSelection={enrollmentStudentEditData?.turma_id} onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, turma_id: value })}
+                                title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+                            <TextInput placeholder='Pendências' name='pendencia_aluno' onChange={handleChangeEnrollmentEdit} value={enrollmentStudentEditData?.pendencia_aluno || ''} label='Pendências' sx={{ flex: 1, }} />
+                        </Box>
+                        <Box sx={styles.inputSection}>
+                            <TextInput name='dt_inicio' onChange={handleChangeEnrollmentEdit} type="date" value={(enrollmentStudentEditData?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
+                            <TextInput name='dt_final' onChange={handleChangeEnrollmentEdit} type="date" value={(enrollmentStudentEditData?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
+                            <SelectList fullWidth data={groupSituation} valueSelection={enrollmentStudentEditData?.status} onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, status: value })}
+                                title="Status/Situação" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+                        </Box>
+                        {
+                            enrollmentData.status?.includes('Desistente') &&
+                            <>
+
+                                <CheckBoxComponent
+                                    valueChecked={enrollmentStudentEditData?.motivo_desistencia || ''}
+                                    boxGroup={groupReasonsDroppingOut}
+                                    title="Motivo da desistência"
+                                    horizontal={mobile ? false : true}
+                                    onSelect={(value) => setEnrollmentStudentEditData({
+                                        ...enrollmentStudentEditData,
+                                        motivo_desistencia: value
+                                    })}
+                                    sx={{ width: 1 }}
+                                />
+                                <TextInput name='dt_desistencia' onChange={handleChangeEnrollmentEdit} type="date" value={(enrollmentStudentEditData?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
+                            </>
+                        }
+                        <RadioItem valueRadio={enrollmentStudentEditData?.certificado_emitido}
+                            group={groupCertificate}
+                            title="Certificado emitido:"
+                            horizontal={mobile ? false : true}
+                            onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, certificado_emitido: parseInt(value) })} />
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flex: 1, justifyContent: 'flex-start' }}>
+                            <Button small text="salvar" onClick={() => handleEnrollStudentEdit()} />
+                            <Button secondary small text="cancelar" style={{}} onClick={() => setShowSections({ ...showSections, editEnroll: false })} />
+                        </Box>
+
+                    </ContentContainer>
+                </Box>
+            </Backdrop>
 
 
 
