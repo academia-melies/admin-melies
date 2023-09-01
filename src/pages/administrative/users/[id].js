@@ -113,6 +113,8 @@ export default function EditUser() {
     const [arrayHistoric, setArrayHistoric] = useState([])
     const [arrayDependent, setArrayDependent] = useState([])
     const [dependent, setDependent] = useState({})
+    const [arrayDisciplinesProfessor, setArrayDisciplinesProfessor] = useState([])
+    const [disciplinesProfessor, setDisciplinesProfessor] = useState({})
     const [valueIdHistoric, setValueIdHistoric] = useState()
     const [valueIdInterst, setValueIdInterst] = useState()
     const [testSelectiveProcess, setTestSelectiveProcess] = useState('')
@@ -128,7 +130,7 @@ export default function EditUser() {
     const [showEnrollTable, setShowEnrollTable] = useState({})
     const [enrollmentStudentEditId, setEnrollmentStudentEditId] = useState()
     const [enrollmentStudentEditData, setEnrollmentStudentEditData] = useState({})
-
+    const [disciplines, setDisciplines] = useState([])
 
     useEffect(() => {
         setPerfil(slug)
@@ -136,6 +138,7 @@ export default function EditUser() {
         listCourses()
         listClassesInterest()
         listPermissions()
+        listDisciplines()
     }, [slug])
 
     useEffect(() => {
@@ -153,11 +156,23 @@ export default function EditUser() {
         }
     }
 
+
     const getDependent = async () => {
         try {
             const response = await api.get(`/user/dependent/${id}`)
             const { data } = response
             setArrayDependent(data.dependents)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+    const getDisciplineProfessor = async () => {
+        try {
+            const response = await api.get(`/discipline/professor/${id}`)
+            const { data } = response
+            setArrayDisciplinesProfessor(data)
         } catch (error) {
             console.log(error)
         }
@@ -177,7 +192,6 @@ export default function EditUser() {
         try {
             const response = await api.get(`/enrollment/${id}`)
             const { data } = response
-            console.log(data)
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)
@@ -399,6 +413,20 @@ export default function EditUser() {
         }
     }
 
+    async function listDisciplines() {
+        try {
+            const response = await api.get(`/disciplines/active`)
+            const { data } = response
+            const groupDisciplines = data.map(disciplines => ({
+                label: disciplines.nome_disciplina,
+                value: disciplines?.id_disciplina
+            }));
+
+            setDisciplines(groupDisciplines);
+        } catch (error) {
+        }
+    }
+
     // async function verifyCPF(cpf, nascimento) {
     //     setLoading(true)
     //     let token_access = 'F285AF4D-13C7-46B9-8C66-583DBE14E017';
@@ -453,6 +481,7 @@ export default function EditUser() {
             getOfficeHours()
             getPermissionUser()
             getDependent()
+            getDisciplineProfessor()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -551,6 +580,13 @@ export default function EditUser() {
 
     const handleChangeDependent = (value) => {
         setDependent((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    };
+
+    const handleChangeDisciplineProfessor = (value) => {
+        setDisciplinesProfessor((prevValues) => ({
             ...prevValues,
             [value.target.name]: value.target.value,
         }))
@@ -814,7 +850,7 @@ export default function EditUser() {
         if (checkRequiredFields()) {
             setLoading(true)
             try {
-                const response = await createUser(userData, arrayInterests, arrayHistoric, usuario_id)
+                const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
                 const { data } = response
                 if (userData?.perfil?.includes('funcionario')) {
                     const responseData = await createContract(data?.userId, contract)
@@ -1031,6 +1067,55 @@ export default function EditUser() {
         }
     }
 
+    const addDisciplineProfessor = () => {
+        setArrayDisciplinesProfessor((prevArray) => [...prevArray, { disciplina_id: disciplinesProfessor.disciplina_id }])
+        setDisciplinesProfessor({ disciplina_id: '' })
+    }
+
+    const deleteDisciplineProfessor = (index) => {
+
+        if (newUser) {
+            setArrayDisciplinesProfessor((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
+
+    const handleAddDisciplineProfessor = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/discipline/professor/create/${id}`, { disciplinesProfessor, usuario_id })
+            if (response?.status === 201) {
+                alert.success('Disciplina vinculada ao professor')
+                setDisciplinesProfessor({})
+                getDisciplineProfessor()
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleDeleteDisciplineProfessor = async (disciplineProfessorId) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/discipline/professor/delete/${disciplineProfessorId}`)
+            if (response?.status === 200) {
+                alert.success('Dependente removido.');
+                getDisciplineProfessor()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a Habilidade selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
     const toggleEnrollTable = (index) => {
         setShowEnrollTable(prevState => ({
             ...prevState,
@@ -1050,7 +1135,7 @@ export default function EditUser() {
 
         } catch (error) {
             return error
-        } finally{
+        } finally {
             setLoading(false)
         }
     }
@@ -1456,6 +1541,85 @@ export default function EditUser() {
                             title="Professor *"
                             horizontal={mobile ? false : true}
                             onSelect={(value) => setUserData({ ...userData, professor: parseInt(value) })} />
+
+                        {userData?.professor === 1 &&
+                            <ContentContainer style={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Text bold style={{ padding: '0px 0px 0px 10px' }}>Selecionar disciplina</Text>
+                                {arrayDisciplinesProfessor.length > 0 &&
+                                    arrayDisciplinesProfessor?.map((disciplina, index) => (
+                                        <>
+
+                                            <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                                <SelectList
+                                                    clean={false}
+                                                    fullWidth={true}
+                                                    data={disciplines}
+                                                    valueSelection={disciplina?.disciplina_id}
+                                                    title="Disciplina"
+                                                    filterOpition="value"
+                                                    sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                    inputStyle={{
+                                                        color: colorPalette.textColor,
+                                                        fontSize: "15px",
+                                                        fontFamily: "MetropolisBold",
+                                                    }}
+                                                />
+
+                                                <Box sx={{
+                                                    backgroundSize: 'cover',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'center',
+                                                    width: 25,
+                                                    height: 25,
+                                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                                    transition: '.3s',
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    }
+                                                }} onClick={() => {
+                                                    newUser ? deleteDisciplineProfessor(index) : handleDeleteDisciplineProfessor(disciplina?.id_disciplina_prof)
+                                                }} />
+                                            </Box>
+                                        </>
+                                    ))}
+                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                    <SelectList
+                                        clean={false}
+                                        fullWidth={true}
+                                        data={disciplines}
+                                        valueSelection={disciplinesProfessor?.disciplina_id}
+                                        title="Disciplina"
+                                        filterOpition="value"
+                                        sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{
+                                            color: colorPalette.textColor,
+                                            fontSize: "15px",
+                                            fontFamily: "MetropolisBold",
+                                        }}
+                                        onSelect={(value) => setDisciplinesProfessor({ ...disciplinesProfessor, disciplina_id: value })}
+                                    />
+                                    <Box sx={{
+                                        backgroundSize: 'cover',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
+                                        width: 25,
+                                        height: 25,
+                                        borderRadius: '50%',
+                                        backgroundImage: `url(/icons/include_icon.png)`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => {
+                                        if (disciplinesProfessor?.disciplina_id) {
+                                            newUser ? addDisciplineProfessor() : handleAddDisciplineProfessor()
+                                        }
+                                    }} />
+                                </Box>
+                            </ContentContainer>
+                        }
 
                         <Box sx={{ padding: '0px 0px 20px 0px' }}>
                             <CheckBoxComponent

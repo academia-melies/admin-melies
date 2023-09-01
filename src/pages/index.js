@@ -17,11 +17,24 @@ const backgroundHome = [
    { name: 'slide-2', location: 'https://adm-melies.s3.amazonaws.com/slide-5.jpg' },
 ]
 
+const menuProfessor = [
+   { id: '01', icon: '', text: 'Aulas do dia', to: '/' },
+   { id: '02', icon: '', text: 'Lançar nota', to: '/' },
+   { id: '03', icon: '', text: 'Atividade Complementar', to: '/' },
+   { id: '04', icon: '', text: 'Calendário Acadêmico', to: '/' },
+   { id: '05', icon: '', text: 'Cronograma', to: '/' },
+   // { id: '03', icon: '', text: 'Atividade Complementar', to: '/' },
+
+   // { id: '04', icon_dark: '', text: '', to: '/' },
+
+]
+
 export default function Home() {
 
    const { user, colorPalette, theme, setLoading } = useAppContext()
    const [menu, setMenu] = useState(menuItems)
    const [imagesList, setImagesList] = useState([])
+   let isProfessor = user?.professor === 1 ? true : false;
 
    const router = useRouter();
 
@@ -43,6 +56,7 @@ export default function Home() {
    useEffect(() => {
       handleImages(imagesList)
    }, [])
+
 
    return (
       <>
@@ -81,25 +95,57 @@ export default function Home() {
             </Box>
             <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none', }}>
                <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>Últimas páginas acessadas...</Text>
-               <Box sx={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' } }}>
-                  {menu?.map((group, index) =>
-                     <ContentContainer key={`${group}-${index}`} sx={{
-                        alignItems: 'center', backgroundColor: colorPalette.buttonColor,
-                        minWidth: '180px',
-                        transition: '.5s',
-                        "&:hover": {
-                           cursor: 'pointer',
-                           opacity: 0.8,
-                           transform: 'scale(1.1)',
-                        }
-                     }} onClick={() => router.push(group.to)}>
-                        <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group?.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
-                        <Text bold style={{ color: '#fff', transition: 'background-color 1s', }}>
-                           {group.text}
-                        </Text>
-                     </ContentContainer>
-                  )}
-               </Box>
+               {isProfessor ?
+                  (<Box sx={{ display: 'flex', gap: 5, justifyContent: 'flex-start', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' } }}>
+                     {menuProfessor?.map((group, index) => {
+
+                        return (
+                           <ContentContainer key={`${group}-${index}`} sx={{
+                              alignItems: 'center', backgroundColor: colorPalette.buttonColor,
+                              width: '200px',
+                              transition: '.5s',
+                              justifyContent: 'center',
+                              // alignItems: 'center',
+                              "&:hover": {
+                                 cursor: 'pointer',
+                                 opacity: 0.8,
+                                 transform: 'scale(1.1)',
+                              }
+                           }} onClick={() => router.push(group.to)}>
+                              {/* <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', transition: 'background-color 1s' }} /> */}
+                              <Text bold style={{ color: '#fff', transition: 'background-color 1s', textAlign: 'center' }}>
+                                 {group.text}
+                              </Text>
+                           </ContentContainer>
+                        )
+                     })}
+
+                  </Box>
+                  )
+                  :
+                  (<Box sx={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' } }}>
+
+                     {menu?.map((group, index) =>
+                        <ContentContainer key={`${group}-${index}`} sx={{
+                           alignItems: 'center', backgroundColor: colorPalette.buttonColor,
+                           minWidth: '180px',
+                           transition: '.5s',
+                           "&:hover": {
+                              cursor: 'pointer',
+                              opacity: 0.8,
+                              transform: 'scale(1.1)',
+                           }
+                        }} onClick={() => router.push(group.to)}>
+                           <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group?.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
+                           <Text bold style={{ color: '#fff', transition: 'background-color 1s', }}>
+                              {group.text}
+                           </Text>
+                        </ContentContainer>
+                     )}
+
+                  </Box>
+                  )
+               }
             </ContentContainer>
          </Box>
       </>
