@@ -44,10 +44,10 @@ export const editeUser = async ({ id, userData }) => {
    }
 }
 
-export const editeEnrollment = async ({ id, enrollmentData }) => {
+export const editeEnrollment = async ({ enrollmentStudentEditId, enrollmentStudentEditData }) => {
 
    try {
-      const response = await api.patch(`/enrollment/update/${id}`, { enrollmentData })
+      const response = await api.patch(`/enrollment/update/${enrollmentStudentEditId}`, { enrollmentStudentEditData })
       return response
    } catch (error) {
       return error?.response
