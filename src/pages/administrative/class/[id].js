@@ -161,6 +161,13 @@ export default function EditClass(props) {
         { label: 'inativo', value: 0 },
     ]
 
+
+    const grouperiod = [
+        { label: 'Manhã', value: 'Manhã' },
+        { label: 'Tarde', value: 'Tarde' },
+        { label: 'Noite', value: 'Noite' }
+    ]
+
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -186,6 +193,10 @@ export default function EditClass(props) {
                     <TextInput placeholder='Nome' name='nome_turma' onChange={handleChange} value={classData?.nome_turma || ''} label='Nome' sx={{ flex: 1, }} />
                     <TextInput placeholder='Inicio' name='inicio' onChange={handleChange} value={(classData?.inicio)?.split('T')[0] || ''} type="date" label='Inicio' sx={{ flex: 1, }} />
                     <TextInput placeholder='Fim' name='fim' onChange={handleChange} value={(classData?.fim)?.split('T')[0] || ''} label='Fim' type="date" sx={{ flex: 1, }} />
+                    <SelectList data={grouperiod} valueSelection={classData?.periodo} onSelect={(value) => setClassData({ ...classData, periodo: value })}
+                        title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <SelectList fullWidth data={courses} valueSelection={classData?.curso_id} onSelect={(value) => setClassData({ ...classData, curso_id: value })}
