@@ -12,7 +12,8 @@ export const CheckBoxComponent = (props) => {
         label,
         boxGroup = [],
         valueChecked = '',
-        padding = true
+        padding = true,
+        gap = true
     } = props;
 
     const { colorPalette, theme } = useAppContext()
@@ -49,7 +50,7 @@ export const CheckBoxComponent = (props) => {
     };
 
     return (
-        <FormControl sx={{ padding: padding ? '5px 13px' : '', gap: 1.8}}>
+        <FormControl sx={{ padding: padding ? '5px 13px' : '', gap: gap && 1.8}}>
             <FormLabel sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}>{title}</FormLabel>
             <FormGroup sx={{ ...style, ...sx }} row={horizontal}>
                 {boxGroup?.map((item) => (

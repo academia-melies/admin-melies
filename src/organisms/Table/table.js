@@ -20,6 +20,7 @@ export const Table_V1 = (props) => {
         sx = {},
         tolltip = false,
         onDelete = false,
+        query = ``
     } = props;
 
 
@@ -29,7 +30,7 @@ export const Table_V1 = (props) => {
     const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
     const handleRowClick = (id) => {
-        router.push(`/${menu}/${subMenu}/${id}`);
+        router.push(`/${menu}/${subMenu}/${id}${query}`);
     };
 
     const getRowBackground = (index) => {
