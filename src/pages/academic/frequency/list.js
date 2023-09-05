@@ -75,9 +75,6 @@ export default function FrequencyStudent(props) {
         <>
             <SectionHeader
                 title={`Frequência - Chamada (${frequencyList?.filter(filter)?.length || '0'})`}
-                // title={`Frequência - Chamada (0)`}
-                newButton
-                newButtonAction={() => router.push(`/academic/${pathname}/new`)}
             />
             <Text bold>Buscar por: </Text>
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
@@ -97,7 +94,7 @@ export default function FrequencyStudent(props) {
                 <Table_V1 data={frequencyList?.filter(filter)} columns={column} columnId={'id_turma'} query={id ? `=day` : '' } />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
-                    <Text bold>Não conseguimos encontrar Turmas cadastradas para lançar nota</Text>
+                    <Text bold>Não conseguimos encontrar Turmas cadastradas para chamada.</Text>
                 </Box>
             }
         </>
