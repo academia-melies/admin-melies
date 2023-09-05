@@ -30,9 +30,19 @@ export const RadioItem = (props) => {
                         key={item.value}
                         value={item?.value}
                         control={
-                            <Radio sx={{ color: colorPalette.textColor, }} onChange={(event) => onSelect(event.target.value)}
+                            <Radio sx={{
+                                '& .MuiTypography-root': {
+                                    fontFamily: 'MetropolisRegular',
+                                    color: colorPalette.textColor,
+                                    fontSize: '9px'
+                                }
+                            }} onChange={(event) => onSelect(event.target.value)}
                                 checked={getChecked(item.value)} />
-                        } label={item?.label} sx={{ color: colorPalette.textColor, }} />
+                        } label={item?.label} sx={{ '& .MuiTypography-root': {
+                            fontFamily: 'MetropolisRegular',
+                            color: colorPalette.textColor,
+                            fontSize: '12px'
+                        } }} />
                 ))
                 }
             </RadioGroup>

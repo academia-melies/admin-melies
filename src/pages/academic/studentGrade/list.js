@@ -11,11 +11,13 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
 
 export default function StudentGrade(props) {
-    const [studentGradeList, setStudentGrade] = useState([])
+    const [studentGradeList, setGrade] = useState([])
+    const [classes, setClasses] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, user } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
+    const id = router?.query?.id || null
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
@@ -26,15 +28,21 @@ export default function StudentGrade(props) {
     };
 
     useEffect(() => {
-        getStudentGrades();
+        let query = `?userId=${id}`
+        if (id !== null) {
+            getGradeStudent({ route: `/classes${query}` });
+        }
+        else {
+            getGradeStudent({ route: `/classes` });
+        }
     }, []);
 
-    const getStudentGrades = async () => {
+    const getGradeStudent = async ({ route }) => {
         setLoading(true)
         try {
-            const response = await api.get('/studentGrades')
+            const response = await api.get(route)
             const { data = [] } = response;
-            setStudentGrade(data)
+            setGrade(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -44,9 +52,10 @@ export default function StudentGrade(props) {
 
     const column = [
         { key: 'id_turma', label: 'ID' },
-        { key: 'nome_turma', label: 'Nome'},
-        { key: 'inicio', label: 'Inicio', date: true },
-        { key: 'fim', label: 'Fim', date: true }
+        { key: 'nome_turma', label: 'Nome' },
+        { key: 'periodo', label: 'Periodo' },
+        // { key: 'inicio', label: 'Inicio', date: true },
+        // { key: 'fim', label: 'Fim', date: true }
     ];
 
     const listAtivo = [
@@ -55,19 +64,10 @@ export default function StudentGrade(props) {
         { label: 'inativo', value: 0 },
     ]
 
-    const listUser = [
-        { label: 'Todos', value: 'todos' },
-        { label: 'Aluno', value: 'aluno' },
-        { label: 'Funcionario', value: 'funcionario' },
-        { label: 'Interessado', value: 'interessado' },
-    ]
-
     return (
         <>
             <SectionHeader
-                title={`Avaliação Semestral (${studentGradeList.filter(filter)?.length || '0'})`}
-                newButton
-                newButtonAction={() => router.push(`/academic/${pathname}/new`)}
+                title={`Avaliação Semestral (${studentGradeList?.filter(filter)?.length || '0'})`}
             />
             <Text bold>Buscar por: </Text>
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
@@ -84,7 +84,7 @@ export default function StudentGrade(props) {
                 />
             </Box>
             {studentGradeList.length > 0 ?
-                <Table_V1 data={studentGradeList?.filter(filter)} columns={column} columnId={'id_turma'}/>
+                <Table_V1 data={studentGradeList?.filter(filter)} columns={column} columnId={'id_turma'} query={id ? `=day` : '' } />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar Turmas cadastradas para lançar nota</Text>
