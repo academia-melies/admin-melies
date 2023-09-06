@@ -19,10 +19,10 @@ const backgroundHome = [
 
 const menuProfessor = [
    { id: '01', icon: '', text: 'Aulas do dia', to: '/academic/frequency/list', query: true },
-   { id: '02', icon: '', text: 'Lançar nota', to: '', query: false },
+   { id: '02', icon: '', text: 'Lançar nota', to: '/academic/studentGrade/list', query: true },
    { id: '03', icon: '', text: 'Atividade Complementar', to: '/', query: false },
    { id: '04', icon: '', text: 'Calendário Acadêmico', to: '/administrative/calendar/calendar', query: false },
-   { id: '05', icon: '', text: 'Cronograma', to: '/', query: false },
+   { id: '05', icon: '', text: 'Cronograma', to: '/administrative/classSchedule/list', query: false },
    // { id: '03', icon: '', text: 'Atividade Complementar', to: '/' },
 
    // { id: '04', icon_dark: '', text: '', to: '/' },

@@ -430,7 +430,7 @@ export const Payment = (props) => {
             value: index + 1
         }))
 
-        const updatedDayForPayment = Array.from({ length: 28 }, (_, index) => ({
+        const updatedDayForPayment = Array.from({ length: 31 }, (_, index) => ({
             label: index + 1,
             value: index + 1
         }))
@@ -449,7 +449,44 @@ export const Payment = (props) => {
         setTypePaymentsSelected((prevTypePaymentsSelected) =>
             prevTypePaymentsSelected.map((_, index) => {
                 const paymentDate = new Date();
-                paymentDate.setDate(paymentDate.getDate() + index * 30); // Incrementing date by 30 days interval
+                const selectedDay = dayForPayment;
+                let month = paymentDate.getMonth() + index;
+                let isSaturday = false; // Sabado
+                let isSunday = false; // Domingo
+
+                paymentDate.setMonth(month);
+
+                // Verifique se a data é maior que o último dia do mês
+                const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
+                if (selectedDay > lastDayOfMonth) {
+                    paymentDate.setDate(lastDayOfMonth);
+                } else {
+                    paymentDate.setDate(selectedDay);
+                }
+
+                if (paymentDate.getDay() === 6) {
+                    isSaturday = true;
+                    if (paymentDate.getDate() + 2 > lastDayOfMonth) {
+                        paymentDate.setDate(paymentDate.getDate() - 1);
+                    } else {
+                        paymentDate.setDate(paymentDate.getDate() + 2);
+                    }
+                }
+
+                if (paymentDate.getDay() === 0) {
+                    isSunday = true;
+                    if (paymentDate.getDate() + 1 > lastDayOfMonth) {
+                        paymentDate.setDate(paymentDate.getDate() - 2);
+                    } else {
+                        paymentDate.setDate(paymentDate.getDate() + 1);
+                    }
+                }
+
+                while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
+                    paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
+                }
+
+                // paymentDate.setDate(paymentDate.getDate() + index * 30); // Incrementing date by 30 days interval
                 const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR'); // You can adjust the locale if needed
 
                 return {
@@ -590,6 +627,21 @@ export const Payment = (props) => {
         { label: 'Cartão', value: 'Cartão' },
         { label: 'pix', value: 'pix' },
     ]
+
+    const holidays = [
+        new Date(2023, 0, 1),  // Ano Novo
+        new Date(2023, 1, 25), // Carnaval
+        new Date(2023, 1, 26), // Carnaval
+        new Date(2023, 3, 7),  // Sexta-feira Santa
+        new Date(2023, 3, 21), // Tiradentes
+        new Date(2023, 4, 1),  // Dia do Trabalhador
+        new Date(2023, 5, 15), // Corpus Christi
+        new Date(2023, 8, 7),  // Independência do Brasil
+        new Date(2023, 9, 12), // Nossa Senhora Aparecida
+        new Date(2023, 10, 2), // Dia de Finados
+        new Date(2023, 10, 15),// Proclamação da República
+        new Date(2023, 11, 25)  // Natal
+    ];
 
 
     return (
@@ -759,14 +811,47 @@ export const Payment = (props) => {
                                 </thead>
                                 <tbody style={{ flex: 1 }}>
                                     {Array.from({ length: numberOfInstallments }, (_, index) => {
+
                                         const installmentNumber = index + 1;
                                         const paymentDate = new Date();
-                                        const currentDay = paymentDate.getDate();
                                         const selectedDay = dayForPayment;
+                                        let month = paymentDate.getMonth() + index;
+                                        let isSaturday = false; // Sabado
+                                        let isSunday = false; // Domingo
 
-                                        paymentDate.setDate(selectedDay);
-                                        paymentDate.setMonth(paymentDate.getMonth() + (index + 1)); // Incrementing date by 30 days interval
-                                        const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR'); // You can adjust the locale if needed
+                                        paymentDate.setMonth(month);
+
+                                        // Verifique se a data é maior que o último dia do mês
+                                        const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
+                                        if (selectedDay > lastDayOfMonth) {
+                                            paymentDate.setDate(lastDayOfMonth);
+                                        } else {
+                                            paymentDate.setDate(selectedDay);
+                                        }
+
+                                        if (paymentDate.getDay() === 6) {
+                                            isSaturday = true;
+                                            if (paymentDate.getDate() + 2 > lastDayOfMonth) {
+                                                paymentDate.setDate(paymentDate.getDate() - 1);
+                                            } else {
+                                                paymentDate.setDate(paymentDate.getDate() + 2);
+                                            }
+                                        }
+
+                                        if (paymentDate.getDay() === 0) {
+                                            isSunday = true;
+                                            if (paymentDate.getDate() + 1 > lastDayOfMonth) {
+                                                paymentDate.setDate(paymentDate.getDate() - 2);
+                                            } else {
+                                                paymentDate.setDate(paymentDate.getDate() + 1);
+                                            }
+                                        }
+
+                                        while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
+                                            paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
+                                        }
+
+                                        const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
 
                                         return (
                                             <tr key={installmentNumber}>
@@ -863,7 +948,6 @@ export const ContractStudent = (props) => {
     if (courseName) query += `${courseName} `;
     if (modalityCourse) query += `${modalityCourse} `;
     if (startDateClass) query += `- ${startDateClass}`;
-    // const titleEnroll = `Curso: ${className}-1SEM - ${courseSigle} ${courseName} ${modalityCourse} - ${startDateClass}`
 
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -882,9 +966,7 @@ export const ContractStudent = (props) => {
 
     return (
         <>
-            <ContentContainer>
-                <Text bold title>Pré vizualização do Contrato</Text>
-            </ContentContainer>
+            <Text bold title>Pré vizualização do Contrato</Text>
 
             <ContractStudentComponent
                 onClick={handleGeneratePdf}
@@ -943,7 +1025,7 @@ export const ContractStudent = (props) => {
                                 <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.descontoAdicional)}</Text>
                             </Box>
                         }
-                         {valuesContract.descontoAdicional && valuesContract.descontoDispensadas > 0 &&
+                        {valuesContract.descontoAdicional && valuesContract.descontoDispensadas > 0 &&
                             <Box sx={styles.containerValues}>
                                 <Text small style={styles.textDataPayments} bold>DESCONTO TOTAL:</Text>
                                 <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.descontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))}</Text>
