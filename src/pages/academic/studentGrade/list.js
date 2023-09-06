@@ -84,7 +84,7 @@ export default function StudentGrade(props) {
                 />
             </Box>
             {studentGradeList.length > 0 ?
-                <Table_V1 data={studentGradeList?.filter(filter)} columns={column} columnId={'id_turma'} query={id ? `=day` : '' } />
+                <Table_V1 data={studentGradeList?.filter(filter)} columns={column} columnId={'id_turma'} />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar Turmas cadastradas para lançar nota</Text>

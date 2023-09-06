@@ -239,6 +239,7 @@ export default function EditStudentGrade(props) {
                 } else {
                     listStudents()
                     setNewGrade(true)
+                    setShowStudents(true);
                 }
             } catch (error) {
                 console.log(error)
@@ -317,7 +318,6 @@ export default function EditStudentGrade(props) {
             studentsFrequency.sort((a, b) => a.nome.localeCompare(b.nome));
 
             setStudentData(studentsFrequency);
-            setShowStudents(true);
         } catch (error) {
             return error;
         } finally {

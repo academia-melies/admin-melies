@@ -172,11 +172,14 @@ export default function EditFrequency(props) {
                 const response = await api.get(`/frequency/aula/${frequencyData.aula_id}`)
                 const { data } = response
                 if (data.length > 0) {
-                    const groupStudents = data.map(student => ({
-                        ...student,
-                        periodo_1: parseInt(student?.periodo_1),
-                        periodo_2: parseInt(student?.periodo_2)
-                    }));
+                    const groupStudents = data.map(student => {
+
+                        return {
+                            ...student,
+                            periodo_1: parseInt(student?.periodo_1),
+                            periodo_2: parseInt(student?.periodo_2),
+                        }
+                    });
 
                     groupStudents.sort((a, b) => a.nome.localeCompare(b.nome));
 
@@ -186,6 +189,7 @@ export default function EditFrequency(props) {
                 } else {
                     listStudents()
                     setNewFrequency(true)
+                    setShowStudents(true);
                 }
             } catch (error) {
                 console.log(error)
@@ -229,13 +233,13 @@ export default function EditFrequency(props) {
                 professor_id_2: null,
                 usuario_id: student?.usuario_id,
                 turma_id: parseInt(id),
-                aula_id: frequencyData?.aula_id
+                aula_id: frequencyData?.aula_id,
+                totalFrequencia: 100
             }));
 
             studentsFrequency.sort((a, b) => a.nome.localeCompare(b.nome));
 
             setStudentData(studentsFrequency);
-            setShowStudents(true);
         } catch (error) {
             return error;
         } finally {
@@ -329,7 +333,7 @@ export default function EditFrequency(props) {
                                         <thead>
                                             <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
                                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
-                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Frequência</th>
+                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Frequência (Semestre)</th>
                                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>1º Periodo</th>
                                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>2º Periodo</th>
                                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
@@ -345,7 +349,7 @@ export default function EditFrequency(props) {
                                                                 {item?.nome}
                                                             </td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                100%
+                                                                {item?.totalFrequencia || 100}%
                                                             </td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 <RadioItem
