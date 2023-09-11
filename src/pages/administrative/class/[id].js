@@ -14,16 +14,12 @@ export default function EditClass(props) {
     const { id } = router.query;
     const newClass = id === 'new';
     const [classData, setClassData] = useState({
-        disciplina_id: null,
-        grade_id: null,
-        curso_id: null,
         nome_turma: null,
         usuario_resp: null,
         ativo: null,
         inicio: null,
         fim: null,
         qnt_alunos: null,
-        periodo: null,
     })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
@@ -93,7 +89,7 @@ export default function EditClass(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Turma cadastrado com sucesso.');
-                    router.push(`/administrative/class/${data?.class}`)
+                    router.push(`/administrative/class/${data?.classId}`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar turma.');
