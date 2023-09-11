@@ -10,7 +10,8 @@ import { createCourse, deleteCourse, editCourse} from "../../../validators/api-r
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditCourse(props) {
-    const { setLoading, alert, colorPalette } = useAppContext()
+    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
     const newCourse = id === 'new';
@@ -94,7 +95,7 @@ export default function EditCourse(props) {
         setLoading(true)
         if (checkRequiredFields()) {
             try {
-                const response = await createCourse(courseData);
+                const response = await createCourse(courseData, userId);
                 const { data } = response
                 console.group(data)
                 if (response?.status === 201) {

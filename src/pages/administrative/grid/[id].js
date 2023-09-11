@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, } from "../../../atoms"
-import { RadioItem, SectionHeader, SelectList } from "../../../organisms"
+import { CheckBoxComponent, RadioItem, SectionHeader, SelectList } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createGrid, deleteGrid, editGrid } from "../../../validators/api-requests"
 
@@ -17,8 +17,12 @@ export default function EditGrid(props) {
     const [disciplines, setDisciplines] = useState([])
     const [courses, setCourses] = useState([])
     const [moduleData, setModuleData] = useState([])
+    const [gridList, setGrids] = useState([])
+    const [copyGrid, setCopyGrid] = useState(0)
+    const [copyGridId, setCopyGridId] = useState()
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+
 
     const fetchData = async () => {
         setLoading(true);
@@ -66,7 +70,7 @@ export default function EditGrid(props) {
     }
 
 
-    const getGrids = async () => {
+    const getGrid = async () => {
         try {
             const response = await api.get(`/grid/${id}`)
             const { data } = response
@@ -83,6 +87,25 @@ export default function EditGrid(props) {
             setPlanGridData(data)
         } catch (error) {
             console.log(error)
+        }
+    }
+
+    const getGrids = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get('/grids')
+            const { data = [] } = response;
+            const groupGrids = data.map(grid => ({
+                ...grid,
+                label: grid.nome_grade,
+                value: grid?.id_grade
+            }));
+
+            setGrids(groupGrids)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -137,8 +160,9 @@ export default function EditGrid(props) {
     const handleItems = async () => {
         setLoading(true)
         try {
-            await getGrids()
+            await getGrid()
             await getPlanGrids()
+            await getGrids()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Grade')
         } finally {
@@ -154,10 +178,12 @@ export default function EditGrid(props) {
         }))
     }
 
+    let [gridCopyData] = gridList.filter(item => item.id_grade === copyGridId);
+
     const handleCreateGrid = async () => {
-        setLoading(true)
+        setLoading(true) 
         try {
-            const response = await createGrid(gridData);
+            const response = await createGrid(gridData, copyGrid, gridCopyData);
             const { data } = response
             if (response?.status === 201) {
                 alert.success('Curso cadastrado com sucesso.');
@@ -209,6 +235,11 @@ export default function EditGrid(props) {
         { label: 'inativo', value: 0 },
     ]
 
+    const groupCopy = [
+        { label: 'Sim', value: 1 },
+        { label: 'Não', value: 0 },
+    ]
+
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -236,6 +267,21 @@ export default function EditGrid(props) {
                     <TextInput placeholder='Nome' name='nome_grade' onChange={handleChange} value={gridData?.nome_grade || ''} label='Nome da grade' sx={{ flex: 1, }} />
                     <TextInput placeholder='Módulos' name='semestres' onChange={handleChange} value={gridData?.modulos || ''} label='Módulos' sx={{ flex: 1, }} />
                 </Box>
+                <RadioItem
+                    valueRadio={copyGrid}
+                    group={groupCopy}
+                    title="Copiar grade"
+                    horizontal={mobile ? false : true}
+                    onSelect={(value) => setCopyGrid(parseInt(value))}
+                />
+
+                {copyGrid === 1 &&
+                    <SelectList fullWidth data={gridList} valueSelection={copyGridId} onSelect={(value) => setCopyGridId(value)}
+                        title="Grades" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
+                }
+
                 <RadioItem valueRadio={gridData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, ativo: parseInt(value) })} />
                 {!newGrid &&
                     Array.from({ length: gridData?.modulos }).map((_, index) => (
