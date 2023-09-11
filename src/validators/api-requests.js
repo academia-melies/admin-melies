@@ -82,9 +82,9 @@ export const createEnrollment = async (id, enrollmentData) => {
    }
 }
 
-export const createCourse = async (courseData) => {
+export const createCourse = async (courseData, userId) => {
    try {
-      const response = await api.post(`/course/create`, { courseData })
+      const response = await api.post(`/course/create`, { courseData, userId })
       return response
    } catch (error) {
       return error
@@ -166,11 +166,12 @@ export const editClass = async ({ id, classData }) => {
    }
 }
 
-export const createGrid = async (gridData) => {
+export const createGrid = async (gridData, copyGrid, gridCopyData) => {
    try {
-      const response = await api.post(`/grid/create`, { gridData })
+      const response = await api.post(`/grid/create`, { gridData, copyGrid, gridCopyData })
       return response
    } catch (error) {
+      console.log(error)
       return error
    }
 }
