@@ -13,7 +13,18 @@ export default function EditClass(props) {
     const router = useRouter()
     const { id } = router.query;
     const newClass = id === 'new';
-    const [classData, setClassData] = useState({})
+    const [classData, setClassData] = useState({
+        disciplina_id: null,
+        grade_id: null,
+        curso_id: null,
+        nome_turma: null,
+        usuario_resp: null,
+        ativo: null,
+        inicio: null,
+        fim: null,
+        qnt_alunos: null,
+        periodo: null,
+    })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [courses, setCourses] = useState([])

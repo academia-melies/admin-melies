@@ -15,7 +15,21 @@ export default function EditCourse(props) {
     const router = useRouter()
     const { id, slug } = router.query;
     const newCourse = id === 'new';
-    const [courseData, setCourseData] = useState({})
+    const [courseData, setCourseData] = useState({
+        nome_curso: null,
+        nivel_curso: null,
+        modalidade_curso: null,
+        carga_hr_curso: null,
+        duracao: null,
+        sigla: null,
+        valor: null,
+        pt_autorizacao: null,
+        dt_autorizacao: null,
+        pt_reconhecimento: null,
+        dt_reconhecimento: null,
+        usuario_resp: null,
+        ativo: null,
+    })
     const [showPaidIn, setShowPaidIn] = useState(false)
     const [amountPaidIn, setAmountPaidIn] = useState()
     const [installments, setInstallments] = useState(1)
@@ -228,7 +242,7 @@ export default function EditCourse(props) {
                     <TextInput placeholder='Portaria MEC/Reconhecimento' name='pt_reconhecimento' onChange={handleChange} value={courseData?.pt_reconhecimento || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
-                <Box sx={{ ...styles.inputSection, alignItems: 'start' }}>
+                {/* <Box sx={{ ...styles.inputSection, alignItems: 'start' }}>
                     <Box sx={{ display: 'flex', position: 'absolute', zIndex: 999, marginRight: 12, marginTop: 1, gap: 1 }}>
                         <Button small text='parcelas' style={{ padding: '5px 12px 5px 12px' }} onClick={() => setShowPaidIn(true)} />
                     </Box>
@@ -271,9 +285,9 @@ export default function EditCourse(props) {
                         </ContentContainer>
                     </Backdrop>
                     }
-                    <TextInput placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={courseData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
 
-                </Box>
+                </Box> */}
+                    <TextInput placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={courseData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
                 <RadioItem valueRadio={courseData?.nivel_curso} group={groupNivel} title="Nível do curso" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, nivel_curso: value })} sx={{ flex: 1, }} />
                 <RadioItem valueRadio={courseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, ativo: parseInt(value) })} />
 

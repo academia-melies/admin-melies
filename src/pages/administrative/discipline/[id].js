@@ -14,7 +14,19 @@ export default function EditDiscipline(props) {
     const router = useRouter()
     const { id, slug } = router.query;
     const newDiscipline = id === 'new';
-    const [disciplineData, setDisciplineData] = useState({})
+    const [disciplineData, setDisciplineData] = useState({
+        nome_disciplina: null,
+        carga_hr_dp: null,
+        pre_req: null,
+        plano_ensino: null,
+        ementa: null,
+        objetivo_dp: null,
+        ativo: null,
+        metodologia: null,
+        recurso_apoio: null,
+        bibl_basica: null,
+        bibl_compl: null,
+    })
     const [disciplines, setDisciplines] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
