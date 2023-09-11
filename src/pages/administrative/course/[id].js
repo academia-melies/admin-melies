@@ -10,7 +10,7 @@ import { createCourse, deleteCourse, editCourse} from "../../../validators/api-r
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditCourse(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
     const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -20,9 +20,7 @@ export default function EditCourse(props) {
         nivel_curso: null,
         modalidade_curso: null,
         carga_hr_curso: null,
-        duracao: null,
         sigla: null,
-        valor: null,
         pt_autorizacao: null,
         dt_autorizacao: null,
         pt_reconhecimento: null,
@@ -30,9 +28,6 @@ export default function EditCourse(props) {
         usuario_resp: null,
         ativo: null,
     })
-    const [showPaidIn, setShowPaidIn] = useState(false)
-    const [amountPaidIn, setAmountPaidIn] = useState()
-    const [installments, setInstallments] = useState(1)
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -40,8 +35,7 @@ export default function EditCourse(props) {
         try {
             const response = await api.get(`/course/${id}`)
             const { data } = response
-            let value = formatarParaReal(data?.valor || '')
-            setCourseData({ ...data, valor: value })
+            setCourseData(data)
         } catch (error) {
             console.log(error)
         }
@@ -94,16 +88,16 @@ export default function EditCourse(props) {
         return true
     }
 
-    useEffect(() => {
-        let replaceValue = courseData?.valor?.replace("R$", "").replace(/\./g, "");
-        let dataValueReplaced = replaceValue?.replace(",", ".");
-        let valueCourse = parseFloat(dataValueReplaced);
+    // useEffect(() => {
+    //     let replaceValue = courseData?.valor?.replace("R$", "").replace(/\./g, "");
+    //     let dataValueReplaced = replaceValue?.replace(",", ".");
+    //     let valueCourse = parseFloat(dataValueReplaced);
 
-        let calcAmountPaidIn = valueCourse / installments;
-        if (calcAmountPaidIn) {
-            setAmountPaidIn(calcAmountPaidIn)
-        }
-    }, [showPaidIn, installments])
+    //     let calcAmountPaidIn = valueCourse / installments;
+    //     if (calcAmountPaidIn) {
+    //         setAmountPaidIn(calcAmountPaidIn)
+    //     }
+    // }, [showPaidIn, installments])
 
     const handleCreateCourse = async () => {
         setLoading(true)
@@ -111,7 +105,6 @@ export default function EditCourse(props) {
             try {
                 const response = await createCourse(courseData, userId);
                 const { data } = response
-                console.group(data)
                 if (response?.status === 201) {
                     alert.success('Curso cadastrado com sucesso.');
                     router.push(`/administrative/course/${data?.course}`)
@@ -217,7 +210,7 @@ export default function EditCourse(props) {
                 saveButton
                 saveButtonAction={newCourse ? handleCreateCourse : handleEditCourse}
                 deleteButton={!newCourse}
-                deleteButtonAction={() => handleDeleteCourse()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteCourse })}
             />
 
             {/* usuario */}
