@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../validators/api-requests"
@@ -113,7 +113,7 @@ export default function EditDiscipline(props) {
     };
 
     const addSkills = () => {
-        setArraySkills((prevArray) => [...prevArray, { habilidade: skills.habilidade, avaliacao: skills.avaliacao }])
+        setArraySkills((prevArray) => [...prevArray, { conteudo: skills.conteudo, habilidade: skills.habilidade, avaliacao: skills.avaliacao }])
         setSkills({})
     }
 
@@ -305,9 +305,9 @@ export default function EditDiscipline(props) {
                     />
                     <TextInput
                         placeholder='Recurso de apoio'
-                        name='recusrso_apoio'
+                        name='recurso_apoio'
                         onChange={handleChange}
-                        value={disciplineData?.recusrso_apoio || ''}
+                        value={disciplineData?.recurso_apoio || ''}
                         label='Recurso de apoio'
                         multiline
                         maxRows={6}
@@ -395,6 +395,9 @@ export default function EditDiscipline(props) {
                     }} />
                 </Box>
             </ContentContainer>
+            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
+                <Button text={'Salvar'} style={{ width: 150 }} onClick={() => { newDiscipline ? handleCreate() : handleEdit() }} />
+            </Box>
         </>
     )
 }

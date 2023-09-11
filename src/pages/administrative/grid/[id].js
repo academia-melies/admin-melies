@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text, } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button, } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader, SelectList } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createGrid, deleteGrid, editGrid } from "../../../validators/api-requests"
@@ -181,7 +181,7 @@ export default function EditGrid(props) {
     let [gridCopyData] = gridList.filter(item => item.id_grade === copyGridId);
 
     const handleCreateGrid = async () => {
-        setLoading(true) 
+        setLoading(true)
         try {
             const response = await createGrid(gridData, copyGrid, gridCopyData);
             const { data } = response
@@ -302,6 +302,9 @@ export default function EditGrid(props) {
                     ))}
 
             </ContentContainer >
+            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
+                <Button text={'Salvar'} style={{ width: 150 }} onClick={() => { newGrid ? handleCreateGrid() : handleEditGrid() }} />
+            </Box>
         </>
     )
 }
