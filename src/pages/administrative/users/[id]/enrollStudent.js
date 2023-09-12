@@ -424,7 +424,7 @@ export const Payment = (props) => {
 
     useEffect(() => {
         const parcelValue = (totalValueFinnaly / numberOfInstallments).toFixed(2)
-        const totalParcelCourse = valuesCourse?.total_parcelas || 6;
+        const totalParcelCourse = valuesCourse?.n_parcelas || 6;
         const updatedNumberParcel = Array.from({ length: totalParcelCourse }, (_, index) => ({
             label: index + 1,
             value: index + 1

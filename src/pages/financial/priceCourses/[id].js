@@ -16,7 +16,7 @@ export default function EditPricesCourse(props) {
     const { id } = router.query;
     const newPrice = id === 'new';
     const [pricesCourseData, setPricesCourseData] = useState({
-        total_parcelas: '6',
+        n_parcelas: '6',
         valor_total_curso: null,
         valor_parcelado_curso: null,
         valor_avista_curso: null,
@@ -88,7 +88,7 @@ export default function EditPricesCourse(props) {
         setTimeout(() => {
             try {
                 const valueTotal = pricesCourseData?.valor_total_curso;
-                const valueParcels = (valueTotal / pricesCourseData?.total_parcelas).toFixed(2);
+                const valueParcels = (valueTotal / pricesCourseData?.n_parcelas).toFixed(2);
                 const valueDiscount = (valueTotal - (valueTotal * 0.05)).toFixed(2)
                 const formattedParcels = formattedValueCourse(valueParcels);
                 const formattedDiscount = formattedValueCourse(valueDiscount);
@@ -286,9 +286,7 @@ export default function EditPricesCourse(props) {
             const response = await api.post(`/coursePrices/historic/create/${userId}`, { historicData, id });
             if (response?.status === 201) {
                 alert.success('Historico adicionado.');
-                setHistoricData({
-                    valor_total_curso: '', valor_parcelado_curso: '', valor_avista_curso: '', dt_reajuste: ''
-                })
+                setHistoricData({ valor_total_curso: '', valor_parcelado_curso: '', valor_avista_curso: '' })
                 setShowValueAdjustment(false)
                 handleItems()
             }
@@ -302,8 +300,8 @@ export default function EditPricesCourse(props) {
     const handleDeleteHistoric = async (id) => {
         setLoading(true)
         try {
-            const response = await api.post(`/coursePrices/historic/delete/${id}`);
-            if (response?.status == 201) {
+            const response = await api.delete(`/coursePrices/historic/delete/${id}`);
+            if (response?.status === 200) {
                 alert.success('Historico excluído.');
                 handleItems()
             }
@@ -373,7 +371,7 @@ export default function EditPricesCourse(props) {
                         label='Valor Total' sx={{ flex: 1, }}
                     // onBlur={() => calculationValues(pricesCourseData)}
                     />
-                    <TextInput placeholder='Parcelas' name='total_parcelas' onChange={handleChange} value={pricesCourseData?.total_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
+                    <TextInput placeholder='Parcelas' name='n_parcelas' onChange={handleChange} value={pricesCourseData?.n_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
                     <Button text="calcular" onClick={() => calculationValues(pricesCourseData, setPricesCourseData)} />
                 </Box>
                 <Box sx={styles.inputSection}>
@@ -443,9 +441,9 @@ export default function EditPricesCourse(props) {
                                             value={(historicData?.valor_avista_curso) || ''}
                                             label='Valor á vista' sx={{ flex: 1, }}
                                         />
-                                        <Button text="calcular" onClick={() => calculationValues(pricesCourseData, setHistoricData)} />
+                                        <Button text="calcular" onClick={() => calculationValues(historicData, setHistoricData)} />
                                     </Box>
-                                    <TextInput placeholder='Data Reajuste' name='dt_reajuste' onChange={handleChangeHistoric} value={(historicData?.dt_reajuste)?.split('T')[0] || ''} type="date" label='Data Reajuste' sx={{ maxWidth: 200, }} />
+                                    {/* <TextInput placeholder='Data Reajuste' name='dt_reajuste' onChange={handleChangeHistoric} value={(historicData?.dt_reajuste)?.split('T')[0] || ''} type="date" label='Data Reajuste' sx={{ maxWidth: 200, }} /> */}
                                     <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                         <Button text='Novo' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleAddHistoric()} />
                                         <Button text='Cancelar' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => setShowValueAdjustment(false)} />
