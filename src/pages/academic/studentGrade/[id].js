@@ -81,18 +81,17 @@ export default function EditStudentGrade(props) {
                         [field]: value,
                     };
 
-                    if (updatedStudent.nt_avaliacao_sem !== null) {
-                        updatedStudent.nt_final = updatedStudent.nt_avaliacao_sem.toString();
+                    if (updatedStudent.nt_avaliacao_sem !== null || updatedStudent.nt_avaliacao_sem !== "") {
+                        updatedStudent.nt_final = updatedStudent.nt_avaliacao_sem?.toString();
                     }
-                    if (updatedStudent.nt_substitutiva !== null) {
-                        updatedStudent.nt_final = updatedStudent.nt_substitutiva.toString();
+                    if (updatedStudent.nt_substitutiva !== null && updatedStudent.nt_substitutiva !== "") {
+                        updatedStudent.nt_final = updatedStudent.nt_substitutiva?.toString();
                     }
-                    if (updatedStudent.nt_exame !== null) {
-                        updatedStudent.nt_final = updatedStudent.nt_exame.toString();
+                    if (updatedStudent?.nt_exame !== null && updatedStudent?.nt_exame !== "") {
+                        updatedStudent.nt_final = updatedStudent?.nt_exame?.toString();
                     }
 
                     return updatedStudent;
-
                 }
                 return student; // Mantém outros alunos inalterados
             });
@@ -100,73 +99,11 @@ export default function EditStudentGrade(props) {
     };
 
 
-    // const handleChange = (userId, field, value) => {
-    //     setStudentData((prevValues) => {
-    //         const updatedStudents = prevValues.map((student) => {
-    //             if (student.usuario_id === userId) {
-    //                 // Clona o objeto do aluno e atualiza o campo desejado
-    //                 const updatedStudent = {
-    //                     ...student,
-    //                     [field]: value,
-    //                 };
-
-    //                 // Recalcula a nota final com base nas novas notas
-    //                 const ntAvaliation = parseFloat(updatedStudent.nt_avaliacao_sem || 0);
-    //                 const ntSub = parseFloat(updatedStudent.nt_substitutiva || 0);
-    //                 const ntExam = parseFloat(updatedStudent.nt_exame || 0);
-
-    //                 let ntFinally = 0;
-    //                 let gradeStudent = {};
-
-    //                 if (ntAvaliation) {
-    //                     gradeStudent['ntAvaliation'] = ntAvaliation;
-    //                 }
-    //                 if (ntSub) {
-    //                     gradeStudent['ntSub'] = ntSub;
-    //                 }
-    //                 if (ntExam) {
-    //                     gradeStudent['ntExam'] = ntExam;
-    //                 }
-
-    //                 const mediasPorDisciplina = Object.values(gradeStudent).map((notasDisciplina) => {
-    //                     // Ordenar as notas em ordem decrescente
-    //                     const sortedNotas = notasDisciplina.sort((a, b) => b - a);
-
-    //                     // Aplicar as regras de cálculo
-    //                     let media = 0;
-    //                     if (sortedNotas.length === 1) {
-    //                         media = sortedNotas[0];
-    //                     } else if (sortedNotas.length === 2 && sortedNotas[1] === 0) {
-    //                         media = sortedNotas[0];
-    //                     } else if (sortedNotas.length === 2 && sortedNotas[1] !== 0) {
-    //                         media = (sortedNotas[0] + sortedNotas[1]) / 2;
-    //                     } else if (sortedNotas.length >= 3) {
-    //                         media = (sortedNotas[0] + sortedNotas[1]) / 2;
-    //                     }
-
-    //                     return parseFloat(media.toFixed(2));
-    //                 });
-
-    //                 if (mediasPorDisciplina.length > 0) {
-    //                     ntFinally = mediasPorDisciplina.reduce((total, media) => total + media, 0) / mediasPorDisciplina.length;
-    //                 }
-
-    //                 updatedStudent.nt_final = ntFinally.toString();
-    //                 return updatedStudent;
-    //             }
-    //             return student; // Mantém outros alunos inalterados
-    //         });
-
-    //         return updatedStudents;
-    //     });
-    // };
-
-
     const handleCreateStudentGrade = async () => {
         setLoading(true)
         let disciplineId = studentGradeData?.disciplina_id
         try {
-            const response = await api.post(`/studentGrade/create`, { studentData,  disciplineId});
+            const response = await api.post(`/studentGrade/create`, { studentData, disciplineId });
             if (response?.status === 201) {
                 alert.success('Turma cadastrado com sucesso.');
             }

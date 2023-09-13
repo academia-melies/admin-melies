@@ -6,7 +6,7 @@ import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../.
 import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
-import { formatDate } from "../../../helpers"
+import { formatDate, formatTimeStamp } from "../../../helpers"
 
 export default function StudentData(props) {
     const { setLoading, alert, colorPalette, user } = useAppContext()
@@ -16,7 +16,10 @@ export default function StudentData(props) {
     const [studentData, setStudentData] = useState({})
     const [showEnrollTable, setShowEnrollTable] = useState({})
     const [frequencyData, setFrequency] = useState([])
+    const [gradesData, setGrades] = useState([])
     const [disciplines, setDisciplines] = useState([])
+    const [enrollmentData, setEnrollment] = useState({})
+    const [moduleStudent, setModuleStudent] = useState(1)
     const [bgPhoto, setBgPhoto] = useState({})
 
     const [showBox, setShowBox] = useState({
@@ -47,15 +50,12 @@ export default function StudentData(props) {
     }
 
     const getPhoto = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/photo/${id}`)
             const { data } = response
             setBgPhoto(data)
         } catch (error) {
             console.log(error)
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -64,6 +64,7 @@ export default function StudentData(props) {
             const response = await api.get(`/enrollment/${id}`)
             const { data } = response
             let [enrollment] = data
+            setEnrollment(enrollment)
             return enrollment
         } catch (error) {
             console.log(error)
@@ -75,7 +76,6 @@ export default function StudentData(props) {
         try {
             const response = await api.get(`/frequency/student/${id}`)
             const { data } = response
-            console.log(data)
             setFrequency(data)
         } catch (error) {
             console.log(error)
@@ -83,10 +83,22 @@ export default function StudentData(props) {
         }
     }
 
-    async function handleSelectModule(turma_id) {
-        setLoading(true)
+    const getGrades = async (moduleStudent) => {
         try {
-            const response = await api.get(`/classSchedule/disciplines/${turma_id}/1`)
+            const response = await api.get(`/studentGrade/student/${id}/${moduleStudent}`)
+            const { data } = response
+            setGrades(data)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+
+
+    async function handleSelectModule(turma_id, moduleStudent) {
+        try {
+            const response = await api.get(`/classSchedule/disciplines/${turma_id}/${moduleStudent}`)
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
                 label: disciplines.nome_disciplina,
@@ -97,8 +109,6 @@ export default function StudentData(props) {
         } catch (error) {
             console.log(error)
             return error
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -115,9 +125,10 @@ export default function StudentData(props) {
             await getPhoto()
             const enrollment = await getEnrollment()
             if (enrollment) {
-                await handleSelectModule(enrollment?.turma_id)
+                await handleSelectModule(enrollment?.turma_id, moduleStudent)
             }
             await getFrequency()
+            await getGrades(moduleStudent)
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
         } finally {
@@ -174,7 +185,7 @@ export default function StudentData(props) {
     return (
         <>
             <SectionHeader
-                // perfil={studentData?.modalidade_curso}
+                perfil={'dados da faculdade'}
                 title={studentData?.nome}
             // saveButton
             // saveButtonAction={handleEdit}
@@ -185,30 +196,38 @@ export default function StudentData(props) {
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Acadêmico Aluno</Text>
                 </Box>
-                <Box sx={{display: 'flex', flexDirection: 'space-between'}}>
-                    <Box sx={{display: 'flex', gap: 2.5, flexDirection: 'column', flex: 1, marginTop: 2}}>
+                <Box sx={{ display: 'flex', flexDirection: 'space-between' }}>
+                    <Box sx={{ display: 'flex', gap: 2.5, flexDirection: 'column', flex: 1, marginTop: 2 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Nome: </Text>
                             <Text>{studentData?.nome}</Text>
                         </Box>
+                        <Divider distance={0}/>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Registro (RA): </Text>
                             <Text>{studentData?.id}</Text>
                         </Box>
+                        <Divider distance={0}/>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Text bold>E-mail: </Text>
-                            <Text>{studentData?.email}</Text>
+                            <Text bold>Cursando: </Text>
+                            <Text>{moduleStudent}º Modulo/Semestre</Text>
                         </Box>
+                        <Divider distance={0}/>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'start' }}>
+                            <Text bold>Inicio Matricula: </Text>
+                            <Text>{formatTimeStamp(enrollmentData?.dt_inicio || '')}</Text>
+                        </Box>
+                        <Divider distance={0}/>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Status: </Text>
-                            <Text>{studentData?.ativo === 1 ? 'Ativo' : 'Inativo'}</Text>
+                            <Text>{enrollmentData?.status}</Text>
                         </Box>
                     </Box>
-                    <Box sx={{ display: 'flex'}}>
+                    <Box sx={{ display: 'flex', padding: 5, width: 260 }}>
                         <Avatar src={bgPhoto?.location} sx={{
                             height: 'auto',
                             borderRadius: '16px',
-                            width: { xs: '100%', sm: 150, md: 150, lg: 180 },
+                            width: { xs: '100%', sm: 180, md: 180, lg: 180 },
                             aspectRatio: '1/1',
                         }} variant="square" />
                     </Box>
@@ -240,7 +259,7 @@ export default function StudentData(props) {
                         />
                     </Box>
                     {showBox?.disciplines && (
-                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                        <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                             {disciplines?.map((item, index) => {
                                 return (
                                     <Box key={index}>
@@ -358,11 +377,56 @@ export default function StudentData(props) {
                         />
                     </Box>
                     {showBox?.grades && (
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>Artes e Design</Text>
-                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>Desenho</Text>
-                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>Arte 3D</Text>
-                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>Textura e Render 1</Text>
+                        <Box sx={{ display: 'flex' }}>
+
+                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                                <table style={{ borderCollapse: 'collapse', }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Matéria/Disciplina</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Realizou a avaliação?</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Avaliação Semestral</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Substitutiva</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Exame</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody style={{ flex: 1 }}>
+                                        {
+                                            gradesData?.map((item, index) => {
+                                                const avaliationStatus = item?.avaliacao_status === 1 ? 'Sim' : 'Não'
+                                                return (
+                                                    <tr key={`${item}-${index}`}>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nome_disciplina}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {avaliationStatus}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nt_avaliacao_sem || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nt_substitutiva || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nt_exame || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nt_final || '-'}
+                                                        </td><td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.obs_nt || '-'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </Box>
                     )}
                 </Box>
@@ -396,10 +460,7 @@ export default function StudentData(props) {
                     </Box>
                     {showBox?.additionalActivities && (
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>Artes e Design</Text>
-                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>Desenho</Text>
-                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>Arte 3D</Text>
-                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>Textura e Render 1</Text>
+                            <Text ligth>O aluno não possui atividades complementares.</Text>
                         </Box>
                     )}
                 </Box>
