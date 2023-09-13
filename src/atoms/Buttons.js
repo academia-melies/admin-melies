@@ -22,7 +22,7 @@ export const Button = (props) => {
       return (
          <Box sx={{
             ...styles.closeButtonContainer,
-            ...(small && { width: 26, minWidth: 26, height: 26, minHeight: 26 }),
+            // ...(small && { width: 26,  height: 26, minHeight: 26 }),
             ...(large && { width: 46, minWidth: 46, height: 46, minHeight: 46 }),
          }}
             onClick={onClick}
@@ -62,7 +62,7 @@ export const Button = (props) => {
                   cursor: 'pointer'
                }
             }),
-            ...(small && { width: '100%', maxWidth: 130 }),
+            // ...(small && { width: '100%', maxWidth: 130 }),
             ...(large && { width: '100%', maxWidth: 230 }),
             ...style,
          }}

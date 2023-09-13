@@ -115,7 +115,7 @@ export default function EditInstitution(props) {
 
                 if (response?.status === 201) {
                     alert.success('Instituição cadastrada com sucesso.');
-                    router.push(`/administrative/institution/${data?.institution}`)
+                    router.push(`/administrative/institution/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar Instituição.');

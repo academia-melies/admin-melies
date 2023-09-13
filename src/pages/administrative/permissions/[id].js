@@ -162,7 +162,7 @@ export default function EditPermissions(props) {
             if (response?.status === 201) {
                 const { groupId } = response.data
                 alert.success('Permissões criadas com sucesso.');
-                router.push(`/administrative/permissions/${groupId}`)
+                router.push(`/administrative/permissions/list`)
             }
         } catch (error) {
             console.log(error)

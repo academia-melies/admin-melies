@@ -32,8 +32,10 @@ export default function EditClass(props) {
             const response = await api.get(`/class/${id}`)
             const { data } = response
             setClassData(data)
+            return data
         } catch (error) {
             console.log(error)
+            return error
         }
     }
 
@@ -41,6 +43,11 @@ export default function EditClass(props) {
         listCourses()
         listGrids()
     }, [id])
+
+    useEffect(() => {
+        listGrids(classData?.curso_id)
+    },[classData?.curso_id])
+
 
     useEffect(() => {
         (async () => {
@@ -57,7 +64,10 @@ export default function EditClass(props) {
     const handleItems = async () => {
         setLoading(true)
         try {
-            await getClass()
+            const classData = await getClass()
+            if(classData){
+                await listGrids(classData?.curso_id)
+            }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Turma')
         } finally {
@@ -89,7 +99,7 @@ export default function EditClass(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Turma cadastrado com sucesso.');
-                    router.push(`/administrative/class/${data?.classId}`)
+                    router.back(`/administrative/class/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar turma.');
@@ -149,9 +159,10 @@ export default function EditClass(props) {
         }
     }
 
-    async function listGrids() {
+    async function listGrids(courseId) {
+        
         try {
-            const response = await api.get(`/grids`)
+            const response = await api.get(`/grid/course/${courseId}`)
             const { data } = response
             const groupGrids = data.map(grid => ({
                 label: grid.nome_grade,
@@ -160,6 +171,7 @@ export default function EditClass(props) {
 
             setGrids(groupGrids);
         } catch (error) {
+            return error
         }
     }
 

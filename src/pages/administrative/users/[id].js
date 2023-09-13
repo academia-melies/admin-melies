@@ -69,6 +69,8 @@ export default function EditUser() {
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
+    const [period, setPeriod] = useState([])
+    const [periodSelected, setPeriodSelected] = useState([])
     const [classesInterest, setClassesInterest] = useState([])
     const [groupPermissions, setGroupPermissions] = useState([])
     const [permissionPerfil, setPermissionPerfil] = useState()
@@ -117,6 +119,7 @@ export default function EditUser() {
     const [disciplinesProfessor, setDisciplinesProfessor] = useState({})
     const [valueIdHistoric, setValueIdHistoric] = useState()
     const [valueIdInterst, setValueIdInterst] = useState()
+    const [interestSelected, setInterestSelected] = useState({})
     const [testSelectiveProcess, setTestSelectiveProcess] = useState('')
     const [filesUser, setFilesUser] = useState([])
     const [officeHours, setOfficeHours] = useState([
@@ -136,14 +139,13 @@ export default function EditUser() {
         setPerfil(slug)
         findCountries()
         listCourses()
-        listClassesInterest()
         listPermissions()
         listDisciplines()
     }, [slug])
 
     useEffect(() => {
         listClass()
-    }, [enrollmentData?.curso_id, interests.curso_id])
+    }, [enrollmentData?.curso_id, interests.curso_id, interestSelected.curso_id])
 
     const getUserData = async () => {
         try {
@@ -153,6 +155,7 @@ export default function EditUser() {
             // setArrayDependent(data.dependents)
         } catch (error) {
             console.log(error)
+            return error
         }
     }
 
@@ -164,6 +167,7 @@ export default function EditUser() {
             setArrayDependent(data.dependents)
         } catch (error) {
             console.log(error)
+            return error
         }
     }
 
@@ -175,6 +179,7 @@ export default function EditUser() {
             setArrayDisciplinesProfessor(data)
         } catch (error) {
             console.log(error)
+            return error
         }
     }
 
@@ -185,6 +190,7 @@ export default function EditUser() {
             setContract(data)
         } catch (error) {
             console.log(error)
+            return error
         }
     }
 
@@ -195,6 +201,7 @@ export default function EditUser() {
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)
+            return error
         }
     }
 
@@ -205,6 +212,21 @@ export default function EditUser() {
             setArrayInterests(data)
         } catch (error) {
             console.log(error)
+            return error
+        }
+    }
+
+    const getInterestEdit = async (interestId) => {
+        try {
+            const response = await api.get(`/user/interest/${interestId}`)
+            const { data } = response
+            setInterestSelected(data)
+            if (data) {
+                await listClassesInterest(data?.curso_id)
+            }
+        } catch (error) {
+            console.log(error)
+            return error
         }
     }
 
@@ -378,25 +400,40 @@ export default function EditUser() {
                 value: turma?.id_turma
             }));
 
+            const groupPeriod = data.map(turma => ({
+                label: turma?.periodo,
+                value: turma?.periodo
+            }));
+
             setClasses(groupClass);
+            setPeriod(groupPeriod)
         } catch (error) {
+            return error
         }
     }
 
-    async function listClassesInterest() {
+    async function listClassesInterest(id_course) {
 
         try {
-            const response = await api.get(`/classes`)
+            const response = await api.get(`/class/course/${id_course}`)
             const { data = [] } = response
             const groupClass = data.map(turma => ({
                 label: turma.nome_turma,
                 value: turma?.id_turma
             }));
 
+            const groupPeriod = data.map(turma => ({
+                label: turma?.periodo,
+                value: turma?.periodo
+            }));
+
             setClassesInterest(groupClass);
+            setPeriodSelected(groupPeriod)
         } catch (error) {
+            return error
         }
     }
+
 
     async function listPermissions() {
 
@@ -566,9 +603,37 @@ export default function EditUser() {
         }))
     }
 
-    const handleChangeInterest = (value) => {
+    const handleChangeInterest = (value, field) => {
+
+        if (field === 'curso_id') {
+            let [courseName] = courses?.filter(item => item.value === value).map(item => item.label)
+            setInterests({
+                ...interests,
+                curso_id: value,
+                nome_curso: courseName
+            })
+            return
+        }
+
+        if (field === 'turma_id') {
+            let [className] = classes?.filter(item => item.value === value).map(item => item.label)
+            setInterests({
+                ...interests,
+                turma_id: value,
+                nome_turma: className
+            })
+            return
+        }
 
         setInterests((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
+
+    const handleChangeInterestSelected = (value) => {
+
+        setInterestSelected((prevValues) => ({
             ...prevValues,
             [value.target.name]: value.target.value,
         }))
@@ -603,6 +668,8 @@ export default function EditUser() {
             {
                 curso_id: interests.curso_id,
                 turma_id: interests.turma_id,
+                nome_curso: interests.nome_curso,
+                nome_turma: interests.nome_turma,
                 periodo_interesse: interests.periodo_interesse,
                 observacao_int: interests.observacao_int || '',
             }
@@ -627,7 +694,7 @@ export default function EditUser() {
             const response = await api.delete(`/user/interest/delete/${id_interesse}`)
             if (response?.status == 201) {
                 alert.success('Interesse removido.');
-                handleItems()
+                getInterest()
             }
         } catch (error) {
             alert.error('Ocorreu um erro ao remover o Interesse selecionado.');
@@ -646,7 +713,24 @@ export default function EditUser() {
             if (response?.status == 201) {
                 alert.success('Interesse adicionado.');
                 setInterests({})
-                handleItems()
+                getInterest()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao adicionar Interesse.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleEditInterest = async (id_interest) => {
+        setLoading(true)
+        try {
+            const response = await api.patch(`/user/interest/update/${id_interest}`, { interestSelected })
+            if (response?.status === 200) {
+                alert.success('Interesse atualizado.');
+                setShowSections({ ...showSections, viewInterest: false })
+                getInterest()
             }
         } catch (error) {
             alert.error('Ocorreu um erro ao adicionar Interesse.');
@@ -735,6 +819,7 @@ export default function EditUser() {
             setLoading(false)
         }
     }
+
 
     const checkRequiredFields = () => {
         if (!userData?.nome) {
@@ -883,7 +968,7 @@ export default function EditUser() {
 
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    if (data?.userId) router.push(`/administrative/users/${data?.userId}`)
+                    if (data?.userId) router.push(`/administrative/users/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
@@ -2414,52 +2499,116 @@ export default function EditUser() {
                                     opacity: 0.8,
                                     cursor: 'pointer'
                                 }
-                            }} onClick={() => setShowSections({ ...showSections, interest: false })} />
+                            }} onClick={() => {
+                                setShowSections({ ...showSections, interest: false })
+                                alert.info('Lembresse de salvar antes de sair da tela.')
+                            }} />
                         </Box>
                         <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
-                            <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px', zIndex: 999999999, width: '80%' }}>
+                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid #eaeaea`, }}>
+                                <table style={{ borderCollapse: 'collapse', }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', width: '100%', borderRadius: '8px 0px 0px 8px', border: `1px solid #eaeaea`, }}>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Curso</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Turma</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Periodo</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style={{ flex: 1 }}>
+                                        {
+                                            arrayInterests?.map((interest, index) => {
+                                                return (
+                                                    <tr key={`${interest}-${index}`}>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                            {interest?.nome_curso || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                            {interest?.nome_turma || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                            {interest?.periodo_interesse || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                            {interest?.observacao_int || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+
+                                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                                <Button secondary small text="Editar" sx={{
+                                                                    width: 40,
+                                                                    transition: '.3s',
+                                                                    zIndex: 999999999,
+                                                                    "&:hover": {
+                                                                        opacity: 0.8,
+                                                                        cursor: 'pointer'
+                                                                    }
+                                                                }} onClick={() => {
+                                                                    setValueIdInterst(interest.id_interesse)
+                                                                    getInterestEdit(interest.id_interesse)
+                                                                    setShowSections({ ...showSections, viewInterest: true })
+                                                                }} />
+
+                                                                {interest?.turma_id && <Button small text="Matricular" sx={{
+                                                                    // width: 25,
+                                                                    transition: '.3s',
+                                                                    zIndex: 999999999,
+                                                                    "&:hover": {
+                                                                        opacity: 0.8,
+                                                                        cursor: 'pointer'
+                                                                    }
+                                                                }} onClick={() => {
+                                                                    let query = `?interest=${interest.id_interesse}`;
+                                                                    router.push(`/administrative/users/${id}/enrollStudent${query}`)
+                                                                }} />}
+                                                                {newUser &&
+                                                                    <Box sx={{
+                                                                        backgroundSize: 'cover',
+                                                                        backgroundRepeat: 'no-repeat',
+                                                                        backgroundPosition: 'center',
+                                                                        width: 25,
+                                                                        height: 25,
+                                                                        backgroundImage: `url(/icons/remove_icon.png)`,
+                                                                        transition: '.3s',
+                                                                        zIndex: 999999999,
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer'
+                                                                        }
+                                                                    }} onClick={() => {
+                                                                        deleteInterest(index)
+                                                                    }} />
+                                                                }
+                                                            </Box>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            {/* <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px', zIndex: 999999999, width: '80%' }}>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Curso</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Turma</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Periodo</Text>
                                 <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Observação</Text>
-                            </Box>
+                            </Box> */}
 
-                            {arrayInterests.map((interest, index) => (
+                            {/* {arrayInterests.map((interest, index) => (
                                 <>
 
                                     <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <SelectList fullWidth data={courses} valueSelection={interest?.curso_id}
-                                            title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                            clean={false}
-                                        />
-                                        <SelectList data={classesInterest} valueSelection={interest?.turma_id}
-                                            title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                            clean={false}
-                                        />
-                                        <SelectList data={grouperiod} valueSelection={interest?.periodo_interesse}
-                                            title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                            clean={false}
-                                        />
-                                        <TextInput
-                                            placeholder='Observação'
-                                            name='observacao_int'
-                                            value={interest?.observacao_int || ''}
-                                            sx={{ flex: 1 }}
-                                        // rows={3}
-                                        />
-                                        <Box sx={{
-                                            backgroundSize: 'cover',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center',
-                                            backgroundBlendMode: '#fff',
-                                            width: 25,
-                                            height: 25,
-                                            backdropFilter: 'inherit',
-                                            backgroundImage: `url(${icons.edit})`,
-                                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                        <Box sx={{ display: 'flex', flex: 1, gap: 1 }}>
+                                            <Text sx={{ flex: 1 }}>{interest?.nome_curso}</Text>
+                                            <Text sx={{ flex: 1 }}>{interest?.nome_turma}</Text>
+                                            <Text sx={{ flex: 1 }}>{interest?.periodo_interesse}</Text>
+                                            <Text sx={{ flex: 1 }}>{interest?.observacao_int}</Text>
+                                        </Box>
+                                        <Button small text="Editar" sx={{
+                                            width: 40,
                                             transition: '.3s',
                                             zIndex: 999999999,
                                             "&:hover": {
@@ -2468,8 +2617,10 @@ export default function EditUser() {
                                             }
                                         }} onClick={() => {
                                             setValueIdInterst(interest.id_interesse)
+                                            getInterestEdit(interest.id_interesse)
                                             setShowSections({ ...showSections, viewInterest: true })
                                         }} />
+
                                         {interest?.turma_id && <Button small text="Matricular" sx={{
                                             // width: 25,
                                             transition: '.3s',
@@ -2502,14 +2653,10 @@ export default function EditUser() {
                                         }
                                     </Box>
                                 </>
-                            ))}
+                            ))} */}
 
                             {!showSections.addInterest && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                 <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, addInterest: true })} />
-                                <Button small text='salvar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
-                                    alert.info('Lista de Interesses salva.')
-                                    setShowSections({ ...showSections, interest: false })
-                                }} />
                             </Box>}
 
                             {showSections.addInterest &&
@@ -2530,15 +2677,15 @@ export default function EditUser() {
                                         }} onClick={() => setShowSections({ ...showSections, addInterest: false })} />
                                     </Box>
                                     <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => setInterests({ ...interests, curso_id: value })}
+                                        <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => handleChangeInterest(value, 'curso_id')}
                                             title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <SelectList fullWidth data={classes} valueSelection={interests?.turma_id} onSelect={(value) => setInterests({ ...interests, turma_id: value })}
+                                        <SelectList fullWidth data={classes} valueSelection={interests?.turma_id} onSelect={(value) => handleChangeInterest(value, 'turma_id')}
                                             title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <SelectList fullWidth data={grouperiod} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
+                                        <SelectList fullWidth data={period} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
                                             title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
@@ -2578,41 +2725,48 @@ export default function EditUser() {
                                             }
                                         }} onClick={() => setShowSections({ ...showSections, viewInterest: false })} />
                                     </Box>
-                                    {arrayInterests.filter((item) => item.id_interesse === valueIdInterst).map((interest, index) => (
-                                        <>
 
-                                            <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                                <SelectList fullWidth data={courses} valueSelection={interest?.curso_id}
-                                                    title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                    clean={false}
-                                                />
-                                                <SelectList data={classesInterest} valueSelection={interest?.turma_id}
-                                                    title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                    clean={false}
-                                                />
-                                                <SelectList data={grouperiod} valueSelection={interest?.periodo_interesse}
-                                                    title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                    clean={false}
-                                                />
-                                            </Box>
-                                            <TextInput
-                                                placeholder='Observação'
-                                                name='observacao_int'
-                                                value={interest?.observacao_int || ''}
-                                                sx={{ flex: 1 }}
-                                                multiline
-                                                maxRows={5}
-                                                rows={3}
-                                            />
-                                            <Button small secondary text='excluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
-                                                handleDeleteInterest(interest?.id_interesse)
-                                                setShowSections({ ...showSections, viewInterest: false })
+                                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                        <SelectList fullWidth data={courses} valueSelection={interestSelected?.curso_id}
+                                            title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                            onSelect={(value) => {
+                                                setInterestSelected({ ...interestSelected, curso_id: value })
+                                            }}
+                                        />
+                                        <SelectList data={classesInterest} valueSelection={interestSelected?.turma_id}
+                                            title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                            onSelect={(value) => setInterestSelected({ ...interestSelected, turma_id: value })}
+                                        />
+                                        <SelectList data={periodSelected} valueSelection={interestSelected?.periodo_interesse}
+                                            title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                            onSelect={(value) => setInterestSelected({ ...interestSelected, periodo_interesse: value })}
+                                        />
+                                    </Box>
+                                    <TextInput
+                                        placeholder='Observação'
+                                        name='observacao_int'
+                                        value={interestSelected?.observacao_int || ''}
+                                        sx={{ flex: 1 }}
+                                        onChange={handleChangeInterestSelected}
+                                        multiline
+                                        maxRows={5}
+                                        rows={3}
+                                    />
+                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                        <Button small text="atualizar" style={{ padding: '5px 6px 5px 6px', width: 100 }}
+                                            onClick={() => {
+                                                handleEditInterest(interestSelected?.id_interesse)
+
                                             }} />
-                                        </>
-                                    ))}
+                                        <Button small secondary text='excluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
+                                            handleDeleteInterest(interestSelected?.id_interesse)
+                                            setShowSections({ ...showSections, viewInterest: false })
+                                        }} />
+                                    </Box>
+
                                 </ContentContainer>}
                         </ContentContainer>
                     </ContentContainer>

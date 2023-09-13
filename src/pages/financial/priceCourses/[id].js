@@ -233,7 +233,7 @@ export default function EditPricesCourse(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Taxa cadastrada com sucesso.');
-                    router.push(`/financial/priceCourses/${data?.prices}`)
+                    router.push(`/financial/priceCourses/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar taxa.');

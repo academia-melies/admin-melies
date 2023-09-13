@@ -106,7 +106,7 @@ export default function EditAdministrativeFees(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Taxa cadastrada com sucesso.');
-                    router.push(`/financial/administrativeFees/${data?.rate}`)
+                    router.push(`/financial/administrativeFees/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar taxa.');
