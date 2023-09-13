@@ -144,7 +144,7 @@ export default function EditDiscipline(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Disciplina cadastrado com sucesso.');
-                    router.push(`/administrative/discipline/${data?.discipline}`)
+                    router.push(`/administrative/discipline/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar a disciplina.');

@@ -178,7 +178,7 @@ export default function EditService(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Serviço cadastrado com sucesso.');
-                    router.push(`/suport/service/${data?.service}`)
+                    router.push(`/suport/service/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar o Serviço.');

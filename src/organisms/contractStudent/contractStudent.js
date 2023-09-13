@@ -41,7 +41,7 @@ export const ContractStudentComponent = (props) => {
                             <TextInput label="CPF:" data={userData?.cpf} />
                             <TextInput label="Naturalidade:" data={userData?.naturalidade} />
                         </Box>
-                        <TextInput label="Endereço:" data={userData?.endereco} />
+                        <TextInput label="Endereço:" data={userData?.rua} />
                         <Box sx={styles.containerValues}>
                             <TextInput label="Número:" data={userData?.numero} />
                             <TextInput label="Complemento:" data={userData?.complemento} />
@@ -50,7 +50,7 @@ export const ContractStudentComponent = (props) => {
                         <Box sx={styles.containerValues}>
                             <TextInput label="CEP:" data={userData?.cep} />
                             <TextInput label="Cidade:" data={userData?.cidade} />
-                            <TextInput label="Estado:" data={''} />
+                            <TextInput label="Estado:" data={userData?.uf} />
                         </Box>
                         <Box sx={styles.containerValues}>
                             <TextInput label="País:" data={''} />
@@ -79,23 +79,23 @@ export const ContractStudentComponent = (props) => {
                             <Box sx={{ backgroundColor: colorPalette.buttonColor, flex: 1 }}>
                                 <TextInput label="Dados do(a) Responsável / Empresa / Pagante" style={{ title: { color: '#fff' } }} />
                             </Box>
-                            <TextInput label="Endereço:" data={responsiblePayerData.end_resp || ''} />
+                            <TextInput label="Endereço:" data={responsiblePayerData.end_resp || userData?.rua} />
                             <Box sx={styles.containerValues}>
-                                <TextInput label="Número:" data={responsiblePayerData.numero_resp || ''} />
-                                <TextInput label="CEP:" data={responsiblePayerData.cep_resp || ''} />
-                                <TextInput label="Complemento:" data={responsiblePayerData.compl_resp || ''} />
+                                <TextInput label="Número:" data={responsiblePayerData.numero_resp || userData?.numero} />
+                                <TextInput label="CEP:" data={responsiblePayerData.cep_resp || userData?.cep} />
+                                <TextInput label="Complemento:" data={responsiblePayerData.compl_resp || userData?.complemento} />
                             </Box>
                             <Box sx={styles.containerValues}>
-                                <TextInput label="Bairro:" data={responsiblePayerData.bairro_resp || ''} />
-                                <TextInput label="Cidade:" data={responsiblePayerData.cidade_resp || ''} />
-                                <TextInput label="Estado:" data={responsiblePayerData.estado_resp || ''} />
+                                <TextInput label="Bairro:" data={responsiblePayerData.bairro_resp || userData?.bairro} />
+                                <TextInput label="Cidade:" data={responsiblePayerData.cidade_resp || userData?.cidade} />
+                                <TextInput label="Estado:" data={responsiblePayerData.estado_resp || userData?.uf} />
                                 <TextInput label="País:" data={responsiblePayerData.pais_resp || ''} />
                             </Box>
-                            <TextInput label="E-mail:" data={responsiblePayerData.email_resp || ''} />
+                            <TextInput label="E-mail:" data={responsiblePayerData.email_resp || userData?.email} />
                             <Box sx={styles.containerValues}>
-                                <TextInput label="Telefone:" data={responsiblePayerData.telefone_resp || ''} />
-                                <TextInput label="CPF / CNPJ:" data={responsiblePayerData.cpf_resp || ''} />
-                                <TextInput label="RG:" data={responsiblePayerData.rg_resp || ''} />
+                                <TextInput label="Telefone:" data={responsiblePayerData.telefone_resp || userData?.telefone} />
+                                <TextInput label="CPF / CNPJ:" data={responsiblePayerData.cpf_resp || userData?.cpf} />
+                                <TextInput label="RG:" data={responsiblePayerData.rg_resp || userData?.rg} />
                             </Box>
                         </Box>
                     </Box>

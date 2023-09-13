@@ -6,7 +6,7 @@ import { CheckBoxComponent, SectionHeader, SelectList } from "../../../../organi
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useAppContext } from "../../../../context/AppContext";
 import { useReactToPrint } from "react-to-print";
-import { calculationAge, findCEP, formatCEP, formatCPF, formatDate, formatRg } from "../../../../helpers";
+import { calculationAge, emailValidator, findCEP, formatCEP, formatCPF, formatDate, formatRg } from "../../../../helpers";
 import { ContractStudentComponent } from "../../../../organisms/contractStudent/contractStudent";
 import { Forbidden } from "../../../../forbiddenPage/forbiddenPage";
 
@@ -48,6 +48,8 @@ export default function InterestEnroll() {
     const [paymentForm, setPaymentForm] = useState({})
     const [emailDigitalSignature, setEmailDigitalSignature] = useState({})
     const [updatedScreen, setUpdatedScreen] = useState(false)
+    const [newResponsible, setNewResponsible] = useState(true)
+
     const [userIsOfLegalAge, setUserIsOfLegalAge] = useState(true)
     const [paying, setPaying] = useState({
         aluno: true,
@@ -106,6 +108,7 @@ export default function InterestEnroll() {
                     aluno: false,
                     responsible: true
                 })
+                setNewResponsible(false)
             }
             return data
         } catch (error) {
@@ -197,13 +200,106 @@ export default function InterestEnroll() {
         setQuantityDisciplinesSelected(disciplinesLength)
     }, [disciplinesSelected])
 
+    const checkValues = (responsiblePayerData) => {
+        const { nome_resp,
+            telefone_resp,
+            email_resp,
+            cpf_resp,
+            rg_resp,
+            cep_resp,
+            end_resp,
+            numero_resp,
+            cidade_resp,
+            estado_resp,
+            bairro_resp } = responsiblePayerData
+
+        if (!nome_resp) {
+            alert?.error('O campo nome do responsável é obrigatório')
+            return false
+        }
+        if (!email_resp) {
+            alert?.error('O campo email do responsável é obrigatório')
+            return false
+        }
+        if (!emailValidator(email_resp)) {
+            alert?.error('O e-mail do responsável inserido parece estar incorreto.')
+            return false
+        }
+
+        if (!telefone_resp) {
+            alert?.error('O campo telefone do responsável é obrigatório')
+            return false
+        }
+
+
+        if (!cpf_resp) {
+            alert?.error('O campo cpf do responsável é obrigatório')
+            return false
+        }
+
+        if (!rg_resp) {
+            alert?.error('O campo rg do responsável é obrigatório')
+            return false
+        }
+
+
+        if (!cep_resp) {
+            alert?.error('O campo cep do responsável é obrigatório')
+            return false
+        }
+
+        if (!end_resp) {
+            alert?.error('O campo endereço do responsável é obrigatório')
+            return false
+        }
+
+        if (!numero_resp) {
+            alert?.error('O campo numero do responsável é obrigatório')
+            return false
+        }
+
+        if (!cidade_resp) {
+            alert?.error('O campo cidade do responsável é obrigatório')
+            return false
+        }
+
+        if (!estado_resp) {
+            alert?.error('O campo estado do responsável é obrigatório')
+            return false
+        }
+
+        if (!bairro_resp) {
+            alert?.error('O campo bairro do responsável é obrigatório')
+            return false
+        }
+
+        return true
+    }
 
     const handleCreateResponsible = async () => {
+        if (checkValues(responsiblePayerData)) {
+            setLoading(true)
+            try {
+                const response = await api.post(`/responsible/create`, { responsiblePayerData: { ...responsiblePayerData, usuario_id: id }, userId })
+                if (response?.status === 201) {
+                    alert.success('Resposável adicionado.')
+                    handleResponsible()
+                }
+            } catch (error) {
+                console.log(error)
+                return error
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    const handleUpdateResponsible = async () => {
         setLoading(true)
         try {
-            const response = await api.post(`/responsible/create`, { responsiblePayerData: { ...responsiblePayerData, usuario_id: id }, userId })
-            const { data } = response
-            if (data) {
+            const response = await api.patch(`/responsible/update/${responsiblePayerData?.id_resp_pag}`, { responsiblePayerData })
+            if (response?.status === 200) {
+                alert.success('Dados do responsável atualizados.')
                 handleResponsible()
             }
         } catch (error) {
@@ -214,13 +310,15 @@ export default function InterestEnroll() {
         }
     }
 
-    const handleUpdateResponsible = async () => {
+
+    const handleDeleteResponsible = async () => {
         setLoading(true)
         try {
-            const response = await api.patch(`/responsible/update/${responsiblePayerData?.id_resp_pag}`, { responsiblePayerData })
-            const { data } = response
-            if (data) {
+            const response = await api.delete(`/responsible/delete/${responsiblePayerData?.id_resp_pag}`)
+            if (response?.status === 200) {
+                alert.success('Responsável removido.')
                 handleResponsible()
+                setNewResponsible(true)
             }
         } catch (error) {
             console.log(error)
@@ -261,10 +359,13 @@ export default function InterestEnroll() {
                     setResponsiblePayerData={setResponsiblePayerData}
                     handleAddResponsible={handleCreateResponsible}
                     handleUpdateResponsible={handleUpdateResponsible}
+                    handleDeleteResponsible={handleDeleteResponsible}
                     paying={paying}
                     setPaying={setPaying}
                     userData={userData}
                     userIsOfLegalAge={userIsOfLegalAge}
+                    newResponsible={newResponsible}
+                    setNewResponsible={setNewResponsible}
                 />
                 <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Button secondary text="Voltar" onClick={() => pushRouteScreen(0, 'interesse >')} style={{ width: 120 }} />
@@ -379,7 +480,10 @@ export const Payment = (props) => {
         paying,
         setPaying,
         userData,
-        userIsOfLegalAge
+        userIsOfLegalAge,
+        newResponsible,
+        setNewResponsible,
+        handleDeleteResponsible
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -389,6 +493,10 @@ export const Payment = (props) => {
     const [totalParcel, setTotalParcel] = useState()
     const [dispensedDisciplines, setDispensedDisciplines] = useState()
     const [discountDispensed, setDiscountDispensed] = useState()
+    const [typeDiscountAdditional, setTypeDiscountAdditional] = useState({
+        porcent: true,
+        real: false
+    })
     const [numberOfInstallments, setNumberOfInstallments] = useState(6)
     const [dayForPayment, setDayForPayment] = useState(1)
     const initialTypePaymentsSelected = Array.from({ length: numberOfInstallments }, () => ({ tipo: '', valor_parcela: '', n_parcela: null, data_pagamento: '' }));
@@ -515,28 +623,41 @@ export const Payment = (props) => {
 
     const handleChange = (event) => {
 
-        const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+        if (typeDiscountAdditional.real) {
 
-        if (rawValue === '') {
-            event.target.value = '';
-        } else {
-            let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
-            const decimalValue = rawValue.slice(-2); // Parte decimal
+            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
-            if (intValue === '0' && rawValue.length > 2) {
-                intValue = '';
+            if (rawValue === '') {
+                event.target.value = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
+                const decimalValue = rawValue.slice(-2); // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValue = `${intValue}.${decimalValue}`;
+                event.target.value = formattedValue;
             }
 
-            const formattedValue = `${intValue}.${decimalValue}`;
-            event.target.value = formattedValue;
+            setAditionalDiscount((prevValues) => ({
+                ...prevValues,
+                [event.target.name]: event.target.value,
+            }));
+
+            return;
+
+        } else if (typeDiscountAdditional.porcent) {
+            let value = ''
+            value = event.target.value.replace(',', '.');
+            event.target.value = value
+
+            setAditionalDiscount((prevValues) => ({
+                ...prevValues,
+                [event.target.name]: event.target.value,
+            }));
         }
-
-        setAditionalDiscount((prevValues) => ({
-            ...prevValues,
-            [event.target.name]: event.target.value,
-        }));
-
-        return;
     }
 
     const handleChangeResponsibleData = (event) => {
@@ -564,23 +685,50 @@ export const Payment = (props) => {
     }
 
     const handleCalculationDiscount = (action) => {
-        const discount = parseFloat(aditionalDiscount?.desconto_adicional);
-        const totalValue = parseFloat(totalValueFinnaly);
 
-        if (isNaN(discount) || isNaN(totalValue)) {
-            alert.error("Desconto ou valor total inválido.");
+        if (typeDiscountAdditional.real) {
+
+            const discount = parseFloat(aditionalDiscount?.desconto_adicional);
+            const totalValue = parseFloat(totalValueFinnaly);
+
+            if (isNaN(discount) || isNaN(totalValue)) {
+                alert.error("Desconto ou valor total inválido.");
+            }
+
+            if (action === 'remover') {
+                const updatedTotal = (totalValue + discount).toFixed(2);
+                setTotalValueFinnaly(updatedTotal);
+                setAditionalDiscount({ desconto_adicional: 0 })
+                alert.success('Desconto removido.')
+            } else if (action === 'adicionar') {
+                const updatedTotal = (totalValue - discount).toFixed(2);
+                setTotalValueFinnaly(updatedTotal);
+                alert.success('Desconto aplicado.')
+            }
+            return
+
+        } else if (typeDiscountAdditional.porcent) {
+            const discountPercentage = parseFloat(aditionalDiscount?.desconto_adicional);
+
+            if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+                alert.error("Porcentagem de desconto inválida.");
+                return;
+            }
+
+            const totalValue = parseFloat(totalValueFinnaly);
+            const discountValue = (totalValue * (discountPercentage / 100)).toFixed(2);
+
+            if (action === 'remover') {
+                const updatedTotal = (totalValue + parseFloat(discountValue)).toFixed(2);
+                setTotalValueFinnaly(updatedTotal);
+                setAditionalDiscount({ desconto_adicional: 0 })
+                alert.success('Desconto em porcentagem removido.')
+            } else if (action === 'adicionar') {
+                const updatedTotal = (totalValue - parseFloat(discountValue)).toFixed(2);
+                setTotalValueFinnaly(updatedTotal);
+                alert.success('Desconto em porcentagem aplicado.')
+            }
         }
-
-        if (action === 'remover') {
-            const updatedTotal = (totalValue + discount).toFixed(2);
-            setTotalValueFinnaly(updatedTotal);
-            setAditionalDiscount({ desconto_adicional: 0 })
-        } else if (action === 'adicionar') {
-            const updatedTotal = (totalValue - discount).toFixed(2);
-            setTotalValueFinnaly(updatedTotal);
-        }
-
-
     };
 
     const handleBlurCEP = async (event) => {
@@ -643,7 +791,6 @@ export const Payment = (props) => {
         new Date(2023, 11, 25)  // Natal
     ];
 
-
     return (
         <>
             <ContentContainer style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
@@ -668,17 +815,35 @@ export const Payment = (props) => {
                                 <Text bold>Disciplinas dispensadas - Desconto (%):</Text>
                                 <Text>{disciplineDispensedPorcent}</Text>
                             </Box>
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                <TextInput
-                                    placeholder='0.00'
-                                    name='desconto_adicional'
-                                    type="coin"
-                                    onChange={handleChange}
-                                    value={(aditionalDiscount?.desconto_adicional) || ''}
-                                    label='Desconto adicional' sx={{ flex: 1, }}
-                                />
-                                <Button small text="adicionar" onClick={() => handleCalculationDiscount('adicionar')} style={{ width: '90px', height: '30px' }} />
-                                <Button secondary small text="remover" onClick={() => handleCalculationDiscount('remover')} style={{ width: '90px', height: '30px' }} />
+                            <ContentContainer sx={{ display: 'flex', gap: 2.5, flexDirection: 'column' }}>
+                                <Box sx={{ display: 'flex' }}>
+                                    <Button small secondary={typeDiscountAdditional?.porcent ? false : true} text="porcentagem" onClick={() => setTypeDiscountAdditional({
+                                        porcent: true,
+                                        real: false
+                                    })} style={{ width: '90px', height: '30px', borderRadius: 0 }} />
+                                    <Button secondary={typeDiscountAdditional?.real ? false : true} small text="dinheiro" onClick={() => setTypeDiscountAdditional({
+                                        porcent: false,
+                                        real: true
+                                    })} style={{ width: '90px', height: '30px', borderRadius: 0 }} />
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                    <TextInput
+                                        placeholder={typeDiscountAdditional?.real ? '0.00' : '20.5%'}
+                                        name='desconto_adicional'
+                                        type={typeDiscountAdditional?.real ? "coin" : ''}
+                                        onChange={handleChange}
+                                        value={(aditionalDiscount?.desconto_adicional) || ''}
+                                        label='Desconto adicional' sx={{ flex: 1, }}
+                                    />
+                                    <Button small text="adicionar" onClick={() => handleCalculationDiscount('adicionar')} style={{ width: '90px', height: '30px' }} />
+                                    <Button secondary small text="remover" onClick={() => handleCalculationDiscount('remover')} style={{ width: '90px', height: '30px' }} />
+                                </Box>
+                            </ContentContainer>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                                <Text bold>Desconto adicional:</Text>
+                                <Text>{(typeDiscountAdditional?.real && formatter.format(aditionalDiscount?.desconto_adicional || 0) )
+                                 || (typeDiscountAdditional?.porcent && parseFloat(aditionalDiscount?.desconto_adicional || 0).toFixed(2) + '%')
+                                 || '0'}</Text>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
                                 <Text bold>Valor Total com desconto:</Text>
@@ -773,10 +938,13 @@ export const Payment = (props) => {
                         }
                         {paying?.responsible &&
                             <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', gap: 2 }}>
-                                {!responsiblePayerData ?
+                                {newResponsible ?
                                     <Button small text="adicionar" onClick={() => handleAddResponsible()} style={{ width: '90px', height: '30px' }} />
                                     :
-                                    <Button secondary small text="atualizar" onClick={() => handleUpdateResponsible()} style={{ width: '90px', height: '30px' }} />
+                                    <>
+                                        <Button small text="atualizar" onClick={() => handleUpdateResponsible()} style={{ width: '90px', height: '30px' }} />
+                                        <Button secondary small text="excluir" onClick={() => handleDeleteResponsible()} style={{ width: '90px', height: '30px' }} />
+                                    </>
                                 }
                             </Box>}
 

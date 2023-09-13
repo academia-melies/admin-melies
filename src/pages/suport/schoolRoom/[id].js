@@ -77,7 +77,7 @@ export default function EditSchoolRoom(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Sala cadastrada com sucesso.');
-                    router.push(`/suport/schoolRoom/${data?.room}`)
+                    router.push(`/suport/schoolRoom/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar Sala.');

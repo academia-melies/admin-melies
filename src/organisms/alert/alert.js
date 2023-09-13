@@ -36,7 +36,7 @@ export const Alert = (props) => {
 
    useEffect(() => setTimer(defaultTimer), [props.active])
    useEffect(() => {
-      if (props.type === 'success' ) {
+      if (props.type !=='error' ) {
          if (props.active && timer > 0) {
             setTimeout(() => setTimer(prev => prev - 0.015), 15)
             return

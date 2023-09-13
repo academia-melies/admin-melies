@@ -107,7 +107,7 @@ export default function EditCourse(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Curso cadastrado com sucesso.');
-                    router.push(`/administrative/course/${data?.course}`)
+                    router.push(`/administrative/course/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar o curso.');

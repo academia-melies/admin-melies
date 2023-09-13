@@ -92,7 +92,7 @@ export default function EditInventory(props) {
             const { data } = response
             if (response?.status === 201) {
                 alert.success('Item cadastrado no inventário com sucesso.');
-                router.push(`/suport/inventory/${data?.inventory}`)
+                router.push(`/suport/inventory/list`)
             }
         } catch (error) {
             alert.error('Tivemos um problema ao cadastrar o Item.');
