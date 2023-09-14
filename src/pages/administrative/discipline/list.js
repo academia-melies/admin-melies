@@ -23,10 +23,15 @@ export default function ListDiscipline(props) {
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
+        const normalizeString = (str) => {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        };
+        const normalizedFilterData = normalizeString(filterData);
+
         if (filterAtive === 'todos') {
-            return item?.nome_disciplina?.toLowerCase().includes(filterData?.toLowerCase());
+            return normalizeString(item?.nome_disciplina)?.toLowerCase().includes(normalizedFilterData?.toLowerCase());
         } else {
-            return item?.ativo === filterAtive && (item?.nome_disciplina?.toLowerCase().includes(filterData?.toLowerCase()));
+            return normalizeString(item?.ativo) === filterAtive && (normalizeString(item?.nome_disciplina)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()));
         }
     };
 

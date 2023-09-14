@@ -21,10 +21,20 @@ export default function ListUsers(props) {
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
+        const normalizeString = (str) => {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        };
+    
+        const normalizedFilterData = normalizeString(filterData);
+        
         if (filterAtive === 'todos') {
-            return item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase());
+            return normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) || 
+                   normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase());
         } else {
-            return item?.ativo === filterAtive && (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
+            return item?.ativo === filterAtive && (
+                normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) || 
+                normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
+            );
         }
     };
 
