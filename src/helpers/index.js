@@ -53,9 +53,13 @@ export const formatCNPJ = (cnpj) => {
 
 
 export const formatDate = (date) => {
+   try {
    const newDate = new Date(date)
    const formattedDate = new Intl.DateTimeFormat("pt-BR")?.format(newDate);
    return formattedDate;
+} catch (error) {
+      return null
+}
 };
 
 

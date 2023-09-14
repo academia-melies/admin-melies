@@ -15,6 +15,11 @@ export default function ListDiscipline(props) {
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
+    const [firstRender, setFirstRender] = useState(true)
+    const [filters, setFilters] = useState({
+        filterName: 'nome_disciplina',
+        filterOrder: 'asc'
+    })
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
@@ -27,7 +32,38 @@ export default function ListDiscipline(props) {
 
     useEffect(() => {
         getDiscipline();
+        if (window.localStorage.getItem('list-discipline-filters')) {
+            const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-discipline-filters') || null);
+            setFilters({
+                filterName: meliesLocalStorage?.filterName,
+                filterOrder: meliesLocalStorage?.filterOrder
+            })
+        }
     }, []);
+
+
+    useEffect(() => {
+        if (firstRender) return setFirstRender(false);
+        window.localStorage.setItem('list-discipline-filters', JSON.stringify({ filterName: filters.filterName, filterOrder: filters.filterOrder }));
+    }, [filters])
+
+
+    const sortDiscipline = () => {
+        const { filterName, filterOrder } = filters;
+    
+        const sortedDiscipline = [...disciplineList].sort((a, b) => {
+            const valueA = filterName === 'id_disciplina' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
+            const valueB = filterName === 'id_disciplina' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
+
+            if (filterName === 'id_disciplina') {
+                return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+    
+            return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        });
+    
+        return sortedDiscipline;
+    }
 
     const getDiscipline = async () => {
         setLoading(true)
@@ -47,6 +83,7 @@ export default function ListDiscipline(props) {
         { key: 'nome_disciplina', avatar: true, label: 'Nome' },
         { key: 'carga_hr_dp', label: 'Carga Horária' },
         { key: 'objetivo_dp', label: 'Objetivo' },
+        { key: 'dt_criacao', label: 'Criado em', date: true },
 
     ];
 
@@ -85,7 +122,7 @@ export default function ListDiscipline(props) {
                 />
             </Box>
             {disciplineList.length > 0 ?
-                <Table_V1 data={disciplineList?.filter(filter)} columns={column} columnId={'id_disciplina'}/>
+                <Table_V1 data={sortDiscipline()?.filter(filter)} columns={column} columnId={'id_disciplina'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar disciplinas cadastradas</Text>

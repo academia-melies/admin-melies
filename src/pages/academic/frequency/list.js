@@ -16,6 +16,11 @@ export default function FrequencyStudent(props) {
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette, user } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
+    const [firstRender, setFirstRender] = useState(true)
+    const [filters, setFilters] = useState({
+        filterName: 'nome_turma',
+        filterOrder: 'asc'
+    })
     const router = useRouter()
     const id = router?.query?.id || null
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
@@ -35,7 +40,37 @@ export default function FrequencyStudent(props) {
         else {
             getFrequencyStudents({ route: `/classes` });
         }
+        if (window.localStorage.getItem('list-classes-frequency-filters')) {
+            const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-classes-frequency-filters') || null);
+            setFilters({
+                filterName: meliesLocalStorage?.filterName,
+                filterOrder: meliesLocalStorage?.filterOrder
+            })
+        }
     }, []);
+
+    useEffect(() => {
+        if (firstRender) return setFirstRender(false);
+        window.localStorage.setItem('list-classes-frequency-filters', JSON.stringify({ filterName: filters.filterName, filterOrder: filters.filterOrder }));
+    }, [filters])
+
+
+    const sortClasses = () => {
+        const { filterName, filterOrder } = filters;
+    
+        const sortedClasses = [...frequencyList].sort((a, b) => {
+            const valueA = filterName === 'id_turma' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
+            const valueB = filterName === 'id_turma' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
+
+            if (filterName === 'id_turma') {
+                return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+    
+            return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        });
+    
+        return sortedClasses;
+    }
 
     const getFrequencyStudents = async ({ route }) => {
         setLoading(true)
@@ -54,6 +89,7 @@ export default function FrequencyStudent(props) {
         { key: 'id_turma', label: 'ID' },
         { key: 'nome_turma', label: 'Nome' },
         { key: 'periodo', label: 'Periodo' },
+        { key: 'dt_criacao', label: 'Criado em', date: true },
         // { key: 'inicio', label: 'Inicio', date: true },
         // { key: 'fim', label: 'Fim', date: true }
     ];
@@ -91,7 +127,7 @@ export default function FrequencyStudent(props) {
                 />
             </Box>
             {frequencyList.length > 0 ?
-                <Table_V1 data={frequencyList?.filter(filter)} columns={column} columnId={'id_turma'} query={id ? `=day` : '' } />
+                <Table_V1 data={sortClasses()?.filter(filter)} columns={column} columnId={'id_turma'} query={id ? `=day` : '' } filters={filters} onPress={(value) => setFilters(value)} onFilter/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar Turmas cadastradas para chamada.</Text>

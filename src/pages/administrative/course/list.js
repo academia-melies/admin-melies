@@ -15,6 +15,11 @@ export default function ListCourse(props) {
     const [perfil, setPerfil] = useState('aluno')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
+    const [firstRender, setFirstRender] = useState(true)
+    const [filters, setFilters] = useState({
+        filterName: 'nome_curso',
+        filterOrder: 'asc'
+    })
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
@@ -27,7 +32,37 @@ export default function ListCourse(props) {
 
     useEffect(() => {
         getCourse();
+        if (window.localStorage.getItem('list-courses-filters')) {
+            const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-courses-filters') || null);
+            setFilters({
+                filterName: meliesLocalStorage?.filterName,
+                filterOrder: meliesLocalStorage?.filterOrder
+            })
+        }
     }, [perfil]);
+
+    useEffect(() => {
+        if (firstRender) return setFirstRender(false);
+        window.localStorage.setItem('list-users-filters', JSON.stringify({ filterName: filters.filterName, filterOrder: filters.filterOrder }));
+    }, [filters])
+
+
+    const sertCourses = () => {
+        const { filterName, filterOrder } = filters;
+    
+        const sortedCourses = [...courseList].sort((a, b) => {
+            const valueA = filterName === 'id_curso' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
+            const valueB = filterName === 'id_curso' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
+
+            if (filterName === 'id_curso') {
+                return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+    
+            return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        });
+    
+        return sortedCourses;
+    }
 
     const getCourse = async () => {
         setLoading(true)
@@ -46,7 +81,8 @@ export default function ListCourse(props) {
         { key: 'id_curso', label: 'ID' },
         { key: 'nome_curso', avatar: true, label: 'Nome', avatarUrl: 'foto' },
         { key: 'modalidade_curso', label: 'Modalidade' },
-        { key: 'nivel_curso', label: 'Nivél Curso' },
+        { key: 'nivel_curso', label: 'Nível Curso' },
+        { key: 'dt_criacao', label: 'Criado em', date: true },
     ];
 
     const listAtivo = [
@@ -64,7 +100,7 @@ export default function ListCourse(props) {
             />
             <Text bold>Buscar por: </Text>
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <SearchBar placeholder='Artes visuais, Desenvolvimento de Games ...' style={{ padding: '15px', }} onChange={setFilterData} />
+                <SearchBar placeholder='Artes visuais, Desenvolvimento de Games..' style={{ padding: '15px', }} onChange={setFilterData} />
                 <SelectList
                     data={listAtivo}
                     valueSelection={filterAtive}
@@ -77,7 +113,7 @@ export default function ListCourse(props) {
                 />
             </Box>
             {courseList.length >= 1 ?
-                <Table_V1 data={courseList?.filter(filter)} columns={column} columnId={'id_curso'}/>
+                <Table_V1 data={sertCourses()?.filter(filter)} columns={column} columnId={'id_curso'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não consegui encontrar cursos cadastrados</Text>

@@ -16,6 +16,11 @@ export default function ListStudents(props) {
     const [classes, setClasses] = useState([])
     const [classSelected, setClassesSelected] = useState()
     const [filterEnrollStatus, setFilterEnrollStatus] = useState('todos')
+    const [firstRender, setFirstRender] = useState(true)
+    const [filters, setFilters] = useState({
+        filterName: 'nome',
+        filterOrder: 'asc'
+    })
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
@@ -29,13 +34,43 @@ export default function ListStudents(props) {
     useEffect(() => {
         if (perfil) {
             getUsers();
-
+            if (window.localStorage.getItem('list-users-filters')) {
+                const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-users-filters') || null);
+                setFilters({
+                    filterName: meliesLocalStorage?.filterName,
+                    filterOrder: meliesLocalStorage?.filterOrder
+                })
+            }
         }
     }, [perfil]);
 
     useEffect(() => {
         listClasses()
     }, [])
+
+
+    useEffect(() => {
+        if (firstRender) return setFirstRender(false);
+        window.localStorage.setItem('list-users-filters', JSON.stringify({ filterName: filters.filterName, filterOrder: filters.filterOrder }));
+    }, [filters])
+
+
+    const sortUsers = () => {
+        const { filterName, filterOrder } = filters;
+    
+        const sortedUsers = [...usersList].sort((a, b) => {
+            const valueA = filterName === 'id' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
+            const valueB = filterName === 'id' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
+
+            if (filterName === 'id') {
+                return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+    
+            return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        });
+    
+        return sortedUsers;
+    }
 
     const getUsers = async () => {
         setLoading(true)
@@ -70,11 +105,7 @@ export default function ListStudents(props) {
         { key: 'id', label: 'ID' },
         { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'location' },
         { key: 'email', label: 'E-mail' },
-        { key: 'telefone', label: 'Telefone' },
-        { key: 'cpf', label: 'CPF' },
-        // { key: 'nacionalidade', label: 'Nacionalidade' },
-        // { key: 'estado_civil', label: 'Estado Civil' },
-        { key: 'email_melies', label: 'Email Meliés' },
+        { key: 'dt_criacao', label: 'Criado em', date: true },
 
     ];
 
@@ -139,7 +170,7 @@ export default function ListStudents(props) {
                 </Box>
             </Box>
             {usersList.length > 0 ?
-                <Table_V1 data={usersList?.filter(filter)} columns={column} columnId={'id'} />
+                <Table_V1 data={sortUsers()?.filter(filter)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não foi encontrado usuarios {perfil}</Text>

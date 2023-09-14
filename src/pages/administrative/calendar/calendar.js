@@ -209,7 +209,7 @@ export default function CalendarComponent(props) {
         const filtered = defaultYear.filter(filter)
         setFilteredEvents(filtered);
         listEventsDefault();
-      }, [semester, year]);
+    }, [semester, year]);
 
     const messages = {
         today: "Hoje",
@@ -451,7 +451,7 @@ export default function CalendarComponent(props) {
                     <Backdrop open={showEventForm} sx={{ zIndex: 999 }}>
                         <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, marginLeft: { md: '180px', lg: '280px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', width: 400 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                <Text bold large>{selectedEvent ? "Editar evento" : "Adicionar evento"}</Text>
+                                <Text bold large>{selectedEvent ? eventData?.title : "Adicionar evento"}</Text>
                                 <Box sx={{
                                     ...styles.menuIcon,
                                     backgroundImage: `url(${icons.gray_close})`,

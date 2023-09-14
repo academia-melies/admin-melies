@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { formatDate, formatTimeStamp } from "../../helpers";
 import { Box, Button } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
+import { icons } from "../layout/Colors";
 
 export const Table_V1 = (props) => {
 
@@ -18,8 +19,11 @@ export const Table_V1 = (props) => {
         center = false,
         routerPush = true,
         sx = {},
+        filters = [],
+        onFilter = false,
         tolltip = false,
         onDelete = false,
+        onPress = () => { },
         query = ``
     } = props;
 
@@ -49,10 +53,33 @@ export const Table_V1 = (props) => {
                         <TableHead>
                             <TableRow style={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s' }}>
                                 {columns.map((column) => (
-                                    <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>{column.label}</TableCell>
+                                    <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                            {column.label}
+                                            {onFilter &&
+                                                <Box sx={{
+                                                    ...styles.menuIcon,
+                                                    backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                    transform: filters?.filterName === column?.key ? filters?.filterOrder === 'asc' ? 'rotate(-0deg)' : 'rotate(-180deg)' : 'rotate(-0deg)',
+                                                    transition: '.3s',
+                                                    width: 17,
+                                                    height: 17,
+
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    },
+                                                }}
+                                                    onClick={() => onPress({
+                                                        filterName: column?.key,
+                                                        filterOrder: filters?.filterOrder === 'asc' ? 'desc' : 'asc'
+                                                    })} />
+                                            }
+                                        </Box>
+                                    </TableCell>
                                 ))}
                                 {columnActive &&
-                                    <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>ativo</TableCell>
+                                    <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>Ativo</TableCell>
                                 }
                                 {onDelete &&
                                     <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}></TableCell>
@@ -172,5 +199,13 @@ const styles = {
     },
     bodyRow: {
         textOverflow: 'ellipsis',
-    }
+    },
+    menuIcon: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
+
+    },
 }
