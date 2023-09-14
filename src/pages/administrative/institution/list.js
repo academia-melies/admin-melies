@@ -11,6 +11,11 @@ export default function ListInstitution(props) {
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
+    const [firstRender, setFirstRender] = useState(true)
+    const [filters, setFilters] = useState({
+        filterName: 'nome_instituicao',
+        filterOrder: 'asc'
+    })
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
@@ -23,7 +28,39 @@ export default function ListInstitution(props) {
 
     useEffect(() => {
         getInstitution();
+        if (window.localStorage.getItem('list-institution-filters')) {
+            const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-institution-filters') || null);
+            setFilters({
+                filterName: meliesLocalStorage?.filterName,
+                filterOrder: meliesLocalStorage?.filterOrder
+            })
+        }
     }, []);
+
+
+    
+    useEffect(() => {
+        if (firstRender) return setFirstRender(false);
+        window.localStorage.setItem('list-institution-filters', JSON.stringify({ filterName: filters.filterName, filterOrder: filters.filterOrder }));
+    }, [filters])
+
+
+    const sortInstitution = () => {
+        const { filterName, filterOrder } = filters;
+    
+        const sortedInstitution = [...institutionList].sort((a, b) => {
+            const valueA = filterName === 'id_instituicao' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
+            const valueB = filterName === 'id_instituicao' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
+
+            if (filterName === 'id_instituicao') {
+                return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+    
+            return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        });
+    
+        return sortedInstitution;
+    }
 
     const getInstitution = async () => {
         setLoading(true)
@@ -44,6 +81,7 @@ export default function ListInstitution(props) {
         { key: 'cnpj', label: 'CNPJ' },
         { key: 'mantenedora', label: 'Mantenedora' },
         { key: 'mantida', label: 'Mantida' },
+        { key: 'dt_criacao', label: 'Criado em', date: true },
 
     ];
 
@@ -75,7 +113,7 @@ export default function ListInstitution(props) {
                 />
             </Box>
             {institutionList?.length >= 1 ?
-                <Table_V1 data={institutionList?.filter(filter)} columns={column} columnId={'id_instituicao'}/>
+                <Table_V1 data={sortInstitution()?.filter(filter)} columns={column} columnId={'id_instituicao'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não consegui encontrar instituições cadastradas</Text>

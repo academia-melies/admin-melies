@@ -2655,8 +2655,8 @@ export default function EditUser() {
                                 </>
                             ))} */}
 
-                            {!showSections.addInterest && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button small text='adicionar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, addInterest: true })} />
+                            {(!showSections.addInterest && !showSections.viewInterest) && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Button small text='novo' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, addInterest: true })} />
                             </Box>}
 
                             {showSections.addInterest &&

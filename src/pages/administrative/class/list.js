@@ -15,6 +15,11 @@ export default function ListClasses(props) {
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
+    const [firstRender, setFirstRender] = useState(true)
+    const [filters, setFilters] = useState({
+        filterName: 'nome_turma',
+        filterOrder: 'asc'
+    })
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
@@ -27,7 +32,37 @@ export default function ListClasses(props) {
 
     useEffect(() => {
         getClasses();
+        if (window.localStorage.getItem('list-classes-filters')) {
+            const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-classes-filters') || null);
+            setFilters({
+                filterName: meliesLocalStorage?.filterName,
+                filterOrder: meliesLocalStorage?.filterOrder
+            })
+        }
     }, []);
+
+    useEffect(() => {
+        if (firstRender) return setFirstRender(false);
+        window.localStorage.setItem('list-classes-filters', JSON.stringify({ filterName: filters.filterName, filterOrder: filters.filterOrder }));
+    }, [filters])
+
+
+    const sortClasses = () => {
+        const { filterName, filterOrder } = filters;
+    
+        const sortedClasses = [...classesList].sort((a, b) => {
+            const valueA = filterName === 'id_turma' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
+            const valueB = filterName === 'id_turma' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
+
+            if (filterName === 'id_turma') {
+                return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+    
+            return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        });
+    
+        return sortedClasses;
+    }
 
     const getClasses = async () => {
         setLoading(true)
@@ -42,11 +77,13 @@ export default function ListClasses(props) {
         }
     }
 
+
     const column = [
         { key: 'id_turma', label: 'ID' },
         { key: 'nome_turma', label: 'Nome'},
         { key: 'inicio', label: 'Inicio', date: true },
-        { key: 'fim', label: 'Fim', date: true }
+        { key: 'fim', label: 'Fim', date: true },
+        { key: 'dt_criacao', label: 'Criado em', date: true },
     ];
 
     const listAtivo = [
@@ -84,7 +121,7 @@ export default function ListClasses(props) {
                 />
             </Box>
             {classesList.length > 0 ?
-                <Table_V1 data={classesList?.filter(filter)} columns={column} columnId={'id_turma'}/>
+                <Table_V1 data={sortClasses()?.filter(filter)} columns={column} columnId={'id_turma'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar Turmas cadastradas</Text>
