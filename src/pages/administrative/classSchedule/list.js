@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import { Colors, icons } from "../../../organisms/layout/Colors";
 import { api } from "../../../api/api";
 import { Backdrop, useMediaQuery, useTheme } from "@mui/material";
-import { formatDate } from "../../../helpers";
+import { formatDate, formatTimeStamp } from "../../../helpers";
 
 
 export default function ClassSheduleList(props) {
@@ -288,7 +288,7 @@ export default function ClassSheduleList(props) {
                     {showClassDay &&
                         <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Text bold large>Editar Aula</Text>
+                                <Text bold large>{classDaySelect?.dia_semana} - {formatTimeStamp(classDaySelect?.dt_aula)}</Text>
                                 <Box sx={{
                                     ...styles.menuIcon,
                                     backgroundImage: `url(${icons.gray_close})`,
@@ -300,55 +300,22 @@ export default function ClassSheduleList(props) {
                                     }
                                 }} onClick={() => setShowClassDay(false)} />
                             </Box>
-                            <ContentContainer>
-                                <Text bold title={true} style={{ color: colorPalette.buttonColor }}>aula - {classDaySelect?.dia_semana}</Text>
+                            <ContentContainer style={{ backgroundColor: 'none', boxShadow: 'none' }}>
+                                {/* <Text bold title={true} style={{ color: colorPalette.buttonColor }}>aula - {classDaySelect?.dia_semana}</Text> */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.disciplina_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, disciplina_id: value })}
                                         title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <Box sx={styles.inputSection}>
-                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor1} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor: value })}
-                                            title="Professor 1" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
-                                        <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor2} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor: value })}
-                                            title="Professor 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
-                                    </Box>
-
-                                    <Box sx={styles.inputSection}>
-                                        <TextInput
-                                            fullWidth
-                                            placeholder='Data'
-                                            name='dt_aula'
-                                            onChange={handleChange}
-                                            value={(classDaySelect?.dt_aula)?.split('T')[0] || ''}
-                                            label='Dia da semana'
-                                            type="date"
-                                        />
-                                        <TextInput
-                                            fullWidth
-                                            placeholder='Dia da semana'
-                                            name='dia_semana'
-                                            onChange={handleChange}
-                                            value={classDaySelect?.dia_semana || ''}
-                                            label='Dia da semana'
-                                        />
-                                    </Box>
-                                    <TextInput
-                                        fullWidth
-                                        placeholder='Módulo'
-                                        name='modulo_cronograma'
-                                        value={classDaySelect?.modulo_cronograma || ''}
-                                        label='Módulo'
-                                    />
-
-                                    <SelectList fullWidth data={groupFrequency} valueSelection={classDaySelect?.recorrencia} onSelect={(value) => setClassDaySelect({ ...classDaySelect, recorrencia: value })}
-                                        title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor1} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor1: value })}
+                                        title="Professor 1" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
+                                    <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor2} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor2: value })}
+                                        title="Professor 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+
                                     <TextInput
                                         fullWidth
                                         placeholder='Observação'
