@@ -57,7 +57,6 @@ export default function ListUsers(props) {
         try {
             const response = await getUsersPerfil(perfil)
             const { data = [] } = response;
-            console.log(data)
             setUsers(data)
         } catch (error) {
             console.log(error)

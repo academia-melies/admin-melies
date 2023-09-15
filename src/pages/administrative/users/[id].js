@@ -2732,6 +2732,7 @@ export default function EditUser() {
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             onSelect={(value) => {
                                                 setInterestSelected({ ...interestSelected, curso_id: value })
+                                                listClassesInterest(value)
                                             }}
                                         />
                                         <SelectList data={classesInterest} valueSelection={interestSelected?.turma_id}

@@ -17,6 +17,7 @@ export default function EditGrid(props) {
     const [disciplines, setDisciplines] = useState([])
     const [courses, setCourses] = useState([])
     const [moduleData, setModuleData] = useState([])
+    const [disciplineModuleChange, setDisciplineModuleChange] = useState({})
     const [gridList, setGrids] = useState([])
     const [copyGrid, setCopyGrid] = useState(0)
     const [copyGridId, setCopyGridId] = useState()
@@ -25,28 +26,47 @@ export default function EditGrid(props) {
 
 
     const fetchData = async () => {
-        setLoading(true);
         try {
             await Promise.all([listDisciplines(), listCourses(), handleItems()]);
         } catch (error) {
             alert.error('Ocorreu um erro ao carregar as informações iniciais.');
-        } finally {
-            setLoading(false);
+            return error
         }
     };
+
+
 
     const addPlanGrid = async () => {
         setLoading(true)
         try {
             const response = await api.post(`/gridplan/create/${id}`, { moduleData })
-            if (response?.status == 201) {
+            if (response?.status === 201) {
                 alert.success('Disciplina adicionada.');
-                setModuleData([])
+                await setModuleData([])
                 handleItems()
             }
         } catch (error) {
             alert.error('Ocorreu um erro ao adicionar a disciplina selecionada.');
             console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    };
+
+    const updatePlanGrid = async () => {
+        setLoading(true)
+        try {
+            const response = await api.patch(`/gridplan/update`, { disciplineModuleChange })
+            if (response?.status === 201) {
+                alert.success('Disciplina atualizada.');
+                await setDisciplineModuleChange({})
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao atualizada a disciplina selecionada.');
+            console.log(error)
+            return error
         } finally {
             setLoading(false)
         }
@@ -68,6 +88,18 @@ export default function EditGrid(props) {
             setLoading(false)
         }
     }
+
+    useEffect(() => {
+        if (Object.keys(moduleData).length > 0) {
+            addPlanGrid()
+        }
+    }, [moduleData])
+
+    useEffect(() => {
+        if (Object.keys(disciplineModuleChange).length > 0) {
+            updatePlanGrid()
+        }
+    }, [disciplineModuleChange])
 
 
     const getGrid = async () => {
@@ -91,7 +123,6 @@ export default function EditGrid(props) {
     }
 
     const getGrids = async () => {
-        setLoading(true)
         try {
             const response = await api.get('/grids')
             const { data = [] } = response;
@@ -104,8 +135,6 @@ export default function EditGrid(props) {
             setGrids(groupGrids)
         } catch (error) {
             console.log(error)
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -137,8 +166,11 @@ export default function EditGrid(props) {
                 value: disciplines?.id_disciplina
             }));
 
-            setDisciplines(groupDisciplines);
+            const sortedDisciplines = groupDisciplines.sort((a, b) => a.label.localeCompare(b.label, 'pt', { sensitivity: 'base' }));
+
+            setDisciplines(sortedDisciplines);
         } catch (error) {
+            return error
         }
     }
 
@@ -291,13 +323,10 @@ export default function EditGrid(props) {
                             planGridData={planGridData}
                             deletePlanGrid={deletePlanGrid}
                             disciplines={disciplines}
-                            setGridData={setGridData}
                             colorPalette={colorPalette}
-                            gridData={gridData}
-                            addPlanGrid={addPlanGrid}
                             moduleData={moduleData}
                             setModuleData={setModuleData}
-                            setPlanGridData={setPlanGridData}
+                            setDisciplineModuleChange={setDisciplineModuleChange}
                         />
                     ))}
 
@@ -339,17 +368,23 @@ export const SemesterFields = (props) => {
         planGridData,
         deletePlanGrid,
         disciplines,
-        setGridData,
         colorPalette,
-        gridData,
-        addModuleData,
         moduleData,
         setModuleData,
-        setPlanGridData,
-        addPlanGrid
+        setDisciplineModuleChange
     } = props
 
     const filteredPlanGridData = planGridData.filter(planGrid => planGrid.modulo_grade === semesterNumber);
+
+    const handleChangeDisciplinePlanGrid = (planGridId, value) => {
+
+        setDisciplineModuleChange({
+            disciplina_id: value,
+            id_plano_grade: planGridId
+        });
+    }
+
+
 
     return (
 
@@ -367,6 +402,7 @@ export const SemesterFields = (props) => {
                             fullWidth={true}
                             data={disciplines}
                             valueSelection={planGrid?.id_disciplina}
+                            onSelect={(value) => handleChangeDisciplinePlanGrid(planGrid?.id_plano_grade, value)}
                             title="Disciplina"
                             filterOpition="value"
                             sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -416,7 +452,7 @@ export const SemesterFields = (props) => {
                         fontFamily: "MetropolisBold",
                     }}
                 />
-                <Box
+                {/* <Box
                     sx={{
                         backgroundSize: "cover",
                         backgroundRepeat: "no-repeat",
@@ -431,7 +467,7 @@ export const SemesterFields = (props) => {
                         },
                     }}
                     onClick={() => addPlanGrid()}
-                />
+                /> */}
             </Box>
         </ContentContainer>
     )
