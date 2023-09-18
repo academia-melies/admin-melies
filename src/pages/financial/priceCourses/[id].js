@@ -415,16 +415,16 @@ export default function EditPricesCourse(props) {
                                         }} onClick={() => setShowValueAdjustment(false)} />
                                     </Box>
 
-                                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                    <Box sx={{ ...styles.inputSection, alignItems: 'center', justifyContent: 'start' }}>
                                         <TextInput
                                             placeholder='0.00'
                                             name='valor_total_curso'
                                             type="coin"
                                             onChange={handleChangeHistoric}
                                             value={(historicData?.valor_total_curso) || ''}
-                                            label='Valor Total' sx={{ flex: 1, }}
+                                            label='Valor Total'
                                         />
-                                        <TextInput placeholder='Parcelas' name='n_parcelas' onChange={handleChangeHistoric} value={historicData?.n_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
+                                        {/* <TextInput placeholder='Parcelas' name='n_parcelas' onChange={handleChangeHistoric} value={historicData?.n_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
                                         <TextInput
                                             placeholder='0.00'
                                             name='valor_parcelado_curso'
@@ -440,12 +440,12 @@ export default function EditPricesCourse(props) {
                                             onChange={handleChangeHistoric}
                                             value={(historicData?.valor_avista_curso) || ''}
                                             label='Valor á vista' sx={{ flex: 1, }}
-                                        />
+                                        /> */}
                                         <Button text="calcular" onClick={() => calculationValues(historicData, setHistoricData)} />
                                     </Box>
                                     {/* <TextInput placeholder='Data Reajuste' name='dt_reajuste' onChange={handleChangeHistoric} value={(historicData?.dt_reajuste)?.split('T')[0] || ''} type="date" label='Data Reajuste' sx={{ maxWidth: 200, }} /> */}
                                     <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                        <Button text='Novo' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleAddHistoric()} />
+                                        <Button text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleAddHistoric()} />
                                         <Button text='Cancelar' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => setShowValueAdjustment(false)} />
                                     </Box>
 

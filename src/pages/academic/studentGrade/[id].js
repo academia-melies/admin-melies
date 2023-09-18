@@ -188,17 +188,33 @@ export default function EditStudentGrade(props) {
         }
     }
 
-    async function listdisciplines() {
+    // async function listdisciplines() {
+    //     try {
+    //         const response = await api.get(`/disciplines`)
+    //         const { data } = response
+    //         const groupDisciplines = data.map(grid => ({
+    //             label: grid.nome_disciplina,
+    //             value: grid?.id_disciplina
+    //         }));
+    //         setDisciplines(groupDisciplines);
+    //     } catch (error) {
+    //         return error;
+    //     }
+    // }
+
+    async function handleSelectModule(value) {
+        setStudentGradeData({ ...studentGradeData, modulo_nota: value })
         try {
-            const response = await api.get(`/disciplines`)
+            const response = await api.get(`/classSchedule/disciplines/${id}/${value}`)
             const { data } = response
-            const groupDisciplines = data.map(grid => ({
-                label: grid.nome_disciplina,
-                value: grid?.id_disciplina
+            const groupDisciplines = data.map(disciplines => ({
+                label: disciplines?.nome_disciplina,
+                value: disciplines?.id_disciplina
             }));
+
             setDisciplines(groupDisciplines);
         } catch (error) {
-            return error;
+            return error
         }
     }
 
@@ -285,12 +301,12 @@ export default function EditStudentGrade(props) {
 
             {/* usuario */}
             <ContentContainer row style={{ display: 'flex', justifyContent: 'space-between', gap: 1.8, padding: 5, alignItems: 'center' }}>
-                <SelectList fullWidth data={disciplines} valueSelection={studentGradeData?.disciplina_id} onSelect={(value) => listStudents(value)}
-                    title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                <SelectList fullWidth data={moduleDiscipline} valueSelection={studentGradeData?.modulo_nota} onSelect={(value) => handleSelectModule(value)}
+                    title="Modulo/Semestre" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
-                <SelectList fullWidth data={moduleDiscipline} valueSelection={studentGradeData?.modulo_nota} onSelect={(value) => setStudentGradeData({ ...studentGradeData, modulo_nota: value })}
-                    title="Modulo/Semestre" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                <SelectList fullWidth data={disciplines} valueSelection={studentGradeData?.disciplina_id} onSelect={(value) => listStudents(value)}
+                    title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
                 {/* <TextInput fullWidth placeholder='Data da aula' name='dt_aula' onChange={handleChange} value={(studentGradeData?.dt_aula)?.split('T')[0] || ''} type="date" label='Data da aula' sx={{ flex: 1, }} /> */}
