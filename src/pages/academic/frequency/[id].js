@@ -1,13 +1,13 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { responsiveFontSizes, useMediaQuery, useTheme } from "@mui/material"
+import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
+import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
-import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { formatDate } from "../../../helpers"
+import { formatDate, formatTimeStamp } from "../../../helpers"
+import { icons } from "../../../organisms/layout/Colors"
 
 export default function EditFrequency(props) {
     const { setLoading, alert, colorPalette, user } = useAppContext()
@@ -18,17 +18,31 @@ export default function EditFrequency(props) {
     const id = partQuery[0];
     const classday = partQuery[1] === 'day' ? true : false;
     const [classData, setClass] = useState({})
-    const [newFrequency, setNewFrequency] = useState()
-    const [frequencyData, setFrequencyData] = useState({})
+    const [frequencyData, setFrequencyData] = useState({
+        disciplina_id: null,
+        modulo_turma: null
+    })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
-    const [students, setStudents] = useState([])
     const [disciplines, setDisciplines] = useState([])
+    const [modules, setModules] = useState([])
     const [studentData, setStudentData] = useState([])
     const [classDays, setClassDays] = useState([])
     const [showStudents, setShowStudents] = useState(false)
+    const [newCallList, setNewCallList] = useState(false)
+    const [hasStudents, setHasStudents] = useState(false)
+    const [showClassTable, setShowClassTable] = useState({});
     const date = new Date()
     const today = formatDate(date)
+
+    const toggleClassTable = (index) => {
+        setShowClassTable(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
+    };
+
+
 
     const getClass = async () => {
         try {
@@ -43,33 +57,57 @@ export default function EditFrequency(props) {
 
 
     useEffect(() => {
-        handleItems();
         if (classday) {
-            handleClassDay()
+            handleClassDayDatas()
         }
+        handleItems();
     }, [id])
 
+    const handleClassDayDatas = async () => {
+        setLoading(true)
+        try {
+            const classData = await handleClassDay()
+            if (classData) {
+                const response = await handleModuleData(id)
+                await handleSelectModule(1)
+                if (response.status === 201) {
+                    setFrequencyData({ ...frequencyData, modulo_turma: 1, disciplina_id: classData?.disciplina_id })
+                }
+            }
+        } catch (error) {
+            return error
+        }
+        finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(() => {
+        handleStudentsDiscipline()
         listClassDay(frequencyData?.disciplina_id)
     }, [frequencyData?.disciplina_id])
 
-
+    const handleStudentsDiscipline = async () => {
+        const students = await listStudents(frequencyData?.disciplina_id)
+        if (frequencyData?.disciplina_id !== null && students) {
+            handleStudent(id)
+        }
+    }
 
     const handleClassDay = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/classDay/frequency/${idUser}`)
             const { data } = response
             if (data) {
-                return setFrequencyData({ ...frequencyData, aula_id: data?.id_aula, disciplina_id: data?.disciplina_id })
+                let datas = { modulo_turma: 1, disciplina_id: data?.disciplina_id }
+                return datas
             } else {
                 return alert.info(`Você não possui aula hoje para a disciplina informada. Altere os dados para buscar sua próxima aula.`)
             }
         } catch (error) {
             alert.error('Ocorreu um arro ao o dia.')
-        } finally {
-            setLoading(false)
-        }
+            return error
+        } 
     }
 
     const handleItems = async () => {
@@ -77,7 +115,8 @@ export default function EditFrequency(props) {
         try {
             const response = await getClass()
             if (response) {
-                await listdisciplines()
+                // await listdisciplines()
+                await handleModuleData(id)
             }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Turma')
@@ -95,38 +134,40 @@ export default function EditFrequency(props) {
     }
 
 
-    const handleChangeFrequency = (userId, field, value) => {
-
-        // Copie os dados dos alunos em uma nova matriz
-        const updatedStudents = [...studentData];
-
-        // Encontre o aluno com base no userId
-        const studentToUpdate = updatedStudents.find((item) => item.usuario_id === userId);
-
-        if (studentToUpdate) {
-            // Atualize o campo desejado para o aluno encontrado
-            studentToUpdate[field] = value;
-            studentToUpdate.disciplina_id = frequencyData?.disciplina_id
-            studentToUpdate.turma_id = parseInt(id)
-            studentToUpdate.aula_id = frequencyData?.aula_id
-
-            if (field === 'periodo_2') {
-                studentToUpdate.professor_id_2 = idUser;
-            } else if (field === 'periodo_1') {
-                studentToUpdate.professor_id_1 = idUser;
+    const handleChangeFrequency = (userId, field, value, aulaId) => {
+        // Copie os dados dos alunos em uma nova matriz (mantenha a imutabilidade)
+        const updatedStudents = studentData.map(day => {
+            const turmaCopy = [...day.turma];
+            const studentToUpdate = turmaCopy.find(item => item.usuario_id === userId);
+            if (studentToUpdate && studentToUpdate.aula_id === aulaId) {
+                studentToUpdate[field] = value;
+                studentToUpdate.disciplina_id = frequencyData?.disciplina_id;
+                studentToUpdate.turma_id = parseInt(id);
+                if (field === 'periodo_2') {
+                    studentToUpdate.professor_id_2 = idUser;
+                } else if (field === 'periodo_1') {
+                    studentToUpdate.professor_id_1 = idUser;
+                }
             }
+            return {
+                ...day,
+                turma: turmaCopy,
+            };
+        });
 
-            setStudentData([...updatedStudents]);
-        }
-    }
-
+        // Atualize o estado com os dados atualizados
+        setStudentData(updatedStudents);
+    };
 
     const handleCreateFrequency = async () => {
+        let disciplineId = frequencyData?.disciplina_id
         setLoading(true)
         try {
-            const response = await api.post(`/frequency/create`, { studentData });
+            const response = await api.post(`/frequency/create`, { studentData, classDays, disciplineId });
             if (response?.status === 201) {
                 alert.success('Turma cadastrado com sucesso.');
+                handleItems()
+                listClassDay(disciplineId)
             }
         } catch (error) {
             alert.error('Tivemos um problema ao cadastrar turma.');
@@ -135,13 +176,13 @@ export default function EditFrequency(props) {
         }
     }
 
+
     const handleEditFrequency = async () => {
         setLoading(true)
         try {
             const response = await api.patch(`/frequency/update`, { studentData });
             if (response?.status === 201) {
                 alert.success('Chamada atualizada com sucesso.');
-                handleItems()
                 return
             }
             alert.error('Tivemos um problema ao atualizar Chamada.');
@@ -152,94 +193,96 @@ export default function EditFrequency(props) {
         }
     }
 
-    const checkSearch = (frequencyData) => {
-        const { disciplina_id, aula_id } = frequencyData
-        if (!disciplina_id) {
-            alert.error("Antes de buscar, selecione sua disciplina.")
-            return false
-        }
-        if (!aula_id) {
-            alert.error("Antes de buscar, selecione a data da aula.")
-            return false
-        }
-        return true;
-    }
-
     const handleStudent = async () => {
-        if (checkSearch(frequencyData)) {
-            setLoading(true)
-            try {
-                const response = await api.get(`/frequency/aula/${frequencyData.aula_id}`)
-                const { data } = response
-                if (data.length > 0) {
-                    const groupStudents = data.map(student => {
-
-                        return {
-                            ...student,
-                            periodo_1: parseInt(student?.periodo_1),
-                            periodo_2: parseInt(student?.periodo_2),
-                        }
-                    });
-
-                    groupStudents.sort((a, b) => a.nome.localeCompare(b.nome));
-
-                    setStudentData(groupStudents)
-                    setNewFrequency(false)
-                    setShowStudents(true);
-                } else {
-                    listStudents()
-                    setNewFrequency(true)
-                    setShowStudents(true);
-                }
-            } catch (error) {
-                console.log(error)
-                return error;
-            }
-            finally {
-                setLoading(false)
-            }
-        }
-    }
-
-    async function listdisciplines() {
+        setLoading(true)
+        let disciplineId = frequencyData?.disciplina_id;
         try {
-            const response = await api.get(`/disciplines`)
+            const response = await api.get(`/frequency/discipline/${disciplineId}/${id}`)
             const { data } = response
-            const groupDisciplines = data.map(grid => ({
-                label: grid.nome_disciplina,
-                value: grid?.id_disciplina
-            }));
-            setDisciplines(groupDisciplines);
+            if (data.length > 0) {
+                setStudentData(data)
+                setShowStudents(true);
+                setNewCallList(false)
+            } else {
+                alert.info('A turma não possui uma lista de chamada para a disciplina e modulo selecionado. Por favor, crie uma chamada.')
+                setShowStudents(true);
+                setNewCallList(true)
+                setStudentData([])
+            }
         } catch (error) {
+            console.log(error)
             return error;
         }
+        finally {
+            setLoading(false)
+        }
     }
 
+    async function handleSelectModule(value) {
 
-    async function listStudents(value) {
-        setLoading(true)
+        setFrequencyData({ ...frequencyData, modulo_turma: value })
+        let moduleClass = value;
         try {
-            if (value) {
-                setFrequencyData({ ...frequencyData, disciplina_id: value })
-            }
-            const response = await api.get(`/class/students/${id}`)
+            const response = await api.get(`/classSchedule/disciplines/${id}/${moduleClass}`)
             const { data } = response
-            const studentsFrequency = data.map(student => ({
-                nome: student.nome,
-                disciplina_id: frequencyData?.disciplina_id,
-                periodo_1: null,
-                periodo_2: null,
-                professor_id_1: null,
-                professor_id_2: null,
-                usuario_id: student?.usuario_id,
-                turma_id: parseInt(id),
-                aula_id: frequencyData?.aula_id,
-                totalFrequencia: 100
+            const groupDisciplines = data.map(disciplines => ({
+                label: disciplines?.nome_disciplina,
+                value: disciplines?.id_disciplina
             }));
 
-            studentsFrequency.sort((a, b) => a.nome.localeCompare(b.nome));
+            setDisciplines(groupDisciplines);
+        } catch (error) {
+        }
+    }
 
-            setStudentData(studentsFrequency);
+    const handleModuleData = async (value) => {
+
+        if (value) {
+            setLoading(true)
+            try {
+                const response = await api.get(`/class/modules/${value}`)
+                const { data } = response
+                if (response.status === 201) {
+                    const [module] = data.map((item) => item?.modulos)
+                    const modules = handleModules(module);
+                    setModules(modules);
+                }
+                return response
+            } catch (error) {
+                return error
+            } finally {
+                setLoading(false)
+            }
+        } else {
+            setModules([])
+        }
+    }
+
+    const handleModules = (module) => {
+        const moduleArray = [];
+        for (let i = 1; i <= module; i++) {
+            moduleArray.push({
+                label: `${i}º Módulo`,
+                value: i,
+            });
+        }
+        return moduleArray;
+    }
+
+    async function listStudents() {
+        setLoading(true)
+        try {
+            const response = await api.get(`/class/students/${id}`)
+            const { data } = response
+            if (data.length > 0) {
+                setHasStudents(true)
+                return true
+            } else {
+                setHasStudents(false)
+                alert.error('A turma não possui estudantes cadastrados')
+                return false
+            }
+
         } catch (error) {
             return error;
         } finally {
@@ -268,20 +311,6 @@ export default function EditFrequency(props) {
         }
     }
 
-
-
-    const groupStatus = [
-        { label: 'ativo', value: 1 },
-        { label: 'inativo', value: 0 },
-    ]
-
-
-    const grouperiod = [
-        { label: 'Manhã', value: 'Manhã' },
-        { label: 'Tarde', value: 'Tarde' },
-        { label: 'Noite', value: 'Noite' }
-    ]
-
     const groupFrequency = [
         { label: 'Presente', value: 1 },
         { label: 'Ausente', value: 0 },
@@ -292,101 +321,165 @@ export default function EditFrequency(props) {
         currency: 'BRL'
     });
 
+    const sortedStudentData = [...studentData].sort((a, b) => {
+        const dateA = new Date(a.dt_aula);
+        const dateB = new Date(b.dt_aula);
+
+        return dateA - dateB;
+    });
+
+    const getStatusDoDia = (classData) => {
+        for (const aluno of classData) {
+            if (aluno.periodo_1 === null || aluno.periodo_2 === null) {
+                return "Pendente";
+            }
+        }
+        return "Concluída";
+    };
+
     return (
         <>
             <SectionHeader
                 perfil={'turma'}
                 title={classData?.nome_turma}
-                saveButton
-                saveButtonAction={newFrequency ? handleCreateFrequency : handleEditFrequency}
+                saveButton={studentData.length > 0 ? true : false}
+                saveButtonAction={handleEditFrequency}
             // deleteButton={!newFrequency}
             // deleteButtonAction={() => handleDeleteFrequency()}
             />
 
             {/* usuario */}
             <ContentContainer row style={{ display: 'flex', justifyContent: 'space-between', gap: 1.8, padding: 5, alignItems: 'center' }}>
-                <SelectList fullWidth data={disciplines} valueSelection={frequencyData?.disciplina_id} onSelect={(value) => listStudents(value)}
+                <SelectList fullWidth data={modules} valueSelection={frequencyData?.modulo_turma || ''} onSelect={(value) => handleSelectModule(value)}
+                    title="Módulo/Semestre" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                />
+                <SelectList fullWidth data={disciplines} valueSelection={frequencyData?.disciplina_id || ''} onSelect={(value) => setFrequencyData({ ...frequencyData, disciplina_id: value })}
                     title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
-                <SelectList fullWidth data={classDays} valueSelection={frequencyData?.aula_id} onSelect={(value) => setFrequencyData({ ...frequencyData, aula_id: value })}
-                    title="Data da aula" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                />
-                {/* <TextInput fullWidth placeholder='Data da aula' name='dt_aula' onChange={handleChange} value={(frequencyData?.dt_aula)?.split('T')[0] || ''} type="date" label='Data da aula' sx={{ flex: 1, }} /> */}
-                <Button text="buscar" small onClick={() => handleStudent(id)} style={{ width: 120, height: 30 }} />
+
+                {newCallList && hasStudents && (
+                    <Button secondary text="criar chamada" small onClick={() => handleCreateFrequency()} style={{ width: 120, height: 30 }} />
+                )}
             </ContentContainer>
 
-            {showStudents &&
-                <ContentContainer>
-                    {studentData.length > 0 ?
-                        (<>
-                            <Box>
-                                <Text bold>Alunos - {classData?.nome_turma}</Text>
-                            </Box>
+            {showStudents && studentData.length > 0 ?
+                (<>
+                    {sortedStudentData.map((item, index) => {
+                        const classData = item?.turma;
+                        const aulaId = item?.aula_id
+                        const dt_class = formatTimeStamp(item?.dt_aula)
+                        const statusFreq = getStatusDoDia(classData)
 
+                        return (
+                            <ContentContainer key={`${item}-${index}`} sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 4,
+                                        width: 350,
+                                        justifyContent: 'space-between',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer',
+                                            color: colorPalette.buttonColor
+                                        }
+                                    }}
+                                    onClick={() => toggleClassTable(index)}
+                                >
+                                    <Box sx={{
+                                        display: 'flex', alignItems: 'center', gap: 4, width: 150, justifyContent: 'space-between',
+                                    }}>
+                                        <Text bold style={{ color: 'inherit' }}>{dt_class}</Text>
+                                        <Box
+                                            sx={{
+                                                ...styles.menuIcon,
+                                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                transform: showClassTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
+                                                transition: '.3s',
+                                                width: 17,
+                                                height: 17
+                                            }}
+                                        />
+                                    </Box>
 
-                            <Box sx={{ display: 'flex' }}>
+                                    <Box sx={{ backgroundColor: statusFreq === 'Pendente' ? 'red' : 'green', borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
+                                        <Text xsmall bold style={{ color: "#fff", }}>{statusFreq}</Text>
+                                    </Box>
+                                </Box>
+                                {showClassTable[index] && (
+                                    <Box sx={{ display: 'flex' }}>
 
-                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
-                                    <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                                        <thead>
-                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
-                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Frequência (Semestre)</th>
-                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>1º Periodo</th>
-                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>2º Periodo</th>
-                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
+                                        <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
+                                            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                                <thead>
+                                                    <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
+                                                        {/* <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Frequência (Semestre)</th> */}
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>1º Periodo</th>
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>2º Periodo</th>
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
 
-                                            </tr>
-                                        </thead>
-                                        <tbody style={{ flex: 1 }}>
-                                            {
-                                                studentData?.map((item, index) => {
-                                                    return (
-                                                        <tr key={`${item}-${index}`}>
-                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.nome}
-                                                            </td>
-                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.totalFrequencia || 100}%
-                                                            </td>
-                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <RadioItem
-                                                                    valueRadio={item?.periodo_1}
-                                                                    group={groupFrequency}
-                                                                    horizontal={true}
-                                                                    onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_1', parseInt(value))}
-                                                                />
-                                                            </td>
-                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <RadioItem
-                                                                    valueRadio={item?.periodo_2}
-                                                                    group={groupFrequency}
-                                                                    horizontal={true}
-                                                                    onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_2', parseInt(value))}
-                                                                />
-                                                            </td>
-                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <TextInput fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
+                                                    </tr>
+                                                </thead>
+                                                <tbody style={{ flex: 1 }}>
+                                                    {
+                                                        classData?.map((item, index) => {
+                                                            return (
+                                                                <tr key={`${item}-${index}`}>
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        {item?.nome}
+                                                                    </td>
+                                                                    {/* <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        {item?.totalFrequencia || 100}%
+                                                                    </td> */}
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        <RadioItem
+                                                                            valueRadio={item?.periodo_1}
+                                                                            group={groupFrequency}
+                                                                            horizontal={true}
+                                                                            onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_1', parseInt(value), aulaId)}
+                                                                        />
+                                                                    </td>
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        <RadioItem
+                                                                            valueRadio={item?.periodo_2}
+                                                                            group={groupFrequency}
+                                                                            horizontal={true}
+                                                                            onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_2', parseInt(value), aulaId)}
+                                                                        />
+                                                                    </td>
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        <TextInput fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })
 
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </Box>
-                        </>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </Box>
+                                )}
+                            </ContentContainer>
                         )
+                    })}
+                </>
+                )
+                :
+                (
+                    !newCallList ?
+                        <></>
                         :
-                        (
-                            <Text light> Não encontrei alunos matrículados</Text>
-                        )}
-                </ContentContainer>
-            }
+                        <Text light style={{ textAlign: 'center' }}>A turma não possui uma lista de chamada para a disciplina e modulo selecionado. Por favor, crie uma chamada.</Text>
+
+                )}
+            {studentData.length > 0 && <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
+                <Button text={'Salvar'} style={{ width: 150, height: 40 }} onClick={() => { handleEditFrequency() }} />
+            </Box>}
         </>
     )
 }
