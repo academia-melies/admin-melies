@@ -52,8 +52,8 @@ export const Holidays = [
     {
         title: 'Independência do Brasil',
         color: 'red',
-        start: new Date(2023, 9, 7),
-        end: new Date(2023, 9, 7)
+        start: new Date(2023, 8, 7),
+        end: new Date(2023, 8, 7)
     },
     {
         title: 'Dia das Crianças',
