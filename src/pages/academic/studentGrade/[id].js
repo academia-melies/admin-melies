@@ -49,10 +49,15 @@ export default function EditStudentGrade(props) {
         }
     }
 
-
     useEffect(() => {
         handleItems();
     }, [id])
+
+    useEffect(() => {
+        if (studentGradeData?.disciplina_id != null) {
+            handleStudent(id)
+        }
+    }, [studentGradeData?.disciplina_id])
 
     const handleItems = async () => {
         setLoading(true)
@@ -60,11 +65,10 @@ export default function EditStudentGrade(props) {
             const response = await getClass()
             if (response) {
                 await getTeachingPlan()
-                await listdisciplines()
                 await listModules()
             }
         } catch (error) {
-            alert.error('Ocorreu um arro ao carregar a Turma')
+            alert.error('Ocorreu um erro ao carregar a Turma')
         } finally {
             setLoading(false)
         }
@@ -295,8 +299,6 @@ export default function EditStudentGrade(props) {
                 title={teachingPlan?.nome_pl || 'Plano de avaliação'}
                 saveButton
                 saveButtonAction={newGrade ? handleCreateStudentGrade : handleEditStudentGrade}
-            // deleteButton={!newGrade}
-            // deleteButtonAction={() => handleDeleteFrequency()}
             />
 
             {/* usuario */}
@@ -309,8 +311,6 @@ export default function EditStudentGrade(props) {
                     title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
-                {/* <TextInput fullWidth placeholder='Data da aula' name='dt_aula' onChange={handleChange} value={(studentGradeData?.dt_aula)?.split('T')[0] || ''} type="date" label='Data da aula' sx={{ flex: 1, }} /> */}
-                <Button text="buscar" small onClick={() => handleStudent(id)} style={{ width: 120, height: 30 }} />
             </ContentContainer>
 
             {showStudents &&
