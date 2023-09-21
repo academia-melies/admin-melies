@@ -238,9 +238,10 @@ export default function EditPricesCourse(props) {
 
     const handleCreatePrices = async () => {
         setLoading(true)
+        let readjustment = readjustmentValue?.reajuste;
         if (checkRequiredFields()) {
             try {
-                const response = await api.post(`/coursePrices/create`, { pricesCourseData, userId });
+                const response = await api.post(`/coursePrices/create`, { pricesCourseData, userId, readjustment });
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Taxa cadastrada com sucesso.');
@@ -274,10 +275,12 @@ export default function EditPricesCourse(props) {
     const handleEditPrices = async () => {
         if (checkRequiredFields()) {
             setLoading(true)
+            let readjustment = readjustmentValue?.reajuste;
             try {
-                const response = await api.patch(`/coursePrices/update/${id}`, { pricesCourseData, userId })
+                const response = await api.patch(`/coursePrices/update/${id}`, { pricesCourseData, userId, readjustment })
                 if (response?.status === 201) {
                     alert.success('Taxa atualizada com sucesso.');
+                    setShowValueAdjustment(false)
                     handleItems()
                     return
                 }
@@ -297,6 +300,7 @@ export default function EditPricesCourse(props) {
             if (response?.status === 200) {
                 alert.success('Historico excluído.');
                 handleItems()
+                setShowValueAdjustment(false)
             }
 
         } catch (error) {
@@ -325,6 +329,7 @@ export default function EditPricesCourse(props) {
     const column = [
         { key: 'id_hist_val_curso', label: 'ID' },
         { key: 'valor_total_curso', label: 'Valor Total', price: true },
+        { key: 'reajuste', label: 'Reajuste %' },
         { key: 'n_parcelas', label: 'Parcelas' },
         { key: 'valor_parcelado_curso', label: 'Valor parcelado', price: true },
         { key: 'valor_avista_curso', label: 'á vista (desconto 5%)', price: true },
@@ -340,7 +345,7 @@ export default function EditPricesCourse(props) {
                 saveButton
                 saveButtonAction={newPrice ? handleCreatePrices : handleEditPrices}
                 deleteButton={!newPrice}
-                deleteButtonAction={() => handleDeletePrices()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeletePrices })}
             />
 
             {/* usuario */}

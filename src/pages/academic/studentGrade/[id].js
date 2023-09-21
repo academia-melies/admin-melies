@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { responsiveFontSizes, useMediaQuery, useTheme } from "@mui/material"
+import { CircularProgress, responsiveFontSizes, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
@@ -54,10 +54,15 @@ export default function EditStudentGrade(props) {
     }, [id])
 
     useEffect(() => {
+        setStudentGradeData({ ...studentGradeData, disciplina_id: null })
+    }, [studentGradeData?.modulo_nota])
+
+    useEffect(() => {
         if (studentGradeData?.disciplina_id != null) {
             handleStudent(id)
         }
     }, [studentGradeData?.disciplina_id])
+
 
     const handleItems = async () => {
         setLoading(true)
@@ -192,20 +197,6 @@ export default function EditStudentGrade(props) {
         }
     }
 
-    // async function listdisciplines() {
-    //     try {
-    //         const response = await api.get(`/disciplines`)
-    //         const { data } = response
-    //         const groupDisciplines = data.map(grid => ({
-    //             label: grid.nome_disciplina,
-    //             value: grid?.id_disciplina
-    //         }));
-    //         setDisciplines(groupDisciplines);
-    //     } catch (error) {
-    //         return error;
-    //     }
-    // }
-
     async function handleSelectModule(value) {
         setStudentGradeData({ ...studentGradeData, modulo_nota: value })
         try {
@@ -292,6 +283,8 @@ export default function EditStudentGrade(props) {
         currency: 'BRL'
     });
 
+    const disciplineName = disciplines?.filter(item => item.value === studentGradeData?.disciplina_id).map(item => item?.label)
+
     return (
         <>
             <SectionHeader
@@ -313,12 +306,12 @@ export default function EditStudentGrade(props) {
                 />
             </ContentContainer>
 
-            {showStudents &&
+            {(showStudents && studentGradeData?.disciplina_id) ?
                 <ContentContainer>
                     {studentData.length > 0 ?
                         (<>
                             <Box>
-                                <Text bold>Alunos - {classData?.nome_turma}</Text>
+                                <Text bold>{classData?.nome_turma} - {disciplineName}</Text>
                             </Box>
 
 
@@ -400,6 +393,15 @@ export default function EditStudentGrade(props) {
                             <Text light> Não encontrei alunos matrículados</Text>
                         )}
                 </ContentContainer>
+                :
+                studentGradeData?.modulo_nota && showStudents ? (
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column', marginTop: 5 }}>
+                        <CircularProgress />
+                        <Text bold>Aguardando selecionar disciplina..</Text>
+                    </Box>
+                ) : (<></>)
+
             }
         </>
     )

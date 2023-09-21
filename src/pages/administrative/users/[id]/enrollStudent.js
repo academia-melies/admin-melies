@@ -610,60 +610,6 @@ export const Payment = (props) => {
             return updatedArray;
         });
 
-
-
-        // prevTypePaymentsSelected.slice(0, numberOfInstallments).map((_, index) => {
-        //     const paymentDate = new Date();
-        //     const selectedDay = dayForPayment;
-        //     let month = paymentDate.getMonth() + index;
-        //     let isSaturday = false; // Sabado
-        //     let isSunday = false; // Domingo
-
-        //     paymentDate.setMonth(month);
-
-        //     // Verifique se a data é maior que o último dia do mês
-        //     const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
-        //     if (selectedDay > lastDayOfMonth) {
-        //         paymentDate.setDate(lastDayOfMonth);
-        //     } else {
-        //         paymentDate.setDate(selectedDay);
-        //     }
-
-        //     if (paymentDate.getDay() === 6) {
-        //         isSaturday = true;
-        //         if (paymentDate.getDate() + 2 > lastDayOfMonth) {
-        //             paymentDate.setDate(paymentDate.getDate() - 1);
-        //         } else {
-        //             paymentDate.setDate(paymentDate.getDate() + 2);
-        //         }
-        //     }
-
-        //     if (paymentDate.getDay() === 0) {
-        //         isSunday = true;
-        //         if (paymentDate.getDate() + 1 > lastDayOfMonth) {
-        //             paymentDate.setDate(paymentDate.getDate() - 2);
-        //         } else {
-        //             paymentDate.setDate(paymentDate.getDate() + 1);
-        //         }
-        //     }
-
-        //     while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
-        //         paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
-        //     }
-
-        //     // paymentDate.setDate(paymentDate.getDate() + index * 30); // Incrementing date by 30 days interval
-        //     const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR'); // You can adjust the locale if needed
-
-        //     return {
-        //         ..._,
-        //         tipo: globalTypePaymentsSelected,
-        //         valor_parcela: parcelValue,
-        //         data_pagamento: formattedPaymentDate,
-        //         n_parcela: index + 1,
-        //     };
-        // })
-        //     );
-
     }, [numberOfInstallments, totalValueFinnaly, globalTypePaymentsSelected, dayForPayment])
 
 

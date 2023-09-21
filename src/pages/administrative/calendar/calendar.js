@@ -422,13 +422,6 @@ export default function CalendarComponent(props) {
                                 border: `.5px solid lightgray`,
                                 padding: 10
                             }}
-                        // components={{
-                        //     dateCellWrapper: ({ children }) => (
-                        //         <div className="custom-button">
-                        //             {children.props.value}
-                        //         </div>
-                        //     ),
-                        // }}
                         />
                     </Box>
                 ))}
@@ -482,13 +475,6 @@ export default function CalendarComponent(props) {
                                     sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
-                                {/* <TextInput
-                                    name="title"
-                                    value={eventData.title || ''}
-                                    label='Nome do evento'
-                                    onChange={handleEventFormChange}
-                                    sx={{ flex: 1 }}
-                                /> */}
                                 <TextInput
                                     name="description"
                                     value={eventData.description || ''}

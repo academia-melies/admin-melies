@@ -51,15 +51,15 @@ export const SectionHeader = (props) => {
             </Box>
             <Box sx={{
                display: 'flex',
-               position: { xs: 'fixed', sm: 'relative', md: 'relative', lg: 'relative' },
-               justifyContent: { xs: 'center' },
-               bottom: { xs: 0 },
+               position: 'fixed',
+               justifyContent: { xs: 'center', sm: 'end', md: 'end', lg: 'end' },
+               bottom: { xs: 0, sm: 20, md: 20, lg: 20 },
                left: { xs: 0 },
-               right: { xs: 0 },
+               right: { xs: 0, sm: 20, md: 20, lg: 20 },
                margin: { xs: 'auto' },
-               zIndex: { xs: 9999, sm: 'auto', md: 'auto', lg: 'auto' },
+               zIndex: 9999,
                padding: { xs: 2, sm: 0, md: 0, lg: 0 },
-               backgroundColor: colorPalette.primary,
+               // backgroundColor: colorPalette.primary,
                gap: 1,
                transition: 'background-color 1s',
             }}>

@@ -6,7 +6,7 @@ import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
-import { createCourse, deleteCourse, editCourse} from "../../../validators/api-requests"
+import { createCourse, deleteCourse, editCourse } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditCourse(props) {
@@ -87,17 +87,6 @@ export default function EditCourse(props) {
         // }
         return true
     }
-
-    // useEffect(() => {
-    //     let replaceValue = courseData?.valor?.replace("R$", "").replace(/\./g, "");
-    //     let dataValueReplaced = replaceValue?.replace(",", ".");
-    //     let valueCourse = parseFloat(dataValueReplaced);
-
-    //     let calcAmountPaidIn = valueCourse / installments;
-    //     if (calcAmountPaidIn) {
-    //         setAmountPaidIn(calcAmountPaidIn)
-    //     }
-    // }, [showPaidIn, installments])
 
     const handleCreateCourse = async () => {
         setLoading(true)
@@ -221,8 +210,6 @@ export default function EditCourse(props) {
                 <Box sx={styles.inputSection}>
                     <TextInput placeholder='Nome' name='nome_curso' onChange={handleChange} value={courseData?.nome_curso || ''} label='Nome' sx={{ flex: 1, }} />
                     <TextInput placeholder='TPA ...' name='sigla' onChange={handleChange} value={courseData?.sigla || ''} label='Sigla' sx={{ flex: 1, }} />
-                    {/* <TextInput placeholder='Duração' name='duracao' onChange={handleChange} value={courseData?.duracao || ''} label='Duração' sx={{ flex: 1, }} /> */}
-
                     <SelectList fullWidth data={groupDuration} valueSelection={courseData?.duracao} onSelect={(value) => setCourseData({ ...courseData, duracao: value })}
                         title="Duração" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -235,52 +222,7 @@ export default function EditCourse(props) {
                     <TextInput placeholder='Portaria MEC/Reconhecimento' name='pt_reconhecimento' onChange={handleChange} value={courseData?.pt_reconhecimento || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
                     <TextInput placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
-                {/* <Box sx={{ ...styles.inputSection, alignItems: 'start' }}>
-                    <Box sx={{ display: 'flex', position: 'absolute', zIndex: 999, marginRight: 12, marginTop: 1, gap: 1 }}>
-                        <Button small text='parcelas' style={{ padding: '5px 12px 5px 12px' }} onClick={() => setShowPaidIn(true)} />
-                    </Box>
-                    <TextInput placeholder='Valor'
-                        name='valor'
-                        onChange={handleChange}
-                        value={courseData?.valor || ''}
-                        label='Valor' sx={{ flex: 1, }}
-                        onBlur={handleBlurValue}
-                    />
-
-                    {<Backdrop open={showPaidIn} sx={{zIndex: 999}}>
-                        <ContentContainer style={{marginLeft: { md: '180px', lg: '280px' }, zIndex: 9999}}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Text bold large> Parcelas</Text>
-                                <Box sx={{
-                                    ...styles.menuIcon,
-                                    backgroundImage: `url(${icons.gray_close})`,
-                                    transition: '.3s',
-                                    zIndex: 999999999,
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => setShowPaidIn(false)} />
-                            </Box>
-
-                            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1, zIndex: 99999 }}>
-
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, zIndex: 99999 }}>
-                                    <Text bold small>Parcelado em até:</Text>
-                                    <SelectList fullWidth data={groupInstallments} valueSelection={installments} onSelect={(value) => setInstallments(value)}
-                                        filterOpition="value" sx={{ color: colorPalette.textColor, height: '30px', width: '95px' }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold',  }}
-                                        minWidth={0}
-                                    />
-                                </Box>
-                                <Text bold large style={{ textAlign: 'start' }}>{amountPaidIn ? formatter.format(amountPaidIn) : '0,00'}</Text>
-                            </Box>
-                        </ContentContainer>
-                    </Backdrop>
-                    }
-
-                </Box> */}
-                    <TextInput placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={courseData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
+                <TextInput placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={courseData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
                 <RadioItem valueRadio={courseData?.nivel_curso} group={groupNivel} title="Nível do curso" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, nivel_curso: value })} sx={{ flex: 1, }} />
                 <RadioItem valueRadio={courseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, ativo: parseInt(value) })} />
 

@@ -9,7 +9,7 @@ import { createCourse, deleteCourse, editCourse } from "../../../validators/api-
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditInventory(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
     const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -163,7 +163,7 @@ export default function EditInventory(props) {
                 saveButton
                 saveButtonAction={newInventoryItem ? handleCreateItem : handleEditInventory}
                 deleteButton={!newInventoryItem}
-                deleteButtonAction={() => handleDeleteInventory()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteInventory })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>

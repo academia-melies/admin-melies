@@ -187,8 +187,6 @@ export default function StudentData(props) {
             <SectionHeader
                 perfil={'dados da faculdade'}
                 title={studentData?.nome}
-            // saveButton
-            // saveButtonAction={handleEdit}
             />
 
             {/* usuario */}
@@ -202,22 +200,22 @@ export default function StudentData(props) {
                             <Text bold>Nome: </Text>
                             <Text>{studentData?.nome}</Text>
                         </Box>
-                        <Divider distance={0}/>
+                        <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Registro (RA): </Text>
                             <Text>{studentData?.id}</Text>
                         </Box>
-                        <Divider distance={0}/>
+                        <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Cursando: </Text>
                             <Text>{moduleStudent}º Modulo/Semestre</Text>
                         </Box>
-                        <Divider distance={0}/>
+                        <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'start' }}>
                             <Text bold>Inicio Matricula: </Text>
                             <Text>{formatTimeStamp(enrollmentData?.dt_inicio || '')}</Text>
                         </Box>
-                        <Divider distance={0}/>
+                        <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Status: </Text>
                             <Text>{enrollmentData?.status}</Text>
@@ -468,9 +466,6 @@ export default function StudentData(props) {
                 <Divider />
 
             </ContentContainer>
-            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
-                <Button text={'Salvar'} style={{ width: 150, height: 40 }} onClick={() => { handleEdit() }} />
-            </Box>
         </>
     )
 }

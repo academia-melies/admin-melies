@@ -8,7 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { formatCNPJ } from "../../../helpers"
 
 export default function EditInstitution(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
@@ -280,7 +280,7 @@ export default function EditInstitution(props) {
                 saveButton
                 saveButtonAction={newInstitution ? handleCreateInstitution : handleEditInstitution}
                 deleteButton={!newInstitution}
-                deleteButtonAction={() => handleDeleteInstitution()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteInstitution })}
             />
 
             {/* usuario */}

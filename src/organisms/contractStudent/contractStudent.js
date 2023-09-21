@@ -73,13 +73,15 @@ export const ContractStudentComponent = (props) => {
                         <TextInput label="Em caso de emergência:" />
                         <Box sx={styles.containerValues}>
                             <TextInput label="Cel. emergência:" data={userData?.telefone_emergencia} />
-                            <TextInput label="Empresa/Nome do Resp:" data={responsiblePayerData.nome_resp || ''} />
                         </Box>
                         <Box sx={{ flex: 1, marginTop: 5 }}>
                             <Box sx={{ backgroundColor: colorPalette.buttonColor, flex: 1 }}>
                                 <TextInput label="Dados do(a) Responsável / Empresa / Pagante" style={{ title: { color: '#fff' } }} />
                             </Box>
-                            <TextInput label="Endereço:" data={responsiblePayerData.end_resp || userData?.rua} />
+                            <Box sx={styles.containerValues}>
+                                <TextInput label="Empresa/Nome do Resp:" data={responsiblePayerData.nome_resp || ''} />
+                                <TextInput label="Endereço:" data={responsiblePayerData.end_resp || userData?.rua} />
+                            </Box>
                             <Box sx={styles.containerValues}>
                                 <TextInput label="Número:" data={responsiblePayerData.numero_resp || userData?.numero} />
                                 <TextInput label="CEP:" data={responsiblePayerData.cep_resp || userData?.cep} />
@@ -104,7 +106,7 @@ export const ContractStudentComponent = (props) => {
                         {children}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '30px 0px 20px 0px', gap: 6 }}>
-                    
+
                         <ParagraphContainer>
                             <ParagraphBody
                                 text='Pelo presente INSTRUMENTO PARTICULAR DE CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS, que entre si fazem, de um lado a ACADEMIA MELIES DE ENSINO,
@@ -141,7 +143,7 @@ export const ContractStudentComponent = (props) => {
 
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '30px 0px 20px 0px', gap: 6 }}>
-                    
+
                         <ParagraphContainer>
                             <ParagraphBody title text="4 - DA MATRÍCULA E REMATRICULAS" />
                             <ParagraphBody text="4.1 - As matrículas serão aceitas com a assinatura do presente Instrumento e também no quadro resumo, contudo, é obrigatória a entrega dos documentos e recebimento da primeira parcela do pagamento para efetivação da mesma." />

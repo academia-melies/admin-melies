@@ -23,10 +23,6 @@ const menuProfessor = [
    { id: '03', icon: '', text: 'Atividade Complementar', to: '/', query: false },
    { id: '04', icon: '', text: 'Calendário Acadêmico', to: '/administrative/calendar/calendar', query: false },
    { id: '05', icon: '', text: 'Cronograma', to: '/administrative/classSchedule/list', query: false },
-   // { id: '03', icon: '', text: 'Atividade Complementar', to: '/' },
-
-   // { id: '04', icon_dark: '', text: '', to: '/' },
-
 ]
 
 export default function Home() {
@@ -67,7 +63,6 @@ export default function Home() {
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <meta charset="utf-8" />
             <link rel="icon" href="https://adm-melies.s3.amazonaws.com/logo_vermelho_linhas_brancas.svg" />
-            {/* <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> */}
          </Head>
          <Box sx={{ marginTop: { xs: 0, xm: -8, md: -8, lg: -8 } }}>
             <Box>
@@ -106,7 +101,6 @@ export default function Home() {
                               width: '200px',
                               transition: '.5s',
                               justifyContent: 'center',
-                              // alignItems: 'center',
                               "&:hover": {
                                  cursor: 'pointer',
                                  opacity: 0.8,
@@ -116,7 +110,6 @@ export default function Home() {
                               group.query ?
                                  router.push(`${group.to}?id=${userId}`) : router.push(`${group.to}`)
                            }}>
-                              {/* <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', transition: 'background-color 1s' }} /> */}
                               <Text bold style={{ color: '#fff', transition: 'background-color 1s', textAlign: 'center' }}>
                                  {group.text}
                               </Text>

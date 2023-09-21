@@ -8,7 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { createGrid, deleteGrid, editGrid } from "../../../validators/api-requests"
 
 export default function EditGrid(props) {
-    const { setLoading, alert, colorPalette } = useAppContext()
+    const { setLoading, alert, colorPalette, setShowConfirmationDialog } = useAppContext()
     const router = useRouter()
     const { id, slug } = router.query;
     const newGrid = id === 'new';
@@ -284,7 +284,7 @@ export default function EditGrid(props) {
                 saveButton
                 saveButtonAction={newGrid ? handleCreateGrid : handleEditGrid}
                 deleteButton={!newGrid}
-                deleteButtonAction={() => handleDeleteGrid()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteGrid })}
             />
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
@@ -331,9 +331,6 @@ export default function EditGrid(props) {
                     ))}
 
             </ContentContainer >
-            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
-                <Button text={'Salvar'} style={{ width: 150 }} onClick={() => { newGrid ? handleCreateGrid() : handleEditGrid() }} />
-            </Box>
         </>
     )
 }
@@ -452,22 +449,6 @@ export const SemesterFields = (props) => {
                         fontFamily: "MetropolisBold",
                     }}
                 />
-                {/* <Box
-                    sx={{
-                        backgroundSize: "cover",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
-                        width: 25,
-                        height: 25,
-                        backgroundImage: `url(/icons/include_icon.png)`,
-                        transition: ".3s",
-                        "&:hover": {
-                            opacity: 0.8,
-                            cursor: "pointer",
-                        },
-                    }}
-                    onClick={() => addPlanGrid()}
-                /> */}
             </Box>
         </ContentContainer>
     )

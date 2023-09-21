@@ -8,12 +8,19 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditClassSchedule(props) {
-    const { setLoading, alert, colorPalette } = useAppContext()
+    const { setLoading, alert, colorPalette, setShowConfirmationDialog } = useAppContext()
     const router = useRouter()
     const { id } = router.query;
     const newClassSchedule = id === 'new';
     const [classes, setClasses] = useState([])
-    const [classDays, setClassDays] = useState([])
+    const [classDays, setClassDays] = useState({
+        seg: { recorrencia: 7 },
+        ter: { recorrencia: 7 },
+        qua: { recorrencia: 7 },
+        qui: { recorrencia: 7 },
+        sex: { recorrencia: 7 },
+        sáb: { recorrencia: 7 }
+    })
     const [daysWeekSelected, setDaysWeekSelected] = useState('seg, ter, qua, qui, sex, sáb')
     const [modules, setModules] = useState([])
     const [classScheduleData, setClassScheduleData] = useState([])
@@ -72,7 +79,11 @@ export default function EditClassSchedule(props) {
 
             setDisciplines(groupDisciplines);
             listProfessor()
+            if (response) {
+                verifyDuplicityClassSchedule(classScheduleData?.turma_id, moduleClass)
+            }
         } catch (error) {
+            return error
         }
     }
 
@@ -89,7 +100,7 @@ export default function EditClassSchedule(props) {
                     setModules(modules);
                 }
 
-                setClassScheduleData({ ...classScheduleData, turma_id: value })
+                setClassScheduleData({ ...classScheduleData, turma_id: value, modulo_cronograma: null })
 
             } catch (error) {
                 return error
@@ -99,6 +110,23 @@ export default function EditClassSchedule(props) {
         } else {
             setClassScheduleData({ ...classScheduleData, turma_id: value, modulo_cronograma: value })
             setModules([])
+        }
+    }
+
+    const verifyDuplicityClassSchedule = async (turma_id, modulo_cronograma) => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/classSchedule/verify/${turma_id}/${modulo_cronograma}`)
+            const { data } = response
+            if (data?.length > 0) {
+                alert.info('Já existe um cronograma para o módulo selecionado. Por favor, Escolha outro módulo')
+            }
+            return
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -139,8 +167,23 @@ export default function EditClassSchedule(props) {
     }, [])
 
     useEffect(() => {
-        listProfessor
+        listProfessor()
     }, [disciplines])
+
+    useEffect(() => {
+        if (classScheduleData?.modulo_cronograma != '') {
+            setDisciplines([])
+            setClassDays({
+                seg: { recorrencia: 7 },
+                ter: { recorrencia: 7 },
+                qua: { recorrencia: 7 },
+                qui: { recorrencia: 7 },
+                sex: { recorrencia: 7 },
+                sáb: { recorrencia: 7 }
+            })
+            setClassDaysAlternate([])
+        }
+    }, [classScheduleData?.turma_id])
 
 
     useEffect(() => {
@@ -288,7 +331,7 @@ export default function EditClassSchedule(props) {
                 saveButton
                 saveButtonAction={newClassSchedule ? handleCreate : handleEdit}
                 deleteButton={!newClassSchedule}
-                deleteButtonAction={() => handleDelete()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
@@ -363,7 +406,7 @@ export default function EditClassSchedule(props) {
                                                 title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
-                                            <SelectList fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
+                                            <SelectList fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia || 7} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
                                                 title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
@@ -373,9 +416,8 @@ export default function EditClassSchedule(props) {
                                         <ContentContainer style={{ flex: 1 }} key={dayWeek}>
                                             <Text bold title={true} style={{ color: colorPalette.buttonColor, display: 'flex', alignItems: 'end', gap: 5 }}>
                                                 {dayWeek}
-                                                <Text bold small style={{padding: '0px 0px 5px 0px'}}>aula alternada</Text>
+                                                <Text bold small style={{ padding: '0px 0px 5px 0px' }}>aula alternada</Text>
                                             </Text>
-                                            {/* <Text bold small>Aula alternada</Text> */}
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                                 <SelectList fullWidth data={disciplines}
                                                     valueSelection={classDaysAlternate[dayWeek]?.disciplina_id}
@@ -391,10 +433,6 @@ export default function EditClassSchedule(props) {
                                                 />
                                                 <SelectList fullWidth data={professors} valueSelection={classDaysAlternate[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, true)}
                                                     title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                />
-                                                <SelectList fullWidth data={groupFrequency} valueSelection={classDaysAlternate[dayWeek]?.recorrencia} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value, true)}
-                                                    title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 />
                                             </Box>

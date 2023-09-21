@@ -9,7 +9,7 @@ import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../val
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditDiscipline(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -237,12 +237,11 @@ export default function EditDiscipline(props) {
     return (
         <>
             <SectionHeader
-                // perfil={disciplineData?.modalidade_curso}
                 title={disciplineData?.nome_disciplina || `Nova Disciplina`}
                 saveButton
                 saveButtonAction={newDiscipline ? handleCreate : handleEdit}
                 deleteButton={!newDiscipline}
-                deleteButtonAction={() => handleDelete()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })}
             />
 
             {/* usuario */}
@@ -395,9 +394,6 @@ export default function EditDiscipline(props) {
                     }} />
                 </Box>
             </ContentContainer>
-            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
-                <Button text={'Salvar'} style={{ width: 150 }} onClick={() => { newDiscipline ? handleCreate() : handleEdit() }} />
-            </Box>
         </>
     )
 }
