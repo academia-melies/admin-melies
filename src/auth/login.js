@@ -6,6 +6,7 @@ import { Box, ContentContainer, TextInput, Text } from "../atoms"
 import Button from '@mui/material/Button';
 import Head from "next/head"
 import { getImageByScreen } from "../validators/api-requests"
+import { icons } from "../organisms/layout/Colors"
 
 export default function Login() {
 
@@ -13,6 +14,7 @@ export default function Login() {
     const [userData, setUserData] = useState([])
     const [themeName, setThemeName] = useState('')
     const [imagesList, setImagesList] = useState([])
+    const [showMenu, setShowMenu] = useState(false)
     const [windowWidth, setWindowWidth] = useState(0)
     const smallWidthDevice = windowWidth < 1000
     const notebookWidth = windowWidth > 1100 && windowWidth < 1500
@@ -206,7 +208,7 @@ export default function Login() {
                                         onClick={handleLogin}
                                         type="submit"
                                     >
-                                      <Text small bold style={{ color: 'inherit' }}>Entrar</Text>
+                                        <Text small bold style={{ color: 'inherit' }}>Entrar</Text>
                                     </Button>
                                 </Box>
                             </form>
@@ -219,23 +221,37 @@ export default function Login() {
                         {smallWidthDevice ? <></> : <CompanyLogo theme={theme} images={imagesList} size={14} />}
                     </ContentContainer>
                 </Box>
-                {/* <Box sx={{
-                display: 'flex',
-                position: 'absolute',
-                backgroundColor: !theme ? Colors.backgroundPrimary : '#F2F4F8 ',
-                transition: 'background-color 1s',
-                top: 20,
-                left: 20,
-                padding: '5px 20px',
-                borderRadius: '5px',
-                "&:hover": {
-                    opacity: 0.8,
-                    cursor: 'pointer'
-                }
-            }} onClick={() => setTheme(!theme)}>
-                <Box sx={{ ...styles.icon, backgroundImage: theme ? `url('/icons/theme_icon.png')` : `url('/icons/theme_icon_dark.png')`, color: theme ? '#fff' : Colors.backgroundPrimary, transition: 'background-color 1s', }} />
-            </Box> */}
                 <IconTheme left />
+            </Box>
+            <Box sx={{ display: 'flex', position: 'absolute', top: 20, right: 80, flexDirection: 'column', transition: '2s', }} onMouseEnter={() => setShowMenu(true)}
+                onMouseLeave={() => setShowMenu(false)}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text bold>Portal do desenvolvedor</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        transition: '.3s',
+                        width: 17,
+                        height: 17,
+                        "&:hover": {
+                            opacity: 0.8,
+                        }
+                    }} />
+                </Box>
+                <Box sx={{
+                    display: showMenu ? 'flex' : 'none',
+                    backgroundColor: colorPalette.secondary,
+                    padding: '8px 10px',
+                    marginTop: '5px',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                    }
+                }}>
+                    <Text small>Documentação da API</Text>
+                </Box>
             </Box>
         </>
     )
@@ -277,5 +293,13 @@ const styles = {
     icon: {
         width: '30px',
         height: '30px'
-    }
+    },
+    menuIcon: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
+
+    },
 }
