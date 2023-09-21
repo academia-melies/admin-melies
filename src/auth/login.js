@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import Head from "next/head"
 import { getImageByScreen } from "../validators/api-requests"
 import { icons } from "../organisms/layout/Colors"
+import Link from "next/link"
 
 export default function Login() {
 
@@ -250,7 +251,9 @@ export default function Login() {
                         cursor: 'pointer'
                     }
                 }}>
-                    <Text small>Documentação da API</Text>
+                    <Link href='https://github.com/academia-melies/api' target="_blank">
+                        <Text small>Documentação da API</Text>
+                    </Link>
                 </Box>
             </Box>
         </>
