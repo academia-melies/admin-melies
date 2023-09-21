@@ -10,7 +10,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
 
 export default function EditService(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
     const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -336,7 +336,7 @@ export default function EditService(props) {
                 saveButton
                 saveButtonAction={newService ? handleCreateService : handleEditService}
                 deleteButton={!newService}
-                deleteButtonAction={() => handleDeleteService()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteService })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
@@ -400,7 +400,7 @@ export default function EditService(props) {
                     !newService &&
                     <>
                         {!showRenewel?.historicRenewal ?
-                            <Button text='Renovações' small={true} onClick={() => { setShowRenewal({ ...showRenewel, historicRenewal: true }) }} />
+                            <Button text='Renovações' style={{width: 120, height: 30}} small={true} onClick={() => { setShowRenewal({ ...showRenewel, historicRenewal: true }) }} />
                             :
                             <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
                                 <ContentContainer gap={3}>

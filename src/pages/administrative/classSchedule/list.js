@@ -300,7 +300,6 @@ export default function ClassSheduleList(props) {
                                 }} onClick={() => setShowClassDay(false)} />
                             </Box>
                             <ContentContainer style={{ backgroundColor: 'none', boxShadow: 'none' }}>
-                                {/* <Text bold title={true} style={{ color: colorPalette.buttonColor }}>aula - {classDaySelect?.dia_semana}</Text> */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.disciplina_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, disciplina_id: value })}
                                         title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
@@ -326,12 +325,6 @@ export default function ClassSheduleList(props) {
                                         maxRows={2}
                                         rows={2}
                                     />
-                                    {/* <CheckBoxComponent
-                                        boxGroup={groupOptative}
-                                        valueChecked={classDaySelect?.optativa || ''}
-                                        horizontal={mobile ? false : true}
-                                        onSelect={(value) => setClassDaySelect({ ...classDaySelect, optativa: value })}
-                                        sx={{ width: 1 }} /> */}
                                 </Box>
                             </ContentContainer>
                             <Box>

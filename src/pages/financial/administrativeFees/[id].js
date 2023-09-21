@@ -9,7 +9,7 @@ import { createClass, deleteClass, editClass } from "../../../validators/api-req
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditAdministrativeFees(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
@@ -170,7 +170,7 @@ export default function EditAdministrativeFees(props) {
                 saveButton
                 saveButtonAction={newRate ? handleCreateRate : handleEditRate}
                 deleteButton={!newRate}
-                deleteButtonAction={() => handleDeleteRate()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteRate })}
             />
 
             {/* usuario */}

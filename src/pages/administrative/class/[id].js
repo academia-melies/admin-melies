@@ -9,7 +9,7 @@ import { createClass, deleteClass, editClass } from "../../../validators/api-req
 import { SelectList } from "../../../organisms/select/SelectList"
 
 export default function EditClass(props) {
-    const { setLoading, alert, colorPalette } = useAppContext()
+    const { setLoading, alert, colorPalette, setShowConfirmationDialog } = useAppContext()
     const router = useRouter()
     const { id } = router.query;
     const newClass = id === 'new';
@@ -200,7 +200,7 @@ export default function EditClass(props) {
                 saveButton
                 saveButtonAction={newClass ? handleCreateClass : handleEditClass}
                 deleteButton={!newClass}
-                deleteButtonAction={() => handleDeleteClass()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteClass })}
             />
 
             {/* usuario */}

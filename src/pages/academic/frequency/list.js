@@ -89,9 +89,7 @@ export default function FrequencyStudent(props) {
         { key: 'id_turma', label: 'ID' },
         { key: 'nome_turma', label: 'Nome' },
         { key: 'periodo', label: 'Periodo' },
-        { key: 'dt_criacao', label: 'Criado em', date: true },
-        // { key: 'inicio', label: 'Inicio', date: true },
-        // { key: 'fim', label: 'Fim', date: true }
+        { key: 'dt_criacao', label: 'Criado em', date: true }
     ];
 
     const listAtivo = [

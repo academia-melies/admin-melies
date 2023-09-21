@@ -152,7 +152,6 @@ export default function EditUser() {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             setUserData(data.response)
-            // setArrayDependent(data.dependents)
         } catch (error) {
             console.log(error)
             return error
@@ -464,23 +463,6 @@ export default function EditUser() {
         }
     }
 
-    // async function verifyCPF(cpf, nascimento) {
-    //     setLoading(true)
-    //     let token_access = 'F285AF4D-13C7-46B9-8C66-583DBE14E017';
-    //     let cpf = cpf;
-    //     let dataNascimento = nascimento;
-    //     let plugin = 'CPF';
-
-    //     try {
-    //         const response = await axios.get(`https://www.sintegraws.com.br/api/v1/execute-api.php?token=${token_access}&cpf=${cpf}&data-nascimento=${dataNascimento}&plugin=${plugin}`)
-    //         const { data } = response;
-
-    //     } catch (error) {
-    //     } finally {
-    //         setLoading(false)
-    //     }
-    // }
-
     async function autoEmailMelies(email) {
         try {
             const name = userData?.nome?.split(' ');
@@ -491,11 +473,6 @@ export default function EditUser() {
             if (!lastName) {
                 firstEmail = `${firstName}01@melies.com.br`;
             }
-
-            // setUserData((prevValues) => ({
-            //     ...prevValues,
-            //     email_melies: firstEmail.toLowerCase(),
-            // }))
         } catch (error) {
         }
     }
@@ -840,94 +817,6 @@ export default function EditUser() {
             return false
         }
 
-        // if (!userData.perfil.includes('interessado')) {
-        //     if (userData?.senha !== userData?.confirmar_senha) {
-        //         alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
-        //         return false
-        //     }
-
-        //     if (!userData?.telefone) {
-        //         alert?.error('O campo telefone é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.perfil) {
-        //         alert?.error('O campo perfil é obrigatório')
-        //         return false
-        //     }
-
-        //     // if (!userData?.ativo) {
-        //     //     alert?.error('O campo banana é obrigatório')
-        //     //     return false
-        //     // }
-
-        //     if (!userData?.naturalidade) {
-        //         alert?.error('O campo naturalidade é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.pais_origem) {
-        //         alert?.error('O campo País de origem é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.nacionalidade) {
-        //         alert?.error('O campo nacionalidade é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.cor_raca) {
-        //         alert?.error('O campo Cor e raça é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.genero) {
-        //         alert?.error('O campo gênero é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.deficiencia) {
-        //         alert.error('O campo deficiência é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.estado_civil) {
-        //         alert.error('O campo Estado cívil é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.escolaridade) {
-        //         alert.error('O campo escolaridade é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.cep) {
-        //         alert.error('O campo CEP é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.telefone) {
-        //         alert.error('O campo numero é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.cidade) {
-        //         alert.error('O campo cidade é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.rg) {
-        //         alert.error('O campo RG é obrigatório')
-        //         return false
-        //     }
-
-        //     if (!userData?.cpf) {
-        //         alert.error('O campo CPF é obrigatório')
-        //         return false
-        //     }
-        //     return true
-        // }
-
         return true
     }
 
@@ -937,35 +826,16 @@ export default function EditUser() {
             try {
                 const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
                 const { data } = response
-                if (userData?.perfil?.includes('funcionario')) {
-                    const responseData = await createContract(data?.userId, contract)
-
-                }
-                // if (userData?.perfil?.includes('aluno')) {
-                //     const responseData = await createEnrollment(data?.userId, enrollmentData);
-
-                // }
-                if (fileCallback) {
-                    const responseData = await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`);
-
-                }
-                if (officeHours) {
-                    const responseData = await api.post(`/officeHours/create/${data?.userId}`, { officeHours })
-
-                }
-                if (newUser && filesUser) {
-                    const responseData = await api.patch(`/file/editFiles/${data?.userId}`, { filesUser });
-
-                }
-
+                if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
+                if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`); }
+                if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
+                if (newUser && filesUser) { await api.patch(`/file/editFiles/${data?.userId}`, { filesUser }); }
                 if (permissionPerfil) {
                     const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
-
                     if (permissionsToAdd.length > 0) {
-                        const responseData = await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
+                        await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
                     }
                 }
-
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
                     if (data?.userId) router.push(`/administrative/users/list`)
@@ -1001,19 +871,13 @@ export default function EditUser() {
             setLoading(true)
             try {
                 const response = await editeUser({ id, userData })
-                if (contract) {
-                    const responseData = await editContract({ id, contract })
-                }
-                // if (enrollmentData) {
-                //     const responseData = await editeEnrollment({ id, enrollmentData })
-                // }
+                if (contract) { await editContract({ id, contract }) }
                 if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
-                    const responseData = await api.post(`/officeHours/create/${id}`, { officeHours })
+                    await api.post(`/officeHours/create/${id}`, { officeHours })
                 }
                 if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
-                    const responseData = await api.patch(`/officeHours/update`, { officeHours })
+                    await api.patch(`/officeHours/update`, { officeHours })
                 }
-
                 if (response?.status === 201) {
                     alert.success('Usuário atualizado com sucesso.');
                     handleItems()
@@ -1049,9 +913,7 @@ export default function EditUser() {
                 const permissionsToRemoveString = permissionsToRemove.join(','); // Converta o array em uma string
                 const responseData = await api.delete(`/permissionPerfil/remove/${id}?permissions=${permissionsToRemoveString}`);
             }
-
             alert.info('Permissões do usuário atualizadas.');
-
         } catch (error) {
             console.log(error)
             alert.error('Tivemos um problema ao atualizar as permissões.');
@@ -1094,7 +956,6 @@ export default function EditUser() {
     }
 
     const deleteDependent = (index) => {
-
         if (newUser) {
             setArrayDependent((prevArray) => {
                 const newArray = [...prevArray];
@@ -1158,7 +1019,6 @@ export default function EditUser() {
     }
 
     const deleteDisciplineProfessor = (index) => {
-
         if (newUser) {
             setArrayDisciplinesProfessor((prevArray) => {
                 const newArray = [...prevArray];
@@ -1327,8 +1187,6 @@ export default function EditUser() {
         { label: 'Aprovado - pré-matricula', value: 'Aprovado - pré-matricula' },
         { label: 'Reprovado', value: 'Reprovado' },
         { label: 'Pendente de nota', value: 'Pendente de nota' },
-        // { label: 'Enviado', value: 'Enviado' },
-        // { label: 'Enviado', value: 'Enviado' },
     ]
 
     const grouperiod = [
@@ -1410,10 +1268,8 @@ export default function EditUser() {
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteUser })}
-
             />
 
-            {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'center' }}>
                     <Box>
@@ -1473,7 +1329,6 @@ export default function EditUser() {
                         }} variant="square" onClick={() => setShowEditFiles({ ...showEditFile, photoProfile: true })} />
                     </Box>
                 </Box>
-                {/* <RadioItem valueRadio={userData?.perfil} group={groupPerfil} title="Perfil" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, perfil: value, admin_melies: value === 'interessado' ? 0 : userData.admin_melies })} sx={{ flex: 1, }} /> */}
                 <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25 }}>
                     <CheckBoxComponent
                         valueChecked={userData?.perfil}
@@ -1503,13 +1358,7 @@ export default function EditUser() {
                     }
 
                 </Box>
-                {/* {!newUser && <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: 1.8 }}>
-                    <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Confirmar senha' name='confirmar_senha' onChange={handleChange} value={userData?.confirmar_senha || ''} type="password" label='Confirmar senha' sx={{ flex: 1, }} />
-                </Box>} */}
-
                 <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, ativo: parseInt(value), admin_melies: value < 1 ? parseInt(value) : userData?.admin_melies })} />
-                {/* <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} /> */}
             </ContentContainer>
 
 
@@ -1547,8 +1396,6 @@ export default function EditUser() {
                     </>}
             </ContentContainer>
 
-
-            {/* dados_pessoais */}
             <ContentContainer style={{ ...styles.containerRegister, padding: showSections.registration ? '40px' : '25px' }}>
                 <Box sx={{
                     display: 'flex', alignItems: 'center', gap: 1, padding: showSections.registration ? '0px 0px 20px 0px' : '0px', "&:hover": {
@@ -1710,7 +1557,6 @@ export default function EditUser() {
                             <CheckBoxComponent
                                 boxGroup={groupForeigner}
                                 valueChecked={userData?.foreigner || ''}
-                                // title="Estrangeiro sem CPF" 
                                 horizontal={mobile ? false : true}
                                 onSelect={(value) => {
                                     setForeigner(value)
@@ -1787,8 +1633,6 @@ export default function EditUser() {
                             />
                         </Box>
 
-                        {/* <RadioItem valueRadio={userData?.cor_raca} group={groupCivil} title="Cor/raça" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, cor_raca: value })} />
-                         */}
                         <Box sx={styles.inputSection}>
 
                             <SelectList fullWidth data={groupRacaCor} valueSelection={userData.cor_raca} onSelect={(value) => setUserData({ ...userData, cor_raca: value })}
@@ -1848,15 +1692,8 @@ export default function EditUser() {
                             </>
                         }
 
-                        {/* Incluir campos ocorrencia, data_ocorrencia, responsável quando usuario !newUser */}
-
-
                         <RadioItem valueRadio={userData?.estado_civil} group={groupCivil} title="Estado Cívil *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, estado_civil: value })} />
-
-                        {/* <TextInput placeholder='Estado Cívil' name='estado_civil' onChange={handleChange} value={userData?.estado_civil || ''} label='Estado Cívil' /> */}
                         <TextInput placeholder='E-mail Méliès' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail Méliès' />
-                        {/* <TextInput placeholder='Dependente' name='dependente' onChange={handleChange} value={userData?.dependente || ''} label='Dependente' sx={{ flex: 1, }} /> */}
-
 
                         <Box sx={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <Text bold style={{ padding: '0px 0px 0px 10px' }}>Dependentes</Text>
@@ -1881,21 +1718,6 @@ export default function EditUser() {
                                         }} onClick={() => {
                                             newUser ? deleteDependent(index) : handleDeleteDependent(dep?.id_dependente)
                                         }} />
-                                        {/* <Box sx={{
-                                            backgroundSize: 'cover',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center',
-                                            width: 25,
-                                            height: 25,
-                                            backgroundImage: `url(/icons/edit_icon.png)`,
-                                            transition: '.3s',
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: 'pointer'
-                                            }
-                                        }} onClick={() => {
-                                            !newUser && dependent && handleEditDependent(dep?.id_dependente)
-                                        }} /> */}
                                     </Box>
                                 </>
                             ))}
@@ -2074,7 +1896,6 @@ export default function EditUser() {
                                     <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' sx={{ flex: 1, }} />
                                     <TextInput placeholder='Cartão de Ponto' name='cartao_ponto' onChange={handleChangeContract} value={contract?.cartao_ponto || ''} label='Cartão de Ponto' sx={{ flex: 1, }} />
                                 </Box>
-                                {/* <TextInput placeholder='Horário' name='horario' onChange={handleChangeContract} value={contract?.horario || ''} label='Horário' sx={{ flex: 1, }} /> */}
                                 <Box sx={styles.inputSection}>
                                     <TextInput placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
                                     <TextInput placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} onBlur={() => {
@@ -2433,7 +2254,6 @@ export default function EditUser() {
                                         </Box>
                                     </Box>
 
-                                    {/* {testSelectiveProcess && */}
                                     <>
                                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
                                             <Text bold>Prova - Redação:</Text>
@@ -2464,7 +2284,6 @@ export default function EditUser() {
                                             </Box>
                                         </Box>
                                     </>
-                                    {/* } */}
                                 </Box>
                             </>
                         }
@@ -2473,11 +2292,6 @@ export default function EditUser() {
                 </>
             }
 
-
-
-            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-end' }}>
-                <Button text={'Salvar'} style={{ width: 150 }} onClick={() => { newUser ? handleCreateUser() : handleEditUser() }} />
-            </Box>
             <Backdrop open={showSections.interest} sx={{ zIndex: 999 }}>
 
                 {showSections.interest &&
@@ -2590,70 +2404,6 @@ export default function EditUser() {
                                     </tbody>
                                 </table>
                             </div>
-                            {/* <Box sx={{ ...styles.inputSection, alignItems: 'center', backgroundColor: colorPalette.buttonColor, padding: '8px', borderRadius: '8px', zIndex: 999999999, width: '80%' }}>
-                                <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Curso</Text>
-                                <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Turma</Text>
-                                <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Periodo</Text>
-                                <Text bold style={{ flex: 1, textAlign: 'center', color: '#fff' }}>Observação</Text>
-                            </Box> */}
-
-                            {/* {arrayInterests.map((interest, index) => (
-                                <>
-
-                                    <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <Box sx={{ display: 'flex', flex: 1, gap: 1 }}>
-                                            <Text sx={{ flex: 1 }}>{interest?.nome_curso}</Text>
-                                            <Text sx={{ flex: 1 }}>{interest?.nome_turma}</Text>
-                                            <Text sx={{ flex: 1 }}>{interest?.periodo_interesse}</Text>
-                                            <Text sx={{ flex: 1 }}>{interest?.observacao_int}</Text>
-                                        </Box>
-                                        <Button small text="Editar" sx={{
-                                            width: 40,
-                                            transition: '.3s',
-                                            zIndex: 999999999,
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: 'pointer'
-                                            }
-                                        }} onClick={() => {
-                                            setValueIdInterst(interest.id_interesse)
-                                            getInterestEdit(interest.id_interesse)
-                                            setShowSections({ ...showSections, viewInterest: true })
-                                        }} />
-
-                                        {interest?.turma_id && <Button small text="Matricular" sx={{
-                                            // width: 25,
-                                            transition: '.3s',
-                                            zIndex: 999999999,
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: 'pointer'
-                                            }
-                                        }} onClick={() => {
-                                            let query = `?interest=${interest.id_interesse}`;
-                                            router.push(`/administrative/users/${id}/enrollStudent${query}`)
-                                        }} />}
-                                        {newUser &&
-                                            <Box sx={{
-                                                backgroundSize: 'cover',
-                                                backgroundRepeat: 'no-repeat',
-                                                backgroundPosition: 'center',
-                                                width: 25,
-                                                height: 25,
-                                                backgroundImage: `url(/icons/remove_icon.png)`,
-                                                transition: '.3s',
-                                                zIndex: 999999999,
-                                                "&:hover": {
-                                                    opacity: 0.8,
-                                                    cursor: 'pointer'
-                                                }
-                                            }} onClick={() => {
-                                                deleteInterest(index)
-                                            }} />
-                                        }
-                                    </Box>
-                                </>
-                            ))} */}
 
                             {(!showSections.addInterest && !showSections.viewInterest) && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                 <Button small text='novo' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, addInterest: true })} />
@@ -3039,13 +2789,6 @@ export const EditFile = (props) => {
                                     newUser ? callback("") : handleDeleteFile()
                                 }} />
                             </Box>
-
-                            {/* <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button small text='Salvar' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
-                                    onSet(false)
-                                    alert.info('Sua foto de perfil foi atualizada.')
-                                }} />
-                            </Box> */}
                         </Box>
                     </>
                 }

@@ -20,7 +20,6 @@ const PagesRoute = ({ Component, pageProps }) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta charset="utf-8" />
                 <link rel="icon" href="https://adm-melies.s3.amazonaws.com/logo_vermelho_linhas_brancas.svg" />
-                {/* <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> */}
             </Head>
             <ProtectRoute>
                 <Box sx={{ ...styles.bodyContainer, backgroundColor: colorPalette.primary }}>
@@ -48,7 +47,6 @@ const styles = {
         flexDirection: 'column',
         flex: 1,
         gap: `35px`,
-        // backgroundColor: Colors.background,
         padding: { xs: `30px 30px 85px 30px`, xm: `25px`, md: `120px 65px`, lg: `120px 65px` },
         paddingBottom: `60px`,
         overflowY: 'hidden',

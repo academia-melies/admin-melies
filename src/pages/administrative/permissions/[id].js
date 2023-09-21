@@ -8,7 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 
 export default function EditPermissions(props) {
-    const { setLoading, alert, colorPalette, theme, user } = useAppContext()
+    const { setLoading, alert, colorPalette, theme, user, setShowConfirmationDialog } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
@@ -86,38 +86,6 @@ export default function EditPermissions(props) {
             [value.target.name]: value.target.value,
         }))
     }
-
-    // const handleScreenPermissionChange = (screen, action, value, item) => {
-    //     let validatePermissionExists = permissionGroup.permissoes.map(per => per.item === screen)
-    //     if(!validatePermissionExists){
-    //         setPermissionGroup((prevPermissionGroup) => ({
-    //             ...prevPermissionGroup,
-    //             permissoes: {
-    //                 ...prevPermissionGroup.permissoes,
-    //                 [screen]: {
-    //                     ...prevPermissionGroup.permissoes[screen],
-    //                     [action]: value,
-    //                     item: screen,
-    //                     item_id: item
-    //                 },
-    //             },
-    //         }));
-    //         return
-    //     }
-
-    //     setPermissionGroup((prevPermissionGroup) => ({
-    //         ...prevPermissionGroup,
-    //         permissoes: {
-    //             ...prevPermissionGroup.permissoes,
-    //             [screen]: {
-    //                 ...prevPermissionGroup.permissoes[screen],
-    //                 acao: value,
-    //                 item: screen,
-    //                 item_id: item
-    //             },
-    //         },
-    //     }));
-    // };
 
     const handleScreenPermissionChange = (screen, action, value, item) => {
         setPermissionGroup((prevPermissionGroup) => {
@@ -223,7 +191,7 @@ export default function EditPermissions(props) {
                 saveButton
                 saveButtonAction={newPermissions ? handleCreate : handleEdit}
                 deleteButton={!newPermissions}
-                deleteButtonAction={() => handleDelete()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, boxShadow: 'none' }}>

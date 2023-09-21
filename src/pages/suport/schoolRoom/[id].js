@@ -7,7 +7,7 @@ import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 
 export default function EditSchoolRoom(props) {
-    const { setLoading, alert, user } = useAppContext()
+    const { setLoading, alert, user, setShowConfirmationDialog } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
@@ -141,7 +141,7 @@ export default function EditSchoolRoom(props) {
                 saveButton
                 saveButtonAction={newSchoolRoom ? handleCreateRoom : handleEditRoom}
                 deleteButton={!newSchoolRoom}
-                deleteButtonAction={() => handleDeleteRoom()}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteRoom })}
             />
 
             {/* usuario */}
