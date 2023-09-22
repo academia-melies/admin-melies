@@ -7,7 +7,7 @@ import { deleteContract } from "../../validators/api-requests"
 
 export const ContainDropzone = (props) => {
 
-    const { data = [], title = "", callback = () => { }, userId, screen, servicoId } = props
+    const { data = [], title = "", callback = () => { }, userId, screen, servicoId, text = "Arraste ou clique para subir o contrato" } = props
     const { colorPalette, setLoading, alert } = useAppContext()
 
     const handleDelete = async (id_contrato_servico, key) => {
@@ -39,7 +39,7 @@ export const ContainDropzone = (props) => {
                 cursor: 'pointer'
             }}>
                 <CustomDropzone
-                    txt={'Arraste ou clique para subir o contrato'}
+                    txt={text}
                     callback={(file) => {
                         if (file.status === 201) {
                             callback(file)
@@ -59,7 +59,7 @@ export const ContainDropzone = (props) => {
                     }}
                 />
             </Box>
-            {data.length > 0 ?
+            {data.length > 0 &&
                 <Box sx={{ flexWrap: 'wrap', flexDirection: 'row', display: 'flex', gap: 4 }}>
                     {data?.map((item, index) => {
                         const typeFile = item?.name_file.includes('.pdf') ? 'pdf' : 'jpg';
@@ -119,10 +119,7 @@ export const ContainDropzone = (props) => {
                         )
                     })}
                 </Box>
-                :
-                <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '40px 0px' }}>
-                    <Text light style={{ color: 'darkgray' }}>Esse {screen} não possui contratos</Text>
-                </Box>}
+            }
         </ContentContainer>
 
     )
