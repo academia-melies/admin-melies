@@ -191,7 +191,7 @@ export const ConfirmationModal = (props) => {
     return (
         <>
             {active &&
-                <Box sx={{ ...styles.confirmationContainer, ...position }}>
+                <Box sx={{ ...styles.confirmationContainer, ...position, zIndex: 999999 }}>
                     <Box>
                         <Text bold='true'>{title}</Text>
                     </Box>
