@@ -18,8 +18,22 @@ export const getDialogPosition = (event, maxDialogWidth) => {
    return { left: x, top: y }
 }
 
-export const formatTimeStamp = (timestamp) => {
+export const formatTimeStamp = (timestamp, time) => {
    try {
+      if (timestamp && time) {
+         const date = new Date(timestamp);
+         date.setHours(date.getHours() - 3); 
+         const options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'America/Sao_Paulo'
+         };
+         return date.toLocaleString('pt-BR', options);
+      }
       if (timestamp) {
          const date = new Date(timestamp);
          const day = String(date.getDate()).padStart(2, '0');
