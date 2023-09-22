@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { useMediaQuery, useTheme } from "@mui/material"
+import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
@@ -8,6 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
+import { formatTimeStamp } from "../../../helpers"
 
 export default function EditPricesCourse(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
@@ -26,9 +27,12 @@ export default function EditPricesCourse(props) {
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [showHistoric, setShowHistoric] = useState(false)
+    const [historicId, setHistoricId] = useState()
     const [arrayHistoricValuesCourse, setArrayHistoricValuesCourse] = useState([])
+    const [historicEdit, setHistoricEdit] = useState({})
     const [readjustmentValue, setReadjustmentValue] = useState({})
     const [showValueAdjustment, setShowValueAdjustment] = useState(false)
+    const [ajustmentAplicate, setAjustmentAplicate] = useState(false)
     const [beforeValueCourse, setBeforeValueCourse] = useState()
 
     const getPricesCourse = async () => {
@@ -82,46 +86,52 @@ export default function EditPricesCourse(props) {
         listCourses()
     }, [])
 
-    function calculationValues({ porcent, remove}) {
-        setLoading(true)
-        setTimeout(() => {
-            try {
-                let valueTotal = pricesCourseData?.valor_total_curso;
-                let alertMsg = ''
-                if (remove) {
-                    valueTotal = beforeValueCourse;
-                    alertMsg = 'Reajuste removido.'
-                }
-                if (porcent) {
-                    alertMsg = 'Reajuste aplicado.'
-                    const discountPercentage = porcent;
-                    if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
-                        alert.error("Porcentagem de desconto inválida.");
-                        return;
-                    }
-                    const discountValue = (valueTotal * (discountPercentage / 100)).toFixed(2);
-                    const updatedTotal = (parseFloat((valueTotal)) + parseFloat(discountValue)).toFixed(2);
-                    valueTotal = updatedTotal;
+    useEffect(() => {
+        if (ajustmentAplicate) {
+            handleEditPrices()
+        }
+    }, [ajustmentAplicate])
 
-                }
-                const valueParcels = (valueTotal / pricesCourseData?.n_parcelas).toFixed(2);
-                const valueDiscount = (valueTotal - (valueTotal * 0.05)).toFixed(2)
-                const formattedParcels = formattedValueCourse(valueParcels);
-                const formattedDiscount = formattedValueCourse(valueDiscount);
-                setPricesCourseData((prevValues) => ({
-                    ...prevValues,
-                    valor_total_curso: valueTotal,
-                    valor_parcelado_curso: formattedParcels,
-                    valor_avista_curso: formattedDiscount
-                }));
-                if (alertMsg) alert.success(alertMsg)
-            } catch (error) {
-                alert.error('Ocorreu um erro ao calcular os valores.')
-                return error
-            } finally {
-                setLoading(false)
+    async function calculationValues({ porcent, remove, ajustmentAplicated }) {
+        setLoading(true)
+        try {
+            let valueTotal = pricesCourseData?.valor_total_curso;
+            let alertMsg = ''
+            if (remove) {
+                valueTotal = beforeValueCourse;
+                alertMsg = 'Reajuste removido.'
             }
-        }, 500);
+            if (porcent) {
+                alertMsg = 'Reajuste aplicado.'
+                const discountPercentage = porcent;
+                if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+                    alert.error("Porcentagem de desconto inválida.");
+                    return;
+                }
+                const discountValue = (valueTotal * (discountPercentage / 100)).toFixed(2);
+                const updatedTotal = (parseFloat((valueTotal)) + parseFloat(discountValue)).toFixed(2);
+                valueTotal = updatedTotal;
+
+            }
+            const valueParcels = (valueTotal / pricesCourseData?.n_parcelas).toFixed(2);
+            const valueDiscount = (valueTotal - (valueTotal * 0.05)).toFixed(2)
+            const formattedParcels = formattedValueCourse(valueParcels);
+            const formattedDiscount = formattedValueCourse(valueDiscount);
+            setPricesCourseData((prevValues) => ({
+                ...prevValues,
+                valor_total_curso: valueTotal,
+                valor_parcelado_curso: formattedParcels,
+                valor_avista_curso: formattedDiscount
+            }));
+            if (alertMsg) alert.success(alertMsg)
+            if (ajustmentAplicated) { setAjustmentAplicate(true) }
+            return true
+        } catch (error) {
+            alert.error('Ocorreu um erro ao calcular os valores.')
+            return error
+        } finally {
+            setLoading(false)
+        }
     }
 
     const formattedValueCourse = (value) => {
@@ -198,6 +208,13 @@ export default function EditPricesCourse(props) {
             ...prevValues,
             [event.target.name]: event.target.value,
         }))
+    }
+
+    const handleChangeHistoric = (event) => {
+        setHistoricEdit((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }));
     }
 
     const handleChangeReadjustment = (event) => {
@@ -293,16 +310,18 @@ export default function EditPricesCourse(props) {
         }
     }
 
-    const handleDeleteHistoric = async (id) => {
+    const handleDeleteHistoric = async () => {
         setLoading(true)
         try {
-            const response = await api.delete(`/coursePrices/historic/delete/${id}`);
+            const response = await api.delete(`/coursePrices/historic/delete/${historicId}`);
             if (response?.status === 200) {
                 alert.success('Historico excluído.');
                 handleItems()
                 setShowValueAdjustment(false)
+                setHistoricId()
+                return
             }
-
+            alert.error('Tivemos um problema ao excluir a Historico.');
         } catch (error) {
             alert.error('Tivemos um problema ao excluir a Historico.');
             console.log(error)
@@ -310,6 +329,44 @@ export default function EditPricesCourse(props) {
             setLoading(false)
         }
     }
+
+
+    const handleGetHistoricId = async (value) => {
+        setLoading(true)
+        setHistoricId(value)
+        try {
+            const response = await api.get(`/coursePrices/historicId/${value}`)
+            const { data } = response
+            if (data) {
+                setHistoricEdit(data)
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleUpdateHistoricId = async () => {
+        setLoading(true)
+        try {
+            const response = await api.patch(`/coursePrices/historic/update`, { historicEdit })
+            if (response?.status === 200) {
+                alert.success('Historico atualizado.')
+                setHistoricId()
+                return
+            }
+            alert.error('Ocorreu um erro ao atualizar o histórico.')
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
 
     const groupStatus = [
         { label: 'ativo', value: 1 },
@@ -328,12 +385,13 @@ export default function EditPricesCourse(props) {
 
     const column = [
         { key: 'id_hist_val_curso', label: 'ID' },
-        { key: 'valor_total_curso', label: 'Valor Total', price: true },
         { key: 'reajuste', label: 'Reajuste %' },
+        { key: 'valor_total_curso', label: 'Valor Final', price: true },
+        { key: 'valor_avista_curso', label: 'á vista (desconto 5%)', price: true },
         { key: 'n_parcelas', label: 'Parcelas' },
         { key: 'valor_parcelado_curso', label: 'Valor parcelado', price: true },
-        { key: 'valor_avista_curso', label: 'á vista (desconto 5%)', price: true },
-        { key: 'dt_reajuste', label: 'Data do reajuste', date: true }
+        { key: 'dt_reajuste', label: 'Data do reajuste', date: true },
+        { key: 'observacao_his_pr_cur', label: 'Observações' },
     ];
 
 
@@ -421,12 +479,12 @@ export default function EditPricesCourse(props) {
                                         />
                                     </Box>
                                     <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                        <Button text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => calculationValues({ porcent: readjustmentValue?.reajuste })} />
-                                        <Button text='remover' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={async () => {
+                                        <Button text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => calculationValues({ porcent: readjustmentValue?.reajuste, ajustmentAplicated: true })} />
+                                        {/* <Button text='remover' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={async () => {
                                             await calculationValues({ porcent: false, remove: true })
                                             setReadjustmentValue({ reajuste: '' })
                                             setShowValueAdjustment(false)
-                                        }} />
+                                        }} /> */}
                                     </Box>
 
                                 </ContentContainer>
@@ -457,8 +515,8 @@ export default function EditPricesCourse(props) {
                 {showHistoric &&
                     <>
                         {arrayHistoricValuesCourse.length > 0 ?
-                            <Table_V1 data={arrayHistoricValuesCourse} columns={column} columnId={'id_hist_val_curso'} columnActive={false} center onDelete routerPush={false}
-                                onSelect={(value) => handleDeleteHistoric(value)} />
+                            <Table_V1 data={arrayHistoricValuesCourse} columns={column} columnId={'id_hist_val_curso'} columnActive={false} center routerPush={false}
+                                onSelect={(value) => handleGetHistoricId(value)} />
                             :
                             <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                                 <Text bold>Não encontramos histórico de valores</Text>
@@ -467,6 +525,65 @@ export default function EditPricesCourse(props) {
                     </>
                 }
             </ContentContainer>
+            <Backdrop open={historicId} sx={{ zIndex: 9999 }}>
+                <ContentContainer style={{ marginLeft: { xs: '0px', sm: '214px', md: '180px', lg: '214px' } }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999 }}>
+                        <Text bold large>Editar Reajuste</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setHistoricId()
+                            setHistoricEdit({})
+                        }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                            <Text bold>Reajuste %:</Text>
+                            <Text>{historicEdit?.reajuste || '-'}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                            <Text bold>Valor Final:</Text>
+                            <Text>{formatter.format(historicEdit?.valor_total_curso || 0)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                            <Text bold>á vista (desconto 5%):</Text>
+                            <Text>{formatter.format(historicEdit?.valor_avista_curso || 0)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                            <Text bold>Parcelas:</Text>
+                            <Text>{historicEdit?.n_parcelas || '-'}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                            <Text bold>Valor parcelado:</Text>
+                            <Text>{formatter.format(historicEdit?.valor_parcelado_curso || 0)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                            <Text bold>Data do reajuste:</Text>
+                            <Text>{formatTimeStamp(historicEdit?.dt_reajuste)}</Text>
+                        </Box>
+                        <TextInput
+                            placeholder='Observação'
+                            name='observacao_his_pr_cur'
+                            onChange={handleChangeHistoric} value={historicEdit?.observacao_his_pr_cur || ''}
+                            label='Observação' sx={{ flex: 1, }}
+                            multiline
+                            maxRows={8}
+                            rows={4}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                        <Button text='salvar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleUpdateHistoricId()} />
+                        <Button text='excluir' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteHistoric })} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
 
         </>
     )

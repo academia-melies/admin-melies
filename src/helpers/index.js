@@ -19,12 +19,18 @@ export const getDialogPosition = (event, maxDialogWidth) => {
 }
 
 export const formatTimeStamp = (timestamp) => {
-   const date = new Date(timestamp);
-   const day = String(date.getDate()).padStart(2, '0');
-   const month = String(date.getMonth() + 1).padStart(2, '0');
-   const year = String(date.getFullYear());
+   try {
+      if (timestamp) {
+         const date = new Date(timestamp);
+         const day = String(date.getDate()).padStart(2, '0');
+         const month = String(date.getMonth() + 1).padStart(2, '0');
+         const year = String(date.getFullYear());
 
-   return `${day}/${month}/${year}`;
+         return `${day}/${month}/${year}`;
+      }
+   } catch (error) {
+      return null
+   }
 };
 
 export const emailValidator = (email) => {
@@ -54,12 +60,12 @@ export const formatCNPJ = (cnpj) => {
 
 export const formatDate = (date) => {
    try {
-   const newDate = new Date(date)
-   const formattedDate = new Intl.DateTimeFormat("pt-BR")?.format(newDate);
-   return formattedDate;
-} catch (error) {
+      const newDate = new Date(date)
+      const formattedDate = new Intl.DateTimeFormat("pt-BR")?.format(newDate);
+      return formattedDate;
+   } catch (error) {
       return null
-}
+   }
 };
 
 
@@ -122,11 +128,11 @@ export const calculationAge = (dateOfBirth) => {
 
    // Check if the birthday hasn't occurred yet this year
    if (
-     currentDate.getMonth() < birthDate.getMonth() ||
-     (currentDate.getMonth() === birthDate.getMonth() &&
-      currentDate.getDate() < birthDate.getDate())
+      currentDate.getMonth() < birthDate.getMonth() ||
+      (currentDate.getMonth() === birthDate.getMonth() &&
+         currentDate.getDate() < birthDate.getDate())
    ) {
-     ageDifference--;
+      ageDifference--;
    }
 
    // Checking if the user is 18 years or older
