@@ -19,6 +19,8 @@ export default function Login() {
     const [windowWidth, setWindowWidth] = useState(0)
     const smallWidthDevice = windowWidth < 1000
     const notebookWidth = windowWidth > 1100 && windowWidth < 1500
+    const windowWidthScreen = window.innerWidth;
+    const windowHeigthScreen = window.innerHeight;
 
     const handleImages = async () => {
         try {
@@ -75,6 +77,7 @@ export default function Login() {
         }))
     }
 
+
     useEffect(() => {
         setWindowWidth(window.innerWidth)
         window.addEventListener('resize', () => setWindowWidth(window.innerWidth))
@@ -104,7 +107,7 @@ export default function Login() {
             }}>
                 <Box sx={{
                     display: 'flex',
-                    ...(smallWidthDevice ? { height: '70%', width: '90%' } : { height: { md: '480px', lg: '603px' }, width: { md: '700px', lg: '895px' } })
+                    ...(smallWidthDevice ? { height: '70%', width: '90%' } : { height: { md: '480px', lg: '480px', xl: '603px' }, width: { md: '700px', lg: '700px', xl: '895px' } })
                 }}>
                     <ContentContainer row fullWidth style={{ borderRadius: '16px', padding: 0, zIndex: 999, transition: 'background-color 1s', backgroundColor: !theme ? Colors.backgroundSecundary : '#FFFFFF', boxShadow: !theme ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px` }} gap={0}>
 
