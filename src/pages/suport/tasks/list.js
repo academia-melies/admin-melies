@@ -45,7 +45,6 @@ export default function ListTasks(props) {
         setLoading(true)
         try {
             const response = await api.get('/tasks')
-            console.log(response)
             const { data } = response;
             setTasksList(data)
         } catch (error) {

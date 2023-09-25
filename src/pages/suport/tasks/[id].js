@@ -15,12 +15,20 @@ export default function EditTask(props) {
     const { id, slug } = router.query;
     const newTask = id === 'new';
     const [responsibles, setResponsibles] = useState([])
-    const [taskData, setTaskData] = useState({})
+    const [taskData, setTaskData] = useState({
+        status_chamado: '',
+    })
+    const [alterationTask, setAlterationTask] = useState(false)
+    const [statusAlteration, setStatusAlteration] = useState({ finalizado: false, reaberto: false })
     const [filesTask, setFilesTask] = useState([])
-    const [newInteration, setNewInteration] = useState({ interacao_chamado: '' })
+    const [newInteration, setNewInteration] = useState({ descr_interacao: '' })
     const [interationsTask, setInterationsTask] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const priorityColor = ((taskData?.prioridade_chamado === 'Alta' && 'yellow') ||
+        (taskData?.prioridade_chamado === 'Urgente' && 'red') ||
+        (taskData?.prioridade_chamado === 'Média' && 'green') ||
+        (taskData?.prioridade_chamado === 'Baixa' && 'blue'))
 
     const getTask = async () => {
         try {
@@ -48,9 +56,23 @@ export default function EditTask(props) {
         }
     }
 
+    const getInterationsTask = async () => {
+        try {
+            const response = await api.get(`/task/interation/${id}`)
+            const { data } = response
+            if (data?.length > 0) {
+                setInterationsTask(data)
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
     useEffect(() => {
         if (!newTask) {
             handleItems();
+            setNewInteration({ ...newInteration, usuario_id: userId, chamado_id: id })
         }
 
     }, [id]);
@@ -59,12 +81,20 @@ export default function EditTask(props) {
         listUsers()
     }, [])
 
+    useEffect(() => {
+        if (taskData?.status_chamado !== '' && alterationTask) {
+            handleEditTask(statusAlteration)
+        }
+    }, [taskData?.status_chamado])
+
 
     const handleItems = async () => {
         setLoading(true)
         try {
             await getTask()
             await listUsers()
+            await getInterationsTask()
+            await setAlterationTask(false)
             // if (serviceResponse) {
             //     await getContracts(serviceResponse.tipo_servico)
             // }
@@ -132,12 +162,15 @@ export default function EditTask(props) {
         }
     }
 
-    const handleEditTask = async () => {
+    const handleEditTask = async ({ finalizado = false, reaberto = false }) => {
         setLoading(true)
+        let status = (finalizado && 'finalizada') || (reaberto && 're-aberta') || false;
+
         try {
-            const response = await api.patch(`/task/update/${id}`, { taskData })
+            const response = await api.patch(`/task/update/${id}`, { taskData, status, newInteration, userName: user?.nome })
             if (response?.status === 201) {
                 alert.success('Tarefa atualizada com sucesso.');
+                setNewInteration({ ...newInteration, descr_interacao: '' })
                 handleItems()
                 return
             }
@@ -145,6 +178,24 @@ export default function EditTask(props) {
         } catch (error) {
             alert.error('Tivemos um problema ao atualizar a Tarefa.');
         } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleAddInteration = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/task/interation/create`, { newInteration });
+            if (response?.status === 201) {
+                alert.success('Interação adicionada com sucesso.');
+                setNewInteration({ ...newInteration, descr_interacao: '' })
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Tivemos um problema ao criar a Tarefa.');
+            return error
+        }
+        finally {
             setLoading(false)
         }
     }
@@ -195,10 +246,8 @@ export default function EditTask(props) {
             <SectionHeader
                 perfil={taskData?.tipo_chamado}
                 title={`(#${taskData?.id_chamado}).${taskData?.titulo_chamado}` || `Novo Chamado`}
-                saveButton
-                saveButtonAction={newTask ? handleCreateTask : handleEditTask}
-                deleteButton={!newTask}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteTask })}
+                saveButton={newTask && true}
+                saveButtonAction={newTask && handleCreateTask}
             />
             {newTask ?
                 (<>
@@ -244,54 +293,65 @@ export default function EditTask(props) {
                     />
                 </>)
                 : (
-                    <Box sx={{ display: 'flex', flexDirection: { xs: `column`, xm:'row', md:'row', lg:'row' }, gap: 2, backgroundColor: 'none', boxShadow: 'none' }}>
-                        <ContentContainer fullWidth style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 5, }}>
+                    <Box sx={{ display: 'flex', flexDirection: { xs: `column`, xm: 'row', md: 'row', lg: 'row' }, gap: 1.8, backgroundColor: 'none', boxShadow: 'none' }}>
+                        <ContentContainer fullWidth style={{ display: 'flex', flexDirection: 'column', gap: 1.8, padding: 5, }}>
 
-                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                            <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                                 <Text bold>Descrição:</Text>
                                 <Text>{taskData?.descricao_chamado}</Text>
                             </Box>
-                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', marginTop: 5 }}>
                                 <Text bold>Interações:</Text>
                                 {interationsTask?.map((item, index) => {
                                     return (
-                                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', flex: 1 }} key={index}>
-                                            <Box sx={{ display: 'flex', gap: 0.5, flex: 1, backgroundColor: colorPalette.buttonColor, padding: '10px 10px' }}>
-                                                <Text style={{ color: '#d6d6d6' }} light>Por</Text>
-                                                <Text bold style={{ color: '#d6d6d6' }} light>{item?.respo_interacao}</Text>
-                                                <Text style={{ color: '#d6d6d6' }} light>em</Text>
-                                                <Text bold style={{ color: '#d6d6d6' }} light>{formatTimeStamp(item?.dt_criacao, true)}</Text>
+                                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', flex: 1, border: `1px solid #d6d6d6`, borderRadius: '9px' }} key={index}>
+                                            <Box sx={{ display: 'flex', gap: 0.5, flex: 1, backgroundColor: colorPalette.buttonColor, padding: '10px 10px', borderRadius: '8px 8px 0px 0px' }}>
+                                                <Text style={{ color: '#FFF' }} light>Por</Text>
+                                                <Text bold style={{ color: '#FFF' }}>{item?.criado_por}</Text>
+                                                <Text style={{ color: '#FFF' }} light>em</Text>
+                                                <Text bold style={{ color: '#FFF' }}>{formatTimeStamp(item?.dt_criacao, true)}</Text>
                                             </Box>
-                                            <Box sx={{ display: 'flex', gap: 0.5, flex: 1 }}>
+                                            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', justifyContent: 'start', padding: '5px 0px 15px 15px' }}>
                                                 <Text>{item?.descr_interacao}</Text>
                                             </Box>
                                         </Box>
                                     )
                                 })}
                             </Box>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {taskData?.status_chamado !== 'Finalizado' && <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <TextInput
                                     placeholder='Digite sua nova interação'
-                                    name='interacao_chamado'
+                                    name='descr_interacao'
                                     onChange={handleChangeInteration}
-                                    value={newInteration?.interacao_chamado || ''}
+                                    value={newInteration?.descr_interacao || ''}
                                     sx={{ flex: 1, }}
                                     multiline
                                     maxRows={8}
                                     rows={6}
                                 />
                                 <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
-                                    <Button secondary text="Adicionar interação" small style={{ width: 160 }} />
+                                    <Button secondary text="Adicionar interação" small style={{ width: 160 }} onClick={() => handleAddInteration()} />
                                 </Box>
-                            </Box>
+                            </Box>}
                         </ContentContainer>
                         <ContentContainer sx={{
-                            display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                            minWidth: { xs: `0px`, xm: `300px`, md: `300px`, lg: `300px` },
+                            display: 'flex', flexDirection: 'column', minWidth: { xs: `0px`, xm: `300px`, md: `300px`, lg: `300px` },
                         }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                 <Text bold>Prioridade:</Text>
-                                <Text>{taskData?.prioridade_chamado}</Text>
+                                <Box sx={{
+                                    display: 'flex',
+                                    backgroundColor: colorPalette.primary,
+                                    height: 25,
+                                    gap: 2,
+                                    alignItems: 'center',
+                                    maxWidth: 100,
+                                    borderRadius: 2,
+                                    justifyContent: 'start'
+                                }}>
+                                    <Box sx={{ display: 'flex', backgroundColor: priorityColor, padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                    <Text bold>{taskData?.prioridade_chamado}</Text>
+                                </Box>
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                 <Text bold>Aberto por:</Text>
@@ -321,12 +381,21 @@ export default function EditTask(props) {
                                 <Text bold>Anexos:</Text>
                                 <Text>{''}</Text>
                             </Box>
-                            <Button text="Finalizar Tarefa" small style={{ flex: 1, height: 30 }} />
-                            <Button secondary text="Registrar Tempo" small style={{ flex: 1, height: 30 }} />
-                            <Button secondary text="Alterar Prioridade" small style={{ flex: 1, height: 30 }} />
-                            <Button secondary text="Alterar Responsável" small style={{ flex: 1, height: 30 }} />
-                            <Button secondary text="Adicionar Participante" small style={{ flex: 1, height: 30 }} />
-                            <Button text="Excluir Tarefa" small style={{ flex: 1, height: 30 }} />
+                            {taskData?.status_chamado !== 'Finalizado' && <Button text="Finalizar Tarefa" small style={{ height: 35 }} onClick={() => {
+                                setTaskData({ ...taskData, status_chamado: 'Finalizado' })
+                                setStatusAlteration({ finalizado: true, reaberto: false })
+                                setAlterationTask(true)
+                            }} />}
+                            {taskData?.status_chamado === 'Finalizado' && <Button text="Reabrir Tarefa" small style={{ height: 35 }} onClick={() => {
+                                setTaskData({ ...taskData, status_chamado: 'Em aberto' })
+                                setStatusAlteration({ finalizado: false, reaberto: true })
+                                setAlterationTask(true)
+                            }} />}
+                            <Button secondary text="Alterar Prioridade" small style={{ height: 35 }} />
+                            <Button secondary text="Alterar Responsável" small style={{ height: 35 }} />
+                            <Button secondary text="Adicionar Participante" small style={{ height: 35 }} />
+                            <Button text="Excluir Tarefa" small style={{ height: 35 }}
+                                onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteTask })} />
 
                         </ContentContainer>
                     </Box>

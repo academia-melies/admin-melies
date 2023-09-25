@@ -103,15 +103,15 @@ export const LeftMenu = ({ }) => {
       <>
          <Box sx={{
             ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }),
-            width: { xs: '214px', sm: '214px', md: '180px', lg: '214px' },
+            width: { xs: '214px', sm: '214px', md: '180px', lg: '180px', xl: '214px' },
          }}>
-            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '214px', sm: '214px', md: '180px', lg: '214px' }, padding: { xs: '10px 15px', sm: '10px 15px', md: '8px 10px', lg: '10px 15px' } }}>
+            <Box sx={{ position: 'fixed', height: '100%', width: { xs: '214px', sm: '214px', md: '180px', lg: '180px', xl: '214px' }, padding: { xs: '10px 15px', sm: '10px 15px', md: '8px 10px', lg: '8px 10px', xl: '10px 15px' } }}>
                <Box sx={{
                   // backgroundSize: 'cover',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center center',
                   width: '100%',
-                  height: { md: '180px', lg: '205px' },
+                  height: { md: '180px', lg: '180px', xl: '205px' },
                   position: 'absolute',
                   backgroundColor: colorPalette.secondary,
                   top: -40,
@@ -133,7 +133,7 @@ export const LeftMenu = ({ }) => {
                      borderRadius: 1.5,
                      boxSizing: 'border-box',
                      flexDirection: 'column',
-                     padding: { md: '0px', lg: '8px 8px' },
+                     padding: { md: '0px', lg: '0px', xl: '8px 8px' },
 
                   }}>
                      <Avatar
@@ -260,7 +260,7 @@ export const LeftMenu = ({ }) => {
                               {!showMenuMobile ?
                                  <Box sx={{
                                     display: 'flex', flexDirection: 'column', position: 'absolute',
-                                    marginLeft: { md: 16, lg: 20 }, padding: '8px'
+                                    marginLeft: { md: 16, lg: 16, xl: 20 }, padding: '8px'
                                  }}>
                                     <Box sx={{ marginLeft: 4, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, backgroundColor: colorPalette.secondary }}>
                                        {groupStates[index] && (
