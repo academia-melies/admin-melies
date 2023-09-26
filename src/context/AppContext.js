@@ -200,7 +200,7 @@ export const ConfirmationModal = (props) => {
                             <Text>{message}</Text>
                         </Box>
                     }
-                    <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+                    <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'center' }}>
                         <Button small='true' text='Sim' onClick={() => {
                             closeDialog()
                             acceptAction()

@@ -2,7 +2,7 @@ import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody
 import React from "react";
 import { useRouter } from "next/router";
 import { formatDate, formatTimeStamp } from "../../helpers";
-import { Box, Button } from "../../atoms";
+import { Box, Button, Text } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
 import { icons } from "../layout/Colors";
 
@@ -44,6 +44,11 @@ export const Table_V1 = (props) => {
             return index % 2 === 0 ? '#0E0D15' : '#221F32';
         }
     };
+
+    const priorityColor = (data) => ((data === 'Alta' && 'yellow') ||
+        (data === 'Urgente' && 'red') ||
+        (data === 'Média' && 'green') ||
+        (data === 'Baixa' && 'blue'))
 
     return (
         <>
@@ -115,12 +120,9 @@ export const Table_V1 = (props) => {
                                                     fontFamily: 'MetropolisRegular',
                                                 }}
                                             >
-
                                                 {row[column?.key] ? (
-
                                                     <Box
                                                         sx={{
-                                                            // maxWidth: '160px',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             gap: 2,
@@ -131,20 +133,37 @@ export const Table_V1 = (props) => {
                                                     >
                                                         {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={row[column?.avatarUrl || '']} />}
 
-                                                        {typeof row[column.key] === 'object' &&
-                                                            row[column?.key || '-'] instanceof Date ? (
+                                                        {typeof row[column.key] === 'object' && row[column?.key || '-'] instanceof Date ? (
                                                             formatTimeStamp(row[column?.key || '-'])
                                                         ) : (
-                                                            column.date ? formatDate(row[column?.key]) : row[column?.key || '-']
+                                                            column.task ? (
+                                                                <Box
+                                                                    sx={{
+                                                                        display: 'flex',
+                                                                        backgroundColor: colorPalette.secondary,
+                                                                        height: 30,
+                                                                        gap: 2,
+                                                                        alignItems: 'center',
+                                                                        width: 100,
+                                                                        borderRadius: 2,
+                                                                        justifyContent: 'start',
+                                                                    }}
+                                                                >
+                                                                    <Box sx={{ display: 'flex', backgroundColor: priorityColor(row[column.key]), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                                                    <Text bold>{row[column.key]}</Text>
+                                                                </Box>
+                                                            ) : (
+                                                                column.date ? formatDate(row[column?.key]) : row[column?.key || '-']
+                                                            )
                                                         )}
                                                     </Box>
-
                                                 ) : (
                                                     <TableCell sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>---</TableCell>
                                                 )}
                                             </TableCell>
                                         </Tooltip>
                                     ))}
+
                                     {columnActive && <TableCell>
                                         <IconStatus
                                             style={{ backgroundColor: row.ativo >= 1 ? 'green' : 'red', boxShadow: row.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
