@@ -429,7 +429,7 @@ export default function EditTask(props) {
                                                     <Text style={{ color: '#FFF' }} light>Por</Text>
                                                     <Text bold style={{ color: '#FFF' }}>{item?.criado_por}</Text>
                                                     <Text style={{ color: '#FFF' }} light>em</Text>
-                                                    <Text bold style={{ color: '#FFF' }}>{formatTimeStamp(item?.dt_criacao)}</Text>
+                                                    <Text bold style={{ color: '#FFF' }}>{formatTimeStamp(item?.dt_criacao, true)}</Text>
                                                 </Box>
                                                 <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', justifyContent: 'start', padding: '5px 0px 15px 15px' }}>
                                                     <Text>{item?.descr_interacao}</Text>
@@ -479,7 +479,7 @@ export default function EditTask(props) {
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                     <Text bold>Data de criação:</Text>
-                                    <Text>{formatTimeStamp(taskData?.dt_criacao)}</Text>
+                                    <Text>{formatTimeStamp(taskData?.dt_criacao, true)}</Text>
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                     <Text bold>Responsável:</Text>
