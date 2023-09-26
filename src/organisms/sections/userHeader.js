@@ -67,6 +67,17 @@ export const UserHeader = (props) => {
                         <Text small sx={{}}>Voltar</Text>
                     </Box>
                 </Box>
+                <Box sx={{ gap: 1, display: 'flex', alignItems: 'center', transition: '.3s', backgroundColor: colorPalette.primary, padding: '5px 8px', borderRadius: 2, cursor: 'pointer', "&:hover": { opacity: 0.6 } }}
+                onClick={() => router.push('/suport/tasks/list')}>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url('/icons/support-icon.png')`,
+                        filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                        transition: '.3s',
+                        aspectRatio: '1/1'
+                    }} />
+                    <Text bold small>Suporte</Text>
+                </Box>
                 <IconTheme flex />
                 <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'space-around', position: 'relative', }}>
                     <Box sx={{

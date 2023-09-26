@@ -36,5 +36,6 @@ export const icons = {
    goback: 'https://adm-melies.s3.amazonaws.com/goback_icon.png',
    goback: 'https://adm-melies.s3.amazonaws.com/goback_icon.png',
    edit: 'https://adm-melies.s3.amazonaws.com/edit_icon.png',
-   logout: 'https://adm-melies.s3.amazonaws.com/logout_icon.png'
+   logout: 'https://adm-melies.s3.amazonaws.com/logout_icon.png',
+   support: ''
 }

@@ -20,13 +20,17 @@ export default function ListTasks(props) {
     })
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
+    const [firstRender, setFirstRender] = useState(true)
+    const [filtersOrders, setFiltersOrders] = useState({
+        filterName: 'nome',
+        filterOrder: 'asc'
+    })
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         responsible: (item) => filters.responsible === 'todos' || item.responsavel_chamado === filters.responsible,
         status: (item) => filters.status === 'todos' || item.status_chamado === filters.status,
         priority: (item) => filters.priority === 'todos' || item.prioridade_chamado === filters.priority,
-        // participant: (item) => filters.participant === 'todos' || item.participant === filters.participant,
         actor: (item) => filters.actor === 'todos' || item.autor_chamado === filters.actor,
         type: (item) => filters.type === 'todos' || item.tipo_chamado === filters.type
     };
@@ -39,7 +43,37 @@ export default function ListTasks(props) {
     useEffect(() => {
         getTasks();
         listUsers()
+        if (window.localStorage.getItem('list-users-filters')) {
+            const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-users-filters') || null);
+            setFiltersOrders({
+                filterName: meliesLocalStorage?.filterName,
+                filterOrder: meliesLocalStorage?.filterOrder
+            })
+        }
     }, []);
+
+    useEffect(() => {
+        if (firstRender) return setFirstRender(false);
+        window.localStorage.setItem('list-users-filters', JSON.stringify({ filterName: filtersOrders.filterName, filterOrder: filtersOrders.filterOrder }));
+    }, [filtersOrders])
+
+
+    const sortTasks = () => {
+        const { filterName, filterOrder } = filtersOrders;
+    
+        const sortedTasks = [...tasksList].sort((a, b) => {
+            const valueA = filterName === 'id_chamado' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
+            const valueB = filterName === 'id_chamado' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
+
+            if (filterName === 'id_chamado') {
+                return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+    
+            return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        });
+    
+        return sortedTasks;
+    }
 
     const getTasks = async () => {
         setLoading(true)
@@ -77,7 +111,7 @@ export default function ListTasks(props) {
 
     const column = [
         { key: 'id_chamado', label: 'ID' },
-        { key: 'prioridade_chamado', label: 'Prioridade' },
+        { key: 'prioridade_chamado', label: 'Prioridade', task: true },
         { key: 'titulo_chamado', label: 'Título' },
         { key: 'autor_chamado', label: 'Autor' },
         { key: 'nome', label: 'Executor' },
@@ -180,16 +214,6 @@ export default function ListTasks(props) {
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                         clean={false}
                     />
-                    <SelectList
-                        fullWidth
-                        data={listStatus}
-                        valueSelection={filters?.participant}
-                        onSelect={(value) => setFilters({ ...filters, participant: value })}
-                        title="Participante"
-                        filterOpition="value"
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                        clean={false}
-                    />
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
                         <Button secondary text="Limpar filtros" small style={{ width: 120 }} onClick={() => setFilters({
                             responsible: 'todos',
@@ -202,7 +226,7 @@ export default function ListTasks(props) {
                     </Box>
                 </Box>
             </ContentContainer >
-            <Table_V1 data={tasksList.filter(filter)} columns={column} columnId={'id_chamado'} columnActive={false} onFilter />
+            <Table_V1 data={sortTasks().filter(filter)} columns={column} columnId={'id_chamado'} columnActive={false} filters={filtersOrders} onPress={(value) => setFiltersOrders(value)} onFilter />
         </>
     )
 }

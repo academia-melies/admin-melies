@@ -7,13 +7,12 @@ import { deleteContract } from "../../validators/api-requests"
 
 export const ContainDropzone = (props) => {
 
-    const { data = [], title = "", callback = () => { }, userId, screen, servicoId, text = "Arraste ou clique para subir o contrato" } = props
+    const { data = [], title = "", callback = () => { }, userId = null, screen = null, servicoId = null, text = "Arraste ou clique para subir o contrato", taskId = null, filesContainer = true } = props
     const { colorPalette, setLoading, alert } = useAppContext()
-
     const handleDelete = async (id_contrato_servico, key) => {
         setLoading(true)
         try {
-            const response = await deleteContract(id_contrato_servico, key)
+            const response = await deleteContract(id_contrato_servico, key, taskId)
             if (response.status === 200) {
                 alert.info('Contrato excluído.')
                 callback(response.status)
@@ -47,7 +46,8 @@ export const ContainDropzone = (props) => {
                     }}
                     usuario_id={userId}
                     servicoId={servicoId}
-                    contract={true}
+                    taskId={taskId}
+                    contract={taskId ? false : true}
                     tela={screen}
                     preview={false}
                     sx={{ flex: 1 }}
@@ -59,7 +59,7 @@ export const ContainDropzone = (props) => {
                     }}
                 />
             </Box>
-            {data.length > 0 &&
+            {filesContainer && data?.length > 0 &&
                 <Box sx={{ flexWrap: 'wrap', flexDirection: 'row', display: 'flex', gap: 4 }}>
                     {data?.map((item, index) => {
                         const typeFile = item?.name_file.includes('.pdf') ? 'pdf' : 'jpg';
