@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { Box, Button, ContentContainer, PhoneInputField, Text, TextInput } from "../../../../atoms";
 import { api } from "../../../../api/api";
 import { useRef, useEffect, useState } from "react";
-import { CheckBoxComponent, CreditCard, SectionHeader, SelectList } from "../../../../organisms";
+import { CheckBoxComponent, SectionHeader, SelectList } from "../../../../organisms";
 import { Backdrop, CircularProgress, useMediaQuery, useTheme } from "@mui/material";
 import { useAppContext } from "../../../../context/AppContext";
 import { useReactToPrint } from "react-to-print";
