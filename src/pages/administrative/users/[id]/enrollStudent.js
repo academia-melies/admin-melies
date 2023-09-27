@@ -2,13 +2,16 @@ import { useRouter } from "next/router";
 import { Box, Button, ContentContainer, PhoneInputField, Text, TextInput } from "../../../../atoms";
 import { api } from "../../../../api/api";
 import { useRef, useEffect, useState } from "react";
-import { CheckBoxComponent, SectionHeader, SelectList } from "../../../../organisms";
-import { useMediaQuery, useTheme } from "@mui/material";
+import { CheckBoxComponent, CreditCard, SectionHeader, SelectList } from "../../../../organisms";
+import { Backdrop, CircularProgress, useMediaQuery, useTheme } from "@mui/material";
 import { useAppContext } from "../../../../context/AppContext";
 import { useReactToPrint } from "react-to-print";
-import { calculationAge, emailValidator, findCEP, formatCEP, formatCPF, formatDate, formatRg } from "../../../../helpers";
+import { calculationAge, emailValidator, findCEP, formatCEP, formatCPF, formatCreditCardNumber, formatDate, formatRg, formatTimeStamp } from "../../../../helpers";
 import { ContractStudentComponent } from "../../../../organisms/contractStudent/contractStudent";
 import { Forbidden } from "../../../../forbiddenPage/forbiddenPage";
+import Cards from 'react-credit-cards'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 export default function InterestEnroll() {
     const router = useRouter();
@@ -45,7 +48,9 @@ export default function InterestEnroll() {
     const [courseData, setCourseData] = useState({})
     const [classData, setClassData] = useState({})
     const [valuesContract, setValuesContract] = useState([])
+    const [paymentsProfile, setPaymentsProfile] = useState([])
     const [paymentForm, setPaymentForm] = useState({})
+    const [newPaymentProfile, setNewPaymentProfile] = useState({})
     const [emailDigitalSignature, setEmailDigitalSignature] = useState({})
     const [updatedScreen, setUpdatedScreen] = useState(false)
     const [newResponsible, setNewResponsible] = useState(true)
@@ -53,11 +58,68 @@ export default function InterestEnroll() {
         porcent: true,
         real: false
     })
+    const [showPaymentPerfl, setShowPaymentPerfl] = useState({
+        newProfile: true,
+        registeredProfile: false
+    })
+    const [groupPayment, setGroupPayment] = useState([]);
     const [userIsOfLegalAge, setUserIsOfLegalAge] = useState(true)
     const [paying, setPaying] = useState({
         aluno: true,
         responsible: false
     })
+    const [messageEnrollment, setMessageEnrollment] = useState('Conferindo os dados...');
+    const [loadingEnrollment, setLoadingEnrollment] = useState(false);
+    const [enrollmentCompleted, setEnrollmentCompleted] = useState({ active: false, status: '' });
+    const [checkValidateScreen, setCheckValidateScreen] = useState([
+        { screen: 'first', check: true, alert: '' },
+        { screen: 'secondary', check: true, alert: '' },
+        { screen: 'thirdy', check: true, alert: '' },
+    ])
+
+
+    useEffect(() => {
+        let interval;
+
+        if (loadingEnrollment) {
+            const messages = [
+                'Conferindo os dados...',
+                'Validando cartão...',
+                'Gerando o contrato...',
+                'Efetivando a matrícula...',
+                'Concluído'
+            ];
+
+            let indice = 0;
+
+            interval = setInterval(() => {
+                setMessageEnrollment(messages[indice]);
+                indice++;
+
+                if (indice === messages.length) {
+                    clearInterval(interval);
+
+                    if (enrollmentCompleted?.status) {
+                        let message = enrollmentCompleted?.status === 201 ? 'Concluído' : 'Ocorreu um erro';
+                        setMessageEnrollment(message)
+                        setEnrollmentCompleted({ ...enrollmentCompleted, active: true });
+                    }
+
+                    setTimeout(() => {
+                        setLoadingEnrollment(false); // Defina loadingEnrollment como falso após um tempo
+                    }, 2000);
+                }
+            }, 3500);
+        }
+
+        return () => clearInterval(interval);
+    }, [loadingEnrollment, enrollmentCompleted]);
+
+
+
+
+
+
 
     const pushRouteScreen = (indice, route) => {
         setIndiceTela(indice)
@@ -176,6 +238,27 @@ export default function InterestEnroll() {
         }
     }
 
+    const handlePaymentsProfile = async () => {
+        try {
+            const response = await api.get(`/user/paymentProfile/${id}`)
+            const { data } = response
+            if (data?.length > 0) {
+                data?.sort((a, b) => new Date(b.dt_criacao) - new Date(a.dt_criacao));
+                const groupPaymentsPerfil = [
+                    ...data?.map(payment => ({
+                        label: `final - ${payment?.numero_cartao.split(' ')[3]}`,
+                        value: payment?.id_cartao_credito
+                    }))
+                ];
+                setShowPaymentPerfl({ newProfile: false, registeredProfile: true })
+                setGroupPayment(groupPaymentsPerfil)
+                setPaymentsProfile(data)
+            }
+        } catch (error) {
+            return error
+        }
+    }
+
     useEffect(() => {
         handleItems()
     }, [])
@@ -190,6 +273,7 @@ export default function InterestEnroll() {
                 await handleCourseData(interests?.curso_id)
                 await handleClassData(interests?.turma_id)
                 await handleResponsible()
+                await handlePaymentsProfile()
             }
         } catch (error) {
             console.log(error)
@@ -279,6 +363,34 @@ export default function InterestEnroll() {
         return true
     }
 
+
+
+    const checkValuesPaymentProfile = (payment) => {
+        const { numero_cartao, nome_cartao, dt_expiracao, cvc } = payment
+
+        if (!numero_cartao) {
+            alert?.error('O número do cartão é obrigatório')
+            return false
+        }
+
+        if (!nome_cartao) {
+            alert?.error('O nome do cartão é obrigatório')
+            return false
+        }
+
+        if (!dt_expiracao) {
+            alert?.error('O data de expiração é obrigatório')
+            return false
+        }
+
+        if (!cvc) {
+            alert?.error('O cvc é obrigatório')
+            return false
+        }
+
+        return true
+    }
+
     const handleCreateResponsible = async () => {
         if (checkValues(responsiblePayerData)) {
             setLoading(true)
@@ -331,6 +443,99 @@ export default function InterestEnroll() {
         }
     }
 
+    const handleCreatePaymentProfile = async () => {
+        if (checkValuesPaymentProfile(newPaymentProfile)) {
+            setLoading(true)
+            try {
+                const response = await api.post(`/user/paymentProfile/create/${id}`, { newPaymentProfile })
+                if (response?.status === 201) {
+                    alert.success('Cartão de crédito adicionado.')
+                    handlePaymentsProfile()
+                }
+            } catch (error) {
+                console.log(error)
+                return error
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    const checkEnrollmentData = (enrollmentData) => {
+        let paymentInvalid = enrollmentData?.filter(item => !item.pagamento)
+
+        if (paymentInvalid.length > 0) {
+            alert.info('A forma de pagamento precisa ser preenchida corretamente.')
+            return error
+        }
+
+        return true
+    }
+
+
+    const handleCreateEnrollStudent = async (enrollmentData, valuesContract) => {
+        if (checkEnrollmentData(enrollmentData)) {
+            let enrollment = {
+                usuario_id: id,
+                pendencia_aluno: null,
+                dt_inicio: formatDate(classData?.inicio),
+                dt_final: formatDate(classData?.fim),
+                status: 'Aguardando início',
+                turma_id: classData?.id_turma,
+                motivo_desistencia: null,
+                dt_desistencia: null,
+                certificado_emitido: 0,
+                desc_disp_disc: valuesContract?.descontoDispensadas || 0,
+                desc_adicional: valuesContract?.valorDescontoAdicional || 0,
+                desc_adicional_porc: valuesContract?.descontoAdicional || 0,
+                valor_tl_desc: (parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas)),
+                valor_matricula: valuesContract?.valueFinally || 0,
+                qnt_disci_disp: valuesContract?.qntDispensadas || 0
+            }
+
+            let paymentInstallmentsEnrollment = enrollmentData?.map((payment) => ({
+                pagante: responsiblePayerData ? responsiblePayerData?.nome_resp : userData?.nome,
+                aluno: userData?.nome,
+                vencimento: payment?.data_pagamento,
+                dt_pagamento: null,
+                valor_parcela: parseFloat(payment?.valor_parcela).toFixed(2),
+                parcela: payment?.n_parcela,
+                c_custo: `${classData?.nome_turma}-1SEM`,
+                forma_pagamento: payment?.tipo,
+                cartao_credito_id: payment?.pagamento,
+                conta: 'Melies - Bradesco',
+                obs_pagamento: null,
+                status_gateway: null,
+                status_parcela: 'Em aberto',
+                parc_protestada: 0,
+            }));
+
+            setLoadingEnrollment(true);
+            setTimeout(async () => {
+                console.log('enrollment', enrollment)
+                console.log('paymentInstallmentsEnrollment', paymentInstallmentsEnrollment)
+                try {
+                    // const response = await api.post(`/enrrolment/paymentProfile/create/${id}`, { enrollment, paymentInstallmentsEnrollment });
+                    // if (response?.status === 201) {
+                    //   alert.success('Matrícula efetivada.');
+                    //   router.push(`/administrative/users/${userId}`);
+                    // }
+                    let status = 201;
+                    if (status === 201) {
+                        setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
+                        return
+                    } else {
+                        setEnrollmentCompleted({ ...enrollmentCompleted, status: 500 });
+                    }
+                } catch (error) {
+                    console.log(error);
+                    return error;
+                }
+            }, 4500);
+        }
+    }
+
+
     const telas = [
         (
             <>
@@ -341,15 +546,15 @@ export default function InterestEnroll() {
                     userData={userData}
                     interestData={interestData}
                     setLoading={setLoading}
+                    setCheckValidateScreen={setCheckValidateScreen}
+                    pushRouteScreen={pushRouteScreen}
                 />
-                <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Button text="Continuar" onClick={() => pushRouteScreen(1, 'interesse > Forma de pagamento')} style={{ width: 120 }} />
-                </Box>
             </>
         ),
         (
             <>
                 <Payment
+                    setCheckValidateScreen={setCheckValidateScreen}
                     quantityDisciplinesSelected={quantityDisciplinesSelected}
                     quantityDisciplinesModule={quantityDisciplinesModule}
                     valuesCourse={valuesCourse}
@@ -371,16 +576,21 @@ export default function InterestEnroll() {
                     setNewResponsible={setNewResponsible}
                     typeDiscountAdditional={typeDiscountAdditional}
                     setTypeDiscountAdditional={setTypeDiscountAdditional}
+                    newPaymentProfile={newPaymentProfile}
+                    setNewPaymentProfile={setNewPaymentProfile}
+                    paymentsProfile={paymentsProfile}
+                    handleCreatePaymentProfile={handleCreatePaymentProfile}
+                    groupPayment={groupPayment}
+                    showPaymentPerfl={showPaymentPerfl}
+                    setShowPaymentPerfl={setShowPaymentPerfl}
+                    pushRouteScreen={pushRouteScreen}
                 />
-                <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Button secondary text="Voltar" onClick={() => pushRouteScreen(0, 'interesse >')} style={{ width: 120 }} />
-                    <Button text="Continuar" onClick={() => pushRouteScreen(2, 'interesse > Forma de pagamento > Contrato')} style={{ width: 120 }} />
-                </Box>
             </>
         ),
         (
             <>
                 <ContractStudent
+                    setCheckValidateScreen={setCheckValidateScreen}
                     paymentForm={paymentForm}
                     valuesContract={valuesContract}
                     courseData={courseData}
@@ -391,10 +601,10 @@ export default function InterestEnroll() {
                     setEmailDigitalSignature={setEmailDigitalSignature}
                     typeDiscountAdditional={typeDiscountAdditional}
                     setTypeDiscountAdditional={setTypeDiscountAdditional}
+                    groupPayment={groupPayment}
+                    handleCreateEnrollStudent={handleCreateEnrollStudent}
+                    pushRouteScreen={pushRouteScreen}
                 />
-                <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Button secondary text="Voltar" onClick={() => pushRouteScreen(1, 'interesse > Forma de pagamento')} style={{ width: 120 }} />
-                </Box>
             </>
         )
     ];
@@ -409,6 +619,16 @@ export default function InterestEnroll() {
                 />
 
                 {telas[indiceTela]}
+                <Backdrop sx={{ zIndex: 99999999, backgroundColor: '#0E0D15' }} open={loadingEnrollment}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column' }}>
+                        {enrollmentCompleted?.active ? (
+                            enrollmentCompleted.status === 201 ?
+                                <CheckCircleIcon style={{ color: 'green', fontSize: 30 }} /> :
+                                <CancelIcon style={{ color: 'red', fontSize: 30 }} />
+                        ) : <CircularProgress />}
+                        <Text bold style={{ color: '#fff' }}>{messageEnrollment}</Text>
+                    </Box>
+                </Backdrop>
             </>
             :
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
@@ -427,48 +647,54 @@ export const EnrollStudentDetails = (props) => {
         disciplines,
         setDisciplinesSelected,
         interestData,
+        pushRouteScreen
     } = props
 
     return (
-        <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
-            <ContentContainer fullWidth gap={4}>
-                <Text bold title>Interesse</Text>
-                <Box>
+        <>
+            <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
+                <ContentContainer fullWidth gap={4}>
+                    <Text bold title>Interesse</Text>
+                    <Box>
 
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
-                            <Text bold>Curso:</Text>
-                            <Text>{interestData?.nome_curso}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
-                            <Text bold>Turma:</Text>
-                            <Text>{interestData?.nome_turma}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
-                            <Text bold>Periodo:</Text>
-                            <Text>{interestData?.periodo_interesse}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
-                            <Text bold>Observação: </Text>
-                            <Text>{interestData?.observacao_int}</Text>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                                <Text bold>Curso:</Text>
+                                <Text>{interestData?.nome_curso}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                                <Text bold>Turma:</Text>
+                                <Text>{interestData?.nome_turma}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                                <Text bold>Periodo:</Text>
+                                <Text>{interestData?.periodo_interesse}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                                <Text bold>Observação: </Text>
+                                <Text>{interestData?.observacao_int}</Text>
+                            </Box>
                         </Box>
                     </Box>
-                </Box>
-            </ContentContainer>
+                </ContentContainer>
 
-            <ContentContainer fullWidth gap={4}>
-                <Text bold title>Disciplinas</Text>
-                <CheckBoxComponent
-                    padding={false}
-                    valueChecked={disciplinesSelected}
-                    boxGroup={disciplines}
-                    title="Selecione as disciplinas*"
-                    horizontal={false}
-                    onSelect={(value) => setDisciplinesSelected(value)}
-                    sx={{ flex: 1, }}
-                />
+                <ContentContainer fullWidth gap={4}>
+                    <Text bold title>Disciplinas</Text>
+                    <CheckBoxComponent
+                        padding={false}
+                        valueChecked={disciplinesSelected}
+                        boxGroup={disciplines}
+                        title="Selecione as disciplinas*"
+                        horizontal={false}
+                        onSelect={(value) => setDisciplinesSelected(value)}
+                        sx={{ flex: 1, }}
+                    />
+                </ContentContainer>
             </ContentContainer>
-        </ContentContainer>
+            <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Button text="Continuar" onClick={() => pushRouteScreen(1, 'interesse > Forma de pagamento')} style={{ width: 120 }} />
+            </Box>
+        </>
     )
 }
 
@@ -493,7 +719,15 @@ export const Payment = (props) => {
         setNewResponsible,
         handleDeleteResponsible,
         typeDiscountAdditional,
-        setTypeDiscountAdditional
+        setTypeDiscountAdditional,
+        newPaymentProfile,
+        setNewPaymentProfile,
+        paymentsProfile,
+        handleCreatePaymentProfile,
+        groupPayment,
+        showPaymentPerfl,
+        setShowPaymentPerfl,
+        pushRouteScreen
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -510,9 +744,10 @@ export const Payment = (props) => {
     const [globalTypePaymentsSelected, setGlobalTypePaymentsSelected] = useState('');
     const [aditionalDiscount, setAditionalDiscount] = useState({ desconto_adicional: '', desconto_formatado: '' })
     const { colorPalette, alert } = useAppContext()
+    const [focusedCreditCard, setFocusedCreditCard] = useState('');
+
 
     useEffect(() => {
-
         const disciplinesDispensed = quantityDisciplinesModule - quantityDisciplinesSelected;
         const porcentDisciplineDispensed = `${((disciplinesDispensed / quantityDisciplinesModule) * 100).toFixed(2)}%`;
 
@@ -525,8 +760,6 @@ export const Payment = (props) => {
         setDisciplineDispensedPorcent(porcentDisciplineDispensed)
         setDispensedDisciplines(disciplinesDispensed)
         setDiscountDispensed(calculationDiscount)
-
-
 
         setValuesContract({
             valorSemestre: valuesCourse?.valor_total_curso,
@@ -562,6 +795,7 @@ export const Payment = (props) => {
             for (let i = 0; i < numberOfInstallments; i++) {
                 const paymentDate = new Date();
                 const selectedDay = dayForPayment;
+                const typePayment = prevTypePaymentsSelected[i + 1]
                 let month = paymentDate.getMonth() + i;
                 let isSaturday = false; // Sabado
                 let isSunday = false; // Domingo
@@ -598,8 +832,13 @@ export const Payment = (props) => {
                 }
 
                 const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
+                let payments = paymentsProfile?.map(item => item)[0]
 
+                let paymentForm = (globalTypePaymentsSelected === 'Cartão' && payments?.id_cartao_credito) || (globalTypePaymentsSelected === 'pix' && 'Pix') || (globalTypePaymentsSelected === 'Boleto' && 'Boleto')
+                if (globalTypePaymentsSelected === 'Cartão' && paymentsProfile?.length <= 0) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
+                if (globalTypePaymentsSelected === 'Cartão' && paymentsProfile?.length > 0) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
                 updatedArray.push({
+                    pagamento: paymentForm,
                     tipo: globalTypePaymentsSelected,
                     valor_parcela: parcelValue,
                     data_pagamento: formattedPaymentDate,
@@ -613,14 +852,27 @@ export const Payment = (props) => {
     }, [numberOfInstallments, totalValueFinnaly, globalTypePaymentsSelected, dayForPayment])
 
 
-    const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate) => {
+    const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate, payment) => {
         setTypePaymentsSelected((prevTypePaymentsSelected) => {
+            let paymentForm = (value === 'Cartão' && '') || (value === 'Pix' && 'Pix') || (value === 'boleto' && 'Boleto')
             const updatedTypePaymentsSelected = [...prevTypePaymentsSelected];
             updatedTypePaymentsSelected[index] = {
+                pagamento: paymentForm,
                 tipo: value,
                 valor_parcela: valueParcel,
                 data_pagamento: formattedPaymentDate,
                 n_parcela: installmentNumber
+            };
+            return updatedTypePaymentsSelected;
+        });
+    };
+
+    const handlePaymentProfile = (index, value) => {
+        setTypePaymentsSelected((prevTypePaymentsSelected) => {
+            const updatedTypePaymentsSelected = [...prevTypePaymentsSelected];
+            updatedTypePaymentsSelected[index] = {
+                ...updatedTypePaymentsSelected[index],
+                pagamento: value,
             };
             return updatedTypePaymentsSelected;
         });
@@ -692,6 +944,42 @@ export const Payment = (props) => {
 
     }
 
+    const handleChangePerfilPayment = (event) => {
+        if (event.target.name === 'numero_cartao') {
+            const formattedNumber = formatCreditCardNumber(event.target.value);
+            event.target.value = formattedNumber;
+        }
+        if (event.target.name === 'dt_expiracao') {
+            let expiry = event.target.value;
+            const cleanExpiry = expiry.replace(/\D/g, '');
+            const formattedExpiry = cleanExpiry.replace(/(\d{2})(\d{2})/, '$1/$2');
+            event.target.value = formattedExpiry;
+        }
+
+        setNewPaymentProfile((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }));
+    }
+
+    const handleFocused = (event) => {
+        setFocusedCreditCard(event.target.name);
+    }
+
+    const checkEnrollmentData = (index, route) => {
+        let paymentInvalid = typePaymentsSelected?.filter(item => !item.pagamento)
+
+        if (paymentInvalid.length > 0) {
+            alert.info('A forma de pagamento precisa ser preenchida corretamente.')
+            return
+        }
+
+        pushRouteScreen(index, route)
+        return
+    }
+
+
+
     const handleCalculationDiscount = (action) => {
 
         if (typeDiscountAdditional.real) {
@@ -758,9 +1046,6 @@ export const Payment = (props) => {
         }
     };
 
-
-
-
     useEffect(() => {
         setValuesContract({
             valorSemestre: valuesCourse?.valor_total_curso,
@@ -786,7 +1071,7 @@ export const Payment = (props) => {
     const listPaymentType = [
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Cartão', value: 'Cartão' },
-        { label: 'pix', value: 'pix' },
+        { label: 'Pix', value: 'Pix' },
     ]
 
     const holidays = [
@@ -808,7 +1093,7 @@ export const Payment = (props) => {
         <>
             <ContentContainer style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
                 <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
-                    <ContentContainer fullWidth gap={4} >
+                    <ContentContainer fullWidth gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 40px' }}>
                         <Text bold title>Resumo da contratação</Text>
 
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -869,7 +1154,7 @@ export const Payment = (props) => {
                         </Box>
                     </ContentContainer>
 
-                    <ContentContainer fullWidth gap={3}>
+                    <ContentContainer fullWidth gap={3} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 40px' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Text bold title>Dados do pagante</Text>
                             <Box sx={{ display: 'flex' }}>
@@ -965,100 +1250,199 @@ export const Payment = (props) => {
 
                 </ContentContainer>
 
-                <ContentContainer fullWidth gap={4}>
-                    <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
-                        <Text bold title>Forma de pagamento</Text>
-                        <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
-                            <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallments || ''} onSelect={(value) => setNumberOfInstallments(value)}
-                                title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-                            <SelectList fullWidth data={listPaymentType} valueSelection={globalTypePaymentsSelected || ''} onSelect={(value) => setGlobalTypePaymentsSelected(value)}
-                                filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                title="Selecione a forma de pagamento *"
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                clean={false}
-                            />
+                <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', xm: 'column', md: 'column', lg: `column`, xl: 'row' } }}>
+
+                    <ContentContainer gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 30px' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, flexDirection: 'column' }}>
+                            <Text bold title>Perfil de pagamento</Text>
+                            <Box sx={{ display: 'flex' }}>
+                                <Button small secondary={showPaymentPerfl?.newProfile ? false : true} text="novo" onClick={() => setShowPaymentPerfl({
+                                    newProfile: true,
+                                    registeredProfile: false
+                                })} style={{ width: '90px', height: '30px', borderRadius: 0 }} />
+                                <Button secondary={showPaymentPerfl?.registeredProfile ? false : true} small text="cadastrados" onClick={() => setShowPaymentPerfl({
+                                    newProfile: false,
+                                    registeredProfile: true
+                                })} style={{ width: '90px', height: '30px', borderRadius: 0 }} />
+                            </Box>
                         </Box>
-                        <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
-                            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
-                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
-                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
-                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
-                                    </tr>
-                                </thead>
-                                <tbody style={{ flex: 1 }}>
-                                    {Array.from({ length: numberOfInstallments }, (_, index) => {
 
-                                        const installmentNumber = index + 1;
-                                        const paymentDate = new Date();
-                                        const selectedDay = dayForPayment;
-                                        let month = paymentDate.getMonth() + index;
-                                        let isSaturday = false; // Sabado
-                                        let isSunday = false; // Domingo
+                        {showPaymentPerfl?.newProfile ?
+                            (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Cards
+                                        cvc={newPaymentProfile?.cvc || ''}
+                                        expiry={newPaymentProfile?.dt_expiracao || ''}
+                                        focused={focusedCreditCard}
+                                        name={newPaymentProfile?.nome_cartao || ''}
+                                        number={newPaymentProfile?.numero_cartao || ''}
+                                    />
+                                    <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
+                                        <TextInput name='apelido_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.apelido_cartao || ''} label='Apelido' sx={{ flex: 1, }} />
+                                        <TextInput name='numero_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.numero_cartao || ''} label='Número *' sx={{ flex: 1, }} onFocus={handleFocused} />
+                                        <TextInput name='nome_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.nome_cartao || ''} label='Nome *' sx={{ flex: 1, }} onFocus={handleFocused} />
+                                        <Box sx={{ ...styles.inputSection }}>
+                                            <TextInput name='dt_expiracao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.dt_expiracao || ''} label='Validade *' sx={{ flex: 1, }} onFocus={handleFocused} />
+                                            <TextInput name='cvc' onChange={handleChangePerfilPayment} value={newPaymentProfile?.cvc || ''} label='CVC *' sx={{ flex: 1, }} onFocus={handleFocused} />
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'end', marginTop: 2 }}>
+                                        <Button small style={{ width: 100, height: 30 }} text="cadastrar" onClick={() => handleCreatePaymentProfile()} />
+                                    </Box>
+                                </Box>
 
-                                        paymentDate.setMonth(month);
+                            ) : (
+                                <Box sx={{ display: 'flex', flexDirection: { xs: 'row', xm: 'row', md: 'row', lg: `row`, xl: 'column' }, gap: 2, maxHeight: 400, overflow: 'auto' }}>
 
-                                        // Verifique se a data é maior que o último dia do mês
-                                        const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
-                                        if (selectedDay > lastDayOfMonth) {
-                                            paymentDate.setDate(lastDayOfMonth);
-                                        } else {
-                                            paymentDate.setDate(selectedDay);
-                                        }
-
-                                        if (paymentDate.getDay() === 6) {
-                                            isSaturday = true;
-                                            if (paymentDate.getDate() + 2 > lastDayOfMonth) {
-                                                paymentDate.setDate(paymentDate.getDate() - 1);
-                                            } else {
-                                                paymentDate.setDate(paymentDate.getDate() + 2);
-                                            }
-                                        }
-
-                                        if (paymentDate.getDay() === 0) {
-                                            isSunday = true;
-                                            if (paymentDate.getDate() + 1 > lastDayOfMonth) {
-                                                paymentDate.setDate(paymentDate.getDate() - 2);
-                                            } else {
-                                                paymentDate.setDate(paymentDate.getDate() + 1);
-                                            }
-                                        }
-
-                                        while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
-                                            paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
-                                        }
-
-                                        const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
-
-                                        return (
-                                            <tr key={installmentNumber}>
-                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                    {installmentNumber}</td>
-                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
-                                                    <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate)}
-                                                        filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                        clean={false}
+                                    {showPaymentPerfl?.registeredProfile && paymentsProfile.length > 0 ?
+                                        paymentsProfile?.map((item, index) => {
+                                            const createdAt = `Criado em ${formatTimeStamp(item?.dt_criacao, true)}`
+                                            return (
+                                                <Box key={index} sx={{
+                                                    display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 1.8, padding: '30px 40px', borderRadius: 3,
+                                                    transition: '0.3s',
+                                                    "&:hover": {
+                                                        backgroundColor: colorPalette.primary,
+                                                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                        transform: 'scale(0.9)',
+                                                    }
+                                                }}>
+                                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                        <Text bold>{item?.apelido_cartao}</Text>
+                                                        {index === 0 &&
+                                                            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+                                                                <CheckCircleIcon style={{ color: 'green', fontSize: 18 }} />
+                                                                <Text small style={{}}>padrão</Text>
+                                                            </Box>
+                                                        }
+                                                    </Box>
+                                                    <Cards
+                                                        cvc={item?.cvc || ''}
+                                                        expiry={item?.dt_expiracao || ''}
+                                                        name={item?.nome_cartao || ''}
+                                                        number={item?.numero_cartao || ''}
                                                     />
-                                                </td>
-                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                    {formatter.format(valueParcel)}</td>
-                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                    {formattedPaymentDate}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </Box>
-                </ContentContainer>
+                                                    <Text small light>{createdAt}</Text>
+                                                </Box>
+                                            )
+                                        })
+                                        :
+                                        <Text light small>Não existem perfís de pagamento cadastrados</Text>
+                                    }
+                                </Box>
+                            )}
+                    </ContentContainer>
+
+                    <ContentContainer fullWidth gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 40px' }}>
+                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                            <Text bold title>Forma de pagamento</Text>
+                            <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
+                                <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallments || ''} onSelect={(value) => setNumberOfInstallments(value)}
+                                    title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <SelectList fullWidth data={listPaymentType} valueSelection={globalTypePaymentsSelected || ''} onSelect={(value) => setGlobalTypePaymentsSelected(value)}
+                                    filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    title="Selecione a forma de pagamento *"
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    clean={false}
+                                />
+                            </Box>
+                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
+                                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style={{ flex: 1 }}>
+                                        {Array.from({ length: numberOfInstallments }, (_, index) => {
+
+                                            const installmentNumber = index + 1;
+                                            const paymentDate = new Date();
+                                            const selectedDay = dayForPayment;
+                                            let month = paymentDate.getMonth() + index;
+                                            let isSaturday = false; // Sabado
+                                            let isSunday = false; // Domingo
+
+                                            paymentDate.setMonth(month);
+
+                                            // Verifique se a data é maior que o último dia do mês
+                                            const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
+                                            if (selectedDay > lastDayOfMonth) {
+                                                paymentDate.setDate(lastDayOfMonth);
+                                            } else {
+                                                paymentDate.setDate(selectedDay);
+                                            }
+
+                                            if (paymentDate.getDay() === 6) {
+                                                isSaturday = true;
+                                                if (paymentDate.getDate() + 2 > lastDayOfMonth) {
+                                                    paymentDate.setDate(paymentDate.getDate() - 1);
+                                                } else {
+                                                    paymentDate.setDate(paymentDate.getDate() + 2);
+                                                }
+                                            }
+
+                                            if (paymentDate.getDay() === 0) {
+                                                isSunday = true;
+                                                if (paymentDate.getDate() + 1 > lastDayOfMonth) {
+                                                    paymentDate.setDate(paymentDate.getDate() - 2);
+                                                } else {
+                                                    paymentDate.setDate(paymentDate.getDate() + 1);
+                                                }
+                                            }
+
+                                            while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
+                                                paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
+                                            }
+
+                                            const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
+
+                                            return (
+                                                <tr key={installmentNumber}>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {installmentNumber}</td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
+                                                        <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate,)}
+                                                            filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                            clean={false}
+                                                        />
+                                                    </td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
+                                                        {typePaymentsSelected[index]?.tipo === 'Cartão' ? <SelectList fullWidth data={groupPayment} valueSelection={typePaymentsSelected[index]?.pagamento || ''} onSelect={(value) => handlePaymentProfile(index, value)}
+                                                            filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                            clean={false}
+                                                        />
+                                                            :
+                                                            typePaymentsSelected[index]?.tipo}
+                                                    </td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {formatter.format(valueParcel)}</td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {formattedPaymentDate}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Box>
+                    </ContentContainer>
+                </Box>
 
             </ContentContainer>
+            <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Button secondary text="Voltar" onClick={() => pushRouteScreen(0, 'interesse >')} style={{ width: 120 }} />
+                <Button text="Continuar" onClick={() => checkEnrollmentData(2, 'interesse > Forma de pagamento > Contrato')} style={{ width: 120 }} />
+            </Box>
         </>
     )
 
@@ -1076,7 +1460,10 @@ export const ContractStudent = (props) => {
         emailDigitalSignature,
         setEmailDigitalSignature,
         typeDiscountAdditional,
-        setTypeDiscountAdditional
+        setTypeDiscountAdditional,
+        groupPayment,
+        handleCreateEnrollStudent,
+        pushRouteScreen
     } = props
 
 
@@ -1114,11 +1501,11 @@ export const ContractStudent = (props) => {
 
         const updatedPaymentForm = paymentForm.map((payment) => ({
             ...payment,
+            pagamento: payment?.pagamento || payment?.tipo,
             valor_parcela: parseFloat(payment?.valor_parcela).toFixed(2)
         }));
 
         setPaymentData(updatedPaymentForm)
-
     }, [])
 
 
@@ -1238,18 +1625,23 @@ export const ContractStudent = (props) => {
                                 <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
                                     <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
                                     <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
+                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
                                     <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
                                     <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
                                 </tr>
                             </thead>
                             <tbody style={{ flex: 1 }}>
                                 {paymentData?.map((pay, index) => {
+                                    const payment = pay?.pagamento > 0 ? groupPayment?.filter(item => item.value === pay?.pagamento).map(item => item.label) : pay?.pagamento
                                     return (
                                         <tr key={`${pay}-${index}`}>
                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                 {pay?.n_parcela}</td>
                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                 {pay?.tipo}
+                                            </td>
+                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                {payment}
                                             </td>
                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                 {formatter.format(pay?.valor_parcela)}</td>
@@ -1276,6 +1668,12 @@ export const ContractStudent = (props) => {
                     <Button small text="enviar" onClick={() => alert.success('Contrato enviado por e-mail para assinatura digital.')} style={{ width: '90px', height: '30px' }} />
                 </Box>
             </ContentContainer>
+            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start' }}>
+                <Button text="efetivar matrícula" onClick={() => handleCreateEnrollStudent(paymentData, valuesContract)} style={{ width: '200px', height: '35px' }} />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Button secondary text="Voltar" onClick={() => pushRouteScreen(1, 'interesse > Forma de pagamento')} style={{ width: 120 }} />
+            </Box>
         </>
     )
 
