@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/system"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../../atoms"
+import { Box, ContentContainer, Text } from "../../../atoms"
 import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
 import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
@@ -9,6 +9,7 @@ import { getDisciplines, getdisciplines, getUsersPerfil } from "../../../validat
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
+import TablePagination from '@mui/material/TablePagination'
 
 export default function ListDiscipline(props) {
     const [disciplineList, setDiscipline] = useState([])
@@ -20,6 +21,8 @@ export default function ListDiscipline(props) {
         filterName: 'nome_disciplina',
         filterOrder: 'asc'
     })
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
@@ -34,6 +37,20 @@ export default function ListDiscipline(props) {
             return normalizeString(item?.ativo) === filterAtive && (normalizeString(item?.nome_disciplina)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()));
         }
     };
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+
 
     useEffect(() => {
         getDiscipline();
@@ -55,7 +72,7 @@ export default function ListDiscipline(props) {
 
     const sortDiscipline = () => {
         const { filterName, filterOrder } = filters;
-    
+
         const sortedDiscipline = [...disciplineList].sort((a, b) => {
             const valueA = filterName === 'id_disciplina' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
             const valueB = filterName === 'id_disciplina' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
@@ -63,10 +80,10 @@ export default function ListDiscipline(props) {
             if (filterName === 'id_disciplina') {
                 return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
             }
-    
+
             return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
         });
-    
+
         return sortedDiscipline;
     }
 
@@ -85,7 +102,7 @@ export default function ListDiscipline(props) {
 
     const column = [
         { key: 'id_disciplina', label: 'ID' },
-        { key: 'nome_disciplina', avatar: true, label: 'Nome' },
+        { key: 'nome_disciplina', label: 'Nome' },
         { key: 'carga_hr_dp', label: 'Carga Horária' },
         { key: 'objetivo_dp', label: 'Objetivo' },
         { key: 'dt_criacao', label: 'Criado em', date: true },
@@ -112,22 +129,47 @@ export default function ListDiscipline(props) {
                 newButton
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
-            <Text bold>Buscar por: </Text>
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <SearchBar placeholder='Artes visuais, Desenvolvimento de Games ...' style={{ padding: '15px', }} onChange={setFilterData} />
-                <SelectList
-                    data={listAtivo}
-                    valueSelection={filterAtive}
-                    onSelect={(value) => setFilterAtive(value)}
-                    title="status"
-                    filterOpition="value"
-                    sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, flex: 1 }}
-                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                    clean={false}
-                />
-            </Box>
+            <ContentContainer>
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
+                    <Text bold large>Filtros</Text>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{disciplineList.filter(filter)?.length || '0'}</Text>
+                        <Text style={{ color: '#d6d6d6' }} light>de</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{disciplineList?.length || 10}</Text>
+                        <Text style={{ color: '#d6d6d6' }} light>chamados</Text>
+                    </Box>
+                </Box>
+                <SearchBar placeholder='Artes visuais, Desenvolvimento de Games ...' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
+                        <SelectList
+                            data={listAtivo}
+                            valueSelection={filterAtive}
+                            onSelect={(value) => setFilterAtive(value)}
+                            title="status"
+                            filterOpition="value"
+                            sx={{ flex: 1 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                            clean={false}
+                        />
+                    </Box>
+                    <TablePagination
+                        component="div"
+                        count={sortDiscipline()?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
+                    />
+                </Box>
+            </ContentContainer>
+
             {disciplineList.length > 0 ?
-                <Table_V1 data={sortDiscipline()?.filter(filter)} columns={column} columnId={'id_disciplina'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
+                <Table_V1 data={sortDiscipline()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_disciplina'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar disciplinas cadastradas</Text>
