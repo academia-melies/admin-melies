@@ -31,7 +31,8 @@ export const CustomDropzone = (props) => {
         servicoId,
         screen,
         contract = false,
-        taskId = null
+        taskId = null,
+        matricula_id
     } = props;
 
     const onDropFiles = async (files) => {
@@ -68,7 +69,7 @@ export const CustomDropzone = (props) => {
             try {
                 const response = await uploadFile({
                     formData, usuario_id, campo, tipo: typeOpition ? typeFile : tipo, images, tela,
-                    contract, servicoId, screen, taskId
+                    contract, servicoId, screen, taskId, matricula_id
                 });
                 const { data = {}, status } = response;
                 const { fileId } = data
@@ -135,38 +136,41 @@ export const CustomDropzone = (props) => {
                         <ContentContainer>
                             <Text bold>Preview</Text>
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-                                {filesDrop?.map((file, index) => (
-                                    <Box key={`${file}-${index}`} sx={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}>
-                                        <Box key={`${file}-${index}`}
-                                            sx={{
-                                                backgroundImage: `url('${file?.preview}')`,
-                                                backgroundSize: campo === 'foto_perfil' ? 'cover' : 'contain',
-                                                backgroundRepeat: 'no-repeat',
-                                                backgroundPosition: 'center center',
-                                                borderRadius: campo === 'foto_perfil' ? '50%' : '',
-                                                width: { xs: '100%', sm: 150, md: 150, lg: 150 },
-                                                aspectRatio: '1/1',
-                                            }}>
+                                {filesDrop?.map((file, index) => {
+                                    const typePdf = file?.name?.includes('pdf') || null;
+                                    return (
+                                        <Box key={`${file}-${index}`} sx={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}>
+                                            <Box key={`${file}-${index}`}
+                                                sx={{
+                                                    backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png': file?.preview}')`,
+                                                    backgroundSize: campo === 'foto_perfil' ? 'cover' : 'contain',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'center center',
+                                                    borderRadius: campo === 'foto_perfil' ? '50%' : '',
+                                                    width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                                                    aspectRatio: '1/1',
+                                                }}>
+                                            </Box>
+                                            <Box sx={{
+                                                backgroundSize: "cover",
+                                                backgroundRepeat: "no-repeat",
+                                                backgroundPosition: "center",
+                                                width: 20,
+                                                height: 20,
+                                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                                position: 'absolute',
+                                                top: -5,
+                                                right: -5,
+                                                transition: ".3s",
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: "pointer",
+                                                },
+                                            }} onClick={() => handleRemoveFile(file)} />
                                         </Box>
-                                        <Box sx={{
-                                            backgroundSize: "cover",
-                                            backgroundRepeat: "no-repeat",
-                                            backgroundPosition: "center",
-                                            width: 20,
-                                            height: 20,
-                                            backgroundImage: `url(/icons/remove_icon.png)`,
-                                            position: 'absolute',
-                                            top: -5,
-                                            right: -5,
-                                            transition: ".3s",
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: "pointer",
-                                            },
-                                        }} onClick={() => handleRemoveFile(file)} />
-                                    </Box>
 
-                                ))}
+                                    )
+                                })}
                             </Box>
                         </ContentContainer>
                         {typeOpition && <Box>

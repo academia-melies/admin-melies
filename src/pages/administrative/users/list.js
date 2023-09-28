@@ -1,10 +1,11 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../../atoms"
+import { Box, ContentContainer, Text } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { TablePagination } from "@mui/material"
 
 export default function ListUsers(props) {
     const [usersList, setUsers] = useState([])
@@ -18,21 +19,23 @@ export default function ListUsers(props) {
         filterName: 'nome',
         filterOrder: 'asc'
     })
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         const normalizeString = (str) => {
             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         };
-    
+
         const normalizedFilterData = normalizeString(filterData);
-        
+
         if (filterAtive === 'todos') {
-            return normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) || 
-                   normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase());
+            return normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
+                normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase());
         } else {
             return item?.ativo === filterAtive && (
-                normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) || 
+                normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
                 normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
             );
         }
@@ -74,7 +77,7 @@ export default function ListUsers(props) {
 
     const sortUsers = () => {
         const { filterName, filterOrder } = filters;
-    
+
         const sortedUsers = [...usersList].sort((a, b) => {
             const valueA = filterName === 'id' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
             const valueB = filterName === 'id' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
@@ -82,12 +85,24 @@ export default function ListUsers(props) {
             if (filterName === 'id') {
                 return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
             }
-    
+
             return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
         });
-    
+
         return sortedUsers;
     }
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
 
     const column = [
         { key: 'id', label: 'ID' },
@@ -129,52 +144,73 @@ export default function ListUsers(props) {
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             {/* <Text bold>Buscar por: </Text> */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <Box sx={{ display: 'flex', flex: 1 }}>
-                    <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ padding: '15px', }} onChange={setFilterData} />
+            <ContentContainer>
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
+                    <Text bold large>Filtros</Text>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{usersList.filter(filter)?.length || '0'}</Text>
+                        <Text style={{ color: '#d6d6d6' }} light>de</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{usersList?.length || 10}</Text>
+                        <Text style={{ color: '#d6d6d6' }} light>chamados</Text>
+                    </Box>
                 </Box>
-                <Box sx={{ display: 'flex', flex: 1, flexDirection: 'row', gap: 1 }}>
-                    <SelectList
-                        fullWidth
-                        data={listUser}
-                        valueSelection={perfil}
-                        onSelect={(value) => setPerfil(value)}
-                        title="usuário"
-                        filterOpition="value"
-                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                        clean={false}
-                    />
+                <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
+                        <SelectList
+                            data={listUser}
+                            valueSelection={perfil}
+                            onSelect={(value) => setPerfil(value)}
+                            title="usuário"
+                            filterOpition="value"
+                            sx={{ flex: 1 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                            clean={false}
+                        />
 
-                    <SelectList
-                        data={listAtivo}
-                        valueSelection={filterAtive}
-                        onSelect={(value) => setFilterAtive(value)}
-                        title="status"
-                        filterOpition="value"
-                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                        clean={false}
-                    />
-                    <SelectList
-                        fullWidth
-                        data={listEnrollStatus}
-                        valueSelection={filterEnrollStatus}
-                        onSelect={(value) => setFilterEnrollStatus(value)}
-                        title="situação/matrícula"
-                        filterOpition="value"
-                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                        clean={false}
+                        <SelectList
+                            data={listAtivo}
+                            valueSelection={filterAtive}
+                            onSelect={(value) => setFilterAtive(value)}
+                            title="status"
+                            filterOpition="value"
+                            sx={{ flex: 1}}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                            clean={false}
+                        />
+                        <SelectList
+                            
+                            data={listEnrollStatus}
+                            valueSelection={filterEnrollStatus}
+                            onSelect={(value) => setFilterEnrollStatus(value)}
+                            title="situação/matrícula"
+                            filterOpition="value"
+                            sx={{ flex: 1}}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                            clean={false}
+                        />
+                    </Box>
+                    <TablePagination
+                        component="div"
+                        count={sortUsers()?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
                     />
                 </Box>
-            </Box>
-            {usersList.length > 0 ?
-                <Table_V1 data={sortUsers()?.filter(filter)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
-                :
-                <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
-                    <Text bold>Não foi encontrado usuarios {perfil}</Text>
-                </Box>
+            </ContentContainer>
+            {
+                usersList.length > 0 ?
+                    <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
+                    :
+                    <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
+                        <Text bold>Não foi encontrado usuarios {perfil}</Text>
+                    </Box>
             }
         </>
     )

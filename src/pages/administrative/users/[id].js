@@ -123,6 +123,7 @@ export default function EditUser() {
     const [interestSelected, setInterestSelected] = useState({})
     const [testSelectiveProcess, setTestSelectiveProcess] = useState('')
     const [filesUser, setFilesUser] = useState([])
+    const [contractStudent, setContractStudent] = useState([])
     const [officeHours, setOfficeHours] = useState([
         { dia_semana: '2ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
         { dia_semana: '3ª Feira', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
@@ -277,6 +278,22 @@ export default function EditUser() {
             const response = await api.get(`/files/${id}`)
             const { data } = response
             setFilesUser(data)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const getContractStudent = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/student/enrollment/contracts/${id}`)
+            const { data } = response
+            if (data.length > 0) {
+                setContractStudent(data)
+            }
         } catch (error) {
             console.log(error)
         } finally {
@@ -495,6 +512,7 @@ export default function EditUser() {
             getHistoric()
             getPhoto()
             getFileUser()
+            getContractStudent()
             getOfficeHours()
             getPermissionUser()
             getDependent()
@@ -1201,6 +1219,7 @@ export default function EditUser() {
 
     const groupSituation = [
         { label: 'Aguardando início', value: 'Aguardando início' },
+        { label: 'Pendente de assinatura do contrato', value: 'Pendente de assinatura do contrato' },
         { label: 'Em andamento', value: 'Em andamento' },
         { label: 'Concluído', value: 'Concluído' },
         { label: 'Turma cancelada', value: 'Turma cancelada' },
@@ -1978,6 +1997,9 @@ export default function EditUser() {
                                     const className = classes?.filter(turma => turma.value === item?.turma_id).map(name => name.label);
                                     const startDate = formatDate(item.dt_inicio)
                                     const title = `${className} - ${startDate}`
+                                    const enrollmentId = item?.id_matricula;
+                                    const files = contractStudent?.filter((file) => file?.matricula_id === enrollmentId);
+                                    const bgImagePdf = files?.name_file?.includes('pdf') ? '/icons/pdf_icon.png' : files?.location
                                     return (
 
                                         <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -1987,7 +2009,7 @@ export default function EditUser() {
                                                     alignItems: 'center',
                                                     justifyContent: 'space-between',
                                                     gap: 4,
-                                                    width: 200,
+                                                    width: 260,
                                                     "&:hover": {
                                                         opacity: 0.8,
                                                         cursor: 'pointer'
@@ -2052,7 +2074,7 @@ export default function EditUser() {
                                                                 }
                                                             }} />
                                                             <EditFile
-                                                                columnId="id_doc_usuario"
+                                                                columnId="id_contrato_aluno"
                                                                 open={showEditFile.contractStudent}
                                                                 newUser={newUser}
                                                                 onSet={(set) => {
@@ -2061,10 +2083,10 @@ export default function EditUser() {
                                                                 title='Contrato do aluno'
                                                                 text='Faça o upload do contrato do aluno, depois clique em salvar.'
                                                                 textDropzone='Arraste ou clique para selecionar a foto/arquivo que deseja'
-                                                                fileData={filesUser?.filter((file) => file.campo === 'contrato aluno')}
+                                                                fileData={contractStudent?.filter((file) => file?.matricula_id === enrollmentId)}
                                                                 usuarioId={id}
-                                                                campo='contrato aluno'
-                                                                tipo='documento usuario'
+                                                                matriculaId={enrollmentId}
+                                                                bgImage={bgImagePdf}
                                                                 callback={(file) => {
                                                                     if (file.status === 201 || file.status === 200) {
                                                                         handleItems()
@@ -2433,10 +2455,10 @@ export default function EditUser() {
                                         }} onClick={() => setShowSections({ ...showSections, addInterest: false })} />
                                     </Box>
                                     <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) =>{
-                                             handleChangeInterest(value, 'curso_id')
-                                             listClassesInterest(value)
-                                            }}
+                                        <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => {
+                                            handleChangeInterest(value, 'curso_id')
+                                            listClassesInterest(value)
+                                        }}
                                             title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
@@ -2716,14 +2738,15 @@ export const EditFile = (props) => {
         usuarioId,
         newUser,
         fileData = [],
-        columnId = ''
+        columnId = '',
+        matriculaId
     } = props
 
     const { alert, setLoading, matches } = useAppContext()
 
     const handleDeleteFile = async (files) => {
         setLoading(true)
-        const response = await deleteFile({ fileId: files?.[columnId], usuario_id: usuarioId, campo: files.campo, key: files?.key_file })
+        const response = await deleteFile({ fileId: files?.[columnId], usuario_id: usuarioId, campo: files.campo, key: files?.key_file, matriculaId })
         const { status } = response
         let file = {
             status
@@ -2770,7 +2793,7 @@ export const EditFile = (props) => {
                         txt={textDropzone}
                         bgImage={bgImage}
                         bgImageStyle={{
-                            backgroundImage: `url('${bgImage}')`,
+                            backgroundImage: `url(${bgImage})`,
                             backgroundSize: campo === 'foto_perfil' ? 'cover' : 'contain',
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'center center',
@@ -2786,6 +2809,7 @@ export const EditFile = (props) => {
                         usuario_id={usuarioId}
                         campo={campo}
                         tipo={tipo}
+                        matricula_id={matriculaId}
                     />
 
                 </Box>

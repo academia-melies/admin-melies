@@ -80,8 +80,6 @@ export default function InterestEnroll() {
     ])
     const [formData, setFormData] = useState()
 
-    console.log(formData)
-
     useEffect(() => {
         let interval;
 
@@ -481,14 +479,13 @@ export default function InterestEnroll() {
 
 
     const handleCreateEnrollStudent = async (enrollment, valuesContract) => {
-        console.log(valuesContract)
         if (checkEnrollmentData(enrollment)) {
             let enrollmentData = {
                 usuario_id: id,
                 pendencia_aluno: null,
                 dt_inicio: new Date(classData?.inicio),
                 dt_final: new Date(classData?.fim),
-                status: 'Pendente de assinatura',
+                status: 'Pendente de assinatura do contrato',
                 turma_id: classData?.id_turma,
                 motivo_desistencia: null,
                 dt_desistencia: null,
@@ -524,8 +521,17 @@ export default function InterestEnroll() {
             setLoadingEnrollment(true);
             setTimeout(async () => {
                 try {
+
+                    // let query = `?usuario_id=${id}`;
+                    // query += `&status_assinaturas=Pendente de assinatura`;
+                    // query += `&modulo=1`;
+                    // const file = await api.post(`/student/enrrolments/contract/upload${query}`, { formData })
+                    // console.log('file', file)
+                    // let fileUploadResponse = file?.data || null;
+                    // const response = await api.post(`/student/enrrolments/create/${id}`, { enrollmentData, paymentInstallmentsEnrollment, fileId: fileUploadResponse });
+
                     const response = await api.post(`/student/enrrolments/create/${id}`, { enrollmentData, paymentInstallmentsEnrollment });
-                    console.log(response)
+
                     if (response?.status === 201) {
                         setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
                     } else {
@@ -1497,30 +1503,42 @@ export const ContractStudent = (props) => {
         handleUserData()
     }, [])
 
+
+    const handleSubmitEnrollment = async () => {
+        setLoading(true)
+        try {
+            handleGeneratePdf()
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleGeneratePdf = useReactToPrint({
         content: () => contractService.current,
-        documentTitle: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS',
+        documentTitle: `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - ${userData?.nome}`,
         onAfterPrint: () => {
-            // Captura o conteúdo e converte em uma imagem
             html2canvas(contractService.current).then(canvas => {
-                setLoading(true)
                 const imgData = canvas.toDataURL('image/png');
 
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // 210x297 mm (A4)
 
-                const pdfData = pdf.output('blob'); // Alterado de 'datauristring' para 'blob'
+                const pdfData = pdf.output('blob');
                 const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
 
-                // Cria um novo FormData e adiciona o Blob
                 const formData = new FormData();
-                formData.append('file', pdfBlob, 'contrato.pdf');
+                formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
 
                 setFormData(formData);
-                alert.info('Contrato gerado.');
+                handleCreateEnrollStudent(paymentData, valuesContract);
+
+                return true
             });
         }
     });
+
 
 
     useEffect(() => {
@@ -1690,7 +1708,7 @@ export const ContractStudent = (props) => {
                 </Box>
             </ContentContainer>
             <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start' }}>
-                <Button text="efetivar matrícula" onClick={() => handleCreateEnrollStudent(paymentData, valuesContract)} style={{ width: '200px', height: '35px' }} />
+                <Button text="efetivar matrícula" onClick={() => handleSubmitEnrollment(paymentData, valuesContract)} style={{ width: '200px', height: '35px' }} />
             </Box>
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Button secondary text="Voltar" onClick={() => pushRouteScreen(1, 'interesse > Forma de pagamento')} style={{ width: 120 }} />
