@@ -26,9 +26,12 @@ export const ContractStudentComponent = (props) => {
 
 
     return (
-        <ContentContainer>
+
+        <ContentContainer gap={6} style={{ boxShadow: 'none', backgroundColor: 'none', marginTop: 5 }}>
             <div ref={contractService} style={{ padding: '0px 40px' }}>
-                <ContentContainer gap={6} style={{ boxShadow: 'none', backgroundColor: 'none', marginTop: 5 }}>
+                <Box sx={{ display: 'flex', gap: 6, marginTop: 5, flexDirection: 'column', backgroundColor: '#fff'}}>
+
+
                     <Text bold title>CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</Text>
                     <Box>
                         <TextInput label="Nome completo:" data={userData?.nome} />
@@ -102,7 +105,7 @@ export const ContractStudentComponent = (props) => {
                         </Box>
                     </Box>
 
-                    <Box>
+                    <Box sx={{ flex: 1 }}>
                         {children}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '30px 0px 20px 0px', gap: 6 }}>
@@ -192,10 +195,8 @@ export const ContractStudentComponent = (props) => {
                     </ParagraphContainer>
 
                     <Text>São Paulo, {formattedDate}</Text>
-
-                </ContentContainer >
+                </Box>
             </div>
-            <Button text="gerar contrato" onClick={handleGeneratePdf} style={{ width: 180 }} />
         </ContentContainer >
     )
 }

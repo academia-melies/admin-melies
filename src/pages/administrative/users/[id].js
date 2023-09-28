@@ -69,6 +69,7 @@ export default function EditUser() {
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
+    const [classesEnrollment, setClassesEnrollment] = useState([])
     const [period, setPeriod] = useState([])
     const [periodSelected, setPeriodSelected] = useState([])
     const [classesInterest, setClassesInterest] = useState([])
@@ -145,7 +146,8 @@ export default function EditUser() {
 
     useEffect(() => {
         listClass()
-    }, [enrollmentData?.curso_id, interests.curso_id, interestSelected.curso_id])
+    }, [enrollmentData?.curso_id, interests.curso_id, interestSelected?.curso_id])
+
 
     const getUserData = async () => {
         try {
@@ -389,10 +391,9 @@ export default function EditUser() {
 
     async function listClass() {
 
-        let id_course = enrollmentData?.curso_id || interests.curso_id;
-
         try {
-            const response = await api.get(`/class/course/${id_course}`)
+            const response = await api.get(`/classes`)
+
             const { data = [] } = response
             const groupClass = data.map(turma => ({
                 label: turma.nome_turma,
@@ -410,6 +411,8 @@ export default function EditUser() {
             return error
         }
     }
+
+
 
     async function listClassesInterest(id_course) {
 
@@ -486,7 +489,7 @@ export default function EditUser() {
         setLoading(true)
         try {
             await getUserData()
-            getEnrollment()
+            await getEnrollment()
             getContract()
             getInterest()
             getHistoric()
@@ -496,6 +499,7 @@ export default function EditUser() {
             getPermissionUser()
             getDependent()
             getDisciplineProfessor()
+            await listClass()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -1971,7 +1975,7 @@ export default function EditUser() {
 
                             {enrollmentData ?
                                 enrollmentData?.map((item, index) => {
-                                    const className = classesInterest?.filter(turma => turma.value === item?.turma_id).map(name => name.label);
+                                    const className = classes?.filter(turma => turma.value === item?.turma_id).map(name => name.label);
                                     const startDate = formatDate(item.dt_inicio)
                                     const title = `${className} - ${startDate}`
                                     return (
@@ -1981,7 +1985,9 @@ export default function EditUser() {
                                                 sx={{
                                                     display: 'flex',
                                                     alignItems: 'center',
+                                                    justifyContent: 'space-between',
                                                     gap: 4,
+                                                    width: 200,
                                                     "&:hover": {
                                                         opacity: 0.8,
                                                         cursor: 'pointer'
@@ -2005,7 +2011,7 @@ export default function EditUser() {
                                                 <ContentContainer>
 
                                                     <Box sx={styles.inputSection}>
-                                                        <SelectList fullWidth data={classesInterest} valueSelection={item?.turma_id} clean={false}
+                                                        <SelectList fullWidth data={classes} valueSelection={item?.turma_id} clean={false}
                                                             title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                         />
@@ -2130,7 +2136,7 @@ export default function EditUser() {
                                                         title="Certificado emitido:"
                                                         horizontal={mobile ? false : true}
                                                     />
-                                                    <Button secondary small text="editar matrícula" style={{}} onClick={() => {
+                                                    <Button secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
                                                         setEnrollmentStudentEditId(item?.id_matricula)
                                                         handleEnrollStudentById(item?.id_matricula)
                                                         setShowSections({ ...showSections, editEnroll: true })
@@ -2427,11 +2433,14 @@ export default function EditUser() {
                                         }} onClick={() => setShowSections({ ...showSections, addInterest: false })} />
                                     </Box>
                                     <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => handleChangeInterest(value, 'curso_id')}
+                                        <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) =>{
+                                             handleChangeInterest(value, 'curso_id')
+                                             listClassesInterest(value)
+                                            }}
                                             title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <SelectList fullWidth data={classes} valueSelection={interests?.turma_id} onSelect={(value) => handleChangeInterest(value, 'turma_id')}
+                                        <SelectList fullWidth data={classesInterest} valueSelection={interests?.turma_id} onSelect={(value) => handleChangeInterest(value, 'turma_id')}
                                             title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />

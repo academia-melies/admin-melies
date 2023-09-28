@@ -12,6 +12,8 @@ import { Forbidden } from "../../../../forbiddenPage/forbiddenPage";
 import Cards from 'react-credit-cards'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function InterestEnroll() {
     const router = useRouter();
@@ -76,7 +78,9 @@ export default function InterestEnroll() {
         { screen: 'secondary', check: true, alert: '' },
         { screen: 'thirdy', check: true, alert: '' },
     ])
+    const [formData, setFormData] = useState()
 
+    console.log(formData)
 
     useEffect(() => {
         let interval;
@@ -107,6 +111,9 @@ export default function InterestEnroll() {
 
                     setTimeout(() => {
                         setLoadingEnrollment(false); // Defina loadingEnrollment como falso após um tempo
+                        if (enrollmentCompleted?.status === 201) {
+                            router.push(`/administrative/users/${id}`);
+                        }
                     }, 2000);
                 }
             }, 3500);
@@ -473,14 +480,15 @@ export default function InterestEnroll() {
     }
 
 
-    const handleCreateEnrollStudent = async (enrollmentData, valuesContract) => {
-        if (checkEnrollmentData(enrollmentData)) {
-            let enrollment = {
+    const handleCreateEnrollStudent = async (enrollment, valuesContract) => {
+        console.log(valuesContract)
+        if (checkEnrollmentData(enrollment)) {
+            let enrollmentData = {
                 usuario_id: id,
                 pendencia_aluno: null,
-                dt_inicio: formatDate(classData?.inicio),
-                dt_final: formatDate(classData?.fim),
-                status: 'Aguardando início',
+                dt_inicio: new Date(classData?.inicio),
+                dt_final: new Date(classData?.fim),
+                status: 'Pendente de assinatura',
                 turma_id: classData?.id_turma,
                 motivo_desistencia: null,
                 dt_desistencia: null,
@@ -488,42 +496,38 @@ export default function InterestEnroll() {
                 desc_disp_disc: valuesContract?.descontoDispensadas || 0,
                 desc_adicional: valuesContract?.valorDescontoAdicional || 0,
                 desc_adicional_porc: valuesContract?.descontoAdicional || 0,
-                valor_tl_desc: (parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas)),
-                valor_matricula: valuesContract?.valueFinally || 0,
-                qnt_disci_disp: valuesContract?.qntDispensadas || 0
+                valor_tl_desc: (parseFloat(valuesContract?.valorDescontoAdicional || 0) + parseFloat(valuesContract?.descontoDispensadas)),
+                valor_matricula: valuesContract?.valorFinal || 0,
+                qnt_disci_disp: valuesContract?.qntDispensadas || 0,
+                usuario_resp: userId
             }
 
-            let paymentInstallmentsEnrollment = enrollmentData?.map((payment) => ({
+            let paymentInstallmentsEnrollment = enrollment?.map((payment) => ({
+                usuario_id: id,
                 pagante: responsiblePayerData ? responsiblePayerData?.nome_resp : userData?.nome,
                 aluno: userData?.nome,
-                vencimento: payment?.data_pagamento,
+                vencimento: new Date(payment?.data_pagamento),
                 dt_pagamento: null,
                 valor_parcela: parseFloat(payment?.valor_parcela).toFixed(2),
-                parcela: payment?.n_parcela,
+                n_parcela: payment?.n_parcela,
                 c_custo: `${classData?.nome_turma}-1SEM`,
                 forma_pagamento: payment?.tipo,
-                cartao_credito_id: payment?.pagamento,
+                cartao_credito_id: payment?.pagamento > 0 ? payment?.pagamento : null,
                 conta: 'Melies - Bradesco',
                 obs_pagamento: null,
                 status_gateway: null,
-                status_parcela: 'Em aberto',
+                status_parcela: 'Pendente',
                 parc_protestada: 0,
+                usuario_resp: userId
             }));
 
             setLoadingEnrollment(true);
             setTimeout(async () => {
-                console.log('enrollment', enrollment)
-                console.log('paymentInstallmentsEnrollment', paymentInstallmentsEnrollment)
                 try {
-                    // const response = await api.post(`/enrrolment/paymentProfile/create/${id}`, { enrollment, paymentInstallmentsEnrollment });
-                    // if (response?.status === 201) {
-                    //   alert.success('Matrícula efetivada.');
-                    //   router.push(`/administrative/users/${userId}`);
-                    // }
-                    let status = 201;
-                    if (status === 201) {
+                    const response = await api.post(`/student/enrrolments/create/${id}`, { enrollmentData, paymentInstallmentsEnrollment });
+                    console.log(response)
+                    if (response?.status === 201) {
                         setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
-                        return
                     } else {
                         setEnrollmentCompleted({ ...enrollmentCompleted, status: 500 });
                     }
@@ -604,6 +608,7 @@ export default function InterestEnroll() {
                     groupPayment={groupPayment}
                     handleCreateEnrollStudent={handleCreateEnrollStudent}
                     pushRouteScreen={pushRouteScreen}
+                    setFormData={setFormData}
                 />
             </>
         )
@@ -854,7 +859,7 @@ export const Payment = (props) => {
 
     const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate, payment) => {
         setTypePaymentsSelected((prevTypePaymentsSelected) => {
-            let paymentForm = (value === 'Cartão' && '') || (value === 'Pix' && 'Pix') || (value === 'boleto' && 'Boleto')
+            let paymentForm = (value === 'Cartão' && '') || (value === 'Pix' && 'Pix') || (value === 'Boleto' && 'Boleto')
             const updatedTypePaymentsSelected = [...prevTypePaymentsSelected];
             updatedTypePaymentsSelected[index] = {
                 pagamento: paymentForm,
@@ -1463,7 +1468,8 @@ export const ContractStudent = (props) => {
         setTypeDiscountAdditional,
         groupPayment,
         handleCreateEnrollStudent,
-        pushRouteScreen
+        pushRouteScreen,
+        setFormData
     } = props
 
 
@@ -1494,8 +1500,28 @@ export const ContractStudent = (props) => {
     const handleGeneratePdf = useReactToPrint({
         content: () => contractService.current,
         documentTitle: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS',
-        onAfterPrint: () => alert.info('Tabela exportada em PDF.')
-    })
+        onAfterPrint: () => {
+            // Captura o conteúdo e converte em uma imagem
+            html2canvas(contractService.current).then(canvas => {
+                setLoading(true)
+                const imgData = canvas.toDataURL('image/png');
+
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // 210x297 mm (A4)
+
+                const pdfData = pdf.output('blob'); // Alterado de 'datauristring' para 'blob'
+                const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
+
+                // Cria um novo FormData e adiciona o Blob
+                const formData = new FormData();
+                formData.append('file', pdfBlob, 'contrato.pdf');
+
+                setFormData(formData);
+                alert.info('Contrato gerado.');
+            });
+        }
+    });
+
 
     useEffect(() => {
 
@@ -1537,135 +1563,130 @@ export const ContractStudent = (props) => {
         return;
     }
 
+
     return (
         <>
             <Text bold title>Pré vizualização do Contrato</Text>
+            <ContentContainer>
+                <div ref={contractService} style={{ padding: '0px 40px' }}>
+                    <ContractStudentComponent
+                        userData={userData}
+                        responsiblePayerData={responsiblePayerData}
+                    >
 
-            <ContractStudentComponent
-                onClick={handleGeneratePdf}
-                userData={userData}
-                responsiblePayerData={responsiblePayerData}>
+                        <ContentContainer style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 3,
+                            boxShadow: 'none',
+                            alignItems: 'center',
+                            marginTop: 25
+                        }}>
+                            <Text bold>{query || 'Dados de pagamento'}</Text>
+                            <Box sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRadius: '8px',
+                                alignItems: 'start',
+                                width: '70%',
+                            }}>
 
-                <ContentContainer style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 3,
-                    boxShadow: 'none',
-                    alignItems: 'center',
-                    marginTop: 25
-                }}>
-                    <Text bold>{query || 'Dados de pagamento'}</Text>
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        borderRadius: '8px',
-                        alignItems: 'start',
-                        width: '70%',
-                    }}>
+                                <Box sx={styles.containerValues}>
+                                    <Text small style={styles.textDataPayments} bold>Resp. pagante:</Text>
+                                    <Text small style={styles.textDataPayments}>{responsiblePayerData?.nome_resp || userData?.nome}</Text>
+                                </Box>
+                                <Box sx={styles.containerValues}>
+                                    <Text small style={styles.textDataPayments} bold>Valor total do semestre:</Text>
+                                    <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.valorSemestre)}</Text>
+                                </Box>
+                                <Box sx={styles.containerValues}>
+                                    <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas:</Text>
+                                    <Text small style={styles.textDataPayments}>{valuesContract.qntDispensadas}</Text>
+                                </Box>
+                                {valuesContract.descontoDispensadas > 0 &&
+                                    <Box sx={styles.containerValues}>
+                                        <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas - Desconto (R$):</Text>
+                                        <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.descontoDispensadas)}</Text>
+                                    </Box>
+                                }
+                                {valuesContract.descontoPorcentagemDisp != '0.00%' &&
+                                    <Box sx={styles.containerValues}>
+                                        <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas - Desconto (%):</Text>
+                                        <Text small style={styles.textDataPayments}>{valuesContract.descontoPorcentagemDisp}</Text>
+                                    </Box>
+                                }
+                                {valuesContract.descontoAdicional &&
+                                    <Box sx={styles.containerValues}>
+                                        <Text small style={styles.textDataPayments} bold>DESCONTO (adicional):</Text>
 
-                        <Box sx={{ ...styles.containerValues, borderRadius: '8px 8px 0px 0px' }}>
-                            <Text small style={styles.textDataPayments} bold>Nome completo:</Text>
-                            <Text small style={styles.textDataPayments}>{userData?.nome}</Text>
-                        </Box>
-
-                        <Box sx={styles.containerValues}>
-                            <Text small style={styles.textDataPayments} bold>Resp. pagante:</Text>
-                            <Text small style={styles.textDataPayments}>{responsiblePayerData?.nome_resp || userData?.nome}</Text>
-                        </Box>
-                        <Box sx={styles.containerValues}>
-                            <Text small style={styles.textDataPayments} bold>Valor total do semestre:</Text>
-                            <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.valorSemestre)}</Text>
-                        </Box>
-                        <Box sx={styles.containerValues}>
-                            <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas:</Text>
-                            <Text small style={styles.textDataPayments}>{valuesContract.qntDispensadas}</Text>
-                        </Box>
-                        {valuesContract.descontoDispensadas > 0 &&
-                            <Box sx={styles.containerValues}>
-                                <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas - Desconto (R$):</Text>
-                                <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.descontoDispensadas)}</Text>
+                                        <Text small style={styles.textDataPayments}>{(typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
+                                            || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
+                                            || '0'}</Text>
+                                    </Box>
+                                }
+                                {valuesContract.descontoAdicional && valuesContract.descontoDispensadas > 0 &&
+                                    <Box sx={styles.containerValues}>
+                                        <Text small style={styles.textDataPayments} bold>DESCONTO TOTAL:</Text>
+                                        <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))}</Text>
+                                    </Box>
+                                }
+                                {valuesContract.valorFinal &&
+                                    <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
+                                        <Text small style={styles.textDataPayments} bold>VALOR A PAGAR:</Text>
+                                        <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.valorFinal)}</Text>
+                                    </Box>
+                                }
                             </Box>
-                        }
-                        {valuesContract.descontoPorcentagemDisp != '0.00%' &&
-                            <Box sx={styles.containerValues}>
-                                <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas - Desconto (%):</Text>
-                                <Text small style={styles.textDataPayments}>{valuesContract.descontoPorcentagemDisp}</Text>
-                            </Box>
-                        }
-                        {valuesContract.descontoAdicional &&
-                            <Box sx={styles.containerValues}>
-                                <Text small style={styles.textDataPayments} bold>DESCONTO (adicional):</Text>
-
-                                <Text small style={styles.textDataPayments}>{(typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
-                                    || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
-                                    || '0'}</Text>
-                            </Box>
-                        }
-                        {valuesContract.descontoAdicional && valuesContract.descontoDispensadas > 0 &&
-                            <Box sx={styles.containerValues}>
-                                <Text small style={styles.textDataPayments} bold>DESCONTO TOTAL:</Text>
-                                <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))}</Text>
-                            </Box>
-                        }
-                        {valuesContract.valorFinal &&
-                            <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
-                                <Text small style={styles.textDataPayments} bold>VALOR A PAGAR:</Text>
-                                <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.valorFinal)}</Text>
-                            </Box>
-                        }
-                    </Box>
-                </ContentContainer>
+                        </ContentContainer>
 
 
-                <ContentContainer style={{ display: 'flex', flexDirection: 'column', gap: 3, boxShadow: 'none', alignItems: 'center', marginBottom: 25 }}>
-                    <Text bold>Forma de pagamento escolhida:</Text>
-                    <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '80%' }}>
-                        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                            <thead>
-                                <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
-                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
-                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
-                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
-                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
-                                </tr>
-                            </thead>
-                            <tbody style={{ flex: 1 }}>
-                                {paymentData?.map((pay, index) => {
-                                    const payment = pay?.pagamento > 0 ? groupPayment?.filter(item => item.value === pay?.pagamento).map(item => item.label) : pay?.pagamento
-                                    return (
-                                        <tr key={`${pay}-${index}`}>
-                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                {pay?.n_parcela}</td>
-                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                {pay?.tipo}
-                                            </td>
-                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                {payment}
-                                            </td>
-                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                {formatter.format(pay?.valor_parcela)}</td>
-                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                {pay?.data_pagamento}</td>
+                        <ContentContainer style={{ display: 'flex', flexDirection: 'column', gap: 3, boxShadow: 'none', alignItems: 'center', marginBottom: 25 }}>
+                            <Text bold>Forma de pagamento escolhida:</Text>
+                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
+                                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
+                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </ContentContainer>
+                                    </thead>
+                                    <tbody style={{ flex: 1 }}>
+                                        {paymentData?.map((pay, index) => {
+                                            const payment = pay?.pagamento > 0 ? groupPayment?.filter(item => item.value === pay?.pagamento).map(item => item.label) : pay?.pagamento
+                                            return (
+                                                <tr key={`${pay}-${index}`}>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {pay?.n_parcela}</td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {pay?.tipo}
+                                                    </td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {payment}
+                                                    </td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {formatter.format(pay?.valor_parcela)}</td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {pay?.data_pagamento}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </ContentContainer>
 
-            </ContractStudentComponent>
-
+                    </ContractStudentComponent>
+                </div>
+            </ContentContainer>
+            {/* <Button text="gerar contrato" onClick={handleGeneratePdf} style={{ width: 180 }} /> */}
             <ContentContainer gap={2}>
                 <Text bold>Assinatura Digital:</Text>
                 <Box sx={{ ...styles.inputSection, marginTop: 2 }}>
                     <TextInput placeholder='E-mail 1º' name='email_1' onChange={handleChange} value={emailDigitalSignature?.email_1 || ''} label='E-mail 1º *' sx={{ flex: 1, }} />
                     <TextInput placeholder='E-mail 2º' name='email_2' onChange={handleChange} value={emailDigitalSignature?.email_2 || ''} label='E-mail 2º' sx={{ flex: 1, }} />
-                </Box>
-
-                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start' }}>
-                    <Button small text="enviar" onClick={() => alert.success('Contrato enviado por e-mail para assinatura digital.')} style={{ width: '90px', height: '30px' }} />
                 </Box>
             </ContentContainer>
             <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start' }}>
