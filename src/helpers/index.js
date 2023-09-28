@@ -152,3 +152,13 @@ export const calculationAge = (dateOfBirth) => {
    // Checking if the user is 18 years or older
    return ageDifference >= 18;
 }
+
+export const formatCreditCardNumber = (number) => {
+   // Remove todos os espaços e caracteres não numéricos
+   const cleanNumber = number.replace(/\D/g, '');
+   
+   // Adiciona um espaço a cada quatro dígitos
+   const formattedNumber = cleanNumber.replace(/(\d{4})/g, '$1 ');
+   
+   return formattedNumber.trim(); // Remove espaços extras no final
+ }

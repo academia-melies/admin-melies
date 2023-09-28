@@ -140,7 +140,7 @@ export const Table_V1 = (props) => {
                                                                 <Box
                                                                     sx={{
                                                                         display: 'flex',
-                                                                        backgroundColor: colorPalette.secondary,
+                                                                        backgroundColor: getRowBackground(index + 1),
                                                                         height: 30,
                                                                         gap: 2,
                                                                         alignItems: 'center',
@@ -150,7 +150,7 @@ export const Table_V1 = (props) => {
                                                                     }}
                                                                 >
                                                                     <Box sx={{ display: 'flex', backgroundColor: priorityColor(row[column.key]), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                                    <Text bold>{row[column.key]}</Text>
+                                                                    <Text small bold>{row[column.key]}</Text>
                                                                 </Box>
                                                             ) : (
                                                                 column.date ? formatDate(row[column?.key]) : row[column?.key || '-']
