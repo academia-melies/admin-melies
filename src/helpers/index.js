@@ -156,9 +156,31 @@ export const calculationAge = (dateOfBirth) => {
 export const formatCreditCardNumber = (number) => {
    // Remove todos os espaços e caracteres não numéricos
    const cleanNumber = number.replace(/\D/g, '');
-   
+
    // Adiciona um espaço a cada quatro dígitos
    const formattedNumber = cleanNumber.replace(/(\d{4})/g, '$1 ');
-   
+
    return formattedNumber.trim(); // Remove espaços extras no final
- }
+}
+
+export const formattedStringInDate = (str) => {
+
+   if (str) {
+
+      const dateString = str;
+      const dateParts = dateString.split('/');
+
+      const year = parseInt(dateParts[2], 10);
+      const month = parseInt(dateParts[1], 10) - 1;
+      const day = parseInt(dateParts[0], 10);
+
+      // Definindo a hora para 12:00:00
+      const hours = 12;
+      const minutes = 0;
+      const seconds = 0;
+
+      const timestamp = new Date(year, month, day, hours, minutes, seconds).getTime();
+      return timestamp
+   }
+   return null
+} 
