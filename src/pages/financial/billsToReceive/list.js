@@ -65,12 +65,7 @@ export default function ListBillsToPay(props) {
         try {
             const response = await api.get('/student/installments')
             const { data } = response;
-            let pricesFormatted = data?.map(item => ({
-                ...item,
-                valor_parcela: formatter.format(item.valor_parcela),
-            }));
-
-            setInstallmentsList(pricesFormatted)
+            setInstallmentsList(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -100,7 +95,7 @@ export default function ListBillsToPay(props) {
     };
 
     const priorityColor = (data) => ((data === 'Pendente' && 'yellow') ||
-        (data === 'Cancelada' || data === 'Pagamento reprovado' && 'red') ||
+        ((data === 'Cancelada' || data === 'Pagamento reprovado') && 'red') ||
         (data === 'Paga' && 'green') ||
         (data === 'Inativa' && '#f0f0f0'))
 
@@ -165,6 +160,11 @@ export default function ListBillsToPay(props) {
 
         return dateA - dateB;
     });
+
+    const totalValueToReceive = installmentsList
+        ?.filter(item => item?.status_parcela === 'Pendente')
+        ?.map(item => item?.valor_parcela)
+        ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0);
 
 
 
@@ -273,10 +273,10 @@ export default function ListBillsToPay(props) {
                             </tr>
                         </thead>
                         <tbody style={{ flex: 1, }}>
-                            {sortedInstallments?.filter(filter)?.map((item, index) => {
+                            {sortedInstallments?.filter(filter)?.slice(startIndex, endIndex).map((item, index) => {
                                 const isSelected = installmentsSelected?.includes(item?.id_parcela_matr) || null;
                                 return (
-                                    <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '44' : colorPalette?.secondary }}>
+                                    <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary }}>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             <CheckBoxComponent
                                                 boxGroup={groupSelect(item?.id_parcela_matr)}
@@ -305,7 +305,7 @@ export default function ListBillsToPay(props) {
                                             <TextInput name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} />
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                            {item?.valor_parcela}
+                                            {formatter.format(item?.valor_parcela)}
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             {item?.n_parcela || '-'}
@@ -362,6 +362,11 @@ export default function ListBillsToPay(props) {
                     <Text bold>Não existem parcelas a receber</Text>
                 </Box>
             }
+            <Box sx={{display: 'flex', gap: 1, alignItems: 'center'}}>
+                <Text large>Valor a receber:</Text>
+                <Text title bold>{formatter.format(totalValueToReceive)}</Text>
+            </Box>
+
             {installmentsSelected && <>
                 <Box sx={{ display: 'flex', position: 'fixed', left: 280, bottom: 20, display: 'flex', gap: 2 }}>
                     <Button text="Baixar" style={{ width: '120px', height: '40px' }} />
