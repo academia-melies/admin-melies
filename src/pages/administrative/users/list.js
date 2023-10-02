@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, ContentContainer, Text } from "../../../atoms"
+import { Box, Button, ContentContainer, Text } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
@@ -156,7 +156,7 @@ export default function ListUsers(props) {
                     </Box>
                 </Box>
                 <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
-                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
                             data={listUser}
@@ -175,21 +175,28 @@ export default function ListUsers(props) {
                             onSelect={(value) => setFilterAtive(value)}
                             title="status"
                             filterOpition="value"
-                            sx={{ flex: 1}}
+                            sx={{ flex: 1 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                             clean={false}
                         />
                         <SelectList
-                            
+
                             data={listEnrollStatus}
                             valueSelection={filterEnrollStatus}
                             onSelect={(value) => setFilterEnrollStatus(value)}
                             title="situação/matrícula"
                             filterOpition="value"
-                            sx={{ flex: 1}}
+                            sx={{ flex: 1 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                             clean={false}
                         />
+                    </Box>
+                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
+                        <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
+                            setFilterPayment('todos')
+                            setFilterEnrollStatus('todos')
+                            setFilterData('')
+                        }} />
                     </Box>
                     <TablePagination
                         component="div"

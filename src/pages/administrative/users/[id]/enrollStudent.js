@@ -6,7 +6,7 @@ import { CheckBoxComponent, SectionHeader, SelectList } from "../../../../organi
 import { Backdrop, CircularProgress, useMediaQuery, useTheme } from "@mui/material";
 import { useAppContext } from "../../../../context/AppContext";
 import { useReactToPrint } from "react-to-print";
-import { calculationAge, emailValidator, findCEP, formatCEP, formatCPF, formatCreditCardNumber, formatDate, formatRg, formatTimeStamp } from "../../../../helpers";
+import { calculationAge, emailValidator, findCEP, formatCEP, formatCPF, formatCreditCardNumber, formatDate, formatRg, formatTimeStamp, formattedStringInDate } from "../../../../helpers";
 import { ContractStudentComponent } from "../../../../organisms/contractStudent/contractStudent";
 import { Forbidden } from "../../../../forbiddenPage/forbiddenPage";
 import Cards from 'react-credit-cards'
@@ -503,7 +503,7 @@ export default function InterestEnroll() {
                 usuario_id: id,
                 pagante: responsiblePayerData ? responsiblePayerData?.nome_resp : userData?.nome,
                 aluno: userData?.nome,
-                vencimento: new Date(payment?.data_pagamento),
+                vencimento: formattedStringInDate(payment?.data_pagamento),
                 dt_pagamento: null,
                 valor_parcela: parseFloat(payment?.valor_parcela).toFixed(2),
                 n_parcela: payment?.n_parcela,
