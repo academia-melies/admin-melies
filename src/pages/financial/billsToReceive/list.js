@@ -14,7 +14,8 @@ export default function ListBillsToPay(props) {
     const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [filterPayment, setFilterPayment] = useState('todos')
-    const [installmentsSelected, setInstallmentsSelected] = useState();
+    const [installmentsSelected, setInstallmentsSelected] = useState(null);
+    const [allSelected, setAllSelected] = useState();
     const router = useRouter()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -65,6 +66,10 @@ export default function ListBillsToPay(props) {
         try {
             const response = await api.get('/student/installments')
             const { data } = response;
+
+            const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
+            setAllSelected(groupIds)
+
             setInstallmentsList(data)
         } catch (error) {
             console.log(error)
@@ -133,15 +138,6 @@ export default function ListBillsToPay(props) {
         {
             value: id?.toString()
         },
-    ]
-
-    const groupAllSelected = [
-        installmentsList?.map(item => {
-            return {
-                value: item.id_parcela_matr.toString()
-            }
-        }
-        )
     ]
 
     const groupProstated = [
@@ -229,33 +225,28 @@ export default function ListBillsToPay(props) {
             </ContentContainer>
 
             {installmentsList.length > 0 ?
-                // <Table_V1 data={installmentsList?.filter(filter)} columns={column} columnId={'id_parcela_matr'} />
                 <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap', border: `1px solid ${colorPalette.textColor}` }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                         <thead>
                             <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
-                                <th style={{ padding: '8px 0px', display: 'flex', fontSize: '14px', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '10px 0px 0px 0px' }}>
-                                    {/* <Box sx={{
-                                        display: 'flex',
-                                        borderRadius: '2px',
-                                        width: 19,
-                                        height: 19,
-                                        border: `2px solid ${colorPalette.textColor}`, backgroundColor: installmentsSelected?.length > (installmentsList?.length - 1) ? '#1976d2' : '',
-                                        alignItems: 'center',
-                                        "&:hover": {
-                                            backgroundColor: '#1976d2',
-                                            border: `2px solid #fff`,
-                                            cursor: 'pointer'
-                                        }
-                                    }}
-                                        onClick={() => {
+                                <th style={{ padding: '8px 0px', display: 'flex',  color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
+                                    Selecionar
+                                    <CheckBoxComponent
+                                        boxGroup={[{ value: 'allSelect' }]}
+                                        valueChecked={'select'}
+                                        horizontal={true}
+                                        onSelect={() => {
                                             if (installmentsSelected === '') {
-                                                let allInstallmentSelected = installmentsList?.map(item => item?.id_parcela_matr)
+                                                let allInstallmentSelected = installmentsList?.filter(filter)?.map(item => item?.id_parcela_matr)
                                                 setInstallmentsSelected(allInstallmentSelected?.toString())
-                                            }else{
-                                                setInstallmentsSelected('')
+                                            } else {
+                                                setInstallmentsSelected(null)
                                             }
-                                        }} /> */}
+                                        }}
+                                        padding={0}
+                                        gap={0}
+                                        sx={{ display: 'flex', maxWidth: 25 }}
+                                    />
                                 </th>
                                 <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Pagante</th>
                                 <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Aluno</th>
@@ -280,7 +271,7 @@ export default function ListBillsToPay(props) {
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             <CheckBoxComponent
                                                 boxGroup={groupSelect(item?.id_parcela_matr)}
-                                                valueChecked={installmentsSelected || ''}
+                                                valueChecked={installmentsSelected}
                                                 horizontal={true}
                                                 onSelect={(value) => {
                                                     if (item?.id_parcela_matr) {
@@ -362,7 +353,7 @@ export default function ListBillsToPay(props) {
                     <Text bold>Não existem parcelas a receber</Text>
                 </Box>
             }
-            <Box sx={{display: 'flex', gap: 1, alignItems: 'center'}}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Text large>Valor a receber:</Text>
                 <Text title bold>{formatter.format(totalValueToReceive)}</Text>
             </Box>
