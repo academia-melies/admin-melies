@@ -64,7 +64,25 @@ export default function EditUser() {
         foto_perfil_id: bgPhoto?.location || fileCallback?.filePreview || null,
         nome_social: null
     })
-    const [contract, setContract] = useState({})
+    const [contract, setContract] = useState({
+        funcao: null,
+        horario: null,
+        admissao: null,
+        desligamento: null,
+        ctps: null,
+        serie: null,
+        pis: null,
+        conta_id: null,
+        banco_1: null,
+        conta_1: null,
+        agencia_1: null,
+        tipo_conta_1: null,
+        banco_2: null,
+        conta_2: null,
+        agencia_2: null,
+        tipo_conta_2: null,
+        cartao_ponto: null,
+    })
     const [enrollmentData, setEnrollmentData] = useState([])
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
@@ -849,7 +867,7 @@ export default function EditUser() {
                 const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
                 const { data } = response
                 if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
-                if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`); }
+                if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
                 if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
                 if (newUser && filesUser) { await api.patch(`/file/editFiles/${data?.userId}`, { filesUser }); }
                 if (permissionPerfil) {

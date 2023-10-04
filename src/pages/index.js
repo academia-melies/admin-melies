@@ -25,11 +25,19 @@ const menuProfessor = [
    { id: '05', icon: '', text: 'Cronograma', to: '/administrative/classSchedule/list', query: false },
 ]
 
+const birthDate = [
+   { id: '01', name: 'Marcus Silva', day: 1, function: 'Desenvolvedor' },
+   { id: '02', name: 'Felipe Bomfim', day: 13, function: 'Suporte' },
+   { id: '03', name: 'Fulano Silva', day: 15, function: 'Suporte' },
+   { id: '04', name: 'Renato Miranda', day: 5, function: 'Gerente Suporte' }
+]
+
 export default function Home() {
 
    const { user, colorPalette, theme, setLoading } = useAppContext()
    const [menu, setMenu] = useState(menuItems)
    const [imagesList, setImagesList] = useState([])
+   const [listBirthDay, setListBirthDay] = useState([])
    let isProfessor = user?.professor === 1 ? true : false;
    const userId = user?.id;
 
@@ -50,8 +58,25 @@ export default function Home() {
       }
    }
 
+
+   const handleBirthday = async () => {
+      setLoading(true)
+      try {
+         const response = await api.get(`/user/list/birthdates`)
+         if (response.status === 200) {
+            setListBirthDay(response?.data)
+         }
+      } catch (error) {
+         return error
+      } finally {
+         setLoading(false)
+      }
+   }
+
+
    useEffect(() => {
       handleImages(imagesList)
+      handleBirthday()
    }, [])
 
 
@@ -144,6 +169,44 @@ export default function Home() {
                   )
                }
             </ContentContainer>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', marginTop: 5, justifyContent: 'center', flex: 1, gap: 1 }}>
+               <Text large bold style={{ textAlign: 'center' }}>Aniversáriantes - {new Date().toLocaleString('pt-BR', { month: 'long' })} 🎉🎉</Text>
+               <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+                  {listBirthDay.length > 0 ?
+                     <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '500px' }}>
+                        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                           <thead>
+                              <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold', fontSize: '13px' }}>Dia</th>
+                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold', fontSize: '13px' }}>Funcionário</th>
+                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold', fontSize: '13px' }}>Cargo/Função</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+
+                              {listBirthDay?.map((item, index) => {
+                                 const date = item?.nascimento?.split('T')[0]
+                                 const day = date?.split('-')[2]
+                                 return (
+                                    <tr key={index}>
+                                       <td style={{ padding: '8px 10px', fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center' }}>{day}</td>
+                                       <td style={{ padding: '8px 10px', fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center' }}>{item?.nome}</td>
+                                       <td style={{ padding: '8px 10px', fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center' }}>{item?.funcao || 'Nenhum(a)'}</td>
+                                    </tr>
+                                 )
+                              })
+                              }
+                           </tbody>
+                        </table>
+                     </div>
+                     :
+                     <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
+                        <Text >Não existem aniversáriantes nesse mês</Text>
+                     </Box>
+                  }
+               </Box>
+            </Box>
          </Box>
       </>
    )

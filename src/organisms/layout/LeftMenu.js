@@ -82,12 +82,6 @@ export const LeftMenu = ({ }) => {
       });
    };
 
-   // const handleGroupMouseLeave = (index) => {
-   //    const newGroupStates = [...groupStates];
-   //    newGroupStates[index] = false;
-   //    setGroupStates(newGroupStates);
-   // };
-
    const handleGroupMouseLeave = (index) => {
       setGroupStates((prevGroupStates) => {
          if (prevGroupStates[index]) {
@@ -276,7 +270,11 @@ export const LeftMenu = ({ }) => {
                                                       icon={item.icon}
                                                       onClick={() => setShowMenuMobile(false)}
                                                       slug={item.to}
-                                                   />)
+                                                      subitem={item.subitems}
+                                                      pathname={pathname}
+                                                   />
+
+                                                )
                                              }
                                              ))}
                                     </Box>
@@ -358,14 +356,16 @@ export const LeftMenu = ({ }) => {
 const MenuItem = (props) => {
 
    const { colorPalette, theme } = useAppContext()
-
+   const [showSubItems, setShowSubItems] = useState(false);
    const {
       to,
       text,
       icon,
       currentPage,
       onClick,
-      slug
+      slug,
+      subitem,
+      pathname
    } = props
 
    return (
@@ -373,11 +373,12 @@ const MenuItem = (props) => {
          <Link
             href={to || '/#'}
             onClick={onClick}
-            style={{ display: 'flex', width: '100%' }}
+            style={{ display: 'flex', width: 'auto', padding: `8px 16px`, }}
+            onMouseEnter={() => setShowSubItems(true)}
+            onMouseLeave={() => setShowSubItems(false)}
          >
             <Box sx={{
                display: 'flex',
-               padding: `8px 30px`,
                width: '100%',
                borderRadius: 2,
                color: 'inherit',
@@ -397,7 +398,7 @@ const MenuItem = (props) => {
                      }
                   }),
             }}>
-               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
+               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit', justifyContent: 'space-between' }}>
                   {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
                   <Text
                      small
@@ -415,6 +416,66 @@ const MenuItem = (props) => {
                      }}>
                      {text}
                   </Text>
+                  {subitem?.length > 0 &&
+                     <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        transform: 'rotate(-90deg)',
+                        transition: '.3s',
+                        right: 12,
+                        width: 15,
+                        aspectRatio: '1/1',
+                        height: 15,
+                        position: 'absolute',
+                        "&:hover": {
+                           opacity: 0.8,
+                           cursor: 'pointer'
+                        }
+                     }} />}
+               </Box>
+               <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 11, xl: 12.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,}}>
+                  {showSubItems &&
+                     subitem?.map((item, index) => {
+                        const currentPage = item.to === pathname;
+                        const key = `${index}_${item.id_subitem}`
+                        const to = item.to;
+                        const text = item.text;
+
+                        return (
+                           <Link key={key}
+                              href={to || '/#'}
+                              style={{ display: 'flex', width: '100%', backgroundColor: colorPalette.secondary,boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}
+                           >
+                              <Box sx={{
+                                 display: 'flex',
+                                 padding: `8px 30px`,
+                                 width: '100%',
+                                 borderRadius: 2,
+                                 color: 'inherit',
+                                 transition: '.2s',
+                                 ...(currentPage && to != null ?
+                                    { color: colorPalette.buttonColor } : {}),
+                              }}>
+                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
+                                    <Text
+                                       small
+                                       sx={{
+                                          color: colorPalette.textColor,
+                                          transition: 'background-color 1s',
+                                          "&:hover": {
+                                             color: colorPalette.buttonColor,
+                                          },
+                                          ...(currentPage && to != null && { color: colorPalette.buttonColor }
+                                          ),
+                                       }}>
+                                       {text}
+                                    </Text>
+                                 </Box>
+                              </Box>
+                           </Link>
+                        )
+                     })
+                  }
                </Box>
             </Box>
          </Link>
