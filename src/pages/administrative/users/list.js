@@ -152,7 +152,7 @@ export default function ListUsers(props) {
                         <Text bold style={{ color: '#d6d6d6' }} light>{usersList.filter(filter)?.length || '0'}</Text>
                         <Text style={{ color: '#d6d6d6' }} light>de</Text>
                         <Text bold style={{ color: '#d6d6d6' }} light>{usersList?.length || 10}</Text>
-                        <Text style={{ color: '#d6d6d6' }} light>chamados</Text>
+                        <Text style={{ color: '#d6d6d6' }} light>usuários</Text>
                     </Box>
                 </Box>
                 <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
