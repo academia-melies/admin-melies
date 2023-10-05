@@ -300,6 +300,7 @@ export const LeftMenu = ({ }) => {
                      }
                   })}
                </Box>
+
                <Box sx={{
                   ...styles.icon,
                   backgroundImage: !theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
@@ -433,7 +434,7 @@ const MenuItem = (props) => {
                         }
                      }} />}
                </Box>
-               <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 11, xl: 12.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,}}>
+               <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 11, xl: 12.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
                   {showSubItems &&
                      subitem?.map((item, index) => {
                         const currentPage = item.to === pathname;
@@ -444,11 +445,11 @@ const MenuItem = (props) => {
                         return (
                            <Link key={key}
                               href={to || '/#'}
-                              style={{ display: 'flex', width: '100%', backgroundColor: colorPalette.secondary,boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}
+                              style={{ display: 'flex', width: '100%', backgroundColor: colorPalette.secondary, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}
                            >
                               <Box sx={{
                                  display: 'flex',
-                                 padding: `8px 30px`,
+                                 padding: `8px 18px`,
                                  width: '100%',
                                  borderRadius: 2,
                                  color: 'inherit',

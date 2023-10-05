@@ -1,11 +1,12 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../../atoms"
+import { Box, Button, ContentContainer, Text } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { api } from "../../../api/api"
+import { TablePagination } from "@mui/material"
 
 export default function ListStudents(props) {
     const [usersList, setUsers] = useState([])
@@ -17,6 +18,8 @@ export default function ListStudents(props) {
     const [classSelected, setClassesSelected] = useState()
     const [filterEnrollStatus, setFilterEnrollStatus] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [filters, setFilters] = useState({
         filterName: 'nome',
         filterOrder: 'asc'
@@ -101,6 +104,20 @@ export default function ListStudents(props) {
         }
     }
 
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+
     const column = [
         { key: 'id', label: 'ID' },
         { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'location' },
@@ -138,20 +155,27 @@ export default function ListStudents(props) {
                 newButton
                 newButtonAction={() => router.push(`/academic/${pathname}/new`)}
             />
-            {/* <Text bold>Buscar por: </Text> */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                <Box sx={{ display: 'flex', flex: 1 }}>
-                    <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ padding: '15px', }} onChange={setFilterData} />
+            <ContentContainer>
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
+                    <Text bold large>Filtros</Text>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{usersList.filter(filter)?.length || '0'}</Text>
+                        <Text style={{ color: '#d6d6d6' }} light>de</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{usersList?.length || 10}</Text>
+                        <Text style={{ color: '#d6d6d6' }} light>alunos</Text>
+                    </Box>
                 </Box>
-                <Box sx={{ display: 'flex', flex: 1, flexDirection: 'row', gap: 1 }}>
+                <SearchBar placeholder='Busque por nome, sobrenome, CPF...' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                     <SelectList
                         fullWidth
                         data={classes}
                         valueSelection={classSelected}
                         onSelect={(value) => setClassesSelected(value)}
                         title="Turma"
-                        filterOpition="value"
-                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor, }}
+                        filterOpition="value"      
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                         clean={false}
                     />
@@ -163,14 +187,33 @@ export default function ListStudents(props) {
                         onSelect={(value) => setFilterAtive(value)}
                         title="Status"
                         filterOpition="value"
-                        sx={{ backgroundColor: colorPalette.secondary, color: colorPalette.textColor }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                         clean={false}
                     />
+                    </Box>
+                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
+                        <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
+                            setClassesSelected('')
+                            setFilterAtive('todos')
+                            setFilterData('')
+                        }} />
+                    </Box>
+                    <TablePagination
+                        component="div"
+                        count={sortUsers()?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
+                    />
                 </Box>
-            </Box>
+            </ContentContainer>
+         
             {usersList.length > 0 ?
-                <Table_V1 data={sortUsers()?.filter(filter)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
+                <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não foi encontrado usuarios {perfil}</Text>

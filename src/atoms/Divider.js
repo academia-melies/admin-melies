@@ -2,7 +2,7 @@ import { Box } from "./Box"
 
 export const Divider = (props) => {
 
-   const { distance = 1 } = props;
+   const { distance = 1, color = '', size = '1px' } = props;
 
    return (
       <Box sx={{
@@ -11,8 +11,8 @@ export const Divider = (props) => {
       }}>
          <Box sx={{
             width: '100%',
-            height: `1px`,
-            backgroundColor: '#eaeaea'
+            height: size,
+            backgroundColor: color ? color : '#eaeaea'
          }} />
       </Box>
    )
