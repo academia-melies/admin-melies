@@ -245,7 +245,7 @@ export default function InterestEnroll() {
 
     const handlePaymentsProfile = async () => {
         try {
-            const response = await api.get(`/user/paymentProfile/${id}`)
+            const response = await api.get(`/order/paymentProfile/${id}`)
             const { data } = response
             if (data?.length > 0) {
                 data?.sort((a, b) => new Date(b.dt_criacao) - new Date(a.dt_criacao));
@@ -452,7 +452,7 @@ export default function InterestEnroll() {
         if (checkValuesPaymentProfile(newPaymentProfile)) {
             setLoading(true)
             try {
-                const response = await api.post(`/user/paymentProfile/create/${id}`, { newPaymentProfile })
+                const response = await api.post(`/order/paymentProfile/create/${id}`, { newPaymentProfile, cpfUser: userData?.cpf })
                 if (response?.status === 201) {
                     alert.success('Cartão de crédito adicionado.')
                     handlePaymentsProfile()
@@ -498,6 +498,8 @@ export default function InterestEnroll() {
                 qnt_disci_disp: valuesContract?.qntDispensadas || 0,
                 usuario_resp: userId
             }
+
+            const orderPayment = {};
 
             let paymentInstallmentsEnrollment = enrollment?.map((payment) => ({
                 usuario_id: id,
@@ -1292,6 +1294,7 @@ export const Payment = (props) => {
                                         <TextInput name='apelido_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.apelido_cartao || ''} label='Apelido' sx={{ flex: 1, }} />
                                         <TextInput name='numero_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.numero_cartao || ''} label='Número *' sx={{ flex: 1, }} onFocus={handleFocused} />
                                         <TextInput name='nome_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.nome_cartao || ''} label='Nome *' sx={{ flex: 1, }} onFocus={handleFocused} />
+                                        <TextInput name='cpf_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.cpf_cartao || ''} label='CPF *' sx={{ flex: 1, }} onFocus={handleFocused} />
                                         <Box sx={{ ...styles.inputSection }}>
                                             <TextInput name='dt_expiracao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.dt_expiracao || ''} label='Validade *' sx={{ flex: 1, }} onFocus={handleFocused} />
                                             <TextInput name='cvc' onChange={handleChangePerfilPayment} value={newPaymentProfile?.cvc || ''} label='CVC *' sx={{ flex: 1, }} onFocus={handleFocused} />
