@@ -532,7 +532,7 @@ export default function InterestEnroll() {
                     // let fileUploadResponse = file?.data || null;
                     // const response = await api.post(`/student/enrrolments/create/${id}`, { enrollmentData, paymentInstallmentsEnrollment, fileId: fileUploadResponse });
 
-                    const response = await api.post(`/student/enrrolments/create/${id}`, { enrollmentData, paymentInstallmentsEnrollment });
+                    const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment });
 
                     if (response?.status === 201) {
                         setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
