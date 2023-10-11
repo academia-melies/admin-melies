@@ -80,45 +80,43 @@ export default function InterestEnroll() {
     ])
     const [formData, setFormData] = useState()
 
-    useEffect(() => {
-        let interval;
+    // useEffect(() => {
+    //     let interval;
 
-        if (loadingEnrollment) {
-            const messages = [
-                'Conferindo os dados...',
-                'Validando cartão...',
-                'Gerando o contrato...',
-                'Efetivando a matrícula...',
-                'Concluído'
-            ];
+    //     if (loadingEnrollment) {
+    //         const messages = [
+    //             'Conferindo os dados...',
+    //             'Efetivando a matrícula...',
+    //             'Concluído'
+    //         ];
 
-            let indice = 0;
+    //         let indice = 0;
 
-            interval = setInterval(() => {
-                setMessageEnrollment(messages[indice]);
-                indice++;
+    //         interval = setInterval(() => {
+    //             setMessageEnrollment(messages[indice]);
+    //             indice++;
 
-                if (indice === messages.length) {
-                    clearInterval(interval);
+    //             if (indice === messages.length) {
+    //                 clearInterval(interval);
 
-                    if (enrollmentCompleted?.status) {
-                        let message = enrollmentCompleted?.status === 201 ? 'Concluído' : 'Ocorreu um erro';
-                        setMessageEnrollment(message)
-                        setEnrollmentCompleted({ ...enrollmentCompleted, active: true });
-                    }
+    //                 if (enrollmentCompleted?.status) {
+    //                     let message = enrollmentCompleted?.status === 201 ? 'Concluído' : 'Ocorreu um erro';
+    //                     setMessageEnrollment(message)
+    //                     setEnrollmentCompleted({ ...enrollmentCompleted, active: true });
+    //                 }
 
-                    setTimeout(() => {
-                        setLoadingEnrollment(false); // Defina loadingEnrollment como falso após um tempo
-                        if (enrollmentCompleted?.status === 201) {
-                            router.push(`/administrative/users/${id}`);
-                        }
-                    }, 2000);
-                }
-            }, 3500);
-        }
+    //                 setTimeout(() => {
+    //                     setLoadingEnrollment(false); // Defina loadingEnrollment como falso após um tempo
+    //                     if (enrollmentCompleted?.status === 201) {
+    //                         router.push(`/administrative/users/${id}`);
+    //                     }
+    //                 }, 500);
+    //             }
+    //         }, 2500);
+    //     }
 
-        return () => clearInterval(interval);
-    }, [loadingEnrollment, enrollmentCompleted]);
+    //     return () => clearInterval(interval);
+    // }, [loadingEnrollment, enrollmentCompleted]);
 
 
 
@@ -521,29 +519,26 @@ export default function InterestEnroll() {
             }));
 
             setLoadingEnrollment(true);
-            setTimeout(async () => {
-                try {
-
-                    // let query = `?usuario_id=${id}`;
-                    // query += `&status_assinaturas=Pendente de assinatura`;
-                    // query += `&modulo=1`;
-                    // const file = await api.post(`/student/enrrolments/contract/upload${query}`, { formData })
-                    // console.log('file', file)
-                    // let fileUploadResponse = file?.data || null;
-                    // const response = await api.post(`/student/enrrolments/create/${id}`, { enrollmentData, paymentInstallmentsEnrollment, fileId: fileUploadResponse });
-
-                    const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment });
-
-                    if (response?.status === 201) {
-                        setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
-                    } else {
-                        setEnrollmentCompleted({ ...enrollmentCompleted, status: 500 });
-                    }
-                } catch (error) {
-                    console.log(error);
-                    return error;
+            try {
+                const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment });
+                if (response?.status === 201) {
+                    setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
+                    alert.success('Matrícula efetivada.')
+                    router.push(`/administrative/users/${id}`);
+                    return
                 }
-            }, 4500);
+                else {
+                    setEnrollmentCompleted({ ...enrollmentCompleted, status: 500 });
+                    alert.error('Ocorreu um erro ao maticular o aluno.')
+                    return
+                }
+            } catch (error) {
+                console.log(error);
+                alert.error('Ocorreu um erro ao maticular o aluno.')
+                return error;
+            } finally {
+                setLoadingEnrollment(false)
+            }
         }
     }
 
@@ -1564,7 +1559,7 @@ export const ContractStudent = (props) => {
 
     let query = `Curso: `;
     if (className) query += `${className}-1SEM - `;
-    if (courseSigle) query += `${courseSigle}`;
+    if (courseSigle) query += `${courseSigle} `;
     if (courseName) query += `${courseName} `;
     if (modalityCourse) query += `${modalityCourse} `;
     if (startDateClass) query += `- ${startDateClass}`;
@@ -1612,6 +1607,10 @@ export const ContractStudent = (props) => {
                                 width: '70%',
                             }}>
 
+                                <Box sx={styles.containerValues}>
+                                    <Text small style={styles.textDataPayments} bold>Aluno:</Text>
+                                    <Text small style={styles.textDataPayments}>{userData?.nome}</Text>
+                                </Box>
                                 <Box sx={styles.containerValues}>
                                     <Text small style={styles.textDataPayments} bold>Resp. pagante:</Text>
                                     <Text small style={styles.textDataPayments}>{responsiblePayerData?.nome_resp || userData?.nome}</Text>
