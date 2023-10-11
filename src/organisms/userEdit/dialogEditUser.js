@@ -138,10 +138,6 @@ export const DialogUserEdit = (props) => {
                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: 1, position: 'relative', transition: '.3s', }}
                   onMouseEnter={() => setShowEditPhoto(true)}
                   onMouseLeave={() => setShowEditPhoto(false)}>
-                  {/* <Avatar
-                     sx={{ width: '65px', height: '65px', fontSize: 14, border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }}
-                     src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`}
-                  /> */}
                   <Avatar src={bgPhoto?.location || fileCallback?.filePreview} sx={{
                      width: '90px',
                      height: '90px',

@@ -8,7 +8,7 @@ import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, TableOffic
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, deleteFile, deleteUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator, formatCEP, formatCPF, formatDate, formatRg } from "../../../helpers"
+import { emailValidator, formatCEP, formatCPF, formatDate, formatRg, formatTimeStamp } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 import { da } from "date-fns/locale"
@@ -154,6 +154,9 @@ export default function EditUser() {
     const [enrollmentStudentEditId, setEnrollmentStudentEditId] = useState()
     const [enrollmentStudentEditData, setEnrollmentStudentEditData] = useState({})
     const [disciplines, setDisciplines] = useState([])
+    const [installmentsStudent, setInstallmentsStudent] = useState([])
+    const [showEditPhoto, setShowEditPhoto] = useState(false)
+
 
     useEffect(() => {
         setPerfil(slug)
@@ -218,6 +221,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/enrollment/${id}`)
             const { data } = response
+            console.log(response)
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)
@@ -326,6 +330,23 @@ export default function EditUser() {
             const { data = [] } = response
             if (data.length > 0) {
                 setOfficeHours(data)
+                return
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const getInstallments = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/student/installment/user/${id}`)
+            const { data = [] } = response
+            if (data?.length > 0) {
+                setInstallmentsStudent(data)
                 return
             }
         } catch (error) {
@@ -536,6 +557,7 @@ export default function EditUser() {
             getDependent()
             getDisciplineProfessor()
             await listClass()
+            getInstallments()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -1361,13 +1383,24 @@ export default function EditUser() {
                             />
                         </Box>
                     </Box>
-                    <Box sx={{ '&:hover': { opacity: 0.8, cursor: 'pointer' }, }}>
+                    <Box sx={{ position: 'relative', justifyContent: 'center', alignItems: 'center', '&:hover': { opacity: 0.8, cursor: 'pointer' }, }}
+                        onMouseEnter={() => setShowEditPhoto(true)}
+                        onMouseLeave={() => setShowEditPhoto(false)}>
                         <Avatar src={bgPhoto?.location || fileCallback?.filePreview} sx={{
                             height: 'auto',
                             borderRadius: '16px',
                             width: { xs: '100%', sm: 150, md: 150, lg: 180 },
                             aspectRatio: '1/1',
                         }} variant="square" onClick={() => setShowEditFiles({ ...showEditFile, photoProfile: true })} />
+                        {showEditPhoto &&
+                            <Box sx={{ display: 'flex', position: 'absolute', justifyContent: 'center', alignItems: 'center', transition: '.3s', top: 0, bottom: 0, left: 0, right: 0 }}>
+                                <Button
+                                    small
+                                    style={{ borderRadius: '8px', padding: '5px 10px', transition: '.3s', }}
+                                    text='editar'
+                                    onClick={() => setShowEditFiles({ ...showEditFile, photoProfile: true })}
+                                />
+                            </Box>}
                     </Box>
                 </Box>
                 <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25 }}>
@@ -1488,24 +1521,23 @@ export default function EditUser() {
                                             }}
                                             sx={{ width: 1 }} />
                                     </Box>
-
-                                    <Box style={{ display: 'flex' }}>
-                                        <Button
-                                            style={{ width: '50%', marginRight: 1 }}
-                                            text='Salvar'
-                                            onClick={() => {
-                                                !newUser ? handleAddPermission() :
-                                                    alert.info('Permissões atualizadas')
-                                                setShowSections({ ...showSections, permissions: false })
-                                            }}
-                                        />
-                                        <Button secondary
-                                            style={{ width: '50%', }}
-                                            text='Cancelar'
-                                            onClick={() => setShowSections({ ...showSections, permissions: false })}
-                                        />
-                                    </Box>
                                 </ContentContainer>
+                                <Box style={{ display: 'flex' }}>
+                                    <Button small
+                                        style={{ width: '50%', marginRight: 1, height: 30 }}
+                                        text='Salvar'
+                                        onClick={() => {
+                                            !newUser ? handleAddPermission() :
+                                                alert.info('Permissões atualizadas')
+                                            setShowSections({ ...showSections, permissions: false })
+                                        }}
+                                    />
+                                    <Button secondary small
+                                        style={{ width: '50%', height: 30}}
+                                        text='Cancelar'
+                                        onClick={() => setShowSections({ ...showSections, permissions: false })}
+                                    />
+                                </Box>
                             </ContentContainer>
                         </Backdrop>
 
@@ -2012,22 +2044,26 @@ export default function EditUser() {
 
                             {enrollmentData ?
                                 enrollmentData?.map((item, index) => {
-                                    const className = classes?.filter(turma => turma.value === item?.turma_id).map(name => name.label);
+                                    const className = item?.nome_turma;
+                                    const courseName = item?.nome_curso;
+                                    const period = item?.periodo;
                                     const startDate = formatDate(item.dt_inicio)
-                                    const title = `${className} - ${startDate}`
+                                    const title = `${className} - ${courseName} - ${startDate} - ${period}`
                                     const enrollmentId = item?.id_matricula;
                                     const files = contractStudent?.filter((file) => file?.matricula_id === enrollmentId);
                                     const bgImagePdf = files?.name_file?.includes('pdf') ? '/icons/pdf_icon.png' : files?.location
+                                    const installments = installmentsStudent?.filter(item => item.matricula_id === item?.enrollmentId)
+
                                     return (
 
-                                        <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <ContentContainer key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                             <Box
                                                 sx={{
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    justifyContent: 'space-between',
+                                                    justifyContent: 'start',
                                                     gap: 4,
-                                                    width: 260,
+                                                    maxWidth: '90%',
                                                     "&:hover": {
                                                         opacity: 0.8,
                                                         cursor: 'pointer'
@@ -2035,7 +2071,6 @@ export default function EditUser() {
                                                 }}
                                                 onClick={() => toggleEnrollTable(index)}
                                             >
-                                                <Text bold style={{ color: colorPalette.buttonColor }}>{title}</Text>
                                                 <Box
                                                     sx={{
                                                         ...styles.menuIcon,
@@ -2046,10 +2081,10 @@ export default function EditUser() {
                                                         height: 17
                                                     }}
                                                 />
+                                                <Text bold style={{ color: colorPalette.buttonColor }}>{title}</Text>
                                             </Box>
                                             {showEnrollTable[index] && (
-                                                <ContentContainer>
-
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '20px 0px 0px 0px' }}>
                                                     <Box sx={styles.inputSection}>
                                                         <SelectList fullWidth data={classes} valueSelection={item?.turma_id} clean={false}
                                                             title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -2149,6 +2184,7 @@ export default function EditUser() {
                                                             }} />
                                                         </Box>
                                                     </Box>
+
                                                     <Box sx={styles.inputSection}>
                                                         <TextInput name='dt_inicio' type="date" value={(item?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
                                                         <TextInput name='dt_final' type="date" value={(item?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
@@ -2176,14 +2212,29 @@ export default function EditUser() {
                                                         title="Certificado emitido:"
                                                         horizontal={mobile ? false : true}
                                                     />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Usuário responsável:</Text>
+                                                        <Text bold>{item?.nome_usuario_resp}</Text>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Data de criação:</Text>
+                                                        <Text>{formatTimeStamp(item?.dt_criacao)}</Text>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Notas, frequências, atividades complementares:</Text>
+                                                        <Link href={`/academic/teacherArea/${id}`} target="_blank">
+                                                            <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
+                                                        </Link>
+
+                                                    </Box>
                                                     <Button secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
                                                         setEnrollmentStudentEditId(item?.id_matricula)
                                                         handleEnrollStudentById(item?.id_matricula)
                                                         setShowSections({ ...showSections, editEnroll: true })
                                                     }} />
-                                                </ContentContainer>
+                                                </Box>
                                             )}
-                                        </Box>
+                                        </ContentContainer>
 
                                     )
                                 })
@@ -2215,7 +2266,7 @@ export default function EditUser() {
                         </Box>
 
                         <Box sx={styles.inputSection}>
-                            <SelectList fullWidth data={classesInterest} valueSelection={enrollmentStudentEditData?.turma_id} onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, turma_id: value })}
+                            <SelectList fullWidth data={classes} valueSelection={enrollmentStudentEditData?.turma_id} onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, turma_id: value })}
                                 title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />

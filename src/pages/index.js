@@ -115,7 +115,8 @@ export default function Home() {
                />
             </Box>
             <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none', }}>
-               <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>Últimas páginas acessadas...</Text>
+               <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>
+                  Menu de fácil acesso..</Text>
                {isProfessor ?
                   (<Box sx={{ display: 'flex', gap: 5, justifyContent: 'flex-start', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' } }}>
                      {menuProfessor?.map((group, index) => {
