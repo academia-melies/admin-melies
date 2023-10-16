@@ -221,7 +221,6 @@ export default function EditUser() {
         try {
             const response = await api.get(`/enrollment/${id}`)
             const { data } = response
-            console.log(response)
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)

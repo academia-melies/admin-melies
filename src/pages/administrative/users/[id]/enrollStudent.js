@@ -80,6 +80,7 @@ export default function InterestEnroll() {
     ])
     const [formData, setFormData] = useState()
 
+
     // useEffect(() => {
     //     let interval;
 
@@ -497,8 +498,6 @@ export default function InterestEnroll() {
                 usuario_resp: userId
             }
 
-            const orderPayment = {};
-
             let paymentInstallmentsEnrollment = enrollment?.map((payment) => ({
                 usuario_id: id,
                 pagante: responsiblePayerData ? responsiblePayerData?.nome_resp : userData?.nome,
@@ -658,6 +657,7 @@ export const EnrollStudentDetails = (props) => {
         pushRouteScreen
     } = props
 
+
     return (
         <>
             <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
@@ -746,6 +746,7 @@ export const Payment = (props) => {
     const [dispensedDisciplines, setDispensedDisciplines] = useState()
     const [discountDispensed, setDiscountDispensed] = useState()
     const [numberOfInstallments, setNumberOfInstallments] = useState(6)
+    const [numberOfInstallmentSecondCard, setNumberOfInstallmentSecondCard] = useState(6)
     const [dayForPayment, setDayForPayment] = useState(1)
     const initialTypePaymentsSelected = Array.from({ length: numberOfInstallments }, () => ({ tipo: '', valor_parcela: '', n_parcela: null, data_pagamento: '' }));
     const [typePaymentsSelected, setTypePaymentsSelected] = useState(initialTypePaymentsSelected);
@@ -753,6 +754,7 @@ export const Payment = (props) => {
     const [aditionalDiscount, setAditionalDiscount] = useState({ desconto_adicional: '', desconto_formatado: '' })
     const { colorPalette, alert } = useAppContext()
     const [focusedCreditCard, setFocusedCreditCard] = useState('');
+    const [twoCards, setTwoCards] = useState(false)
 
 
     useEffect(() => {
@@ -781,7 +783,9 @@ export const Payment = (props) => {
     }, [])
 
     useEffect(() => {
-        const parcelValue = (totalValueFinnaly / numberOfInstallments).toFixed(2)
+        let numberParcells = numberOfInstallments;
+        if(twoCards) numberParcells = numberOfInstallments + numberOfInstallmentSecondCard
+        const parcelValue = (totalValueFinnaly / numberParcells).toFixed(2)
         const totalParcelCourse = valuesCourse?.n_parcelas || 6;
         const updatedNumberParcel = Array.from({ length: totalParcelCourse }, (_, index) => ({
             label: index + 1,
@@ -857,7 +861,7 @@ export const Payment = (props) => {
             return updatedArray;
         });
 
-    }, [numberOfInstallments, totalValueFinnaly, globalTypePaymentsSelected, dayForPayment])
+    }, [numberOfInstallments, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, dayForPayment])
 
 
     const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate, payment) => {
@@ -1258,7 +1262,7 @@ export const Payment = (props) => {
 
                 </ContentContainer>
 
-                <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', xm: 'column', md: 'column', lg: `column`, xl: 'row' } }}>
+                <Box sx={{ display: 'flex', gap: 3, flexDirection: twoCards ? 'column' : { xs: 'column', xm: 'column', md: 'column', lg: `column`, xl: 'row' } }}>
 
                     <ContentContainer gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 30px' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, flexDirection: 'column' }}>
@@ -1301,7 +1305,7 @@ export const Payment = (props) => {
                                 </Box>
 
                             ) : (
-                                <Box sx={{ display: 'flex', flexDirection: { xs: 'row', xm: 'row', md: 'row', lg: `row`, xl: 'column' }, gap: 2, maxHeight: 400, overflow: 'auto' }}>
+                                <Box sx={{ display: 'flex', flexDirection: twoCards ? 'row' : { xs: 'row', xm: 'row', md: 'row', lg: `row`, xl: 'column' }, gap: 2, maxHeight: 400, overflow: 'auto' }}>
 
                                     {showPaymentPerfl?.registeredProfile && paymentsProfile.length > 0 ?
                                         paymentsProfile?.map((item, index) => {
@@ -1344,105 +1348,218 @@ export const Payment = (props) => {
 
                     <ContentContainer fullWidth gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 40px' }}>
                         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
-                            <Text bold title>Forma de pagamento</Text>
-                            <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
-                                <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallments || ''} onSelect={(value) => setNumberOfInstallments(value)}
-                                    title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                                <SelectList fullWidth data={listPaymentType} valueSelection={globalTypePaymentsSelected || ''} onSelect={(value) => setGlobalTypePaymentsSelected(value)}
-                                    filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    title="Selecione a forma de pagamento *"
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    clean={false}
-                                />
+                            <Box sx={{ display: 'flex', gap: 1.8, justifyContent: 'space-between' }}>
+                                <Text bold title>Forma de pagamento</Text>
+                                <Button small secondary={twoCards ? false : true} text="dividir em 2 cartões" onClick={() => setTwoCards(!twoCards)} style={{ height: '30px', borderRadius: 0 }} />
                             </Box>
-                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
-                                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style={{ flex: 1 }}>
-                                        {Array.from({ length: numberOfInstallments }, (_, index) => {
 
-                                            const installmentNumber = index + 1;
-                                            const paymentDate = new Date();
-                                            const selectedDay = dayForPayment;
-                                            let month = paymentDate.getMonth() + index;
-                                            let isSaturday = false; // Sabado
-                                            let isSunday = false; // Domingo
+                            <Box sx={{ display: twoCards && 'flex', gap: twoCards ? 3 : 1.8 }}>
+                                <Box sx={{ display: twoCards && 'flex', gap: 1.8, flexDirection: 'column' }}>
 
-                                            paymentDate.setMonth(month);
+                                    <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
+                                        <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallments || ''} onSelect={(value) => setNumberOfInstallments(value)}
+                                            title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList fullWidth data={listPaymentType} valueSelection={globalTypePaymentsSelected || ''} onSelect={(value) => setGlobalTypePaymentsSelected(value)}
+                                            filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            title="Selecione a forma de pagamento *"
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                            clean={false}
+                                        />
+                                    </Box>
 
-                                            // Verifique se a data é maior que o último dia do mês
-                                            const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
-                                            if (selectedDay > lastDayOfMonth) {
-                                                paymentDate.setDate(lastDayOfMonth);
-                                            } else {
-                                                paymentDate.setDate(selectedDay);
-                                            }
-
-                                            if (paymentDate.getDay() === 6) {
-                                                isSaturday = true;
-                                                if (paymentDate.getDate() + 2 > lastDayOfMonth) {
-                                                    paymentDate.setDate(paymentDate.getDate() - 1);
-                                                } else {
-                                                    paymentDate.setDate(paymentDate.getDate() + 2);
-                                                }
-                                            }
-
-                                            if (paymentDate.getDay() === 0) {
-                                                isSunday = true;
-                                                if (paymentDate.getDate() + 1 > lastDayOfMonth) {
-                                                    paymentDate.setDate(paymentDate.getDate() - 2);
-                                                } else {
-                                                    paymentDate.setDate(paymentDate.getDate() + 1);
-                                                }
-                                            }
-
-                                            while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
-                                                paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
-                                            }
-
-                                            const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
-
-                                            return (
-                                                <tr key={installmentNumber}>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {installmentNumber}</td>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
-                                                        <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate,)}
-                                                            filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                            clean={false}
-                                                        />
-                                                    </td>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
-                                                        {typePaymentsSelected[index]?.tipo === 'Cartão' ? <SelectList fullWidth data={groupPayment} valueSelection={typePaymentsSelected[index]?.pagamento || ''} onSelect={(value) => handlePaymentProfile(index, value)}
-                                                            filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                            clean={false}
-                                                        />
-                                                            :
-                                                            typePaymentsSelected[index]?.tipo}
-                                                    </td>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {formatter.format(valueParcel)}</td>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {formattedPaymentDate}
-                                                    </td>
+                                    <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
+                                        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                            <thead>
+                                                <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
                                                 </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                            </thead>
+                                            <tbody style={{ flex: 1 }}>
+                                                {Array.from({ length: numberOfInstallments }, (_, index) => {
+
+                                                    const installmentNumber = index + 1;
+                                                    const paymentDate = new Date();
+                                                    const selectedDay = dayForPayment;
+                                                    let month = paymentDate.getMonth() + index;
+                                                    let isSaturday = false; // Sabado
+                                                    let isSunday = false; // Domingo
+
+                                                    paymentDate.setMonth(month);
+
+                                                    // Verifique se a data é maior que o último dia do mês
+                                                    const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
+                                                    if (selectedDay > lastDayOfMonth) {
+                                                        paymentDate.setDate(lastDayOfMonth);
+                                                    } else {
+                                                        paymentDate.setDate(selectedDay);
+                                                    }
+
+                                                    if (paymentDate.getDay() === 6) {
+                                                        isSaturday = true;
+                                                        if (paymentDate.getDate() + 2 > lastDayOfMonth) {
+                                                            paymentDate.setDate(paymentDate.getDate() - 1);
+                                                        } else {
+                                                            paymentDate.setDate(paymentDate.getDate() + 2);
+                                                        }
+                                                    }
+
+                                                    if (paymentDate.getDay() === 0) {
+                                                        isSunday = true;
+                                                        if (paymentDate.getDate() + 1 > lastDayOfMonth) {
+                                                            paymentDate.setDate(paymentDate.getDate() - 2);
+                                                        } else {
+                                                            paymentDate.setDate(paymentDate.getDate() + 1);
+                                                        }
+                                                    }
+
+                                                    while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
+                                                        paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
+                                                    }
+
+                                                    const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
+
+                                                    return (
+                                                        <tr key={installmentNumber}>
+                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {installmentNumber}</td>
+                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
+                                                                <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate,)}
+                                                                    filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                                    clean={false}
+                                                                />
+                                                            </td>
+                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
+                                                                {typePaymentsSelected[index]?.tipo === 'Cartão' ? <SelectList fullWidth data={groupPayment} valueSelection={typePaymentsSelected[index]?.pagamento || ''} onSelect={(value) => handlePaymentProfile(index, value)}
+                                                                    filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                                    clean={false}
+                                                                />
+                                                                    :
+                                                                    typePaymentsSelected[index]?.tipo}
+                                                            </td>
+                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {formatter.format(valueParcel)}</td>
+                                                            <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {formattedPaymentDate}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </Box>
+                                {twoCards &&
+                                    <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column', justifyContent: 'start' }}>
+                                        <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+                                            <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallmentSecondCard || ''} onSelect={(value) => setNumberOfInstallmentSecondCard(value)}
+                                                title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                            />
+                                            <SelectList fullWidth data={listPaymentType} valueSelection={globalTypePaymentsSelected || ''} onSelect={(value) => setGlobalTypePaymentsSelected(value)}
+                                                filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                title="Selecione a forma de pagamento *"
+                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                clean={false}
+                                            />
+                                        </Box>
+
+                                        <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
+                                            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                                <thead>
+                                                    <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
+                                                        <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody style={{ flex: 1 }}>
+                                                    {Array.from({ length: numberOfInstallmentSecondCard }, (_, index) => {
+
+                                                        const installmentNumber = index + 1;
+                                                        const paymentDate = new Date();
+                                                        const selectedDay = dayForPayment;
+                                                        let month = paymentDate.getMonth() + index;
+                                                        let isSaturday = false; // Sabado
+                                                        let isSunday = false; // Domingo
+
+                                                        paymentDate.setMonth(month);
+
+                                                        // Verifique se a data é maior que o último dia do mês
+                                                        const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
+                                                        if (selectedDay > lastDayOfMonth) {
+                                                            paymentDate.setDate(lastDayOfMonth);
+                                                        } else {
+                                                            paymentDate.setDate(selectedDay);
+                                                        }
+
+                                                        if (paymentDate.getDay() === 6) {
+                                                            isSaturday = true;
+                                                            if (paymentDate.getDate() + 2 > lastDayOfMonth) {
+                                                                paymentDate.setDate(paymentDate.getDate() - 1);
+                                                            } else {
+                                                                paymentDate.setDate(paymentDate.getDate() + 2);
+                                                            }
+                                                        }
+
+                                                        if (paymentDate.getDay() === 0) {
+                                                            isSunday = true;
+                                                            if (paymentDate.getDate() + 1 > lastDayOfMonth) {
+                                                                paymentDate.setDate(paymentDate.getDate() - 2);
+                                                            } else {
+                                                                paymentDate.setDate(paymentDate.getDate() + 1);
+                                                            }
+                                                        }
+
+                                                        while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
+                                                            paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
+                                                        }
+
+                                                        const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
+
+                                                        return (
+                                                            <tr key={installmentNumber}>
+                                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {installmentNumber}</td>
+                                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
+                                                                    <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate,)}
+                                                                        filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                                        clean={false}
+                                                                    />
+                                                                </td>
+                                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
+                                                                    {typePaymentsSelected[index]?.tipo === 'Cartão' ? <SelectList fullWidth data={groupPayment} valueSelection={typePaymentsSelected[index]?.pagamento || ''} onSelect={(value) => handlePaymentProfile(index, value)}
+                                                                        filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                                        clean={false}
+                                                                    />
+                                                                        :
+                                                                        typePaymentsSelected[index]?.tipo}
+                                                                </td>
+                                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {formatter.format(valueParcel)}</td>
+                                                                <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {formattedPaymentDate}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </Box>
+                                }
+                            </Box>
                         </Box>
                     </ContentContainer>
                 </Box>
