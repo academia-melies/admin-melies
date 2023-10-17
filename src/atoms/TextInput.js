@@ -26,7 +26,7 @@ export const TextInput = (props) => {
                transition: 'background-color 1s',
                disableUnderline: true,
                borderRadius: 2,
-               fontSize: small ? '12px' : { xs: '14px', xm: '15px', md: '15px', lg: '15px' },
+               fontSize: small ? '12px' : { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' },
                fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',
                ...InputProps?.style,
                color: colorPalette.textColor,
@@ -46,7 +46,7 @@ export const TextInput = (props) => {
                   shrink: true,
                   style: {
                      color: colorPalette.textColor,
-                     fontSize: { xs: '13px', xm: '14px', md: '14px', lg: '14px' },
+                     fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '13px', xl: '14px' },
                      fontFamily: 'MetropolisBold',
                      zIndex: 99
                   },
@@ -59,9 +59,10 @@ export const TextInput = (props) => {
                      color: colorPalette.textColor,
                      fontSize: {
                         xs: '16px',
-                        xm: '14px',
-                        md: '14px',
-                        lg: '14px'
+                        xm: '13px',
+                        md: '13px',
+                        lg: '13px',
+                        xl: '14px'
                      },
                      fontFamily: 'MetropolisBold',
                      zIndex: 99,
@@ -77,7 +78,7 @@ const styles = {
    date: {
       // display: 'none',
       display: 'block',
-      fontSize: { xs: '14px', xm: '15px', md: '15px', lg: '15px' },
+      fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' },
       fontFamily: 'MetropolisBold',
    }
 }
