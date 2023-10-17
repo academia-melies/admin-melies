@@ -549,6 +549,7 @@ export default function InterestEnroll() {
                     setDisciplinesSelected={setDisciplinesSelected}
                     disciplinesSelected={disciplinesSelected}
                     disciplines={disciplines}
+                    valuesCourse={valuesCourse}
                     userData={userData}
                     interestData={interestData}
                     setLoading={setLoading}
@@ -622,8 +623,11 @@ export default function InterestEnroll() {
             <>
                 <SectionHeader
                     perfil={routeScreen || 'Matricula'}
-                    title={userData?.nome}
+                    title={'Matrícula' || 'Rematrícula'}
                 />
+                <Text>{userData?.nome}, você está iniciando sua matrícula no curso escolhido.
+                    Para realizá-la é necessário cumprir os 3 passos:
+                </Text>
 
                 {telas[indiceTela]}
                 <Backdrop sx={{ zIndex: 99999999, backgroundColor: '#0E0D15' }} open={loadingEnrollment}>
@@ -654,38 +658,61 @@ export const EnrollStudentDetails = (props) => {
         disciplines,
         setDisciplinesSelected,
         interestData,
-        pushRouteScreen
+        pushRouteScreen,
+        valuesCourse
     } = props
+
+    const { colorPalette, theme } = useAppContext()
+
+    const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
 
 
     return (
         <>
-            <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
-                <ContentContainer fullWidth gap={4}>
-                    <Text bold title>Interesse</Text>
-                    <Box>
-
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
-                                <Text bold>Curso:</Text>
-                                <Text>{interestData?.nome_curso}</Text>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
-                                <Text bold>Turma:</Text>
-                                <Text>{interestData?.nome_turma}</Text>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
-                                <Text bold>Periodo:</Text>
-                                <Text>{interestData?.periodo_interesse}</Text>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
-                                <Text bold>Observação: </Text>
-                                <Text>{interestData?.observacao_int}</Text>
-                            </Box>
+            <ContentContainer gap={2}>
+                <Text bold title>Interesse</Text>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                            <Text bold>Curso:</Text>
+                            <Text>{interestData?.nome_curso}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                            <Text bold>Turma:</Text>
+                            <Text>{interestData?.nome_turma}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                            <Text bold>Periodo:</Text>
+                            <Text>{interestData?.periodo_interesse}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                            <Text bold>Observação: </Text>
+                            <Text>{interestData?.observacao_int}</Text>
                         </Box>
                     </Box>
-                </ContentContainer>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5, backgroundColor: colorPalette?.primary, padding: '5px 10px' }}>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 25,
+                            height: 25,
+                            aspectRatio: '1/1',
+                            backgroundImage: `url('/icons/coin_icon.png')`,
+                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                            transition: 'background-color 1s',
+                            transition: '.3s',
+                        }} />
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Text large>Valor Bruto:</Text>
+                            <Text large bold>{formatter.format(valuesCourse?.valor_total_curso)}</Text>
+                        </Box>
+                    </Box>
+                </Box>
+            </ContentContainer>
 
+            <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
                 <ContentContainer fullWidth gap={4}>
                     <Text bold title>Disciplinas</Text>
                     <CheckBoxComponent
@@ -700,7 +727,7 @@ export const EnrollStudentDetails = (props) => {
                 </ContentContainer>
             </ContentContainer>
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Button text="Continuar" onClick={() => pushRouteScreen(1, 'interesse > Forma de pagamento')} style={{ width: 120 }} />
+                <Button text="Continuar" onClick={() => pushRouteScreen(1, 'interesse > Pagamento')} style={{ width: 120 }} />
             </Box>
         </>
     )
@@ -755,6 +782,11 @@ export const Payment = (props) => {
     const { colorPalette, alert } = useAppContext()
     const [focusedCreditCard, setFocusedCreditCard] = useState('');
     const [twoCards, setTwoCards] = useState(false)
+    const [cardPurchaseValues, setCardPurchaseValues] = useState({
+        firstCard: '',
+        secondCard: ''
+    })
+
 
 
     useEffect(() => {
@@ -784,7 +816,7 @@ export const Payment = (props) => {
 
     useEffect(() => {
         let numberParcells = numberOfInstallments;
-        if(twoCards) numberParcells = numberOfInstallments + numberOfInstallmentSecondCard
+        if (twoCards) numberParcells = numberOfInstallments + numberOfInstallmentSecondCard
         const parcelValue = (totalValueFinnaly / numberParcells).toFixed(2)
         const totalParcelCourse = valuesCourse?.n_parcelas || 6;
         const updatedNumberParcel = Array.from({ length: totalParcelCourse }, (_, index) => ({
@@ -861,7 +893,7 @@ export const Payment = (props) => {
             return updatedArray;
         });
 
-    }, [numberOfInstallments, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, dayForPayment])
+    }, [numberOfInstallments, twoCards, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, dayForPayment])
 
 
     const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate, payment) => {
@@ -1101,10 +1133,12 @@ export const Payment = (props) => {
         new Date(2023, 11, 25)  // Natal
     ];
 
+
+
     return (
         <>
             <ContentContainer style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
-                <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
+                <ContentContainer style={{ flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' }, boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
                     <ContentContainer fullWidth gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 40px' }}>
                         <Text bold title>Resumo da contratação</Text>
 
@@ -1266,7 +1300,7 @@ export const Payment = (props) => {
 
                     <ContentContainer gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 30px' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, flexDirection: 'column' }}>
-                            <Text bold title>Perfil de pagamento</Text>
+                            <Text bold title>Cartão de crédito</Text>
                             <Box sx={{ display: 'flex' }}>
                                 <Button small secondary={showPaymentPerfl?.newProfile ? false : true} text="novo" onClick={() => setShowPaymentPerfl({
                                     newProfile: true,
@@ -1353,7 +1387,7 @@ export const Payment = (props) => {
                                 <Button small secondary={twoCards ? false : true} text="dividir em 2 cartões" onClick={() => setTwoCards(!twoCards)} style={{ height: '30px', borderRadius: 0 }} />
                             </Box>
 
-                            <Box sx={{ display: twoCards && 'flex', gap: twoCards ? 3 : 1.8 }}>
+                            <Box sx={{ display: twoCards && 'flex', gap: twoCards ? 3 : 1.8, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' } }}>
                                 <Box sx={{ display: twoCards && 'flex', gap: 1.8, flexDirection: 'column' }}>
 
                                     <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
@@ -1367,6 +1401,18 @@ export const Payment = (props) => {
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             clean={false}
                                         />
+                                        {twoCards &&
+                                            <TextInput
+                                                name='firstCard'
+                                                type={typeDiscountAdditional?.real ? "coin" : ''}
+                                                onChange={(event) =>
+                                                    setCardPurchaseValues((prevValues) => ({
+                                                        ...prevValues,
+                                                        firstCard: event.target.value,
+                                                    }))}
+                                                value={cardPurchaseValues?.firstCard || ''}
+                                                label='Quanto pagar neste cartão?' sx={{ flex: 1, }}
+                                            />}
                                     </Box>
 
                                     <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
@@ -1567,7 +1613,7 @@ export const Payment = (props) => {
             </ContentContainer>
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Button secondary text="Voltar" onClick={() => pushRouteScreen(0, 'interesse >')} style={{ width: 120 }} />
-                <Button text="Continuar" onClick={() => checkEnrollmentData(2, 'interesse > Forma de pagamento > Contrato')} style={{ width: 120 }} />
+                <Button text="Continuar" onClick={() => checkEnrollmentData(2, 'interesse > Pagamento > Contrato')} style={{ width: 120 }} />
             </Box>
         </>
     )
@@ -1830,7 +1876,7 @@ export const ContractStudent = (props) => {
                 <Button text="efetivar matrícula" onClick={() => handleSubmitEnrollment(paymentData, valuesContract)} style={{ width: '200px', height: '35px' }} />
             </Box>
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Button secondary text="Voltar" onClick={() => pushRouteScreen(1, 'interesse > Forma de pagamento')} style={{ width: 120 }} />
+                <Button secondary text="Voltar" onClick={() => pushRouteScreen(1, 'interesse > Pagamento')} style={{ width: 120 }} />
             </Box>
         </>
     )
@@ -1856,5 +1902,12 @@ export const styles = {
         justifyContent: 'space-around',
         gap: 1.8,
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
+    },
+    menuIcon: {
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
     },
 }

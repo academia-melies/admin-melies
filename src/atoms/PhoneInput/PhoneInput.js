@@ -4,6 +4,7 @@ import { useAppContext } from '../../context/AppContext';
 import { Box } from '../Box';
 import 'react-phone-number-input/style.css';
 import { Text } from '../Text';
+import { useMediaQuery, useTheme } from '@mui/material';
 
 export const PhoneInputField = (props) => {
 
@@ -12,6 +13,8 @@ export const PhoneInputField = (props) => {
     } = props;
 
     const { colorPalette, theme } = useAppContext()
+    const themeApp = useTheme()
+    const mobile = useMediaQuery(themeApp.breakpoints.down('xl'))
 
     return (
         <Box sx={{
