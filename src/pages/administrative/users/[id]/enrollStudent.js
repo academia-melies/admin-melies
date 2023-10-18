@@ -690,7 +690,7 @@ export const EnrollStudentDetails = (props) => {
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
                             <Text bold>Observação: </Text>
-                            <Text>{interestData?.observacao_int}</Text>
+                            <Text>{interestData?.observacao_int || '-'}</Text>
                         </Box>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5, backgroundColor: colorPalette?.primary, padding: '5px 10px' }}>
@@ -1329,7 +1329,7 @@ export const Payment = (props) => {
                                         <TextInput name='nome_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.nome_cartao || ''} label='Nome *' sx={{ flex: 1, }} onFocus={handleFocused} />
                                         <TextInput name='cpf_cartao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.cpf_cartao || ''} label='CPF *' sx={{ flex: 1, }} onFocus={handleFocused} />
                                         <Box sx={{ ...styles.inputSection }}>
-                                            <TextInput name='dt_expiracao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.dt_expiracao || ''} label='Validade *' sx={{ flex: 1, }} onFocus={handleFocused} />
+                                            <TextInput placeholder="ex: 2028" name='dt_expiracao' onChange={handleChangePerfilPayment} value={newPaymentProfile?.dt_expiracao || ''} label='Validade *' sx={{ flex: 1, }} onFocus={handleFocused} />
                                             <TextInput name='cvc' onChange={handleChangePerfilPayment} value={newPaymentProfile?.cvc || ''} label='CVC *' sx={{ flex: 1, }} onFocus={handleFocused} />
                                         </Box>
                                     </Box>
@@ -1676,30 +1676,6 @@ export const ContractStudent = (props) => {
         }
     }
 
-    const handleGeneratePdf = useReactToPrint({
-        content: () => contractService.current,
-        documentTitle: `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - ${userData?.nome}`,
-        onAfterPrint: () => {
-            html2canvas(contractService.current).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // 210x297 mm (A4)
-
-                const pdfData = pdf.output('blob');
-                const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
-
-                const formData = new FormData();
-                formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
-
-                setFormData(formData);
-                handleCreateEnrollStudent(paymentData, valuesContract);
-
-                return true
-            });
-        }
-    });
-
 
 
     useEffect(() => {
@@ -1731,6 +1707,38 @@ export const ContractStudent = (props) => {
         style: 'currency',
         currency: 'BRL'
     });
+
+
+    let nameContract = `contrato_ `;
+    if (userData?.nome) nameContract += `${userData?.nome}_`;
+    if (className) nameContract += `${className}-1SEM_`;
+    if (courseName) nameContract += `${courseName}_`;
+    if (modalityCourse) nameContract += `${modalityCourse}`;
+
+    const handleGeneratePdf = useReactToPrint({
+        content: () => contractService.current,
+        documentTitle: `${nameContract}`,
+        onAfterPrint: () => {
+            html2canvas(contractService.current).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // 210x297 mm (A4)
+
+                const pdfData = pdf.output('blob');
+                const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
+
+                const formData = new FormData();
+                formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
+
+                setFormData(formData);
+                handleCreateEnrollStudent(paymentData, valuesContract);
+
+                return true
+            });
+        }
+    });
+
 
     const handleChange = (event) => {
 
