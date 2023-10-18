@@ -99,9 +99,11 @@ export default function ListBillsToPay(props) {
         });
     };
 
-    const priorityColor = (data) => (((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
+    const priorityColor = (data) => (
+        ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
         ((data === 'Cancelada' || data === 'Pagamento reprovado' || data === 'Não Autorizado') && 'red') ||
-        (data === 'Paga' && 'green') ||
+        (data === 'Pago' && 'green') ||
+        (data === 'Aprovado' && 'blue') ||
         (data === 'Inativa' && '#f0f0f0') ||
         (data === 'Estornada' && '#f0f0f0'))
 
@@ -123,7 +125,8 @@ export default function ListBillsToPay(props) {
         { label: 'Todos', value: 'todos' },
         { label: 'Pendente', value: 'Pendente' },
         { label: 'Inativa', value: 'Inativa' },
-        { label: 'Paga', value: 'Paga' },
+        { label: 'Aprovado', value: 'Aprovado' },
+        { label: 'Pago', value: 'Pago' },
         { label: 'Cancelada', value: 'Cancelada' },
         { label: 'Pagamento reprovado', value: 'Pagamento reprovado' },
         { label: 'Em processamento', value: 'Em processamento' },
@@ -162,12 +165,16 @@ export default function ListBillsToPay(props) {
         return dateA - dateB;
     });
 
-    const totalValueToReceive = installmentsList
-        ?.filter(item => item?.status_parcela === 'Pendente')
+    const totalValueToReceive = (status) => installmentsList
+        ?.filter(item => item?.status_parcela === status)
         ?.map(item => item?.valor_parcela)
         ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0);
 
 
+    const totalValueCanceled = installmentsList
+        ?.filter(item => (item?.status_parcela === 'Cancelada') || (item?.status_parcela === 'Inativa'))
+        ?.map(item => item?.valor_parcela)
+        ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0);
 
     return (
         <>
@@ -358,9 +365,76 @@ export default function ListBillsToPay(props) {
                     <Text bold>Não existem parcelas a receber</Text>
                 </Box>
             }
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Text large>Valor a receber:</Text>
-                <Text title bold>{formatter.format(totalValueToReceive)}</Text>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
+                <Box sx={{
+                    display: 'flex',
+                    backgroundColor: colorPalette.secondary,
+                    gap: 2,
+                    alignItems: 'center',
+                    maxWidth: 250,
+                    padding: '5px 10px 5px 10px',
+                    borderRadius: 2,
+                    justifyContent: 'start',
+                }}
+                >
+                    <Box sx={{ display: 'flex', backgroundColor: 'green', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                    <Text>Total Recebido:</Text>
+                    <Text bold style={{ color: 'green' }}>{formatter.format(totalValueToReceive('Pago')) || 'R$ 0,00'}</Text>
+                </Box>
+
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    backgroundColor: colorPalette.secondary,
+                    alignItems: 'center',
+                    padding: '5px 10px 5px 10px',
+                    borderRadius: 2,
+                    justifyContent: 'start',
+
+                }}
+                >
+                    <Box sx={{ display: 'flex', backgroundColor: 'blue', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+
+                    <Text>Pagamentos aprovados (Cartão):</Text>
+                    <Text bold>{formatter.format(totalValueToReceive('Aprovado')) || 'R$ 0,00'}</Text>
+
+                </Box>
+
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    backgroundColor: colorPalette.secondary,
+                    alignItems: 'center',
+                    padding: '5px 10px 5px 10px',
+                    borderRadius: 2,
+                    justifyContent: 'start',
+
+                }}
+                >
+                    <Box sx={{ display: 'flex', backgroundColor: 'yellow', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+
+                    <Text>Total a receber:</Text>
+                    <Text bold>{formatter.format(totalValueToReceive('Pendente')) || 'R$ 0,00'}</Text>
+
+                </Box>
+
+                <Box sx={{
+                    display: 'flex',
+                    padding: '5px 10px 5px 10px',
+                    backgroundColor: colorPalette.secondary,
+                    gap: 2,
+                    height: 50,
+                    alignItems: 'center',
+                    borderRadius: 2,
+                    justifyContent: 'start',
+
+                }}
+                >
+                    <Box sx={{ display: 'flex', backgroundColor: 'red', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                    <Text>Total cancelado:</Text>
+                    <Text bold>{formatter.format(totalValueCanceled) || 'R$ 0,00'}</Text>
+                </Box>
+
             </Box>
 
             {installmentsSelected && <>
