@@ -387,6 +387,11 @@ export default function InterestEnroll() {
             return false
         }
 
+        if (newPaymentProfile?.dt_expiracao?.length < 7) {
+            alert?.error('O ano de expiração de ser preenchido com 4 digitos. (exemplo: 2028)')
+            return false
+        }
+
         if (!cvc) {
             alert?.error('O cvc é obrigatório')
             return false
@@ -476,6 +481,7 @@ export default function InterestEnroll() {
         return true
     }
 
+    console.log(disciplines)
 
     const handleCreateEnrollStudent = async (enrollment, valuesContract) => {
         if (checkEnrollmentData(enrollment)) {
@@ -519,7 +525,7 @@ export default function InterestEnroll() {
 
             setLoadingEnrollment(true);
             try {
-                const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment });
+                const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines });
                 if (response?.status === 201) {
                     setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
                     alert.success('Matrícula efetivada.')

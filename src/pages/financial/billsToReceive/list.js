@@ -184,16 +184,9 @@ export default function ListBillsToPay(props) {
             <ContentContainer>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{installmentsList.filter(filter)?.length || '0'}</Text>
-                        <Text style={{ color: '#d6d6d6' }} light>de</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{installmentsList?.length || 0}</Text>
-                        <Text style={{ color: '#d6d6d6' }} light>parcelas</Text>
-                    </Box>
                 </Box>
-                <SearchBar placeholder='Pesquise pelo pagante ou aluno' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
-                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                    <SearchBar placeholder='Pesquise pelo pagante ou aluno' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
                             data={listAtivo}
@@ -222,19 +215,80 @@ export default function ListBillsToPay(props) {
                             setFilterData('')
                         }} />
                     </Box>
-                    <TablePagination
-                        component="div"
-                        count={installmentsList?.filter(filter)?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        style={{ color: colorPalette.textColor }}
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }}
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }}
-                    />
                 </Box>
             </ContentContainer>
+
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
+                <Box sx={{
+                    display: 'flex',
+                    backgroundColor: colorPalette.secondary,
+                    gap: 2,
+                    alignItems: 'center',
+                    maxWidth: 250,
+                    padding: '5px 10px 5px 10px',
+                    borderRadius: 2,
+                    justifyContent: 'start',
+                }}
+                >
+                    <Box sx={{ display: 'flex', backgroundColor: 'green', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                    <Text>Total Recebido:</Text>
+                    <Text bold style={{ color: 'green' }}>{formatter.format(totalValueToReceive('Pago')) || 'R$ 0,00'}</Text>
+                </Box>
+
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    backgroundColor: colorPalette.secondary,
+                    alignItems: 'center',
+                    padding: '5px 10px 5px 10px',
+                    borderRadius: 2,
+                    justifyContent: 'start',
+
+                }}
+                >
+                    <Box sx={{ display: 'flex', backgroundColor: 'blue', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+
+                    <Text>Pagamentos aprovados (Cartão):</Text>
+                    <Text bold>{formatter.format(totalValueToReceive('Aprovado')) || 'R$ 0,00'}</Text>
+
+                </Box>
+
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    backgroundColor: colorPalette.secondary,
+                    alignItems: 'center',
+                    padding: '5px 10px 5px 10px',
+                    borderRadius: 2,
+                    justifyContent: 'start',
+
+                }}
+                >
+                    <Box sx={{ display: 'flex', backgroundColor: 'yellow', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+
+                    <Text>Total a receber:</Text>
+                    <Text bold>{formatter.format(totalValueToReceive('Pendente')) || 'R$ 0,00'}</Text>
+
+                </Box>
+
+                <Box sx={{
+                    display: 'flex',
+                    padding: '5px 10px 5px 10px',
+                    backgroundColor: colorPalette.secondary,
+                    gap: 2,
+                    height: 50,
+                    alignItems: 'center',
+                    borderRadius: 2,
+                    justifyContent: 'start',
+
+                }}
+                >
+                    <Box sx={{ display: 'flex', backgroundColor: 'red', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                    <Text>Total cancelado:</Text>
+                    <Text bold>{formatter.format(totalValueCanceled) || 'R$ 0,00'}</Text>
+                </Box>
+
+            </Box>
 
             {installmentsList.length > 0 ?
                 <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap', border: `1px solid ${colorPalette.textColor}` }}>
@@ -358,84 +412,25 @@ export default function ListBillsToPay(props) {
                                 );
                             })}
                         </tbody>
+
                     </table>
+                    <TablePagination
+                        component="div"
+                        count={installmentsList?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        style={{ color: colorPalette.textColor }}
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }}
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }}
+                    />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não existem parcelas a receber</Text>
                 </Box>
             }
-            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
-                <Box sx={{
-                    display: 'flex',
-                    backgroundColor: colorPalette.secondary,
-                    gap: 2,
-                    alignItems: 'center',
-                    maxWidth: 250,
-                    padding: '5px 10px 5px 10px',
-                    borderRadius: 2,
-                    justifyContent: 'start',
-                }}
-                >
-                    <Box sx={{ display: 'flex', backgroundColor: 'green', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                    <Text>Total Recebido:</Text>
-                    <Text bold style={{ color: 'green' }}>{formatter.format(totalValueToReceive('Pago')) || 'R$ 0,00'}</Text>
-                </Box>
-
-                <Box sx={{
-                    display: 'flex',
-                    gap: 2,
-                    backgroundColor: colorPalette.secondary,
-                    alignItems: 'center',
-                    padding: '5px 10px 5px 10px',
-                    borderRadius: 2,
-                    justifyContent: 'start',
-
-                }}
-                >
-                    <Box sx={{ display: 'flex', backgroundColor: 'blue', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-
-                    <Text>Pagamentos aprovados (Cartão):</Text>
-                    <Text bold>{formatter.format(totalValueToReceive('Aprovado')) || 'R$ 0,00'}</Text>
-
-                </Box>
-
-                <Box sx={{
-                    display: 'flex',
-                    gap: 2,
-                    backgroundColor: colorPalette.secondary,
-                    alignItems: 'center',
-                    padding: '5px 10px 5px 10px',
-                    borderRadius: 2,
-                    justifyContent: 'start',
-
-                }}
-                >
-                    <Box sx={{ display: 'flex', backgroundColor: 'yellow', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-
-                    <Text>Total a receber:</Text>
-                    <Text bold>{formatter.format(totalValueToReceive('Pendente')) || 'R$ 0,00'}</Text>
-
-                </Box>
-
-                <Box sx={{
-                    display: 'flex',
-                    padding: '5px 10px 5px 10px',
-                    backgroundColor: colorPalette.secondary,
-                    gap: 2,
-                    height: 50,
-                    alignItems: 'center',
-                    borderRadius: 2,
-                    justifyContent: 'start',
-
-                }}
-                >
-                    <Box sx={{ display: 'flex', backgroundColor: 'red', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                    <Text>Total cancelado:</Text>
-                    <Text bold>{formatter.format(totalValueCanceled) || 'R$ 0,00'}</Text>
-                </Box>
-
-            </Box>
 
             {installmentsSelected && <>
                 <Box sx={{ display: 'flex', position: 'fixed', left: 280, bottom: 20, display: 'flex', gap: 2 }}>
