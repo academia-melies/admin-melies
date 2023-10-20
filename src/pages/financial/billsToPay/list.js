@@ -79,6 +79,17 @@ export default function ListBillsToPay(props) {
         // getPersonalExpenses()
     }, []);
 
+    useEffect(() => {
+        setColumnTable([
+            { key: 'id_despesa_f', label: '#' },
+            { key: 'dt_vencimento', label: 'Vencimento', date: true },
+            { key: 'descricao_desp_f', label: 'Descrição' },
+            { key: 'valor_desp_f', label: 'Valor', price: true },
+            { key: 'empresa_paga', label: 'Fornecedor/Empresa' },
+            { key: 'status', label: 'Status' },
+        ])
+    }, []);
+
     const getFixedExpenses = async () => {
         setLoading(true)
         try {
@@ -259,11 +270,32 @@ export default function ListBillsToPay(props) {
 
                 <ContentContainer fullWidth row style={{ justifyContent: 'space-around' }}>
                     <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                        <Text bold title style={{ color: colorPalette.buttonColor }}>{formatter.format(parseFloat('5800.90'))}</Text>
+                        
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 18,
+                                height: 18,
+                                aspectRatio: '1/1',
+                                backgroundImage: `url('/icons/arrow_down_red_icon.png')`,
+                                transition: '.3s',
+                            }} />
+                            <Text bold title style={{ color: 'red' }}>{formatter.format(parseFloat('5800.90'))}</Text>
+                        </Box>
                         <Text light>XXX</Text>
                     </Box>
                     <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                        <Text bold title style={{ color: colorPalette.buttonColor }}>{formatter.format(parseFloat(saldoAtual))}</Text>
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 18,
+                                height: 18,
+                                aspectRatio: '1/1',
+                                backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
+                                transition: '.3s',
+                            }} />
+                            <Text bold title style={{ color: 'green' }}>{formatter.format(parseFloat(saldoAtual))}</Text>
+                        </Box>
                         <Text light>Saldo Atual</Text>
                     </Box>
                 </ContentContainer>
@@ -408,4 +440,14 @@ export default function ListBillsToPay(props) {
             }
         </>
     )
+}
+
+const styles = {
+    menuIcon: {
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
+    },
 }
