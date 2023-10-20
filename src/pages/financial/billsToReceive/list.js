@@ -8,7 +8,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import { formatTimeStamp } from "../../../helpers"
 import { TablePagination } from "@mui/material"
 
-export default function ListBillsToPay(props) {
+export default function ListBillsToReceive(props) {
     const [installmentsList, setInstallmentsList] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette } = useAppContext()
@@ -101,7 +101,7 @@ export default function ListBillsToPay(props) {
 
     const priorityColor = (data) => (
         ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
-        ((data === 'Cancelada' || data === 'Pagamento reprovado' || data === 'Não Autorizado') && 'red') ||
+        ((data === 'Cancelada' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
         (data === 'Pago' && 'green') ||
         (data === 'Aprovado' && 'blue') ||
         (data === 'Inativa' && '#f0f0f0') ||
@@ -172,7 +172,7 @@ export default function ListBillsToPay(props) {
 
 
     const totalValueCanceled = installmentsList
-        ?.filter(item => (item?.status_parcela === 'Cancelada') || (item?.status_parcela === 'Inativa'))
+        ?.filter(item => (item?.status_parcela === 'Cancelada') || (item?.status_parcela === 'Inativa') || (item?.status_parcela === 'Estornada'))
         ?.map(item => item?.valor_parcela)
         ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0);
 
@@ -284,7 +284,7 @@ export default function ListBillsToPay(props) {
                 }}
                 >
                     <Box sx={{ display: 'flex', backgroundColor: 'red', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                    <Text>Total cancelado:</Text>
+                    <Text>Total cancelado/Estornado:</Text>
                     <Text bold>{formatter.format(totalValueCanceled) || 'R$ 0,00'}</Text>
                 </Box>
 
