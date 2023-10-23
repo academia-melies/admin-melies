@@ -5,8 +5,8 @@ import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { formatTimeStamp } from "../../../helpers"
-import { TablePagination } from "@mui/material"
+import { formatDate, formatTimeStamp } from "../../../helpers"
+import { Avatar, TablePagination } from "@mui/material"
 
 const monthFilter = [
     { month: 'Jan', value: 0 },
@@ -24,13 +24,14 @@ const monthFilter = [
 ]
 
 const menusFilters = [
-    { text: 'Despesas Fixas', value: 'Despesas Fixas' },
-    { text: 'Despesas Variáveis', value: 'Despesas Variáveis' },
-    { text: 'Folha de Pagamento', value: 'Folha de Pagamento' },
+    { id: '01', text: 'Despesas Fixas', value: 'Despesas Fixas' },
+    { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis' },
+    { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento' },
 ]
 
 export default function ListBillsToPay(props) {
     const [fixedExpenses, setFixedExpenses] = useState([])
+    const [expensesData, setExpensesData] = useState([])
     const [variableExpenses, setVariableExpenses] = useState([])
     const [personalExpenses, setPersonalExpenses] = useState([])
     const [filterData, setFilterData] = useState('')
@@ -72,32 +73,49 @@ export default function ListBillsToPay(props) {
     //     return matchesFilterData && matchesFilterActive && matchesFilterPayment;
     // };
 
+    const filter = (item) => {
+        let date = new Date(item?.dt_vencimento)
+        let monthSelect = date.getMonth()
+        return monthSelect === filterMonth;
+    }
 
     useEffect(() => {
-        // getFixedExpenses();
-        // getVariableExpenses()
-        // getPersonalExpenses()
-    }, []);
+        if (menuSelected === 'Despesas Fixas') getFixedExpenses('fixed');
+        if (menuSelected === 'Despesas Variáveis') { getVariableExpenses('fixed') }
+        if (menuSelected === 'Folha de Pagamento') { getPersonalExpenses('personal') }
+    }, [menuSelected]);
+
+
 
     useEffect(() => {
         setColumnTable([
-            { key: 'id_despesa_f', label: '#' },
+            { key: 'id_despesa_f', label: 'id' },
             { key: 'dt_vencimento', label: 'Vencimento', date: true },
             { key: 'descricao_desp_f', label: 'Descrição' },
             { key: 'valor_desp_f', label: 'Valor', price: true },
             { key: 'empresa_paga', label: 'Fornecedor/Empresa' },
             { key: 'status', label: 'Status' },
         ])
+        const dateNow = new Date()
+        let monthNow = dateNow.getMonth()
+        setFilterMonth(monthNow)
     }, []);
 
-    const getFixedExpenses = async () => {
+    const getFixedExpenses = async (typeExpense) => {
         setLoading(true)
         try {
-            const response = await api.get('/student/installments')
+            const response = await api.get(`/expenses/${typeExpense}`)
             const { data } = response;
             const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
             setAllSelected(groupIds)
             setFixedExpenses(data)
+            setExpensesData(data.map(item => {
+                const valorDespF = parseFloat(item.valor_desp_f);
+                return {
+                    ...item,
+                    valor_tipo: isNaN(valorDespF) ? item.valor_desp_f : valorDespF.toFixed(2)
+                };
+            }));
         } catch (error) {
             console.log(error)
         } finally {
@@ -105,12 +123,19 @@ export default function ListBillsToPay(props) {
         }
     }
 
-    const getVariableExpenses = async () => {
+    const getVariableExpenses = async (typeExpense) => {
         setLoading(true)
         try {
-            const response = await api.get('/student/installments')
+            const response = await api.get(`/expenses/${typeExpense}`)
             const { data } = response;
             setVariableExpenses(data)
+            setExpensesData(data.map(item => {
+                const valorDespF = parseFloat(item.valor_desp_v);
+                return {
+                    ...item,
+                    valor_tipo: isNaN(valorDespF) ? item.valor_desp_v : valorDespF.toFixed(2)
+                };
+            }));
         } catch (error) {
             console.log(error)
         } finally {
@@ -118,12 +143,19 @@ export default function ListBillsToPay(props) {
         }
     }
 
-    const getPersonalExpenses = async () => {
+    const getPersonalExpenses = async (typeExpense) => {
         setLoading(true)
         try {
-            const response = await api.get('/student/installments')
+            const response = await api.get(`/expenses/${typeExpense}`)
             const { data } = response;
             setPersonalExpenses(data)
+            setExpensesData(data.map(item => {
+                const valorDespF = parseFloat(item.vl_pagamento);
+                return {
+                    ...item,
+                    valor_tipo: isNaN(valorDespF) ? item.vl_pagamento : valorDespF.toFixed(2)
+                };
+            }));
         } catch (error) {
             console.log(error)
         } finally {
@@ -152,6 +184,12 @@ export default function ListBillsToPay(props) {
         });
     };
 
+    const pusNewBill = async () => {
+        const routePush = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.id);
+        let queryRoute = `/financial/billsToPay/new?bill=${routePush}`
+        router.push(queryRoute)
+    }
+
     const priorityColor = (data) => (
         ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
         ((data === 'Cancelada' || data === 'Pagamento reprovado' || data === 'Não Autorizado') && 'red') ||
@@ -165,7 +203,7 @@ export default function ListBillsToPay(props) {
     const endIndex = startIndex + rowsPerPage;
 
     const columnFixed = [
-        { key: 'id_despesa_f', label: '#' },
+        { key: 'id_despesa_f', label: 'id' },
         { key: 'dt_vencimento', label: 'Vencimento', date: true },
         { key: 'descricao_desp_f', label: 'Descrição' },
         { key: 'valor_desp_f', label: 'Valor', price: true },
@@ -174,7 +212,7 @@ export default function ListBillsToPay(props) {
     ];
 
     const columnVariable = [
-        { key: 'id_despesa_v', label: '#' },
+        { key: 'id_despesa_v', label: 'id' },
         { key: 'dt_vencimento', label: 'Vencimento', date: true },
         { key: 'descricao_desp_v', label: 'Descrição' },
         { key: 'valor_desp_v', label: 'Valor', price: true },
@@ -183,7 +221,7 @@ export default function ListBillsToPay(props) {
     ];
 
     const columnPersonal = [
-        { key: 'id_pagamento_folha', label: '#' },
+        { key: 'id_pagamento_folha', label: 'id' },
         { key: 'funcionario', label: 'Funcionário' },
         { key: 'cargo', label: 'Cargo/Função' },
         { key: 'dt_pagamento', label: 'Curso', date: true },
@@ -252,12 +290,16 @@ export default function ListBillsToPay(props) {
     //     ?.map(item => item?.valor_parcela)
     //     ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0);
 
-    let totalExpensesView = '5800.90';
-    let totalExpenses = '8000.90';
-    let saldoAtual = '130000.500'
-    const percentualExpenses = (totalExpensesView / totalExpenses) * 100;
 
-    console.log(columnTable)
+    let valueFixed = fixedExpenses?.map(item => parseFloat(item.valor_desp_f))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
+    let valueVariable = variableExpenses?.map(item => parseFloat(item.valor_desp_v))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
+    let valuePersonal = personalExpenses?.map(item => parseFloat(item.vl_pagamento))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
+
+    let totalExpenses = parseFloat(valueFixed) + parseFloat(valueVariable) + parseFloat(valuePersonal)
+    let totalExpensesView = expensesData?.filter(filter)?.map(item => parseFloat(item.valor_tipo)).reduce((acc, currentValue) => acc + (currentValue || 0), 0)
+
+    let saldoAtual = '130000.500'
+    const percentualExpenses = (parseFloat(totalExpensesView) / totalExpenses) * 100;
 
 
     return (
@@ -270,7 +312,7 @@ export default function ListBillsToPay(props) {
 
                 <ContentContainer fullWidth row style={{ justifyContent: 'space-around' }}>
                     <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                        
+
                         <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                             <Box sx={{
                                 ...styles.menuIcon,
@@ -382,7 +424,7 @@ export default function ListBillsToPay(props) {
                 </Box>
                 <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, position: 'relative', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
                     <Box sx={{ display: 'flex', gap: 1, height: 30, position: 'absolute', top: 30, left: 40 }}>
-                        <Button small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} />
+                        <Button small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => pusNewBill()} />
                         <Button small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} />
                         <Button small text="Novo Fornecedor/Empresa" style={{ width: '200px', height: '30px', borderRadius: '6px' }} />
                     </Box>
@@ -391,28 +433,41 @@ export default function ListBillsToPay(props) {
                             <thead>
                                 <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
                                     {columnTable?.map((item, index) => (
-                                        <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>{item.label}</th>
+                                        <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: item.label === 'id' ? '20px' : '100px' }}>{item.label}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody style={{ flex: 1, }}>
-                                <tr style={{ backgroundColor: colorPalette?.secondary }}>
-                                    {columnTable?.map((item, index) => {
-                                        return (
-                                            <td key={index} style={{ padding: '8px 0px', flex: 1, fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                N/A
-                                            </td>
-                                        )
-                                    })}
-                                </tr>
+                                {expensesData?.filter(filter)?.map((item, index) => {
+                                    return (
+                                        <tr key={index} style={{ backgroundColor: colorPalette?.secondary }}>
+                                            {columnTable?.map((column, colIndex) => (
+                                                <td key={colIndex} style={{ padding: '8px 0px', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                    {item[column?.key] ? (
+                                                        <Box>
+                                                            {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={item[column?.avatarUrl || '']} />}
+
+                                                            {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
+                                                                formatTimeStamp(item[column?.key || '-'])
+                                                            ) :
+                                                                (column.date ? formatDate(item[column?.key]) : column.price ? formatter.format(parseFloat((item[column?.key]))) : item[column?.key || '-'])
+                                                            }
+                                                        </Box>
+                                                    ) : (
+                                                        <Text sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>-</Text>
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                         <Box sx={{ marginTop: 2 }}>
 
                             <TablePagination
                                 component="div"
-                                // count={installmentsList?.filter(filter)?.length}
-                                count={'10'}
+                                count={expensesData?.length}
                                 page={page}
                                 onPageChange={handleChangePage}
                                 rowsPerPage={rowsPerPage}

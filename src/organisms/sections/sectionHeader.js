@@ -55,7 +55,7 @@ export const SectionHeader = (props) => {
                justifyContent: { xs: 'center', sm: 'end', md: 'end', lg: 'end' },
                bottom: { xs: 0, sm: 20, md: 20, lg: 20 },
                left: { xs: 0 },
-               right: { xs: 0, sm: 20, md: 20, lg: 20 },
+               right: { xs: 0, sm: 20, md: 40, lg: 60 },
                margin: { xs: 'auto' },
                zIndex: 9999,
                padding: { xs: 2, sm: 0, md: 0, lg: 0 },
