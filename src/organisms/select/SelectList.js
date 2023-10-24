@@ -25,9 +25,14 @@ export const SelectList = (props) => {
     return (
         <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px", }}>
             <FormControl fullWidth>
-                <InputLabel sx={{ ...inputStyle }}>{title}</InputLabel>
+                <InputLabel
+                    InputLabelProps={{ sx: { fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } } }}
+                    sx={{ ...inputStyle, fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } }}>{title}</InputLabel>
                 <Select
-                    sx={{ borderRadius: "8px", backgroundColor: colorPalette.inputColor, height: 45, color: colorPalette.textColor, ...sx, maxHeight: 45, transition: 'background-color 1s' }}
+                    sx={{
+                        borderRadius: "8px", backgroundColor: colorPalette.inputColor, height: 45, color: colorPalette.textColor, ...sx, maxHeight: 45, transition: 'background-color 1s',
+                        fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' }
+                    }}
                     value={valueSelection}
                     label={title}
                     onChange={(event) => onSelect(event.target.value)}
@@ -57,7 +62,7 @@ export const SelectList = (props) => {
                     }
                 >
                     {data.map((item, index) => (
-                        <MenuItem key={index} value={item[filterOpition]}>
+                        <MenuItem key={index} value={item[filterOpition]} sx={{ fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } }}>
                             {item.label}
                         </MenuItem>
                     ))}
@@ -69,20 +74,3 @@ export const SelectList = (props) => {
 
 const styles = {
 }
-
-{/* <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'space-between', alignItems: 'center' }}>
-                                {item[filterOpition]}
-                                <Box sx={{
-                                    backgroundSize: 'cover',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                    width: 15,
-                                    height: 15,
-                                    backgroundImage: `url(/icons/remove_icon.png)`,
-                                    transition: '.3s',
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => onSelect('')} />
-                            </Box> */}
