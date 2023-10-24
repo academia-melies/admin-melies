@@ -15,6 +15,7 @@ export default function EditBillToPay(props) {
     const { id, bill } = router.query;
     const newBill = id === 'new';
     const [billToPayData, setBillToPayData] = useState({})
+    const [usersList, setUsers] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -23,8 +24,6 @@ export default function EditBillToPay(props) {
         { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis' },
         { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento' },
     ]
-
-    console.log(id)
 
 
     const getBillToPay = async () => {
@@ -47,6 +46,10 @@ export default function EditBillToPay(props) {
         })();
     }, [bill])
 
+    useEffect(() => {
+        listUsers()
+    }, [])
+
     // async function listDisciplines() {
     //     try {
     //         const response = await api.get(`/disciplines/active`)
@@ -60,6 +63,17 @@ export default function EditBillToPay(props) {
     //     } catch (error) {
     //     }
     // }
+
+    async function listUsers() {
+        const response = await api.get(`/users`)
+        const { data } = response
+        const groupEmployee = data.map(employee => ({
+            label: employee.nome,
+            value: employee?.id
+        }));
+
+        setUsers(groupEmployee)
+    }
 
 
     const handleItems = async () => {
@@ -75,7 +89,7 @@ export default function EditBillToPay(props) {
 
     const handleChange = async (event) => {
 
-        if (event.target.name === 'valor_desp_f') {
+        if (event.target.name === 'valor_desp_f' || event.target.name === 'valor_desp_v' || event.target.name === 'vl_pagamento') {
             const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
             if (rawValue === '') {
@@ -186,6 +200,13 @@ export default function EditBillToPay(props) {
         { label: 'Pendente', value: 'Pendente' },
         { label: 'Cancelado', value: 'Cancelado' }
     ]
+
+    const groupTypePayment = [
+        { label: 'Salário', value: 'Salário' },
+        { label: 'Bônus', value: 'Bônus' },
+        { label: '13º Salário', value: '13º Salário' },
+        { label: 'Férias', value: 'Férias' },
+    ] 
 
 
     const groupRecurrency = [
@@ -316,25 +337,22 @@ export default function EditBillToPay(props) {
                         <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Despesa</Text>
                     </Box>
                     <Box sx={styles.inputSection}>
-                        <TextInput placeholder='Empresa/Fornecedor' name='empresa_paga' onChange={handleChange} value={billToPayData?.empresa_paga || ''} label='Empresa/Fornecedor' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Empresa/Fornecedor' name='empresa_paga_v' onChange={handleChange} value={billToPayData?.empresa_paga_v || ''} label='Empresa/Fornecedor' sx={{ flex: 1, }} />
                         <TextInput placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento' sx={{ flex: 1, }} />
                         <TextInput
                             placeholder='0.00'
-                            name='valor_desp_f'
+                            name='valor_desp_v'
                             type="coin"
                             onChange={handleChange}
-                            value={(billToPayData?.valor_desp_f) || ''}
+                            value={(billToPayData?.valor_desp_v) || ''}
                             label='Valor Total' sx={{ flex: 1, }}
-                        // onBlur={() => calculationValues(pricesCourseData)}
                         />
                     </Box>
-                    <Box sx={styles.inputSection}>
-                        <TextInput placeholder='Descrição/Observação' name='descricao_desp_f' onChange={handleChange} value={billToPayData?.descricao_desp_f || ''} label='Descrição/Observação' sx={{}} />
-                        <SelectList fullWidth data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => setBillToPayData({ ...billToPayData, status: value })}
-                            title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                        />
-                    </Box>
+                    <TextInput placeholder='Descrição/Observação' name='descricao_desp_v' onChange={handleChange} value={billToPayData?.descricao_desp_v || ''} label='Descrição/Observação' sx={{}} multiline rows={4} />
+                    <SelectList data={groupStatus} valueSelection={billToPayData?.status_desp_v} onSelect={(value) => setBillToPayData({ ...billToPayData, status_desp_v: value })}
+                        title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
                 </ContentContainer>
             }
 
@@ -344,13 +362,29 @@ export default function EditBillToPay(props) {
                         <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do pagamento</Text>
                     </Box>
                     <Box sx={styles.inputSection}>
-                        <TextInput placeholder='Nome' name='nome_disciplina' onChange={handleChange} value={billToPayData?.nome_disciplina || ''} label='Nome' sx={{ flex: 1, }} />
-                        <TextInput placeholder='Data da Criação' name='dt_criacao' onChange={handleChange} value={(billToPayData?.dt_criacao)?.split('T')[0] || ''} type="date" label='Data da Criação' sx={{ flex: 1, }} />
+                        <SelectList fullWidth data={usersList} valueSelection={billToPayData?.usuario_id} onSelect={(value) => setBillToPayData({ ...billToPayData, usuario_id: value })}
+                            title="Funcionário(a)" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <TextInput name='dt_pagamento' onChange={handleChange} value={(billToPayData?.dt_pagamento)?.split('T')[0] || ''} type="date" label='Data do pagamento' sx={{ flex: 1, }} />
+                        <TextInput
+                            placeholder='0.00'
+                            name='vl_pagamento'
+                            type="coin"
+                            onChange={handleChange}
+                            value={(billToPayData?.vl_pagamento) || ''}
+                            label='Valor Total' sx={{ flex: 1, }}
+                        />
                     </Box>
-                    <Box sx={styles.inputSection}>
-                        <TextInput placeholder='Carga Horária' name='carga_hr_dp' onChange={handleChange} value={billToPayData?.carga_hr_dp || ''} label='Carga Horária' sx={{}} />
-                    </Box>
-
+                    
+                    <SelectList data={groupTypePayment} valueSelection={billToPayData?.tipo_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo_pagamento: value })}
+                        title="Tipo de pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
+                    <SelectList data={groupStatus} valueSelection={billToPayData?.status_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, status_pagamento: value })}
+                        title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
                 </ContentContainer>
             }
 
