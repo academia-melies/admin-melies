@@ -481,8 +481,6 @@ export default function InterestEnroll() {
         return true
     }
 
-    console.log(disciplines)
-
     const handleCreateEnrollStudent = async (enrollment, valuesContract) => {
         if (checkEnrollmentData(enrollment)) {
             let enrollmentData = {

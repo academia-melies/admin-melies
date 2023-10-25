@@ -7,9 +7,10 @@ import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
+import Link from "next/link"
 
 export default function EditClass(props) {
-    const { setLoading, alert, colorPalette, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, colorPalette, setShowConfirmationDialog, theme } = useAppContext()
     const router = useRouter()
     const { id } = router.query;
     const newClass = id === 'new';
@@ -25,6 +26,8 @@ export default function EditClass(props) {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [courses, setCourses] = useState([])
     const [grids, setGrids] = useState([])
+    const [numberRegistrations, setNumberRegistrations] = useState(0)
+    const [enrolledStudents, setEnrolledStudents] = useState([])
 
 
     const getClass = async () => {
@@ -46,7 +49,7 @@ export default function EditClass(props) {
 
     useEffect(() => {
         listGrids(classData?.curso_id)
-    },[classData?.curso_id])
+    }, [classData?.curso_id])
 
 
     useEffect(() => {
@@ -65,8 +68,10 @@ export default function EditClass(props) {
         setLoading(true)
         try {
             const classData = await getClass()
-            if(classData){
+            if (classData) {
                 await listGrids(classData?.curso_id)
+                await handleInterestByClass()
+                await handleStudents()
             }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Turma')
@@ -160,7 +165,7 @@ export default function EditClass(props) {
     }
 
     async function listGrids(courseId) {
-        
+
         try {
             const response = await api.get(`/grid/course/${courseId}`)
             const { data } = response
@@ -171,6 +176,28 @@ export default function EditClass(props) {
 
             setGrids(groupGrids);
         } catch (error) {
+            return error
+        }
+    }
+
+    const handleInterestByClass = async () => {
+        try {
+            const response = await api.get(`/interest/classes/${id}`)
+            const { numero_de_interesses } = response.data
+            setNumberRegistrations(numero_de_interesses)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+    const handleStudents = async () => {
+        try {
+            const response = await api.get(`/class/students/${id}`)
+            const { data } = response
+            setEnrolledStudents(data)
+        } catch (error) {
+            console.log(error)
             return error
         }
     }
@@ -203,7 +230,6 @@ export default function EditClass(props) {
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteClass })}
             />
 
-            {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Turma</Text>
@@ -229,7 +255,66 @@ export default function EditClass(props) {
                     <TextInput placeholder='Quantidade de alunos' name='qnt_alunos' onChange={handleChange} type="number" value={classData?.qnt_alunos || ''} label='Quantidade de alunos' sx={{ flex: 1, }} />
                 </Box>
                 <RadioItem valueRadio={classData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setClassData({ ...classData, ativo: parseInt(value) })} />
+                {!newClass &&
+                    <Box sx={{
+                        padding: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', borderRadius: `12px`,
+                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, maxWidth: 160
+                    }}>
+                        <Text bold>Nº de inscritos:</Text>
+                        <Text title>{numberRegistrations}</Text>
+                    </Box>
+                }
+
             </ContentContainer>
+
+            {!newClass &&
+                <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
+                    <Box>
+                        <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Lista de alunos mátriculados</Text>
+                    </Box>
+                    {enrolledStudents.length > 0 ? 
+                    <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px' }}>
+                        <table style={{ borderCollapse: 'collapse', width: '100%', borderRadius: '8px', }}>
+                            <thead>
+                                <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
+                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Area acadêmica</th>
+                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
+                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    enrolledStudents?.map((item, index) => {
+                                        const studentAcademic = `/academic/teacherArea/${item?.usuario_id}`
+                                        return (
+                                            <tr key={`${item}-${index}`}>
+                                                <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                    {item?.nome}
+                                                </td>
+                                                <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Link href={studentAcademic} target="_blank" style={{ color: theme ? 'blue' : 'red', }}>
+                                                        link das notas
+                                                    </Link>
+                                                </td>
+                                                <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                    -
+                                                </td>
+                                                <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                    Aprovado
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    : 
+                    <Text light>Não existem alunos matrículados nessa turma</Text>}
+                </ContentContainer >
+            }
         </>
     )
 }

@@ -7,6 +7,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { formatDate, formatTimeStamp } from "../../../helpers"
 import { Avatar, TablePagination } from "@mui/material"
+import Link from "next/link"
 
 const monthFilter = [
     { month: 'Jan', value: 0 },
@@ -24,9 +25,9 @@ const monthFilter = [
 ]
 
 const menusFilters = [
-    { id: '01', text: 'Despesas Fixas', value: 'Despesas Fixas' },
-    { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis' },
-    { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento' },
+    { id: '01', text: 'Despesas Fixas', value: 'Despesas Fixas', key: 'fixed' },
+    { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis', key: 'variable' },
+    { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento', key: 'personal' },
 ]
 
 export default function ListBillsToPay(props) {
@@ -34,13 +35,10 @@ export default function ListBillsToPay(props) {
     const [expensesData, setExpensesData] = useState([])
     const [variableExpenses, setVariableExpenses] = useState([])
     const [personalExpenses, setPersonalExpenses] = useState([])
-    const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, theme } = useAppContext()
-    const [filterAtive, setFilterAtive] = useState('todos')
+    const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog } = useAppContext()
     const [filterYear, setFilterYear] = useState(2023)
     const [filterMonth, setFilterMonth] = useState(9)
-    const [filterPayment, setFilterPayment] = useState('todos')
-    const [installmentsSelected, setInstallmentsSelected] = useState(null);
+    const [expensesSelected, setExpensesSelected] = useState(null);
     const [allSelected, setAllSelected] = useState();
     const router = useRouter()
     const [page, setPage] = useState(0);
@@ -48,7 +46,6 @@ export default function ListBillsToPay(props) {
     const [billstToReceive, setBillstToReceive] = useState([]);
     const [menuSelected, setMenuSelected] = useState('Despesas Fixas')
     const [columnTable, setColumnTable] = useState([])
-    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
     const filter = (item) => {
         let dateFilter = menuSelected === 'Folha de Pagamento' ? item?.dt_pagamento : item?.dt_vencimento;
@@ -58,10 +55,14 @@ export default function ListBillsToPay(props) {
     }
 
     useEffect(() => {
+        handleLoadData()
+    }, [])
+
+    const handleLoadData = () => {
         getFixedExpenses('fixed')
         getVariableExpenses('variable')
         getPersonalExpenses('personal')
-    }, [])
+    }
 
     useEffect(() => {
         if (menuSelected === 'Despesas Fixas') getFixedExpenses('fixed');
@@ -95,10 +96,10 @@ export default function ListBillsToPay(props) {
         try {
             const response = await api.get(`/expenses/${typeExpense}`)
             const { data } = response;
-            const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
-            setAllSelected(groupIds)
+            // const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
+            // setAllSelected(groupIds)
             setFixedExpenses(data)
-            if(data.length > 0){
+            if (data.length > 0) {
 
                 setExpensesData(data.map(item => {
                     const valorDespF = parseFloat(item.valor_desp_f);
@@ -121,7 +122,7 @@ export default function ListBillsToPay(props) {
             const response = await api.get(`/expenses/${typeExpense}`)
             const { data } = response;
             setVariableExpenses(data)
-            if(data.length > 0){
+            if (data.length > 0) {
 
                 setExpensesData(data.map(item => {
                     const valorDespF = parseFloat(item.valor_desp_v);
@@ -144,7 +145,7 @@ export default function ListBillsToPay(props) {
             const response = await api.get(`/expenses/${typeExpense}`)
             const { data } = response;
             setPersonalExpenses(data)
-            if(data.length > 0){
+            if (data.length > 0) {
 
                 setExpensesData(data.map(item => {
                     const valorDespF = parseFloat(item.vl_pagamento);
@@ -195,9 +196,45 @@ export default function ListBillsToPay(props) {
         });
     };
 
+    const handleDelete = async () => {
+        setLoading(true)
+        try {
+            const queryType = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.key);
+            const idsToDelete = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
+            let allStatus200 = true;
+            for (const idDelte of idsToDelete) {
+                const response = await api.delete(`/expenses/${queryType}/delete/${idDelte}`)
+                if (response.status !== 200) {
+                    allStatus200 = false;
+                }
+            }
+            if (allStatus200) {
+                alert.success('Items excluídos.');
+                setExpensesSelected('');
+                handleLoadData()
+            } else {
+                alert.error('Erro ao excluir itens.');
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const pusNewBill = async () => {
         const routePush = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.id);
         let queryRoute = `/financial/billsToPay/new?bill=${routePush}`
+        router.push(queryRoute)
+    }
+
+    const pusBillId = async (item) => {
+        let itemId = 'new';
+        if (menuSelected === 'Despesas Fixas') itemId = item?.id_despesa_f;
+        if (menuSelected === 'Despesas Variáveis') itemId = item?.id_despesa_v
+        if (menuSelected === 'Folha de Pagamento') itemId = item?.id_pagamento_folha
+        const routePush = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.id);
+        let queryRoute = `/financial/billsToPay/${itemId}?bill=${routePush}`
         router.push(queryRoute)
     }
 
@@ -421,7 +458,7 @@ export default function ListBillsToPay(props) {
                 <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, position: 'relative', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
                     <Box sx={{ display: 'flex', gap: 1, height: 30, position: 'absolute', top: 30, left: 40 }}>
                         <Button small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => pusNewBill()} />
-                        <Button small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} />
+                        <Button small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })} />
                         <Button small text="Novo Fornecedor/Empresa" style={{ width: '200px', height: '30px', borderRadius: '6px' }} />
                     </Box>
                     <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '50px', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
@@ -429,6 +466,24 @@ export default function ListBillsToPay(props) {
                             <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                                 <thead>
                                     <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
+                                        <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
+                                            <CheckBoxComponent
+                                                boxGroup={[{ value: 'allSelect' }]}
+                                                valueChecked={'select'}
+                                                horizontal={true}
+                                                onSelect={() => {
+                                                    if (expensesSelected?.length < allSelected?.length) {
+                                                        let allInstallmentSelected = expensesData?.filter(filter)?.map(item => item?.id_despesa_f)
+                                                        setExpensesSelected(allInstallmentSelected?.toString())
+                                                    } else {
+                                                        setExpensesSelected(null)
+                                                    }
+                                                }}
+                                                padding={0}
+                                                gap={0}
+                                                sx={{ display: 'flex', maxWidth: 15 }}
+                                            />
+                                        </th>
                                         {columnTable?.map((item, index) => (
                                             <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>{item.label}</th>
                                         ))}
@@ -436,12 +491,45 @@ export default function ListBillsToPay(props) {
                                 </thead>
                                 <tbody style={{ flex: 1, }}>
                                     {expensesData?.filter(filter)?.map((item, index) => {
+                                        let itemId;
+                                        if (menuSelected === 'Despesas Fixas') itemId = item?.id_despesa_f;
+                                        if (menuSelected === 'Despesas Variáveis') itemId = item?.id_despesa_v
+                                        if (menuSelected === 'Folha de Pagamento') itemId = item?.id_pagamento_folha
+                                        const isSelected = expensesSelected?.includes(itemId) || null;
+
                                         return (
-                                            <tr key={index} style={{ backgroundColor: colorPalette?.secondary }}>
+                                            <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
+                                                <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <CheckBoxComponent
+                                                        boxGroup={
+                                                            groupSelect(itemId)
+                                                        }
+                                                        valueChecked={expensesSelected}
+                                                        horizontal={true}
+                                                        onSelect={(value) => {
+                                                            if (itemId) {
+                                                                setExpensesSelected(value);
+                                                            }
+                                                        }}
+                                                        padding={0}
+                                                        gap={0}
+                                                        sx={{ display: 'flex', maxWidth: 15 }}
+                                                    />
+                                                </td>
                                                 {columnTable?.map((column, colIndex) => (
-                                                    <td key={colIndex} style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <td key={colIndex} style={{ textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}
+                                                        onClick={(e) => {
+                                                            column?.label === 'id' ? pusBillId(item)
+                                                                :
+                                                                e.preventDefault()
+                                                            e.stopPropagation()
+                                                        }}>
                                                         {item[column?.key] ? (
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <Box sx={{
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: column?.label === 'id' && 'pointer', '&:hover': {
+                                                                    opacity: column?.label === 'id' && 0.7
+                                                                }
+                                                            }} >
                                                                 {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={item[column?.avatarUrl || '']} />}
 
                                                                 {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
@@ -498,19 +586,6 @@ export default function ListBillsToPay(props) {
                     </div>
                 </Box>
             </Box>
-
-
-            {installmentsSelected && <>
-                <Box sx={{ display: 'flex', position: 'fixed', left: 280, bottom: 20, display: 'flex', gap: 2 }}>
-                    <Button text="Baixar" style={{ width: '120px', height: '40px' }} />
-                    <Button secondary text="Restaurar parcelas" style={{ width: '200px', height: '40px', backgroundColor: colorPalette.primary }} />
-                    <Button secondary text="Excluir" style={{ width: '120px', height: '40px', backgroundColor: colorPalette.primary }} />
-                </Box>
-                <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2 }}>
-                    <Button text="Salvar" style={{ width: '120px', height: '40px' }} />
-                </Box>
-            </>
-            }
         </>
     )
 }
