@@ -20,20 +20,49 @@ export default function EditBillToPay(props) {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
     const menusFilters = [
-        { id: '01', text: 'Despesas Fixas', value: 'Despesas Fixas' },
-        { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis' },
-        { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento' },
+        { id: '01', text: 'Despesas Fixas', value: 'Despesas Fixas', key: 'fixed' },
+        { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis', key: 'variable' },
+        { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento', key: 'personal' },
     ]
 
 
     const getBillToPay = async () => {
+        setLoading(true);
         try {
-            const response = await api.get(`/discipline/${id}`)
-            const { data } = response
-            setBillToPayData(data)
+            let [typeMenu] = menusFilters?.filter(item => item?.id === bill).map(item => item.key);
+            const response = await api.get(`/expenses/${typeMenu}/${id}`);
+            const { data } = response;
+    
+            if (data) {
+                let valueData;
+                if (typeMenu === 'fixed') valueData = data?.valor_desp_f;
+                if (typeMenu === 'variable') valueData = data?.valor_desp_v;
+                if (typeMenu === 'personal') valueData = data?.vl_pagamento;
+    
+                if (valueData !== undefined) {
+                    // Arredonda para duas casas decimais
+                    valueData = Number(valueData).toFixed(2);
+    
+                    setBillToPayData({
+                        ...data,
+                        valor_desp_f: formatValue(valueData)
+                    });
+                }
+            }
         } catch (error) {
-            console.log(error)
+            console.log(error);
+        } finally {
+            setLoading(false);
         }
+    }
+    
+
+    const formatValue = (value) => {
+        const rawValue = String(value);
+        let intValue = rawValue.split('.')[0] || '0'; // Parte inteira
+        const decimalValue = rawValue.split('.')[1]?.padEnd(2, '0') || '00'; // Parte decimal
+        const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+        return formattedValue;
     }
 
 
@@ -49,20 +78,6 @@ export default function EditBillToPay(props) {
     useEffect(() => {
         listUsers()
     }, [])
-
-    // async function listDisciplines() {
-    //     try {
-    //         const response = await api.get(`/disciplines/active`)
-    //         const { data } = response
-    //         const groupDisciplines = data.map(disciplines => ({
-    //             label: disciplines.nome_disciplina,
-    //             value: disciplines?.id_disciplina
-    //         }));
-
-    //         setDisciplines(groupDisciplines);
-    //     } catch (error) {
-    //     }
-    // }
 
     async function listUsers() {
         const response = await api.get(`/users`)
@@ -171,7 +186,7 @@ export default function EditBillToPay(props) {
         if (checkRequiredFields()) {
             setLoading(true)
             try {
-                const response = await api.patch(`/expenses/${typeExpense}/update/${id}`)
+                const response = await api.patch(`/expenses/${typeExpense}/update/${id}`, { billToPayData })
                 if (response?.status === 200) {
                     alert.success('Despesa atualizado com sucesso.');
                     handleItems()
@@ -206,7 +221,7 @@ export default function EditBillToPay(props) {
         { label: 'Bônus', value: 'Bônus' },
         { label: '13º Salário', value: '13º Salário' },
         { label: 'Férias', value: 'Férias' },
-    ] 
+    ]
 
 
     const groupRecurrency = [
@@ -376,7 +391,7 @@ export default function EditBillToPay(props) {
                             label='Valor Total' sx={{ flex: 1, }}
                         />
                     </Box>
-                    
+
                     <SelectList data={groupTypePayment} valueSelection={billToPayData?.tipo_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo_pagamento: value })}
                         title="Tipo de pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
