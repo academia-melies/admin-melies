@@ -7,6 +7,7 @@ import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { formatTimeStamp } from "../../../helpers"
 
 export default function EditBillToPay(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
@@ -29,23 +30,31 @@ export default function EditBillToPay(props) {
     const getBillToPay = async () => {
         setLoading(true);
         try {
-            let [typeMenu] = menusFilters?.filter(item => item?.id === bill).map(item => item.key);
+            let [typeMenu] = menusFilters?.filter(item => item?.id === bill)?.map(item => item.key);
             const response = await api.get(`/expenses/${typeMenu}/${id}`);
             const { data } = response;
-    
+
             if (data) {
                 let valueData;
-                if (typeMenu === 'fixed') valueData = data?.valor_desp_f;
-                if (typeMenu === 'variable') valueData = data?.valor_desp_v;
-                if (typeMenu === 'personal') valueData = data?.vl_pagamento;
-    
+                let valueInput;
+                if (typeMenu === 'fixed') {
+                    valueData = data?.valor_desp_f
+                    valueInput = 'valor_desp_f';
+                }
+                if (typeMenu === 'variable') {
+                    valueData = data?.valor_desp_v;
+                    valueInput = 'valor_desp_v';
+                }
+                if (typeMenu === 'personal') {
+                    valueData = data?.vl_pagamento;
+                    valueInput = 'vl_pagamento';
+                }
+
                 if (valueData !== undefined) {
-                    // Arredonda para duas casas decimais
                     valueData = Number(valueData).toFixed(2);
-    
                     setBillToPayData({
                         ...data,
-                        valor_desp_f: formatValue(valueData)
+                        [valueInput]: formatValue(valueData)
                     });
                 }
             }
@@ -55,7 +64,7 @@ export default function EditBillToPay(props) {
             setLoading(false);
         }
     }
-    
+
 
     const formatValue = (value) => {
         const rawValue = String(value);
@@ -82,7 +91,7 @@ export default function EditBillToPay(props) {
     async function listUsers() {
         const response = await api.get(`/users`)
         const { data } = response
-        const groupEmployee = data.map(employee => ({
+        const groupEmployee = data?.map(employee => ({
             label: employee.nome,
             value: employee?.id
         }));
@@ -294,8 +303,8 @@ export default function EditBillToPay(props) {
     return (
         <>
             <SectionHeader
-                title={billToPayData?.empresa_paga || `Nova Despesa`}
-                perfil={menusFilters?.filter(item => item?.id === bill).map(item => item?.value)}
+                title={(typeExpense === 'fixed' && billToPayData?.empresa_paga) || (typeExpense === 'variable' && billToPayData?.empresa_paga_v) || (typeExpense === 'personal' && billToPayData?.nome) || `Nova Despesa`}
+                perfil={menusFilters?.filter(item => item?.id === bill)?.map(item => item?.value)}
                 saveButton
                 saveButtonAction={newBill ? handleCreate : handleEdit}
                 deleteButton={!newBill}
@@ -343,6 +352,21 @@ export default function EditBillToPay(props) {
                             type="date"
                             label='Proximo vencimento'
                             sx={{ width: 250 }} />}
+
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Criado por:</Text>
+                            <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Criado em:</Text>
+                            <Text>{formatTimeStamp(billToPayData?.dt_criacao, true)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Ultima atualização:</Text>
+                            <Text>{formatTimeStamp(billToPayData?.dt_atualizacao, true)}</Text>
+                        </Box>
+                    </Box>
                 </ContentContainer>
             }
 
@@ -368,6 +392,20 @@ export default function EditBillToPay(props) {
                         title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
+                   <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Criado por:</Text>
+                            <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Criado em:</Text>
+                            <Text>{formatTimeStamp(billToPayData?.dt_criacao, true)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Ultima atualização:</Text>
+                            <Text>{formatTimeStamp(billToPayData?.dt_atualizacao, true)}</Text>
+                        </Box>
+                    </Box>
                 </ContentContainer>
             }
 
@@ -388,7 +426,7 @@ export default function EditBillToPay(props) {
                             type="coin"
                             onChange={handleChange}
                             value={(billToPayData?.vl_pagamento) || ''}
-                            label='Valor Total' sx={{ flex: 1, }}
+                            label='Salário' sx={{ flex: 1, }}
                         />
                     </Box>
 
@@ -400,6 +438,20 @@ export default function EditBillToPay(props) {
                         title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
+                  <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Criado por:</Text>
+                            <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Criado em:</Text>
+                            <Text>{formatTimeStamp(billToPayData?.dt_criacao, true)}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Ultima atualização:</Text>
+                            <Text>{formatTimeStamp(billToPayData?.dt_atualizacao, true)}</Text>
+                        </Box>
+                    </Box>
                 </ContentContainer>
             }
 

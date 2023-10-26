@@ -51,6 +51,7 @@ export default function InterestEnroll() {
     const [classData, setClassData] = useState({})
     const [valuesContract, setValuesContract] = useState([])
     const [paymentsProfile, setPaymentsProfile] = useState([])
+    const [groupResponsible, setGroupResponsible] = useState([])
     const [paymentForm, setPaymentForm] = useState({})
     const [newPaymentProfile, setNewPaymentProfile] = useState({})
     const [emailDigitalSignature, setEmailDigitalSignature] = useState({})
@@ -152,6 +153,7 @@ export default function InterestEnroll() {
         }
     }
 
+    console.log(userData)
     const handleInterest = async () => {
         setLoading(true)
         try {
@@ -167,7 +169,7 @@ export default function InterestEnroll() {
         }
     }
 
-    const handleResponsible = async () => {
+    const handleResponsible = async (userDatails) => {
         try {
             const response = await api.get(`/responsible/${id}`)
             const { data } = response
@@ -178,6 +180,18 @@ export default function InterestEnroll() {
                     responsible: true
                 })
                 setNewResponsible(false)
+                setGroupResponsible([
+                    {
+                        id: data?.id_resp_pag,
+                        label: `${data.nome_resp} - (Responsavel pagante)`,
+                        value: data?.id_resp_pag
+                    },
+                    {
+                        id: userDatails?.id,
+                        label: userDatails?.nome,
+                        value: userDatails?.id
+                    },
+                ])
             }
             return data
         } catch (error) {
@@ -269,14 +283,14 @@ export default function InterestEnroll() {
 
     const handleItems = async () => {
         try {
-            await handleUserData()
+            const userDatails = await handleUserData()
             const interests = await handleInterest()
             if (interests) {
                 await handleSelectModule(interests?.turma_id)
                 await handleValuesCourse(interests?.curso_id)
                 await handleCourseData(interests?.curso_id)
                 await handleClassData(interests?.turma_id)
-                await handleResponsible()
+                await handleResponsible(userDatails)
                 await handlePaymentsProfile()
             }
         } catch (error) {
@@ -579,6 +593,7 @@ export default function InterestEnroll() {
                     handleAddResponsible={handleCreateResponsible}
                     handleUpdateResponsible={handleUpdateResponsible}
                     handleDeleteResponsible={handleDeleteResponsible}
+                    groupResponsible={groupResponsible}
                     paying={paying}
                     setPaying={setPaying}
                     userData={userData}
@@ -750,6 +765,7 @@ export const Payment = (props) => {
         setResponsiblePayerData,
         handleAddResponsible,
         handleUpdateResponsible,
+        groupResponsible,
         paying,
         setPaying,
         userData,
@@ -779,9 +795,11 @@ export const Payment = (props) => {
     const [numberOfInstallments, setNumberOfInstallments] = useState(6)
     const [numberOfInstallmentSecondCard, setNumberOfInstallmentSecondCard] = useState(6)
     const [dayForPayment, setDayForPayment] = useState(1)
+    const [monthForPayment, setMonthDayForPayment] = useState()
     const initialTypePaymentsSelected = Array.from({ length: numberOfInstallments }, () => ({ tipo: '', valor_parcela: '', n_parcela: null, data_pagamento: '' }));
     const [typePaymentsSelected, setTypePaymentsSelected] = useState(initialTypePaymentsSelected);
     const [globalTypePaymentsSelected, setGlobalTypePaymentsSelected] = useState('');
+    const [responsiblesPayers, setResponsiblesPayers] = useState({ first: '', second: '' });
     const [aditionalDiscount, setAditionalDiscount] = useState({ desconto_adicional: '', desconto_formatado: '' })
     const { colorPalette, alert } = useAppContext()
     const [focusedCreditCard, setFocusedCreditCard] = useState('');
@@ -841,7 +859,8 @@ export const Payment = (props) => {
             const updatedArray = [];
 
             for (let i = 0; i < numberOfInstallments; i++) {
-                const paymentDate = new Date();
+                let date = monthForPayment ? new Date(monthForPayment) : new Date()
+                const paymentDate = date;
                 const selectedDay = dayForPayment;
                 const typePayment = prevTypePaymentsSelected[i + 1]
                 let month = paymentDate.getMonth() + i;
@@ -1137,7 +1156,20 @@ export const Payment = (props) => {
         new Date(2023, 11, 25)  // Natal
     ];
 
-
+    const monthFilter = [
+        { label: 'Jan', value: 0 },
+        { label: 'Fev', value: 1 },
+        { label: 'Mar', value: 2 },
+        { label: 'Abr', value: 3 },
+        { label: 'Mai', value: 4 },
+        { label: 'Jun', value: 5 },
+        { label: 'Jul', value: 6 },
+        { label: 'Ago', value: 7 },
+        { label: 'Set', value: 8 },
+        { label: 'Out', value: 9 },
+        { label: 'Nov', value: 10 },
+        { label: 'Dez', value: 11 },
+    ]
 
     return (
         <>
@@ -1201,6 +1233,7 @@ export const Payment = (props) => {
                                 title="Selecione o dia do vencimento *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
+                            <TextInput name='monthForPayment' onChange={(e) => setMonthDayForPayment(e.target.value)} value={(monthForPayment)?.split('T')[0] || ''} type="date" label='Primeira cobrança' sx={{ flex: 1, }} />
                         </Box>
                     </ContentContainer>
 
@@ -1388,10 +1421,10 @@ export const Payment = (props) => {
                         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
                             <Box sx={{ display: 'flex', gap: 1.8, justifyContent: 'space-between' }}>
                                 <Text bold title>Forma de pagamento</Text>
-                                <Button small secondary={twoCards ? false : true} text="dividir em 2 cartões" onClick={() => setTwoCards(!twoCards)} style={{ height: '30px', borderRadius: 0 }} />
+                                <Button small secondary={twoCards ? false : true} text="dividir em 2 pagantes" onClick={() => setTwoCards(!twoCards)} style={{ height: '30px', borderRadius: 0 }} />
                             </Box>
 
-                            <Box sx={{ display: twoCards && 'flex', gap: twoCards ? 3 : 1.8, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' } }}>
+                            <Box sx={{ display: twoCards && 'flex', gap: twoCards ? 3 : 1.8, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'column' } }}>
                                 <Box sx={{ display: twoCards && 'flex', gap: 1.8, flexDirection: 'column' }}>
 
                                     <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
@@ -1405,7 +1438,8 @@ export const Payment = (props) => {
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             clean={false}
                                         />
-                                        {twoCards &&
+                                        {twoCards && <>
+
                                             <TextInput
                                                 name='firstCard'
                                                 type={typeDiscountAdditional?.real ? "coin" : ''}
@@ -1415,8 +1449,17 @@ export const Payment = (props) => {
                                                         firstCard: event.target.value,
                                                     }))}
                                                 value={cardPurchaseValues?.firstCard || ''}
-                                                label='Quanto pagar neste cartão?' sx={{ flex: 1, }}
-                                            />}
+                                                label='Valor a pagar' sx={{ flex: 1, }}
+                                            />
+                                            <SelectList fullWidth data={groupResponsible} valueSelection={responsiblesPayers?.first || ''}
+                                                onSelect={(value) => setResponsiblesPayers({ ...responsiblesPayers, first: value })}
+                                                filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                title="Selecione o pagante *"
+                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                clean={false}
+                                            />
+                                        </>}
+
                                     </Box>
 
                                     <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
@@ -1434,7 +1477,8 @@ export const Payment = (props) => {
                                                 {Array.from({ length: numberOfInstallments }, (_, index) => {
 
                                                     const installmentNumber = index + 1;
-                                                    const paymentDate = new Date();
+                                                    let date = monthForPayment ? new Date(monthForPayment) : new Date()
+                                                    const paymentDate = date;
                                                     const selectedDay = dayForPayment;
                                                     let month = paymentDate.getMonth() + index;
                                                     let isSaturday = false; // Sabado
@@ -1519,6 +1563,26 @@ export const Payment = (props) => {
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 clean={false}
                                             />
+                                            {twoCards && <>
+                                                <TextInput
+                                                    name='firstCard'
+                                                    type={typeDiscountAdditional?.real ? "coin" : ''}
+                                                    onChange={(event) =>
+                                                        setCardPurchaseValues((prevValues) => ({
+                                                            ...prevValues,
+                                                            firstCard: event.target.value,
+                                                        }))}
+                                                    value={cardPurchaseValues?.firstCard || ''}
+                                                    label='Valor a pagar' sx={{ flex: 1, }}
+                                                />
+                                                <SelectList fullWidth data={groupResponsible} valueSelection={responsiblesPayers?.second || ''}
+                                                    onSelect={(value) => setResponsiblesPayers({ ...responsiblesPayers, second: value })}
+                                                    filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                    title="Selecione o 2º pagante *"
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                    clean={false}
+                                                />
+                                            </>}
                                         </Box>
 
                                         <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}` }}>
@@ -1536,7 +1600,8 @@ export const Payment = (props) => {
                                                     {Array.from({ length: numberOfInstallmentSecondCard }, (_, index) => {
 
                                                         const installmentNumber = index + 1;
-                                                        const paymentDate = new Date();
+                                                        let date = monthForPayment ? new Date(monthForPayment) : new Date()
+                                                        const paymentDate = date;
                                                         const selectedDay = dayForPayment;
                                                         let month = paymentDate.getMonth() + index;
                                                         let isSaturday = false; // Sabado
