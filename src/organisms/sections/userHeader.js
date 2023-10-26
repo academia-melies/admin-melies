@@ -97,14 +97,25 @@ export const UserHeader = (props) => {
                             cursor: 'pointer'
                         }
                     }} onClick={() => setShowNotification(true)}>
-                        <Box sx={{
-                            ...styles.menuIcon,
-                            backgroundImage: `url('/icons/notification_icon.png')`,
-                            width: 23,
-                            height: 20,
-                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                            transition: 'background-color 1s',
-                        }} />
+                        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', justifyContent: 'space-around', backgroundColor: colorPalette.primary, padding: '5px 8px', borderRadius: 2, cursor: 'pointer', "&:hover": { opacity: 0.6 }}}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url('/icons/notification_icon-png.png')`,
+                                width: 18,
+                                height: 18,
+                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                transition: 'background-color 1s',
+                            }} />
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url('${icons.gray_arrow_down}')`,
+                                width: 13,
+                                height: 13,
+                                aspectRatio: '1/1',
+                                // filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                transition: 'background-color 1s',
+                            }} />
+                        </Box>
                         {notificationUser.vizualized &&
                             <Box sx={{
                                 position: 'absolute',
@@ -114,8 +125,8 @@ export const UserHeader = (props) => {
                                 backgroundColor: 'red',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                top: 0,
-                                left: 0
+                                top: 3,
+                                left: 5
                             }}>
                                 <Text bold style={{ color: '#fff', fontSize: '8px', textAlign: 'center' }}>1</Text>
                             </Box>
@@ -159,7 +170,7 @@ export const UserHeader = (props) => {
                                 </ContentContainer>
 
                                 :
-                                <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -120, top: 28, width: 220, padding: '8px 12px' }}>
+                                <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -120, top: 35, width: 220, padding: '8px 12px' }}>
                                     <Box sx={{ display: 'flex', gap: 1 }}>
                                         <Text xsmall>Você não possui novas notificações.</Text>
                                         <Box sx={{
