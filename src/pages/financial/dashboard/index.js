@@ -1,9 +1,11 @@
 import { useContext, useEffect, useState } from "react";
 import { Box, Button, ContentContainer, Text } from "../../../atoms";
 import { SectionHeader, SelectList } from "../../../organisms";
-import ReactApexChart from 'react-apexcharts';
 import { api } from "../../../api/api";
 import { useAppContext } from "../../../context/AppContext";
+import dynamic from "next/dynamic";
+const GraphChart = dynamic(() => import('../../../organisms/graph/graph'), { ssr: false });
+
 
 const monthFilter = [
     { month: 'Jan', value: 0 },
@@ -59,12 +61,22 @@ export default function ListBillsToPay(props) {
             const response = await api.get('/student/installments')
             const { data } = response;
             setBillstToReceiveData(data)
+            handleCalculationGraph()
         } catch (error) {
             console.log(error)
         } finally {
             setLoading(false)
         }
     }
+
+    useEffect(() => {
+        getBillsReceive()
+        setFilters({
+            payment: 'Todos',
+            month: 'Todos',
+            year: 'Todos'
+        })
+    }, [])
 
     const handleCalculationGraph = async () => {
         let data = billstToReceiveData?.filter(filter);
@@ -87,7 +99,7 @@ export default function ListBillsToPay(props) {
 
     useEffect(() => {
         handleCalculationGraph()
-    }, [filters])
+    }, [filters, billstToReceiveData])
 
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -174,11 +186,6 @@ export default function ListBillsToPay(props) {
         { label: 'Cartão', value: 'Cartão' },
         { label: 'Pix', value: 'Pix' },
     ]
-
-
-    useEffect(() => {
-        getBillsReceive()
-    }, [])
 
 
     return (
@@ -298,7 +305,7 @@ export default function ListBillsToPay(props) {
                             <Text bold large>Valores a receber</Text>
                         </Box>
 
-                        <ReactApexChart
+                        <GraphChart
                             options={{
 
                                 xaxis: {
@@ -314,7 +321,6 @@ export default function ListBillsToPay(props) {
                             }}
                             type="bar"
                             series={[{
-                                name: 'Parcelas',
                                 data: billstToReceiveGraph,
                             }]}
                             height={350}
@@ -338,7 +344,7 @@ export default function ListBillsToPay(props) {
                         </Box>
                         <div style={{ justifyContent: 'center', width: '100%', alignItems: 'center', display: 'flex' }}>
 
-                            <ReactApexChart
+                            <GraphChart
                                 options={data?.options}
                                 series={data?.series}
                                 type="pie"
