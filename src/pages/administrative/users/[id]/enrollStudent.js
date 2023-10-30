@@ -153,7 +153,6 @@ export default function InterestEnroll() {
         }
     }
 
-    console.log(userData)
     const handleInterest = async () => {
         setLoading(true)
         try {
@@ -834,7 +833,15 @@ export const Payment = (props) => {
             valorDescontoAdicional: aditionalDiscount?.desconto_formatado,
             valorFinal: valueFinally
         })
+        const dateNow = new Date();
+        const year = dateNow.getFullYear();
+        const month = String(dateNow.getMonth() + 2).padStart(2, '0');
+        const day = String(dateNow.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+
+        setMonthDayForPayment(formattedDate)
     }, [])
+
 
     useEffect(() => {
         let numberParcells = numberOfInstallments;

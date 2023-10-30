@@ -93,7 +93,7 @@ export default function EditFrequency(props) {
     }, [frequencyData?.disciplina_id])
 
     const handleStudentsDiscipline = async () => {
-        const students = await listStudents(frequencyData?.disciplina_id)
+        const students = await listStudents(frequencyData?.disciplina_id, frequencyData?.modulo_turma)
         if (frequencyData?.disciplina_id !== null && students) {
             handleStudent(id)
         }
@@ -166,7 +166,7 @@ export default function EditFrequency(props) {
     const handleCreateFrequency = async () => {
 
         let disciplineId = frequencyData?.disciplina_id
-        if (classDays) {
+        if (classDays?.length < 1) {
             alert.info('Não existe cronograma/ aulas agendadas para essa disciplina.')
             return
         } else {
@@ -279,10 +279,10 @@ export default function EditFrequency(props) {
         return moduleArray;
     }
 
-    async function listStudents() {
+    async function listStudents(disciplineId, moduleStudent) {
         setLoading(true)
         try {
-            const response = await api.get(`/class/students/${id}`)
+            const response = await api.get(`/class/students/${id}/${disciplineId}/?moduleStudent=${moduleStudent}`)
             const { data } = response
             if (data.length > 0) {
                 setHasStudents(true)

@@ -15,13 +15,13 @@ export default function StudentData(props) {
     const { id, slug } = router.query;
     const [studentData, setStudentData] = useState({})
     const [showEnrollTable, setShowEnrollTable] = useState({})
+    const [showClass, setShowClass] = useState({ turma_id: null, nome_turma: null })
     const [frequencyData, setFrequency] = useState([])
     const [gradesData, setGrades] = useState([])
     const [disciplines, setDisciplines] = useState([])
-    const [enrollmentData, setEnrollment] = useState({})
+    const [enrollmentData, setEnrollment] = useState([])
     const [moduleStudent, setModuleStudent] = useState(1)
     const [bgPhoto, setBgPhoto] = useState({})
-
     const [showBox, setShowBox] = useState({
         disciplines: false,
         frequency: false,
@@ -61,10 +61,14 @@ export default function StudentData(props) {
 
     const getEnrollment = async () => {
         try {
-            const response = await api.get(`/enrollment/${id}`)
+            const response = await api.get(`/enrollment/${id}}`)
             const { data } = response
+            setEnrollment(data)
             let [enrollment] = data
-            setEnrollment(enrollment)
+            setShowClass({
+                turma_id: enrollment?.turma_id,
+                nome_turma: enrollment?.nome_turma
+            })
             return enrollment
         } catch (error) {
             console.log(error)
@@ -72,9 +76,9 @@ export default function StudentData(props) {
         }
     }
 
-    const getFrequency = async () => {
+    const getFrequency = async (turma_id) => {
         try {
-            const response = await api.get(`/frequency/student/${id}`)
+            const response = await api.get(`/frequency/student/${id}/${turma_id}`)
             const { data } = response
             setFrequency(data)
         } catch (error) {
@@ -83,9 +87,9 @@ export default function StudentData(props) {
         }
     }
 
-    const getGrades = async (moduleStudent) => {
+    const getGrades = async (moduleStudent, turma_id) => {
         try {
-            const response = await api.get(`/studentGrade/student/${id}/${moduleStudent}`)
+            const response = await api.get(`/studentGrade/student/${id}/${moduleStudent}/${turma_id}`)
             const { data } = response
             setGrades(data)
         } catch (error) {
@@ -98,14 +102,11 @@ export default function StudentData(props) {
 
     async function handleSelectModule(turma_id, moduleStudent) {
         try {
-            const response = await api.get(`/classSchedule/disciplines/${turma_id}/${moduleStudent}`)
-            const { data } = response
-            const groupDisciplines = data.map(disciplines => ({
-                label: disciplines.nome_disciplina,
-                value: disciplines?.id_disciplina.toString()
-            }));
-
-            setDisciplines(groupDisciplines);
+            if (turma_id) {
+                const response = await api.get(`/student/enrrolments/disciplines/${id}/${turma_id}?moduleStudent=${moduleStudent}`)
+                const { data } = response
+                setDisciplines(data);
+            }
         } catch (error) {
             console.log(error)
             return error
@@ -117,6 +118,26 @@ export default function StudentData(props) {
         handleItems();
     }, [id])
 
+    useEffect(() => {
+        if(showClass?.turma_id){
+            handleUpdateInfoEnrollment()
+        }
+    }, [showClass?.turma_id])
+
+    const handleUpdateInfoEnrollment = async () => {
+        setLoading(true)
+        try {
+            await getFrequency(showClass?.turma_id)
+            await getGrades(moduleStudent, showClass?.turma_id)
+            await handleSelectModule(showClass?.turma_id, moduleStudent)
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
     const handleItems = async () => {
         setLoading(true)
@@ -126,9 +147,9 @@ export default function StudentData(props) {
             const enrollment = await getEnrollment()
             if (enrollment) {
                 await handleSelectModule(enrollment?.turma_id, moduleStudent)
+                await getFrequency(enrollment?.turma_id)
+                await getGrades(moduleStudent, enrollment?.turma_id)
             }
-            await getFrequency()
-            await getGrades(moduleStudent)
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
         } finally {
@@ -193,6 +214,17 @@ export default function StudentData(props) {
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Acadêmico Aluno</Text>
+                    <Box sx={{ display: 'flex' }}>
+                        {enrollmentData.length > 0 &&
+                            enrollmentData?.map((item, index) => (
+                                <Box sx={{ display: 'flex' }} key={index}>
+                                    <Button small secondary={item?.turma_id === showClass?.turma_id ? false : true} text={item?.nome_turma} onClick={() => setShowClass({
+                                        turma_id: item?.turma_id,
+                                        nome_turma: item?.nome_turma
+                                    })} style={{ width: '90px', height: '30px', borderRadius: 0 }} />
+                                </Box>
+                            ))}
+                    </Box>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'space-between' }}>
                     <Box sx={{ display: 'flex', gap: 2.5, flexDirection: 'column', flex: 1, marginTop: 2 }}>
@@ -213,12 +245,12 @@ export default function StudentData(props) {
                         <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'start' }}>
                             <Text bold>Inicio Matricula: </Text>
-                            <Text>{formatTimeStamp(enrollmentData?.dt_inicio || '')}</Text>
+                            <Text>{formatTimeStamp(enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.dt_inicio) || '')}</Text>
                         </Box>
                         <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Status: </Text>
-                            <Text>{enrollmentData?.status}</Text>
+                            <Text>{enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.status)}</Text>
                         </Box>
                     </Box>
                     <Box sx={{ display: 'flex', padding: 5, width: 260 }}>
@@ -257,19 +289,49 @@ export default function StudentData(props) {
                         />
                     </Box>
                     {showBox?.disciplines && (
-                        <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                            {disciplines?.map((item, index) => {
-                                return (
-                                    <Box key={index}>
-                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'start' }}>
-                                            <Text bold>{index + 1}º </Text>
-                                            <Text bold sx={{ ...styles.disciplinesText, color: colorPalette.buttonColor }}>{item?.label}</Text>
-                                        </Box>
-                                    </Box>
-                                )
-                            })}
+                        disciplines?.length > 0 ?
+                        <Box sx={{ display: 'flex' }}>
 
+                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                                <table style={{ borderCollapse: 'collapse', }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>#</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Disciplina</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Status</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Módulo/Semestre</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            disciplines?.map((item, index) => {
+                                                return (
+                                                    <tr key={`${item}-${index}`}>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.disciplina_id}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nome_disciplina}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.status}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.modulo}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </Box>
+                        :
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                        <Text ligth>Não foi possível encontrar matérias cadastradas.</Text>
+                    </Box>
                     )}
                 </Box>
 

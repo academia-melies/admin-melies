@@ -183,7 +183,7 @@ export default function EditStudentGrade(props) {
                     setNewGrade(false)
                     setShowStudents(true);
                 } else {
-                    listStudents()
+                    listStudents(studentGradeData?.disciplina_id)
                     setNewGrade(true)
                     setShowStudents(true);
                 }
@@ -246,7 +246,7 @@ export default function EditStudentGrade(props) {
             if (value) {
                 setStudentGradeData({ ...studentGradeData, disciplina_id: value })
             }
-            const response = await api.get(`/class/students/${id}`)
+            const response = await api.get(`/class/students/${id}/${value}/?moduleStudent=${studentGradeData?.modulo_nota}`)
             const { data } = response
             const studentsFrequency = data.map(student => ({
                 plano_avaliacao_id: teachingPlan?.id_plano_avaliacao || null,
