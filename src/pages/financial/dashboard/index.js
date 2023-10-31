@@ -33,6 +33,7 @@ export default function ListBillsToPay(props) {
 
     const { setLoading, colorPalette, theme, alert } = useAppContext()
     const [billstToReceiveData, setBillstToReceiveData] = useState([])
+    const [billstToPayData, setBillstToPayData] = useState([])
     const [formPaymentGraph, setFormPaymentGraph] = useState([])
     const [billstToReceiveGraph, setBillstToReceiveGraph] = useState([])
     const [barChartLabels, setBarChartLabels] = useState([])
@@ -61,7 +62,7 @@ export default function ListBillsToPay(props) {
             const response = await api.get('/student/installments')
             const { data } = response;
             setBillstToReceiveData(data)
-            handleCalculationGraph()
+            
         } catch (error) {
             console.log(error)
         } finally {
@@ -69,8 +70,28 @@ export default function ListBillsToPay(props) {
         }
     }
 
+    const getBillsPay = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get('/expenses/allList')
+            const { data } = response;
+            setBillstToPayData(data)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleItems = async () => {
+        await getBillsReceive()
+        await getBillsPay()
+        handleCalculationGraph()
+    }
+
+
     useEffect(() => {
-        getBillsReceive()
+        handleItems()
         setFilters({
             payment: 'Todos',
             month: 'Todos',
@@ -118,6 +139,21 @@ export default function ListBillsToPay(props) {
         series: formPaymentGraph?.series || [],
         options: {
             labels: formPaymentGraph?.labels || [],
+            tooltip: {
+                y: {
+                    formatter: function (value) {
+                        return getFormattedValue(value);
+                    }
+                }
+            }
+        },
+
+    };
+
+    const dataPay = {
+        series: billstToPayData?.series || [],
+        options: {
+            labels: billstToPayData?.labels || [],
             tooltip: {
                 y: {
                     formatter: function (value) {
@@ -329,7 +365,7 @@ export default function ListBillsToPay(props) {
 
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', flex: 1 }}>
-                    <ContentContainer>
+                    <ContentContainer fullWidth>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', }}>
                             <Box sx={{
                                 ...styles.menuIcon,
@@ -342,19 +378,41 @@ export default function ListBillsToPay(props) {
                             }} />
                             <Text bold large>Formas de pagamento</Text>
                         </Box>
-                        <div style={{ justifyContent: 'center', width: '100%', alignItems: 'center', display: 'flex' }}>
+                        <div style={{ justifyContent: 'center', width: '80%', alignItems: 'center', margin: 'auto'}}>
 
                             <GraphChart
                                 options={data?.options}
                                 series={data?.series}
                                 type="pie"
-                                height={350}
-                                width={370}
+                                height={280}
+                                width={300}
                             />
                         </div>
                     </ContentContainer>
-                    <ContentContainer fullWidth>
-                        <Text bold large>Despesas (Por categoria)</Text>
+
+                    <ContentContainer>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', }}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 25,
+                                height: 25,
+                                aspectRatio: '1/1',
+                                backgroundColor: '#fff',
+                                backgroundImage: `url('/icons/wallet_icon.png')`,
+                                transition: '.3s',
+                            }} />
+                            <Text bold large>Despesas (Por categoria)</Text>
+                        </Box>
+                        <div style={{ justifyContent: 'center', width: '80%', alignItems: 'center', margin: 'auto'}}>
+
+                            <GraphChart
+                                options={dataPay?.options}
+                                series={dataPay?.series}
+                                type="pie"
+                                height={280}
+                                width={300}
+                            />
+                        </div>
                     </ContentContainer>
 
                 </Box>
