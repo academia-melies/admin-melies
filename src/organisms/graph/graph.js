@@ -11,10 +11,9 @@ const GraphChart = (props) => {
     } = props
 
     if (!options || !type || !series || !height) {
-        return null; // ou qualquer comportamento adequado ao seu aplicativo
+        return null;
     }
 
-    console.log(props)
     return (
         <ReactApexChart
             options={options}
