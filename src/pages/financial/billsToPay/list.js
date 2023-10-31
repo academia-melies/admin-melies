@@ -343,37 +343,57 @@ export default function ListBillsToPay(props) {
             />
             <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
 
-                <ContentContainer fullWidth row style={{ justifyContent: 'space-around' }}>
-                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <ContentContainer row style={{ justifyContent: 'center' }}>
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    width: 18,
+                                    height: 18,
+                                    aspectRatio: '1/1',
+                                    backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
+                                    transition: '.3s',
+                                }} />
+                                <Text bold title style={{ color: 'green' }}>{formatter.format(parseFloat(saldoAtual))}</Text>
+                            </Box>
+                            <Text light>Receita</Text>
+                        </Box>
+                    </ContentContainer>
+                    <ContentContainer row style={{ justifyContent: 'center' }}>
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    width: 18,
+                                    height: 18,
+                                    aspectRatio: '1/1',
+                                    backgroundImage: `url('/icons/arrow_down_red_icon.png')`,
+                                    transition: '.3s',
+                                }} />
+                                <Text bold title style={{ color: 'red' }}>{formatter.format(parseFloat(totalExpenses))}</Text>
+                            </Box>
+                            <Text light>Despesa</Text>
+                        </Box>
+                    </ContentContainer>
+                    <ContentContainer row style={{ justifyContent: 'center' }}>
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
 
-                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 18,
-                                height: 18,
-                                aspectRatio: '1/1',
-                                backgroundImage: caixaResult < 0 ? `url('/icons/arrow_down_red_icon.png')` : `url('/icons/arrow_up_green_icon.png')`,
-                                transition: '.3s',
-                            }} />
-                            <Text bold title style={{ color: caixaResult < 0 ? 'red' : 'green' }}>{formatter.format(caixaResult)}</Text>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    width: 18,
+                                    height: 18,
+                                    aspectRatio: '1/1',
+                                    backgroundImage: caixaResult < 0 ? `url('/icons/arrow_down_red_icon.png')` : `url('/icons/arrow_up_green_icon.png')`,
+                                    transition: '.3s',
+                                }} />
+                                <Text bold title style={{ color: caixaResult < 0 ? 'red' : 'green' }}>{formatter.format(caixaResult)}</Text>
+                            </Box>
+                            <Text light>Saldo Caixa</Text>
                         </Box>
-                        <Text light>Saldo Caixa</Text>
-                    </Box>
-                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 18,
-                                height: 18,
-                                aspectRatio: '1/1',
-                                backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
-                                transition: '.3s',
-                            }} />
-                            <Text bold title style={{ color: 'green' }}>{formatter.format(parseFloat(saldoAtual))}</Text>
-                        </Box>
-                        <Text light>Saldo Atual</Text>
-                    </Box>
-                </ContentContainer>
+                    </ContentContainer>
+                </Box>
 
                 <ContentContainer fullWidth>
                     <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
