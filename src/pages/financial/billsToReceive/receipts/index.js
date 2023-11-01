@@ -1,14 +1,14 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
-import { api } from "../../../api/api"
-import { useAppContext } from "../../../context/AppContext"
-import { SelectList } from "../../../organisms/select/SelectList"
-import { formatTimeStamp } from "../../../helpers"
+import { Box, Button, ContentContainer, Text, TextInput } from "../../../../atoms"
+import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
+import { api } from "../../../../api/api"
+import { useAppContext } from "../../../../context/AppContext"
+import { SelectList } from "../../../../organisms/select/SelectList"
+import { formatTimeStamp } from "../../../../helpers"
 import { TablePagination } from "@mui/material"
 
-export default function ListBillsToReceive(props) {
+export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette } = useAppContext()
@@ -19,19 +19,6 @@ export default function ListBillsToReceive(props) {
     const router = useRouter()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-    // const filter = (item) => {
-    //     const normalizeString = (str) => {
-    //         return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    //     };
-    //     const normalizedFilterData = normalizeString(filterData);
-
-    //     if (filterAtive === 'todos') {
-    //         return (normalizeString(item?.aluno)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())) || (normalizeString(item?.pagante)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()));
-    //     } else {
-    //         return normalizeString(item?.ativo) === filterAtive && (normalizeString(item?.aluno)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())) || (normalizeString(item?.pagante)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()));
-    //     }
-    // };
     const filter = (item) => {
         const normalizeString = (str) => {
             return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -185,8 +172,8 @@ export default function ListBillsToReceive(props) {
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                 </Box>
+                <SearchBar placeholder='Pesquise pelo pagante ou aluno' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                    <SearchBar placeholder='Pesquise pelo pagante ou aluno' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
                             data={listAtivo}
@@ -215,6 +202,17 @@ export default function ListBillsToReceive(props) {
                             setFilterData('')
                         }} />
                     </Box>
+                    <TablePagination
+                        component="div"
+                        count={installmentsList?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        style={{ color: colorPalette.textColor }}
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }}
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }}
+                    />
                 </Box>
             </ContentContainer>
 
@@ -414,17 +412,6 @@ export default function ListBillsToReceive(props) {
                         </tbody>
 
                     </table>
-                    <TablePagination
-                        component="div"
-                        count={installmentsList?.filter(filter)?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        style={{ color: colorPalette.textColor }}
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }}
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }}
-                    />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>

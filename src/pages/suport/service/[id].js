@@ -8,6 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { createCourse, deleteCourse, editCourse } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
+import { formatValueReal } from "../../../helpers"
 
 export default function EditService(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
@@ -44,8 +45,8 @@ export default function EditService(props) {
         try {
             const response = await api.get(`/service/${id}`)
             const { data } = response
-            let value = data?.valor.toFixed(2) || ''
-            setServiceData({ ...data, valor: value })
+            let value = Number(data?.valor).toFixed(2);
+            setServiceData({ ...data, valor: formatValueReal(value) })
             return data
         } catch (error) {
             console.log(error)
@@ -110,21 +111,23 @@ export default function EditService(props) {
     }
 
     const handleChange = (event) => {
+
         if (event.target.name === 'valor') {
             const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
             if (rawValue === '') {
                 event.target.value = '';
             } else {
-                let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
-                const decimalValue = rawValue.slice(-2); // Parte decimal
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
 
                 if (intValue === '0' && rawValue.length > 2) {
                     intValue = '';
                 }
 
-                const formattedValue = `${intValue}.${decimalValue}`;
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
                 event.target.value = formattedValue;
+
             }
 
             setServiceData((prevValues) => ({
@@ -227,21 +230,23 @@ export default function EditService(props) {
 
 
     const handleChangeRenewal = (event) => {
+      
         if (event.target.name === 'reajuste') {
             const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
             if (rawValue === '') {
                 event.target.value = '';
             } else {
-                let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
-                const decimalValue = rawValue.slice(-2); // Parte decimal
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
 
                 if (intValue === '0' && rawValue.length > 2) {
                     intValue = '';
                 }
 
-                const formattedValue = `${intValue}.${decimalValue}`;
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
                 event.target.value = formattedValue;
+
             }
 
             setRenewalData((prevValues) => ({
@@ -400,7 +405,7 @@ export default function EditService(props) {
                     !newService &&
                     <>
                         {!showRenewel?.historicRenewal ?
-                            <Button text='Renovações' style={{width: 120, height: 30}} small={true} onClick={() => { setShowRenewal({ ...showRenewel, historicRenewal: true }) }} />
+                            <Button text='Renovações' style={{ width: 120, height: 30 }} small={true} onClick={() => { setShowRenewal({ ...showRenewel, historicRenewal: true }) }} />
                             :
                             <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
                                 <ContentContainer gap={3}>

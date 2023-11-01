@@ -83,10 +83,13 @@ export default function ListInvoices(props) {
         });
     };
 
-    const priorityColor = (data) => ((data === 'Pendente' && 'yellow') ||
-        ((data === 'Cancelada' || data === 'Pagamento reprovado') && 'red') ||
-        (data === 'Paga' && 'green') ||
-        (data === 'Inativa' && '#f0f0f0'))
+    const priorityColor = (data) => (
+        ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
+        ((data === 'Cancelada' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
+        (data === 'Pago' && 'green') ||
+        (data === 'Aprovado' && 'blue') ||
+        (data === 'Inativa' && '#f0f0f0') ||
+        (data === 'Estornada' && '#f0f0f0'))
 
 
     const startIndex = page * rowsPerPage;

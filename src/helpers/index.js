@@ -184,3 +184,11 @@ export const formattedStringInDate = (str) => {
    }
    return null
 } 
+
+export const formatValueReal = (value) => {
+   const rawValue = String(value);
+   let intValue = rawValue.split('.')[0] || '0'; // Parte inteira
+   const decimalValue = rawValue.split('.')[1]?.padEnd(2, '0') || '00'; // Parte decimal
+   const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+   return formattedValue;
+}
