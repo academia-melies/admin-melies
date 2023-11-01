@@ -479,6 +479,7 @@ export default function ListBillsToPay(props) {
                     <Box sx={{ display: 'flex', gap: 1, height: 30, position: 'absolute', top: 30, left: 40 }}>
                         <Button small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => pusNewBill()} />
                         <Button small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })} />
+                       { menuSelected === 'Folha de Pagamento' && <Button small secondary text="aplicar reajuste para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }} />}
                     </Box>
                     <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '50px', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
                         {expensesData?.filter(filter).length > 0 ?

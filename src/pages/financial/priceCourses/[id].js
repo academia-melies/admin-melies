@@ -8,7 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
-import { formatTimeStamp } from "../../../helpers"
+import { formatTimeStamp, formatValueReal } from "../../../helpers"
 
 export default function EditPricesCourse(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
@@ -39,11 +39,16 @@ export default function EditPricesCourse(props) {
         try {
             const response = await api.get(`/coursePrices/${id}`)
             const { data } = response
+
+            let valueTotalCourse = Number(data?.valor_total_curso).toFixed(2);
+            let valueParcelsCourse = Number(data?.valor_parcelado_curso).toFixed(2);
+            let valueAvistaCourse = Number(data?.valor_avista_curso).toFixed(2);
+
             setPricesCourseData({
                 ...data,
-                valor_total_curso: data.valor_total_curso.toFixed(2),
-                valor_parcelado_curso: data.valor_parcelado_curso.toFixed(2),
-                valor_avista_curso: data.valor_avista_curso.toFixed(2),
+                valor_total_curso: formatValueReal(valueTotalCourse),
+                valor_parcelado_curso: formatValueReal(valueParcelsCourse),
+                valor_avista_curso: formatValueReal(valueAvistaCourse),
             })
             setBeforeValueCourse(data?.valor_total_curso.toFixed(2))
             return data
@@ -57,6 +62,7 @@ export default function EditPricesCourse(props) {
         try {
             const response = await api.get(`/coursePrices/historic/${id}`)
             const { data } = response
+
             if (data) {
                 const formattedValue = data.map(item => ({
                     ...item,
@@ -96,6 +102,8 @@ export default function EditPricesCourse(props) {
         setLoading(true)
         try {
             let valueTotal = pricesCourseData?.valor_total_curso;
+            let formattValue = valueTotal.replace(/\./g, '').replace(',', '.');
+            valueTotal = parseFloat(formattValue)
             let alertMsg = ''
             if (remove) {
                 valueTotal = beforeValueCourse;
@@ -115,11 +123,11 @@ export default function EditPricesCourse(props) {
             }
             const valueParcels = (valueTotal / pricesCourseData?.n_parcelas).toFixed(2);
             const valueDiscount = (valueTotal - (valueTotal * 0.05)).toFixed(2)
-            const formattedParcels = formattedValueCourse(valueParcels);
-            const formattedDiscount = formattedValueCourse(valueDiscount);
+            const formattedParcels = formatValueReal(valueParcels);
+            const formattedDiscount = formatValueReal(valueDiscount);
             setPricesCourseData((prevValues) => ({
                 ...prevValues,
-                valor_total_curso: valueTotal,
+                valor_total_curso: formatValueReal(valueTotal),
                 valor_parcelado_curso: formattedParcels,
                 valor_avista_curso: formattedDiscount
             }));
@@ -184,15 +192,16 @@ export default function EditPricesCourse(props) {
             if (rawValue === '') {
                 event.target.value = '';
             } else {
-                let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
-                const decimalValue = rawValue.slice(-2); // Parte decimal
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
 
                 if (intValue === '0' && rawValue.length > 2) {
                     intValue = '';
                 }
 
-                const formattedValue = `${intValue}.${decimalValue}`;
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
                 event.target.value = formattedValue;
+
             }
 
             setPricesCourseData((prevValues) => ({
@@ -220,19 +229,19 @@ export default function EditPricesCourse(props) {
     const handleChangeReadjustment = (event) => {
 
         if (event.target.name === 'reajuste') {
-            const rawValue = event.target.value.replace(/[^\d]/g, '');
+            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
             if (rawValue === '') {
                 event.target.value = '';
             } else {
-                let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
-                const decimalValue = rawValue.slice(-2); // Parte decimal
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
 
                 if (intValue === '0' && rawValue.length > 2) {
                     intValue = '';
                 }
 
-                const formattedValue = `${intValue}.${decimalValue}`;
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
                 event.target.value = formattedValue;
             }
 

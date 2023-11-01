@@ -36,6 +36,8 @@ export default function ListBillsToPay(props) {
     const [billstToPayData, setBillstToPayData] = useState([])
     const [formPaymentGraph, setFormPaymentGraph] = useState([])
     const [billstToReceiveGraph, setBillstToReceiveGraph] = useState([])
+    const [billstToPayDataGraph, setBillstToPayDataGraph] = useState([])
+    const [categoryExpenseGraph, setCategoryExpenseGraph] = useState()
     const [barChartLabels, setBarChartLabels] = useState([])
     const [averageTicket, setAverageTicket] = useState(0)
     const [totalSales, setTotalSales] = useState(0)
@@ -46,10 +48,9 @@ export default function ListBillsToPay(props) {
         year: 'Todos'
     })
     const filterFunctions = {
-        payment: (item) => filters.payment !== 'Todos' ? (item.forma_pagamento === filters?.payment) : item,
-        month: (item) => filters.month !== 'Todos' ? (new Date(item.vencimento).getMonth() === Number(filters.month)) : item,
-        year: (item) => filters.year !== 'Todos' ? (new Date(item.vencimento).getFullYear() === filters.year) : item,
-
+        payment: (item) => filters.payment !== 'Todos' ? (item?.forma_pagamento === filters?.payment) : item,
+        month: (item) => filters.month !== 'Todos' ? (new Date(item?.vencimento)?.getMonth() === Number(filters.month)) : item,
+        year: (item) => filters.year !== 'Todos' ? (new Date(item?.vencimento)?.getFullYear() === filters.year) : item,
     };
 
     const filter = (item) => {
@@ -58,11 +59,12 @@ export default function ListBillsToPay(props) {
 
     const getBillsReceive = async () => {
         setLoading(true)
+
         try {
             const response = await api.get('/student/installments')
             const { data } = response;
             setBillstToReceiveData(data)
-            
+            return data;
         } catch (error) {
             console.log(error)
         } finally {
@@ -75,7 +77,13 @@ export default function ListBillsToPay(props) {
         try {
             const response = await api.get('/expenses/allList')
             const { data } = response;
-            setBillstToPayData(data)
+            const fixedValues = await mapExpenseData(data?.fixed, 'dt_vencimento');
+            const variableValues = await mapExpenseData(data?.variable, 'dt_vencimento');
+            const personalValues = await mapExpenseData(data?.personal, 'dt_pagamento');
+
+            setBillstToPayData({ fixed: fixedValues, variable: variableValues, personal: personalValues })
+            return { fixed: fixedValues, variable: variableValues, personal: personalValues }
+
         } catch (error) {
             console.log(error)
         } finally {
@@ -83,26 +91,31 @@ export default function ListBillsToPay(props) {
         }
     }
 
-    const handleItems = async () => {
-        await getBillsReceive()
-        await getBillsPay()
-        handleCalculationGraph()
+    const fetchData = async () => {
+        const billstReceive = await getBillsReceive();
+        const billstPay = await getBillsPay();
+
+        if (billstPay) {
+            handleCalculationGraph(billstReceive, billstPay);
+        }
     }
 
+    const mapExpenseData = (data, field) => {
+        return data?.map(item => ({
+            ...item,
+            vencimento: item[field]
+        }));
+    };
 
     useEffect(() => {
-        handleItems()
-        setFilters({
-            payment: 'Todos',
-            month: 'Todos',
-            year: 'Todos'
-        })
-    }, [])
+        fetchData();
+    }, []);
 
-    const handleCalculationGraph = async () => {
-        let data = billstToReceiveData?.filter(filter);
+
+    const handleCalculationGraph = async (billstReceive, billstPay) => {
+        let data = billstReceive?.filter(filter);
         let qntSalesValue = data?.length;
-        let totalSalesValue = data?.map(item => item.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
+        let totalSalesValue = data?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
         let averageTicketValue = totalSalesValue ? (totalSalesValue / qntSalesValue).toFixed(2) : 0
 
         setQntSales(qntSalesValue);
@@ -112,15 +125,44 @@ export default function ListBillsToPay(props) {
         const { series, labels } = processChartData(data);
         setFormPaymentGraph({ series, labels });
 
+        let fixedData = [];
+        let totalFixed = 0;
+        if (billstPay?.fixed) {
+            fixedData = billstPay?.fixed?.filter(filter);
+            totalFixed = fixedData?.reduce((acc, expense) => acc + expense?.valor_desp_f, 0);
+        }
+
+        let variableData = [];
+        let totalVariable = 0;
+        if (billstPay?.variable) {
+            variableData = billstPay?.variable?.filter(filter);
+            totalVariable = variableData?.reduce((acc, expense) => acc + expense?.valor_desp_v, 0);
+        }
+
+        let personalData = [];
+        let totalPersonal = 0;
+        if (billstPay?.personal) {
+            personalData = billstPay?.personal?.filter(filter);
+            totalPersonal = personalData?.reduce((acc, expense) => acc + expense?.vl_pagamento, 0);
+        }
+
+
+        setCategoryExpenseGraph({
+            labels: ['Fixa', 'Variável', 'Folha de pagamento'],
+            series: [totalFixed, totalVariable, totalPersonal]
+        });
+
+
         const monthlyData = processMonthlyData(data);
         const formattedSeries = monthlyData?.series?.map(valor => (valor).toFixed(2));
         setBillstToReceiveGraph(formattedSeries);
         setBarChartLabels(monthlyData.labels);
     }
 
+
     useEffect(() => {
-        handleCalculationGraph()
-    }, [filters, billstToReceiveData])
+        handleCalculationGraph(billstToReceiveData, billstToPayData)
+    }, [filters])
 
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -151,9 +193,9 @@ export default function ListBillsToPay(props) {
     };
 
     const dataPay = {
-        series: billstToPayData?.series || [],
+        series: categoryExpenseGraph?.series || [],
         options: {
-            labels: billstToPayData?.labels || [],
+            labels: categoryExpenseGraph?.labels || [],
             tooltip: {
                 y: {
                     formatter: function (value) {
@@ -378,7 +420,7 @@ export default function ListBillsToPay(props) {
                             }} />
                             <Text bold large>Formas de pagamento</Text>
                         </Box>
-                        <div style={{ justifyContent: 'center', width: '80%', alignItems: 'center', margin: 'auto'}}>
+                        <div style={{ justifyContent: 'center', width: '80%', alignItems: 'center', margin: 'auto' }}>
 
                             <GraphChart
                                 options={data?.options}
@@ -403,7 +445,7 @@ export default function ListBillsToPay(props) {
                             }} />
                             <Text bold large>Despesas (Por categoria)</Text>
                         </Box>
-                        <div style={{ justifyContent: 'center', width: '80%', alignItems: 'center', margin: 'auto'}}>
+                        <div style={{ justifyContent: 'center', width: '80%', alignItems: 'center', margin: 'auto' }}>
 
                             <GraphChart
                                 options={dataPay?.options}
