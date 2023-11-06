@@ -323,6 +323,7 @@ export default function ListReceipts(props) {
                                 <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Forma de Pagamento</th>
                                 <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Conta</th>
                                 <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Obs</th>
+                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>ID BemPaggo</th>
                                 <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Status BemPaggo</th>
                                 <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Status Sistema</th>
                             </tr>
@@ -384,6 +385,9 @@ export default function ListReceipts(props) {
                                                 value={item?.obs_pagamento || ''}
                                                 sx={{ padding: '0px 8px' }}
                                             />
+                                        </td>
+                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                            {item?.referenceId || '-'}
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                             {item?.status_gateway || '-'}

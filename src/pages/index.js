@@ -9,6 +9,8 @@ import { menuItems } from '../permissions'
 import { useRouter } from 'next/router'
 import { getImageByScreen } from '../validators/api-requests'
 import { api } from '../api/api'
+import { Avatar } from '@mui/material'
+import { formatDate } from '../helpers'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -38,6 +40,7 @@ export default function Home() {
    const [menu, setMenu] = useState(menuItems)
    const [imagesList, setImagesList] = useState([])
    const [listBirthDay, setListBirthDay] = useState([])
+   const [listClassesDay, setListClassesDay] = useState([])
    let isProfessor = user?.professor === 1 ? true : false;
    const userId = user?.id;
 
@@ -73,11 +76,32 @@ export default function Home() {
       }
    }
 
+   const handleClassesDay = async () => {
+      setLoading(true)
+      try {
+         const response = await api.get(`/classDay/month/now`)
+         if (response.status === 200) {
+            setListClassesDay(response?.data)
+         }
+      } catch (error) {
+         console.log(error)
+         return error
+      } finally {
+         setLoading(false)
+      }
+   }
+
+
+
 
    useEffect(() => {
       handleImages(imagesList)
       handleBirthday()
+      handleClassesDay()
    }, [])
+
+   const nowMonth = new Date().toLocaleString('pt-BR', { month: 'long' });
+   const formattedMonth = nowMonth[0].toString().toLocaleUpperCase() + nowMonth.slice(1);
 
 
    return (
@@ -171,43 +195,97 @@ export default function Home() {
                }
             </ContentContainer>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', marginTop: 5, justifyContent: 'center', flex: 1, gap: 1 }}>
-               <Text large bold style={{ textAlign: 'center' }}>Aniversáriantes - {new Date().toLocaleString('pt-BR', { month: 'long' })} 🎉🎉</Text>
-               <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
-                  {listBirthDay.length > 0 ?
-                     <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '500px' }}>
-                        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                           <thead>
-                              <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold', fontSize: '13px' }}>Dia</th>
-                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold', fontSize: '13px' }}>Funcionário</th>
-                                 <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold', fontSize: '13px' }}>Cargo/Função</th>
-                              </tr>
-                           </thead>
-                           <tbody>
+            <ContentContainer row style={{ display: 'flex', marginTop: 5, backgroundColor: 'none', boxShadow: 'none', position: 'relative', alignItems: 'start', justifyContent: 'start' }}>
 
-                              {listBirthDay?.map((item, index) => {
-                                 const date = item?.nascimento?.split('T')[0]
-                                 const day = date?.split('-')[2]
-                                 return (
-                                    <tr key={index}>
-                                       <td style={{ padding: '8px 10px', fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center' }}>{day}</td>
-                                       <td style={{ padding: '8px 10px', fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center' }}>{item?.nome}</td>
-                                       <td style={{ padding: '8px 10px', fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center' }}>{item?.funcao || 'Nenhum(a)'}</td>
-                                    </tr>
-                                 )
-                              })
-                              }
-                           </tbody>
-                        </table>
-                     </div>
-                     :
-                     <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
-                        <Text >Não existem aniversáriantes nesse mês</Text>
-                     </Box>
-                  }
-               </Box>
-            </Box>
+               <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 1, maxHeight: 350, overflowY: 'auto' }}>
+                  <Text large bold style={{ textAlign: 'center' }}>Aniversáriantes de {formattedMonth} 🎉🎉</Text>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', }}>
+                     {listBirthDay.length > 0 ?
+                        <Box sx={{ borderRadius: '8px', minWidth: '400px', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                           {listBirthDay?.map((item, index) => {
+                              const date = item?.nascimento?.split('T')[0]
+                              const day = date?.split('-')[2]
+                              const month = date?.split('-')[1]
+                              return (
+                                 <ContentContainer row key={index} style={{ display: 'flex', backgroundColor: colorPalette?.primary, position: 'relative', boxShadow: 'none', alignItems: 'center', maxHeight: 100 }}>
+                                    <Box sx={{ display: 'flex', borderRadius: 40, backgroundColor: colorPalette?.buttonColor, width: 40, height: 40, padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: 15, left: 10, zIndex: 999999 }}>
+                                       <Text bold small style={{ color: '#fff' }}>{day}/{month}</Text>
+                                    </Box>
+                                    <Avatar src={item?.location} sx={{
+                                       height: { xs: '100%', sm: 65, md: 65, lg: 65 },
+                                       width: { xs: '100%', sm: 65, md: 65, lg: 65 },
+                                    }} variant="circular"
+                                    />
+                                    <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                       <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
+                                          <Text light bold>{item?.nome}</Text>
+                                          <Text light>{item?.funcao || 'Nenhum(a)'}</Text>
+                                       </Box>
+                                    </Box>
+                                 </ContentContainer>
+                              )
+                           })}
+                        </Box>
+                        :
+                        <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
+                           <Text >Não existem aniversáriantes nesse mês</Text>
+                        </Box>
+                     }
+                  </Box>
+               </ContentContainer>
+
+               <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'start', alignItems: 'center', gap: 1, maxWidth: 500, maxHeight: 300, overflowY: 'auto'}}>
+                  <Text large bold style={{ textAlign: 'center' }}>Aulas do dia</Text>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', }}>
+                     {listClassesDay.length > 0 ?
+                        <Box sx={{ borderRadius: '8px', minWidth: '400px', display: 'flex', flexDirection: 'column',  gap: 1 }}>
+                           {listClassesDay?.map((item, index) => {
+                              const date = formatDate(item?.dt_aula)
+                              const classDay = `${item?.nome_turma} - ${item?.nome_disciplina}`;
+                              return (
+                                 <ContentContainer row key={index} style={{ 
+                                    display: 'flex',
+                                     backgroundColor: colorPalette?.primary, boxShadow: 'none',
+                                      position: 'relative',
+                                       alignItems: 'center',
+                                        maxHeight: 100,
+                                        paddingTop: 7  }}>
+                                    <Box sx={{
+                                       display: 'flex', borderRadius: 5,
+                                       backgroundColor: colorPalette?.buttonColor,
+                                       padding: '5px 5px',
+                                       position: 'absolute',
+                                       top: 3,  // Ajuste aqui para mover para cima
+                                       left: 3, // Ajuste aqui para mover para a esquerda
+                                       zIndex: 999999
+                                    }}>
+                                       <Text bold small style={{ color: '#fff' }}>{date}</Text>
+                                    </Box>
+                                    <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                       <Text light bold>{classDay}</Text>
+                                       <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
+                                          {item?.professor1 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center'}}>
+                                             <Text bold>1º professor: </Text>
+                                             <Text light>{item?.professor1}</Text>
+                                          </Box>}
+                                          {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center'}}>
+                                             <Text bold>2º professor: </Text>
+                                             <Text light>{item?.professor2}</Text>
+                                          </Box>}
+                                       </Box>
+                                    </Box>
+                                 </ContentContainer>
+                              )
+                           })}
+                        </Box>
+                        :
+                        <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
+                           <Text >Não existem aulas cadastradas hoje.</Text>
+                        </Box>
+                     }
+                  </Box>
+               </ContentContainer>
+            </ContentContainer>
          </Box>
       </>
    )

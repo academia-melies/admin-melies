@@ -3,11 +3,12 @@ import { useEffect, useState } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
+import { CheckBoxComponent, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { formatTimeStamp } from "../../../helpers"
+import { icons } from "../../../organisms/layout/Colors"
 
 export default function EditBillToPay(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
@@ -16,6 +17,9 @@ export default function EditBillToPay(props) {
     const { id, bill } = router.query;
     const newBill = id === 'new';
     const [billToPayData, setBillToPayData] = useState({})
+    const [newReadjustment, setNewReadjustment] = useState()
+    const [showHistoric, setShowHistoric] = useState(false)
+    const [listHistoric, setListHistoric] = useState([])
     const [usersList, setUsers] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
@@ -26,11 +30,12 @@ export default function EditBillToPay(props) {
         { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento', key: 'personal' },
     ]
 
+    let [typeMenu] = menusFilters?.filter(item => item?.id === bill)?.map(item => item.key);
+
 
     const getBillToPay = async () => {
         setLoading(true);
         try {
-            let [typeMenu] = menusFilters?.filter(item => item?.id === bill)?.map(item => item.key);
             const response = await api.get(`/expenses/${typeMenu}/${id}`);
             const { data } = response;
 
@@ -58,10 +63,26 @@ export default function EditBillToPay(props) {
                     });
                 }
             }
+            await handleHistoric()
+
         } catch (error) {
             console.log(error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    const handleHistoric = async () => {
+        try {
+            if (bill === '01' || bill === '03') {
+                const historic = await api.get(`/expenses/${typeMenu}/historic/${id}`);
+                if (historic?.data) {
+                    setListHistoric(historic?.data)
+                }
+            }
+        } catch (error) {
+            console.log(error)
+            return error
         }
     }
 
@@ -195,7 +216,7 @@ export default function EditBillToPay(props) {
         if (checkRequiredFields()) {
             setLoading(true)
             try {
-                const response = await api.patch(`/expenses/${typeExpense}/update/${id}`, { billToPayData })
+                const response = await api.patch(`/expenses/${typeExpense}/update/${id}`, { billToPayData, userId: usuario_id, obs_reajuste: billToPayData?.obs_reajuste_desp_f })
                 if (response?.status === 200) {
                     alert.success('Despesa atualizado com sucesso.');
                     handleItems()
@@ -236,6 +257,13 @@ export default function EditBillToPay(props) {
     const groupRecurrency = [
         {
             label: 'Recorrência mensal',
+            value: 'Sim'
+        },
+    ]
+
+    const groupReadjustment = [
+        {
+            label: 'Reajuste de valor',
             value: 'Sim'
         },
     ]
@@ -300,6 +328,14 @@ export default function EditBillToPay(props) {
     }
 
 
+    const column = [
+        { key: 'id_historico_desp_f', label: 'ID' },
+        { key: 'vl_reajuste_desp_f', label: 'R$ Reajuste', price: true },
+        { key: 'dt_reajuste', label: 'Data do reajuste', date: true },
+        { key: 'obs_reajuste_desp_f', label: 'Observações' },
+    ];
+
+
     return (
         <>
             <SectionHeader
@@ -351,7 +387,28 @@ export default function EditBillToPay(props) {
                             value={(billToPayData?.dt_prox_pagamento)?.split('T')[0] || ''}
                             type="date"
                             label='Proximo vencimento'
-                            sx={{ width: 250 }} />}
+                            sx={{ width: 250 }} />
+                    }
+
+                    <CheckBoxComponent
+                        boxGroup={groupReadjustment}
+                        valueChecked={newReadjustment || ''}
+                        horizontal={mobile ? false : true}
+                        onSelect={(value) => {
+                            setNewReadjustment(value)
+                        }}
+                        sx={{ width: 1 }} />
+
+                    {newReadjustment === 'Sim' &&
+                        <TextInput placeholder='Observação de ajuste'
+                            name='obs_reajuste_desp_f'
+                            onChange={handleChange}
+                            value={billToPayData?.obs_reajuste_desp_f || ''}
+                            label='Observação de ajuste'
+                            sx={{}}
+                            multiline
+                            rows={4} />
+                    }
 
                     <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -392,7 +449,7 @@ export default function EditBillToPay(props) {
                         title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
-                   <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
                             <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
@@ -438,7 +495,7 @@ export default function EditBillToPay(props) {
                         title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
-                  <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
                             <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
@@ -452,6 +509,37 @@ export default function EditBillToPay(props) {
                             <Text>{formatTimeStamp(billToPayData?.dt_atualizacao, true)}</Text>
                         </Box>
                     </Box>
+                </ContentContainer>
+            }
+
+            {(bill === '03' || bill === '01') &&
+                <ContentContainer style={{ ...styles.containerRegister, padding: showHistoric ? '40px' : '25px' }}>
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', gap: 1, padding: showHistoric ? '0px 0px 20px 0px' : '0px', "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        },
+                        justifyContent: 'space-between'
+                    }} onClick={() => setShowHistoric(!showHistoric)}>
+                        <Text title bold >Histórico de Valores</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_arrow_down})`,
+                            transform: showHistoric ? 'rotate(0deg)' : 'rotate(-90deg)',
+                            transition: '.3s',
+                        }} />
+                    </Box>
+                    {showHistoric &&
+                        <>
+                            {listHistoric ?
+                                <Table_V1 data={listHistoric} columns={column} columnId={'id_historico_desp_f'} columnActive={false} center routerPush={false} tolltip={false} />
+                                :
+                                <Box sx={{ alignItems: 'start', justifyContent: 'start', display: 'flex' }}>
+                                    <Text light>Não encontramos histórico de valores</Text>
+                                </Box>
+                            }
+                        </>
+                    }
                 </ContentContainer>
             }
 

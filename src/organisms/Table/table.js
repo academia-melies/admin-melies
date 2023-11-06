@@ -50,6 +50,11 @@ export const Table_V1 = (props) => {
         (data === 'Média' && 'green') ||
         (data === 'Baixa' && 'blue'))
 
+        const formatter = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+
     return (
         <>
             <Paper sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', ...sx }}>
@@ -153,7 +158,8 @@ export const Table_V1 = (props) => {
                                                                     <Text small bold>{row[column.key]}</Text>
                                                                 </Box>
                                                             ) : (
-                                                                column.date ? formatDate(row[column?.key]) : row[column?.key || '-']
+                                                                column.price ? formatter.format(row[column?.key]) : column.date ? formatDate(row[column?.key]) : row[column?.key || '-']
+
                                                             )
                                                         )}
                                                     </Box>
