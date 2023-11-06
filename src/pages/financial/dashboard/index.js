@@ -269,7 +269,7 @@ export default function ListBillsToPay(props) {
     return (
         <>
             <SectionHeader
-                title="Dashboard"
+                title="Resumo Financeiro"
             />
 
             <ContentContainer>
