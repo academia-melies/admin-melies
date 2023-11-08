@@ -160,7 +160,7 @@ export const UserHeader = (props) => {
                             {notificationUser?.filter(item => item.vizualized === true)?.length > 0 ? notificationUser?.map((item, index) => {
                                 if (item.vizualized) {
                                     return (
-                                        <ContentContainer style={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '8px 12px' }}>
+                                        <ContentContainer  key={index} style={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '8px 12px' }}>
                                             <Box sx={{ display: 'flex', gap: 1 }}>
                                                 <Text xsmall>{item?.msg}</Text>
                                                 <Box sx={{
