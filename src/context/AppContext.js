@@ -25,10 +25,7 @@ export const AppProvider = ({ children }) => {
 
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
-    const [notificationUser, setNotificationUser] = useState({
-        msg: '',
-        vizualized: false
-    })
+    const [notificationUser, setNotificationUser] = useState([])
     const [dataBox, setDataBox] = useState(false)
     const [userPermissions, setUserPermissions] = useState()
     const matches = useMediaQuery('(min-width: 1080px) and (max-width: 1320px)');
@@ -56,9 +53,9 @@ export const AppProvider = ({ children }) => {
         return now.getTime() + hours * 60 * 60 * 1000;
     };
 
-    const latestVersion  = versions[versions.length - 1];
-    const latestVersionNumber = latestVersion .version;
-    const latestVersionBuildDate = latestVersion .build;
+    const latestVersion = versions[versions.length - 1];
+    const latestVersionNumber = latestVersion.version;
+    const latestVersionBuildDate = latestVersion.build;
 
     useEffect(() => {
         async function loadUserFromCookies() {
@@ -101,7 +98,14 @@ export const AppProvider = ({ children }) => {
                 localStorage.setItem('token', userData?.token);
                 api.defaults.headers.Authorization = `Bearer ${userData?.token}`
                 setUser({ ...userData, getPhoto });
-                setNotificationUser({vizualized: true, msg: `Bem-vindo ${userData?.nome} ao novo portal administrativo da Méliès. 🎉` })
+                setNotificationUser([
+                    {
+                        id: '01', vizualized: true, msg: `Bem-vindo ${userData?.nome} ao novo portal administrativo da Méliès. 🎉`
+                    },
+                    {
+                        id: '02', vizualized: true, msg: `Renato Miranda te desejou um Feliz aniversário!`
+                    },
+                ])
                 router.push('/');
                 return response
             }
