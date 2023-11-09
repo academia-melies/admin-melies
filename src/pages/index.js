@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
-import { Box, ContentContainer, Text } from '../atoms'
+import { Box, Button, ContentContainer, Text } from '../atoms'
 import { Carousel } from '../organisms'
 import { useAppContext } from '../context/AppContext'
 import { icons } from '../organisms/layout/Colors'
@@ -36,7 +36,7 @@ const birthDate = [
 
 export default function Home() {
 
-   const { user, colorPalette, theme, setLoading } = useAppContext()
+   const { user, colorPalette, theme, setLoading, alert } = useAppContext()
    const [menu, setMenu] = useState(menuItems)
    const [imagesList, setImagesList] = useState([])
    const [listBirthDay, setListBirthDay] = useState([])
@@ -91,7 +91,25 @@ export default function Home() {
       }
    }
 
-
+   const handlePushNotification = async (id) => {
+      setLoading(true)
+      try {
+         const notificationData = {
+            titulo: `Parabéns!!`,
+            menssagem: `${user?.nome} te desejou muitas felicidades no seu dia!`,
+            vizualizado: 0
+         }
+         const response = await api.post(`/notification/create/${id}`, { notificationData })
+         if (response.status === 201) {
+            alert.success('Mensagem de parabéns enviada!')
+         }
+      } catch (error) {
+         console.log(error)
+         return error
+      } finally {
+         setLoading(false)
+      }
+   }
 
 
    useEffect(() => {
@@ -222,6 +240,9 @@ export default function Home() {
                                           <Text light>{item?.funcao || 'Nenhum(a)'}</Text>
                                        </Box>
                                     </Box>
+                                    <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
+                                       <Button small secondary text="Dar parabéns" onClick={() => handlePushNotification(item?.id)} />
+                                    </Box>
                                  </ContentContainer>
                               )
                            })}
@@ -234,22 +255,23 @@ export default function Home() {
                   </Box>
                </ContentContainer>
 
-               <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'start', alignItems: 'center', gap: 1, maxWidth: 500, maxHeight: 300, overflowY: 'auto'}}>
+               <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'start', alignItems: 'center', gap: 1, maxWidth: 500, maxHeight: 300, overflowY: 'auto' }}>
                   <Text large bold style={{ textAlign: 'center' }}>Aulas do dia</Text>
                   <Box sx={{ display: 'flex', justifyContent: 'center', }}>
                      {listClassesDay.length > 0 ?
-                        <Box sx={{ borderRadius: '8px', minWidth: '400px', display: 'flex', flexDirection: 'column',  gap: 1 }}>
+                        <Box sx={{ borderRadius: '8px', minWidth: '400px', display: 'flex', flexDirection: 'column', gap: 1 }}>
                            {listClassesDay?.map((item, index) => {
                               const date = formatDate(item?.dt_aula)
                               const classDay = `${item?.nome_turma} - ${item?.nome_disciplina}`;
                               return (
-                                 <ContentContainer row key={index} style={{ 
+                                 <ContentContainer row key={index} style={{
                                     display: 'flex',
-                                     backgroundColor: colorPalette?.primary, boxShadow: 'none',
-                                      position: 'relative',
-                                       alignItems: 'center',
-                                        maxHeight: 100,
-                                        paddingTop: 7  }}>
+                                    backgroundColor: colorPalette?.primary, boxShadow: 'none',
+                                    position: 'relative',
+                                    alignItems: 'center',
+                                    maxHeight: 100,
+                                    paddingTop: 7
+                                 }}>
                                     <Box sx={{
                                        display: 'flex', borderRadius: 5,
                                        backgroundColor: colorPalette?.buttonColor,
@@ -264,11 +286,11 @@ export default function Home() {
                                     <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                        <Text light bold>{classDay}</Text>
                                        <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
-                                          {item?.professor1 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center'}}>
+                                          {item?.professor1 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                              <Text bold>1º professor: </Text>
                                              <Text light>{item?.professor1}</Text>
                                           </Box>}
-                                          {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center'}}>
+                                          {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                              <Text bold>2º professor: </Text>
                                              <Text light>{item?.professor2}</Text>
                                           </Box>}

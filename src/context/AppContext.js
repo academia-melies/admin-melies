@@ -66,11 +66,12 @@ export const AppProvider = ({ children }) => {
                     api.defaults.headers.Authorization = `Bearer ${token}`
                     const response = await api.post('/user/loginToken')
                     const { data } = response;
-                    const { userData, getPhoto } = data;
+                    const { userData, getPhoto, notificationsData } = data;
 
                     if (userData) {
                         setUser({ ...userData, getPhoto })
                         setUserPermissions(userData?.permissoes)
+                        setNotificationUser(notificationsData)
                     }
                     else setUser(null);
                 }
@@ -94,18 +95,11 @@ export const AppProvider = ({ children }) => {
             }
             if (userData.token) {
                 const { data } = response;
-                const { userData, getPhoto } = data;
+                const { userData, getPhoto, notificationsData } = data;
                 localStorage.setItem('token', userData?.token);
                 api.defaults.headers.Authorization = `Bearer ${userData?.token}`
                 setUser({ ...userData, getPhoto });
-                setNotificationUser([
-                    {
-                        id: '01', vizualized: true, msg: `Bem-vindo ${userData?.nome} ao novo portal administrativo da Méliès. 🎉`
-                    },
-                    {
-                        id: '02', vizualized: true, msg: `Renato Miranda te desejou um Feliz aniversário!`
-                    },
-                ])
+                setNotificationUser(notificationsData)
                 router.push('/');
                 return response
             }
