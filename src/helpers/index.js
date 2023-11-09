@@ -183,7 +183,7 @@ export const formattedStringInDate = (str) => {
       return timestamp
    }
    return null
-} 
+}
 
 export const formatValueReal = (value) => {
    const rawValue = String(value);
@@ -192,3 +192,37 @@ export const formatValueReal = (value) => {
    const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
    return formattedValue;
 }
+
+export const formatTimeAgo = (timestamp, includeTime = false) => {
+   const now = new Date();
+   const date = new Date(timestamp);
+   const diffInSeconds = Math.floor((now - date) / 1000);
+
+   if (diffInSeconds < 60) {
+      return 'agora mesmo';
+   }
+
+   const diffInMinutes = Math.floor(diffInSeconds / 60);
+
+   if (diffInMinutes < 60) {
+      return `${diffInMinutes} ${diffInMinutes === 1 ? 'minuto' : 'minutos'} atrás`;
+   }
+
+   const diffInHours = Math.floor(diffInMinutes / 60);
+
+   if (diffInHours < 24) {
+      return `${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'} atrás`;
+   }
+
+   const diffInDays = Math.floor(diffInHours / 24);
+
+   if (diffInDays < 30) {
+      return `${diffInDays} ${diffInDays === 1 ? 'dia' : 'dias'} atrás`;
+   }
+
+   const diffInMonths = Math.floor(diffInDays / 30);
+
+   return `${diffInMonths} ${diffInMonths === 1 ? 'mês' : 'meses'} atrás`;
+};
+
+
