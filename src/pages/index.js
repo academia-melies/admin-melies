@@ -97,7 +97,8 @@ export default function Home() {
          const notificationData = {
             titulo: `Parabéns!!`,
             menssagem: `${user?.nome} te desejou muitas felicidades no seu dia!`,
-            vizualizado: 0
+            vizualizado: 0,
+            usuario_env: user?.id
          }
          const response = await api.post(`/notification/create/${id}`, { notificationData })
          if (response.status === 201) {

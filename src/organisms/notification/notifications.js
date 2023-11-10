@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../context/AppContext";
 import { Box, ContentContainer, Divider, Text } from "../../atoms";
 import { Colors } from "../layout/Colors";
-import { CircularProgress } from "@mui/material";
+import { Avatar, CircularProgress } from "@mui/material";
 import { api } from "../../api/api";
 import { formatTimeAgo } from "../../helpers";
 
@@ -40,7 +40,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         } else if (showMenu?.archive) {
             setNotificationData(notificationUser?.filter(item => item.ativo === 0))
         }
-    }, [showMenu])
+    }, [showMenu, notificationUser])
 
 
     const handleGroupMouseEnter = (index) => {
@@ -111,7 +111,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         <div ref={containerRef}>
             {showNotification &&
 
-                <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -360, top: 45, width: 415, maxHeight: 350, overflowY: 'auto', padding: 2, display: 'flex', flexDirection: 'column' }}>
+                <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -360, top: 45, width: 415, maxHeight: 600, overflowY: 'auto', padding: 2, display: 'flex', flexDirection: 'column' }}>
 
                     <Box>
                         <Text bold>Notificações</Text>
@@ -208,7 +208,12 @@ export const Notifications = ({ showNotification = false, setShowNotification })
                                             top: 25,
                                             left: -5
                                         }} />}
-                                    <Box sx={{ display: 'flex', gap: 1, }}>
+                                    <Box sx={{ display: 'flex', gap: 1.75,}}>
+                                        <Avatar src={item?.location || item?.imagem || ''} sx={{
+                                            height: { xs: '100%', sm: 45, md: 45, lg: 60 },
+                                            width: { xs: '100%', sm: 45, md: 45, lg: 60 },
+                                        }} variant="circular"
+                                        />
                                         <Box sx={{ display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1 }}>
                                             <Text small bold>{item?.titulo}</Text>
                                             <Text small>{item?.menssagem}</Text>
