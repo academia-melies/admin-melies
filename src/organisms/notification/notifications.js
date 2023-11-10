@@ -6,11 +6,16 @@ import { CircularProgress } from "@mui/material";
 import { api } from "../../api/api";
 import { formatTimeAgo } from "../../helpers";
 
-export const Notifications = ({ showNotification = false, setShowNotification}) => {
+export const Notifications = ({ showNotification = false, setShowNotification }) => {
     const { colorPalette, theme, logout, notificationUser, setNotificationUser } = useAppContext()
     const [loadingNotification, setLoadingNotification] = useState(false)
     const [groupStates, setGroupStates] = useState(notificationUser.map(() => false));
     const containerRef = useRef(null);
+    const [showMenu, setShowMenu] = useState({
+        inbox: true,
+        archive: false
+    })
+    const [notificationData, setNotificationData] = useState([])
 
     useEffect(() => {
         if (!showNotification) {
@@ -29,15 +34,13 @@ export const Notifications = ({ showNotification = false, setShowNotification}) 
         }
     }, []);
 
-    const handleGoBack = () => {
-        if (lastPage > 0) {
-            routeParts[routeParts.length - 1] = 'list';
-            const newRoute = routeParts.join('/');
-            router.push(newRoute);
-        } else {
-            router.back();
+    useEffect(() => {
+        if (showMenu?.inbox) {
+            setNotificationData(notificationUser?.filter(item => item.ativo === 1))
+        } else if (showMenu?.archive) {
+            setNotificationData(notificationUser?.filter(item => item.ativo === 0))
         }
-    };
+    }, [showMenu])
 
 
     const handleGroupMouseEnter = (index) => {
@@ -109,98 +112,168 @@ export const Notifications = ({ showNotification = false, setShowNotification}) 
             {showNotification &&
 
                 <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -360, top: 45, width: 415, maxHeight: 350, overflowY: 'auto', padding: 2, display: 'flex', flexDirection: 'column' }}>
-                    <Text bold>Notificações</Text>
-                    <Box sx={{
-                        ...styles.menuIcon,
-                        width: 21,
-                        height: 21,
-                        backgroundImage: `url('/icons/config_icon.jpg')`,
-                        transition: '.3s',
-                        aspectRatio: '1/1',
-                        position: 'absolute',
-                        right: 15, top: 15,
-                        zIndex: 999999999,
-                        "&:hover": {
-                            opacity: 0.8,
-                            cursor: 'pointer'
-                        }
-                    }} />
-                    <Divider distance={0} />
-                    {notificationUser?.filter(n => n.ativo === 1)?.length > 0 ? notificationUser?.filter(n => n.ativo === 1)?.map((item, index) => {
-                        return (
-                            <Box key={index} sx={{
-                                display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '8px 12px', width: 380,
+
+                    <Box>
+                        <Text bold>Notificações</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 21,
+                            height: 21,
+                            backgroundImage: `url('/icons/setting_icon.png')`,
+                            transition: '.3s',
+                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                            transition: 'background-color 1s',
+                            aspectRatio: '1/1',
+                            position: 'absolute',
+                            right: 15, top: 15,
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 3, position: 'absolute', top: 45 }}>
+                        <Box sx={{
+                            borderBottom: `2px solid ${showMenu?.inbox ? 'black' : 'transparent'}`, padding: '10px 0px', display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowMenu({ inbox: true, archive: false })}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 14,
+                                height: 14,
+                                backgroundImage: `url('/icons/inbox_icon.png')`,
+                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                transition: 'background-color 1s',
+                                transition: '.3s',
+                                aspectRatio: '1/1',
+                                zIndex: 999999999,
                                 "&:hover": {
-                                    backgroundColor: colorPalette.primary + '99',
+                                    opacity: 0.8,
                                     cursor: 'pointer'
                                 }
-                            }} onMouseEnter={() => handleVizualizeded(item?.id_notificacao)}>
-                                {item?.vizualizado === 0 &&
-                                    <Box sx={{
-                                        position: 'absolute',
-                                        width: 7,
-                                        height: 7,
-                                        borderRadius: 7,
-                                        backgroundColor: 'red',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        top: 25,
-                                        left: -5
-                                    }} />}
-                                <Box sx={{ display: 'flex', gap: 1, }}>
-                                    <Box sx={{ display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1 }}>
-                                        <Text small bold>{item?.titulo}</Text>
-                                        <Text small>{item?.menssagem}</Text>
-                                        <Text style={{ color: '#606060', marginTop: 2 }} xsmall>{formatTimeAgo(item?.dt_criacao, true)}</Text>
-                                    </Box>
-                                    <Box sx={{ postion: 'relative' }}>
-
+                            }} />
+                            <Text>Inbox</Text>
+                        </Box>
+                        <Box sx={{
+                            borderBottom: `2px solid ${showMenu?.archive ? 'black' : 'transparent'}`, padding: '10px 0px', display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowMenu({ inbox: false, archive: true })}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 14,
+                                height: 14,
+                                backgroundImage: `url('/icons/archive_icon.png')`,
+                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                transition: 'background-color 1s',
+                                transition: '.3s',
+                                aspectRatio: '1/1',
+                                zIndex: 999999999,
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} />
+                            <Text>Aquivadas</Text>
+                        </Box>
+                    </Box>
+                    <Box sx={{ width: '100%', height: '1px', backgroundColor: '#eaeaea', marginTop: '35px' }} />
+                    {notificationData?.length > 0 ? notificationData
+                        ?.sort((a, b) => b.dt_criacao.localeCompare(a.dt_criacao))
+                        ?.map((item, index) => {
+                            const vizualized = item?.vizualizado === 0 ? false : true
+                            return (
+                                <Box key={index} sx={{
+                                    display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '8px 12px', width: 380,
+                                    "&:hover": {
+                                        backgroundColor: colorPalette.primary + '99',
+                                        cursor: 'pointer'
+                                    }
+                                }} onMouseEnter={() => handleVizualizeded(item?.id_notificacao)}>
+                                    {item?.vizualizado === 0 &&
                                         <Box sx={{
-                                            ...styles.menuIcon,
-                                            zIndex: 9999,
-                                            backgroundImage: `url('/icons/notification_icon-png.png')`,
-                                            width: 13,
-                                            position: 'relative',
-                                            height: 13,
-                                            borderRadius: 13,
-                                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                                            transition: 'background-color 1s',
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: 'pointer'
-                                            }
-                                        }} onClick={() => handleInativeNotification(item?.id_notificacao)}
-                                            onMouseEnter={() => handleGroupMouseEnter(index)}
-                                            onMouseLeave={() => handleGroupMouseLeave(index)}
-                                        >
-                                            <Box
-                                                sx={{
-                                                    position: 'absolute',
-                                                    top: 'calc(50% - 0.5px)',
-                                                    width: 17,
-                                                    right: -2,
-                                                    height: '1px',
-                                                    transform: 'rotate(45deg)',
-                                                    backgroundColor: 'lightgray',
-                                                    filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                                                }}
-                                            />
+                                            position: 'absolute',
+                                            width: 7,
+                                            height: 7,
+                                            borderRadius: 7,
+                                            backgroundColor: 'red',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            top: 25,
+                                            left: -5
+                                        }} />}
+                                    <Box sx={{ display: 'flex', gap: 1, }}>
+                                        <Box sx={{ display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1 }}>
+                                            <Text small bold>{item?.titulo}</Text>
+                                            <Text small>{item?.menssagem}</Text>
+                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                <Text style={{ color: '#606060', marginTop: 2 }} xsmall>{formatTimeAgo(item?.dt_criacao, true)}</Text>
+                                                {vizualized ?
+                                                    <>
+                                                        <Text style={{ color: '#606060', marginTop: 2 }} xsmall>-</Text>
+                                                        <Text style={{ color: '#606060', marginTop: 2 }} xsmall>vista</Text>
+                                                    </>
+                                                    :
+                                                    <Box sx={{ padding: '0px 8px', backgroundColor: colorPalette.buttonColor, borderRadius: 8 }}>
+                                                        <Text xsmall style={{ color: '#fff' }}>new</Text>
+                                                    </Box>
+                                                }
+                                            </Box>
                                         </Box>
-                                        {groupStates[index] &&
-                                            <ContentContainer style={{
-                                                position: 'absolute',
-                                                top: 25,
-                                                right: 10,
-                                                transition: '1s',
-                                                padding: 1
-                                            }}>
-                                                <Text xsmall>Ocultar notificação</Text>
-                                            </ContentContainer>}
+                                        {showMenu?.inbox && <Box sx={{ postion: 'relative' }}>
+
+                                            <Box sx={{
+                                                ...styles.menuIcon,
+                                                zIndex: 9999,
+                                                backgroundImage: `url('/icons/notification_icon-png.png')`,
+                                                width: 13,
+                                                position: 'relative',
+                                                height: 13,
+                                                borderRadius: 13,
+                                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                                transition: 'background-color 1s',
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
+                                                }
+                                            }} onClick={() => handleInativeNotification(item?.id_notificacao)}
+                                                onMouseEnter={() => handleGroupMouseEnter(index)}
+                                                onMouseLeave={() => handleGroupMouseLeave(index)}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        top: 'calc(50% - 0.5px)',
+                                                        width: 17,
+                                                        right: -2,
+                                                        height: '1px',
+                                                        transform: 'rotate(45deg)',
+                                                        backgroundColor: 'lightgray',
+                                                        filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                                    }}
+                                                />
+                                            </Box>
+                                            {groupStates[index] &&
+                                                <ContentContainer style={{
+                                                    position: 'absolute',
+                                                    top: 25,
+                                                    right: 10,
+                                                    transition: '1s',
+                                                    padding: 1
+                                                }}>
+                                                    <Text xsmall>Ocultar notificação</Text>
+                                                </ContentContainer>}
+                                        </Box>}
                                     </Box>
                                 </Box>
-                            </Box>
-                        )
-                    })
+                            )
+                        })
                         :
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative' }}>
                             <Text small>Você não possui novas notificações.</Text>
