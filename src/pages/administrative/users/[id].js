@@ -20,7 +20,7 @@ export default function EditUser() {
     const { id, slug } = router.query;
     const newUser = id === 'new';
     const [perfil, setPerfil] = useState('')
-    const [fileCallback, setFileCallback] = useState([])
+    const [fileCallback, setFileCallback] = useState()
     const [bgPhoto, setBgPhoto] = useState({})
     const [userData, setUserData] = useState({
         autista: null,

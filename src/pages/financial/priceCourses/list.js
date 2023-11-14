@@ -49,10 +49,10 @@ export default function ListPriceCourses(props) {
         { key: 'id_valor_curso', label: 'ID' },
         { key: 'nivel_curso', label: '' },
         { key: 'curso', label: 'Curso' },
-        { key: 'valor_total_curso', label: 'Valor Total', price: true },
+        { key: 'valor_total_curso', label: 'Valor Total' },
         { key: 'n_parcelas', label: 'Parcelas' },
-        { key: 'valor_parcelado_curso', label: 'Valor parcelado', price: true },
-        { key: 'valor_avista_curso', label: 'á vista (desconto 5%)', price: true }
+        { key: 'valor_parcelado_curso', label: 'Valor parcelado' },
+        { key: 'valor_avista_curso', label: 'á vista (desconto 5%)' }
     ];
 
     const listAtivo = [

@@ -395,10 +395,10 @@ export default function EditPricesCourse(props) {
     const column = [
         { key: 'id_hist_val_curso', label: 'ID' },
         { key: 'reajuste', label: 'Reajuste %' },
-        { key: 'valor_total_curso', label: 'Valor Final', price: true },
-        { key: 'valor_avista_curso', label: 'á vista (desconto 5%)', price: true },
+        { key: 'valor_total_curso', label: 'Valor Final' },
+        { key: 'valor_avista_curso', label: 'á vista (desconto 5%)' },
         { key: 'n_parcelas', label: 'Parcelas' },
-        { key: 'valor_parcelado_curso', label: 'Valor parcelado', price: true },
+        { key: 'valor_parcelado_curso', label: 'Valor parcelado' },
         { key: 'dt_reajuste', label: 'Data do reajuste', date: true },
         { key: 'observacao_his_pr_cur', label: 'Observações' },
     ];
