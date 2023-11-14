@@ -80,6 +80,8 @@ export default function InterestEnroll() {
         { screen: 'thirdy', check: true, alert: '' },
     ])
     const [formData, setFormData] = useState()
+    const [paymentsInfoData, setPaymentsInfoData] = useState()
+
 
 
     // useEffect(() => {
@@ -119,11 +121,6 @@ export default function InterestEnroll() {
 
     //     return () => clearInterval(interval);
     // }, [loadingEnrollment, enrollmentCompleted]);
-
-
-
-
-
 
 
     const pushRouteScreen = (indice, route) => {
@@ -609,6 +606,7 @@ export default function InterestEnroll() {
                     showPaymentPerfl={showPaymentPerfl}
                     setShowPaymentPerfl={setShowPaymentPerfl}
                     pushRouteScreen={pushRouteScreen}
+                    paymentsInfoData={paymentsInfoData} setPaymentsInfoData={setPaymentsInfoData}
                 />
             </>
         ),
@@ -630,6 +628,7 @@ export default function InterestEnroll() {
                     handleCreateEnrollStudent={handleCreateEnrollStudent}
                     pushRouteScreen={pushRouteScreen}
                     setFormData={setFormData}
+                    paymentsInfoData={paymentsInfoData} setPaymentsInfoData={setPaymentsInfoData}
                 />
             </>
         )
@@ -781,12 +780,14 @@ export const Payment = (props) => {
         groupPayment,
         showPaymentPerfl,
         setShowPaymentPerfl,
-        pushRouteScreen
+        pushRouteScreen,
+        paymentsInfoData, setPaymentsInfoData
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
     const [disciplineDispensedPorcent, setDisciplineDispensedPorcent] = useState()
     const [valueParcel, setValueParcel] = useState()
+    const [valueParcelTwo, setValueParcelTwo] = useState()
     const [groupDaysForPay, setGroupDaysForPay] = useState()
     const [totalParcel, setTotalParcel] = useState()
     const [dispensedDisciplines, setDispensedDisciplines] = useState()
@@ -796,17 +797,24 @@ export const Payment = (props) => {
     const [dayForPayment, setDayForPayment] = useState(1)
     const [monthForPayment, setMonthDayForPayment] = useState()
     const initialTypePaymentsSelected = Array.from({ length: numberOfInstallments }, () => ({ tipo: '', valor_parcela: '', n_parcela: null, data_pagamento: '' }));
+    const initialTypePaymentsSelectedTwo = Array.from({ length: numberOfInstallmentSecondCard }, () => ({ tipo: '', valor_parcela: '', n_parcela: null, data_pagamento: '' }));
     const [typePaymentsSelected, setTypePaymentsSelected] = useState(initialTypePaymentsSelected);
+    const [typePaymentsSelectedTwo, setTypePaymentsSelectedTwo] = useState(initialTypePaymentsSelectedTwo);
     const [globalTypePaymentsSelected, setGlobalTypePaymentsSelected] = useState('');
-    const [responsiblesPayers, setResponsiblesPayers] = useState({ first: '', second: '' });
+    const [globalTypePaymentsSelectedTwo, setGlobalTypePaymentsSelectedTwo] = useState('');
     const [aditionalDiscount, setAditionalDiscount] = useState({ desconto_adicional: '', desconto_formatado: '' })
-    const { colorPalette, alert } = useAppContext()
+    const { colorPalette, alert, theme } = useAppContext()
     const [focusedCreditCard, setFocusedCreditCard] = useState('');
     const [twoCards, setTwoCards] = useState(false)
-    const [cardPurchaseValues, setCardPurchaseValues] = useState({
+    const [purchaseValues, setPurchaseValues] = useState({
         firstCard: '',
         secondCard: ''
     })
+    const [responsiblesPayers, setResponsiblesPayers] = useState({ first: '', second: '' });
+    const [hasEntry, setHasEntry] = useState()
+    const [paymentEntry, setPaymentEntry] = useState()
+    const [typePaymentEntry, setTypePaymentEntry] = useState()
+    const [formPaymentEntry, setFormPaymentEntry] = useState()
 
 
 
@@ -842,11 +850,35 @@ export const Payment = (props) => {
         setMonthDayForPayment(formattedDate)
     }, [])
 
+    const handleCalculationEntry = (value) => {
+        if (value) {
+            let paymentValue = value;
+            let formattedPaymentValue = paymentValue?.replace(/\./g, '').replace(',', '.');
+            value = parseFloat(formattedPaymentValue)
+            return value
+        }
+        return 0
+    }
+
 
     useEffect(() => {
         let numberParcells = numberOfInstallments;
-        if (twoCards) numberParcells = numberOfInstallments + numberOfInstallmentSecondCard
-        const parcelValue = (totalValueFinnaly / numberParcells).toFixed(2)
+        let numberParcellsTwo;
+        let paymentTwo;
+        let totalValuePaymentFirst = totalValueFinnaly;
+        if (twoCards && purchaseValues?.firstCard) {
+            totalValuePaymentFirst = handleCalculationEntry(purchaseValues?.firstCard)
+        }
+        let paymentFirst = (totalValuePaymentFirst / numberParcells).toFixed(2)
+        if (twoCards) {
+            numberParcellsTwo = numberOfInstallmentSecondCard;
+            paymentTwo = handleCalculationEntry(purchaseValues?.secondCard) / numberParcellsTwo;
+        }
+
+        if (paymentEntry && !twoCards) {
+            paymentFirst = (totalValuePaymentFirst - handleCalculationEntry(paymentEntry)) / numberParcells;
+        }
+
         const totalParcelCourse = valuesCourse?.n_parcelas || 6;
         const updatedNumberParcel = Array.from({ length: totalParcelCourse }, (_, index) => ({
             label: index + 1,
@@ -859,7 +891,8 @@ export const Payment = (props) => {
         }))
 
         setGroupDaysForPay(updatedDayForPayment)
-        setValueParcel(parcelValue)
+        setValueParcel(paymentFirst)
+        setValueParcelTwo(paymentTwo)
         setTotalParcel(updatedNumberParcel)
 
         setTypePaymentsSelected(prevTypePaymentsSelected => {
@@ -914,7 +947,7 @@ export const Payment = (props) => {
                 updatedArray.push({
                     pagamento: paymentForm,
                     tipo: globalTypePaymentsSelected,
-                    valor_parcela: parcelValue,
+                    valor_parcela: paymentFirst,
                     data_pagamento: formattedPaymentDate,
                     n_parcela: i + 1,
                 });
@@ -923,7 +956,68 @@ export const Payment = (props) => {
             return updatedArray;
         });
 
-    }, [numberOfInstallments, twoCards, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, dayForPayment])
+        setTypePaymentsSelectedTwo(prevTypePaymentsSelected => {
+            const updatedArray = [];
+
+            for (let i = 0; i < numberOfInstallmentSecondCard; i++) {
+                let date = monthForPayment ? new Date(monthForPayment) : new Date()
+                const paymentDate = date;
+                const selectedDay = dayForPayment;
+                const typePayment = prevTypePaymentsSelected[i + 1]
+                let month = paymentDate.getMonth() + i;
+                let isSaturday = false; // Sabado
+                let isSunday = false; // Domingo
+
+                paymentDate.setMonth(month);
+
+                const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
+                if (selectedDay > lastDayOfMonth) {
+                    paymentDate.setDate(lastDayOfMonth);
+                } else {
+                    paymentDate.setDate(selectedDay);
+                }
+
+                if (paymentDate.getDay() === 6) {
+                    isSaturday = true;
+                    if (paymentDate.getDate() + 2 > lastDayOfMonth) {
+                        paymentDate.setDate(paymentDate.getDate() - 1);
+                    } else {
+                        paymentDate.setDate(paymentDate.getDate() + 2);
+                    }
+                }
+
+                if (paymentDate.getDay() === 0) {
+                    isSunday = true;
+                    if (paymentDate.getDate() + 1 > lastDayOfMonth) {
+                        paymentDate.setDate(paymentDate.getDate() - 2);
+                    } else {
+                        paymentDate.setDate(paymentDate.getDate() + 1);
+                    }
+                }
+
+                while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
+                    paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
+                }
+
+                const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
+                let payments = paymentsProfile?.map(item => item)[0]
+
+                let paymentForm = (globalTypePaymentsSelectedTwo === 'Cartão' && payments?.id_cartao_credito) || (globalTypePaymentsSelectedTwo === 'Pix' && 'Pix') || (globalTypePaymentsSelectedTwo === 'Boleto' && 'Boleto')
+                if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile?.length <= 0) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
+                if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile?.length > 0) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
+                updatedArray.push({
+                    pagamento: paymentForm,
+                    tipo: globalTypePaymentsSelectedTwo,
+                    valor_parcela: paymentTwo,
+                    data_pagamento: formattedPaymentDate,
+                    n_parcela: i + 1,
+                });
+            }
+
+            return updatedArray;
+        });
+
+    }, [purchaseValues, paymentEntry, numberOfInstallments, twoCards, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, globalTypePaymentsSelectedTwo, dayForPayment])
 
 
     const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate, payment) => {
@@ -949,6 +1043,17 @@ export const Payment = (props) => {
                 pagamento: value,
             };
             return updatedTypePaymentsSelected;
+        });
+    };
+
+    const handlePaymentProfileTwo = (index, value) => {
+        setTypePaymentsSelectedTwo((prevTypePaymentsSelected) => {
+            const updatedTypePaymentsSelectedTwo = [...prevTypePaymentsSelected];
+            updatedTypePaymentsSelectedTwo[index] = {
+                ...updatedTypePaymentsSelectedTwo[index],
+                pagamento: value,
+            };
+            return updatedTypePaymentsSelectedTwo;
         });
     };
 
@@ -1131,10 +1236,69 @@ export const Payment = (props) => {
             valorFinal: totalValueFinnaly
         });
 
-        setPaymentForm(typePaymentsSelected);
-    }, [updatedScreen, typePaymentsSelected, numberOfInstallments, totalValueFinnaly, dispensedDisciplines, discountDispensed, disciplineDispensedPorcent, aditionalDiscount, valuesCourse, setValuesContract, setPaymentForm]);
+        setPaymentsInfoData({
+            firsResponsible: responsiblesPayers?.first || userData?.id,
+            secondResponsible: responsiblesPayers?.second,
+            valueEntry: handleCalculationEntry(paymentEntry),
+            typePaymentEntry,
+            formPaymentEntry
+        })
+
+        setPaymentForm([typePaymentsSelected, typePaymentsSelectedTwo]);
+    }, [updatedScreen, typePaymentsSelected, typePaymentsSelectedTwo, numberOfInstallments, totalValueFinnaly, dispensedDisciplines, discountDispensed, disciplineDispensedPorcent, aditionalDiscount, valuesCourse, setValuesContract, setPaymentForm]);
 
 
+    const handleChangePaymentEntry = async (event) => {
+
+        const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+        if (rawValue === '') {
+            event.target.value = '';
+        } else {
+            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+            if (intValue === '0' && rawValue.length > 2) {
+                intValue = '';
+            }
+
+            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+            event.target.value = formattedValue;
+
+        }
+
+        setPaymentEntry(event.target.value);
+
+        return;
+    }
+
+
+    const handleChangePaymentValuesParcels = async (event) => {
+
+        const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+        if (rawValue === '') {
+            event.target.value = '';
+        } else {
+            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+            if (intValue === '0' && rawValue.length > 2) {
+                intValue = '';
+            }
+
+            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+            event.target.value = formattedValue;
+
+        }
+
+        setPurchaseValues((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }));
+
+        return;
+    }
 
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -1145,7 +1309,11 @@ export const Payment = (props) => {
     const listPaymentType = [
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Cartão', value: 'Cartão' },
-        { label: 'Pix', value: 'Pix' },
+        // { label: 'Pix', value: 'Pix' },
+    ]
+
+    const listEntry = [
+        { label: 'Entrada', value: 'Sim' },
     ]
 
     const holidays = [
@@ -1241,6 +1409,43 @@ export const Payment = (props) => {
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
                             <TextInput name='monthForPayment' onChange={(e) => setMonthDayForPayment(e.target.value)} value={(monthForPayment)?.split('T')[0] || ''} type="date" label='Primeira cobrança' sx={{ flex: 1, }} />
+                            <CheckBoxComponent
+                                padding={false}
+                                valueChecked={hasEntry}
+                                boxGroup={listEntry}
+                                horizontal={false}
+                                onSelect={(value) => {
+                                    setHasEntry(value)
+                                    if (!value) {
+                                        setTypePaymentEntry('')
+                                        setPaymentEntry('')
+                                        setFormPaymentEntry('')
+                                    }
+                                }}
+                                sx={{ flex: 1, }}
+                            />
+                            {hasEntry === 'Sim' &&
+                                <>
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        <TextInput
+                                            placeholder='0,00'
+                                            name='paymentEntry'
+                                            type="coin"
+                                            onChange={handleChangePaymentEntry}
+                                            value={paymentEntry || ''}
+                                            label='Valor da entrada' sx={{ flex: 1, }}
+                                        />
+                                        <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentEntry || ''} onSelect={(value) => setTypePaymentEntry(value)}
+                                            filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            title="Forma de pagamento *"
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                    </Box>
+                                    {typePaymentEntry === 'Cartão' && <SelectList title="Selecione o cartão *" fullWidth data={groupPayment} valueSelection={formPaymentEntry || ''} onSelect={(value) => setFormPaymentEntry(value)}
+                                        filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />}
+                                </>}
                         </Box>
                     </ContentContainer>
 
@@ -1262,7 +1467,7 @@ export const Payment = (props) => {
                             <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
 
                                 <Box sx={{ ...styles.inputSection }}>
-                                    <TextInput placeholder='Nome' id="field-1" name='nome_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.nome_resp || ''} label='Nome *' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='Nome/Razão Social' id="field-1" name='nome_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.nome_resp || ''} label='Nome/Razão Social *' sx={{ flex: 1, }} />
                                     <PhoneInputField
                                         label='Telefone *'
                                         name='telefone_resp'
@@ -1273,7 +1478,7 @@ export const Payment = (props) => {
                                 </Box>
                                 <TextInput placeholder='E-mail' name='email_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.email_resp || ''} label='E-mail *' sx={{ flex: 1, }} />
                                 <Box sx={{ ...styles.inputSection }}>
-                                    <TextInput placeholder='CPF' name='cpf_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.cpf_resp || ''} label='CPF *' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='CPF/CNPJ' name='cpf_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.cpf_resp || ''} label='CPF/CNPJ *' sx={{ flex: 1, }} />
                                     <TextInput placeholder='RG' name='rg_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.rg_resp || ''} label='RG *' sx={{ flex: 1, }} />
                                 </Box>
                                 <TextInput placeholder='CEP' name='cep_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.cep_resp || ''} onBlur={handleBlurCEP} label='CEP *' sx={{ flex: 1, }} />
@@ -1424,16 +1629,50 @@ export const Payment = (props) => {
                             )}
                     </ContentContainer>
 
-                    <ContentContainer fullWidth gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 40px' }}>
-                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                    <ContentContainer fullWidth gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 40px', position: 'relative' }}>
+                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', position: 'relative' }}>
                             <Box sx={{ display: 'flex', gap: 1.8, justifyContent: 'space-between' }}>
                                 <Text bold title>Forma de pagamento</Text>
-                                <Button small secondary={twoCards ? false : true} text="dividir em 2 pagantes" onClick={() => setTwoCards(!twoCards)} style={{ height: '30px', borderRadius: 0 }} />
+                                <Button small secondary={twoCards ? false : true} text="dividir em 2 pagantes" onClick={() => {
+                                    if (responsiblePayerData?.id_resp_pag) {
+                                        setTwoCards(!twoCards)
+                                        if (!twoCards) {
+                                            setPurchaseValues({ ...purchaseValues, secondCard: '' })
+                                            setTypePaymentsSelectedTwo(initialTypePaymentsSelectedTwo)
+                                        }
+                                    } else {
+                                        alert.info('Adicione um responsável pagante para dividir em 2 pagamentos.')
+                                    }
+                                }} style={{ height: '30px', borderRadius: 0 }} />
                             </Box>
 
-                            <Box sx={{ display: twoCards && 'flex', gap: twoCards ? 3 : 1.8, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'column' } }}>
-                                <Box sx={{ display: twoCards && 'flex', gap: 1.8, flexDirection: 'column' }}>
+                            {twoCards &&
+                                <Box sx={{ display: 'flex', top: -20, left: 250, position: 'absolute', justifyContent: 'center', alignItems: 'center', gap: 1.5, backgroundColor: colorPalette?.primary, padding: '5px 10px' }}>
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        width: 25,
+                                        height: 25,
+                                        aspectRatio: '1/1',
+                                        backgroundImage: `url('/icons/coin_icon.png')`,
+                                        filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                        transition: 'background-color 1s',
+                                        transition: '.3s',
+                                    }} />
+                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <Text large bold>{formatter.format((parseFloat(totalValueFinnaly) - handleCalculationEntry(paymentEntry)) - (handleCalculationEntry(purchaseValues?.firstCard) + handleCalculationEntry(purchaseValues?.secondCard)))}</Text>
+                                        <Text light>Saldo devedor:</Text>
+                                    </Box>
+                                </Box>
+                            }
 
+                            <Box sx={{ display: twoCards && 'flex', gap: twoCards ? 3 : 1.8, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'column' } }}>
+                                <Box sx={{ display: twoCards && 'flex', gap: 1.8, flexDirection: 'column', marginTop: twoCards && 5 }}>
+                                    {twoCards &&
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginBottom: 5 }}>
+                                            <Text large bold>Primeiro pagante:</Text>
+                                            <Text large light>{groupResponsible?.filter(item => item.id === responsiblesPayers?.first)?.map(item => item?.label)}</Text>
+                                        </Box>
+                                    }
                                     <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
                                         <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallments || ''} onSelect={(value) => setNumberOfInstallments(value)}
                                             title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -1448,14 +1687,11 @@ export const Payment = (props) => {
                                         {twoCards && <>
 
                                             <TextInput
+                                                placeholder="0,00"
                                                 name='firstCard'
-                                                type={typeDiscountAdditional?.real ? "coin" : ''}
-                                                onChange={(event) =>
-                                                    setCardPurchaseValues((prevValues) => ({
-                                                        ...prevValues,
-                                                        firstCard: event.target.value,
-                                                    }))}
-                                                value={cardPurchaseValues?.firstCard || ''}
+                                                type={"coin"}
+                                                onChange={(event) => handleChangePaymentValuesParcels(event)}
+                                                value={purchaseValues?.firstCard || ''}
                                                 label='Valor a pagar' sx={{ flex: 1, }}
                                             />
                                             <SelectList fullWidth data={groupResponsible} valueSelection={responsiblesPayers?.first || ''}
@@ -1530,11 +1766,12 @@ export const Payment = (props) => {
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {installmentNumber}</td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
-                                                                <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate,)}
+                                                                {/* <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate,)}
                                                                     filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                                     clean={false}
-                                                                />
+                                                                /> */}
+                                                                {typePaymentsSelected[index]?.tipo}
                                                             </td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
                                                                 {typePaymentsSelected[index]?.tipo === 'Cartão' ? <SelectList fullWidth data={groupPayment} valueSelection={typePaymentsSelected[index]?.pagamento || ''} onSelect={(value) => handlePaymentProfile(index, value)}
@@ -1558,13 +1795,19 @@ export const Payment = (props) => {
                                     </div>
                                 </Box>
                                 {twoCards &&
-                                    <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column', justifyContent: 'start' }}>
+                                    <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column', justifyContent: 'start', marginTop: 5 }}>
+                                        {twoCards &&
+                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginBottom: 5 }}>
+                                                <Text large bold>Segundo pagante:</Text>
+                                                <Text large light>{groupResponsible?.filter(item => item.id === responsiblesPayers?.second)?.map(item => item?.label)}</Text>
+                                            </Box>
+                                        }
                                         <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
                                             <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallmentSecondCard || ''} onSelect={(value) => setNumberOfInstallmentSecondCard(value)}
                                                 title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
-                                            <SelectList fullWidth data={listPaymentType} valueSelection={globalTypePaymentsSelected || ''} onSelect={(value) => setGlobalTypePaymentsSelected(value)}
+                                            <SelectList fullWidth data={listPaymentType} valueSelection={globalTypePaymentsSelectedTwo || ''} onSelect={(value) => setGlobalTypePaymentsSelectedTwo(value)}
                                                 filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 title="Selecione a forma de pagamento *"
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -1572,14 +1815,11 @@ export const Payment = (props) => {
                                             />
                                             {twoCards && <>
                                                 <TextInput
-                                                    name='firstCard'
-                                                    type={typeDiscountAdditional?.real ? "coin" : ''}
-                                                    onChange={(event) =>
-                                                        setCardPurchaseValues((prevValues) => ({
-                                                            ...prevValues,
-                                                            firstCard: event.target.value,
-                                                        }))}
-                                                    value={cardPurchaseValues?.firstCard || ''}
+                                                    placeholder="0,00"
+                                                    name='secondCard'
+                                                    type={"coin"}
+                                                    onChange={(event) => handleChangePaymentValuesParcels(event)}
+                                                    value={purchaseValues?.secondCard || ''}
                                                     label='Valor a pagar' sx={{ flex: 1, }}
                                                 />
                                                 <SelectList fullWidth data={groupResponsible} valueSelection={responsiblesPayers?.second || ''}
@@ -1653,23 +1893,19 @@ export const Payment = (props) => {
                                                                 <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                     {installmentNumber}</td>
                                                                 <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
-                                                                    <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate,)}
-                                                                        filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                                        clean={false}
-                                                                    />
+                                                                    {typePaymentsSelectedTwo[index]?.tipo}
                                                                 </td>
                                                                 <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
-                                                                    {typePaymentsSelected[index]?.tipo === 'Cartão' ? <SelectList fullWidth data={groupPayment} valueSelection={typePaymentsSelected[index]?.pagamento || ''} onSelect={(value) => handlePaymentProfile(index, value)}
+                                                                    {typePaymentsSelectedTwo[index]?.tipo === 'Cartão' ? <SelectList fullWidth data={groupPayment} valueSelection={typePaymentsSelectedTwo[index]?.pagamento || ''} onSelect={(value) => handlePaymentProfileTwo(index, value)}
                                                                         filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                                         clean={false}
                                                                     />
                                                                         :
-                                                                        typePaymentsSelected[index]?.tipo}
+                                                                        typePaymentsSelectedTwo[index]?.tipo}
                                                                 </td>
                                                                 <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                    {formatter.format(valueParcel)}</td>
+                                                                    {formatter.format(valueParcelTwo)}</td>
                                                                 <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                     {formattedPaymentDate}
                                                                 </td>
@@ -1684,9 +1920,9 @@ export const Payment = (props) => {
                             </Box>
                         </Box>
                     </ContentContainer>
-                </Box>
+                </Box >
 
-            </ContentContainer>
+            </ContentContainer >
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Button secondary text="Voltar" onClick={() => pushRouteScreen(0, 'interesse >')} style={{ width: 120 }} />
                 <Button text="Continuar" onClick={() => checkEnrollmentData(2, 'interesse > Pagamento > Contrato')} style={{ width: 120 }} />
@@ -1712,7 +1948,8 @@ export const ContractStudent = (props) => {
         groupPayment,
         handleCreateEnrollStudent,
         pushRouteScreen,
-        setFormData
+        setFormData,
+        paymentsInfoData, setPaymentsInfoData
     } = props
 
 
@@ -1756,11 +1993,13 @@ export const ContractStudent = (props) => {
 
     useEffect(() => {
 
-        const updatedPaymentForm = paymentForm.map((payment) => ({
-            ...payment,
-            pagamento: payment?.pagamento || payment?.tipo,
-            valor_parcela: parseFloat(payment?.valor_parcela).toFixed(2)
-        }));
+        const updatedPaymentForm = paymentForm.map((payment) =>
+            payment?.map((items) => ({
+                ...items,
+                pagamento: items?.pagamento || items?.tipo,
+                valor_parcela: items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
+            }))
+        );
 
         setPaymentData(updatedPaymentForm)
     }, [])
@@ -1808,7 +2047,7 @@ export const ContractStudent = (props) => {
                 formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
 
                 setFormData(formData);
-                handleCreateEnrollStudent(paymentData, valuesContract);
+                // handleCreateEnrollStudent(paymentData, valuesContract);
 
                 return true
             });
@@ -1897,52 +2136,103 @@ export const ContractStudent = (props) => {
                                         <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))}</Text>
                                     </Box>
                                 }
+                                {paymentsInfoData.valueEntry &&
+                                    <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
+                                        <Text small style={styles.textDataPayments} bold>VALOR DE ENTRADA:</Text>
+                                        <Text small style={styles.textDataPayments}>{formatter.format(paymentsInfoData?.valueEntry)}</Text>
+                                    </Box>
+                                }
                                 {valuesContract.valorFinal &&
                                     <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
                                         <Text small style={styles.textDataPayments} bold>VALOR A PAGAR:</Text>
-                                        <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.valorFinal)}</Text>
+                                        <Text small style={styles.textDataPayments}>{formatter.format(valuesContract?.valorFinal)}</Text>
                                     </Box>
                                 }
                             </Box>
                         </ContentContainer>
 
 
+
                         <ContentContainer style={{ display: 'flex', flexDirection: 'column', gap: 3, boxShadow: 'none', alignItems: 'center', marginBottom: 25 }}>
                             <Text bold>Forma de pagamento escolhida:</Text>
-                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
-                                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
-                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style={{ flex: 1 }}>
-                                        {paymentData?.map((pay, index) => {
-                                            const payment = pay?.pagamento > 0 ? groupPayment?.filter(item => item.value === pay?.pagamento).map(item => item.label) : pay?.pagamento
-                                            return (
-                                                <tr key={`${pay}-${index}`}>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {pay?.n_parcela}</td>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {pay?.tipo}
-                                                    </td>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {payment}
-                                                    </td>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {formatter.format(pay?.valor_parcela)}</td>
-                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {pay?.data_pagamento}</td>
+                            {paymentsInfoData?.valueEntry &&
+                                <>
+                                    <Text bold>Entrada</Text>
+                                    <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
+
+                                        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                            <thead>
+                                                <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor de entrada</th>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma de pagamento</th>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
                                                 </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                            </thead>
+                                            <tbody style={{ flex: 1 }}>
+                                                <tr>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {formatter.format(paymentsInfoData?.valueEntry)}
+                                                    </td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {paymentsInfoData?.typePaymentEntry}</td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {paymentsInfoData?.formPaymentEntry > 0 ? groupPayment?.filter(item => item.value === paymentsInfoData?.formPaymentEntry).map(item => item.label) : paymentsInfoData?.formPaymentEntry}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </>
+                            }
+
+                            {paymentData?.map((payment, index) => {
+                                const nonNullPayments = payment?.filter(pay => pay?.valor_parcela);
+
+                                if (nonNullPayments?.length > 0) {
+                                    return (
+                                        <>
+                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                <Text bold>{index + 1}º Pagante/Pagamento: </Text>
+                                            </Box>
+                                            <div key={{ index }} style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
+
+                                                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                                    <thead>
+                                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nº Parcela</th>
+                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma</th>
+                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
+                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor da Parcela</th>
+                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody style={{ flex: 1 }}>
+                                                        {payment?.map((pay, payIndex) => {
+                                                            const payment = pay?.pagamento > 0 ? groupPayment?.filter(item => item.value === pay?.pagamento).map(item => item.label) : pay?.pagamento
+                                                            return (
+                                                                <tr key={`${pay}-${payIndex}`}>
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        {pay?.n_parcela}</td>
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        {pay?.tipo}
+                                                                    </td>
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        {payment}
+                                                                    </td>
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        {formatter.format(pay?.valor_parcela)}</td>
+                                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                        {pay?.data_pagamento}</td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </>
+                                    )
+                                }
+                            })}
                         </ContentContainer>
 
                     </ContractStudentComponent>
