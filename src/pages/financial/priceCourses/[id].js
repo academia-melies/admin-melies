@@ -111,7 +111,7 @@ export default function EditPricesCourse(props) {
             }
             if (porcent) {
                 alertMsg = 'Reajuste aplicado.'
-                const discountPercentage = porcent;
+                const discountPercentage = parseFloat(porcent);
                 if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
                     alert.error("Porcentagem de desconto inválida.");
                     return;

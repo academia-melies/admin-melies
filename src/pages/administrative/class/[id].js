@@ -270,9 +270,9 @@ export default function EditClass(props) {
             {!newClass &&
                 <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                     <Box>
-                        <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Lista de alunos mátriculados</Text>
+                        <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Lista de alunos mátriculados ({enrolledStudents?.length})</Text>
                     </Box>
-                    {enrolledStudents.length > 0 ? 
+                    {enrolledStudents?.length > 0 ? 
                     <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px' }}>
                         <table style={{ borderCollapse: 'collapse', width: '100%', borderRadius: '8px', }}>
                             <thead>
