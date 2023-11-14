@@ -815,6 +815,7 @@ export const Payment = (props) => {
     const [paymentEntry, setPaymentEntry] = useState()
     const [typePaymentEntry, setTypePaymentEntry] = useState()
     const [formPaymentEntry, setFormPaymentEntry] = useState()
+    const [dateForPaymentEntry, setDateForPaymentEntry] = useState()
 
 
 
@@ -1241,7 +1242,8 @@ export const Payment = (props) => {
             secondResponsible: responsiblesPayers?.second,
             valueEntry: handleCalculationEntry(paymentEntry),
             typePaymentEntry,
-            formPaymentEntry
+            formPaymentEntry,
+            dateForPaymentEntry
         })
 
         setPaymentForm([typePaymentsSelected, typePaymentsSelectedTwo]);
@@ -1309,6 +1311,13 @@ export const Payment = (props) => {
     const listPaymentType = [
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Cartão', value: 'Cartão' },
+        // { label: 'Pix', value: 'Pix' },
+    ]
+
+    const listPaymentTypeEntry = [
+        { label: 'Boleto', value: 'Boleto' },
+        { label: 'Cartão', value: 'Cartão' },
+        { label: 'Dinheiro(Receber na hora)', value: 'Dinheiro' },
         // { label: 'Pix', value: 'Pix' },
     ]
 
@@ -1435,11 +1444,13 @@ export const Payment = (props) => {
                                             value={paymentEntry || ''}
                                             label='Valor da entrada' sx={{ flex: 1, }}
                                         />
-                                        <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentEntry || ''} onSelect={(value) => setTypePaymentEntry(value)}
+                                        <SelectList fullWidth data={listPaymentTypeEntry} valueSelection={typePaymentEntry || ''} onSelect={(value) => setTypePaymentEntry(value)}
                                             filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             title="Forma de pagamento *"
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
+
+                                        <TextInput name='dateForPaymentEntry' onChange={(e) => setDateForPaymentEntry(e.target.value)} value={(dateForPaymentEntry)?.split('T')[0] || ''} type="date" label='Data pagamento' sx={{ flex: 1, }} />
                                     </Box>
                                     {typePaymentEntry === 'Cartão' && <SelectList title="Selecione o cartão *" fullWidth data={groupPayment} valueSelection={formPaymentEntry || ''} onSelect={(value) => setFormPaymentEntry(value)}
                                         filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -2166,6 +2177,7 @@ export const ContractStudent = (props) => {
                                                     <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Valor de entrada</th>
                                                     <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Forma de pagamento</th>
                                                     <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Pagamento</th>
+                                                    <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Pagamento</th>
                                                 </tr>
                                             </thead>
                                             <tbody style={{ flex: 1 }}>
@@ -2178,6 +2190,8 @@ export const ContractStudent = (props) => {
                                                     <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                         {paymentsInfoData?.formPaymentEntry > 0 ? groupPayment?.filter(item => item.value === paymentsInfoData?.formPaymentEntry).map(item => item.label) : paymentsInfoData?.formPaymentEntry}
                                                     </td>
+                                                    <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {paymentsInfoData?.dateForPaymentEntry}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
