@@ -457,7 +457,8 @@ export default function EditUser() {
 
             const groupPeriod = data.map(turma => ({
                 label: turma?.periodo,
-                value: turma?.periodo
+                value: turma?.periodo,
+                idClass: turma?.id_turma
             }));
 
             setClasses(groupClass);
@@ -2534,7 +2535,7 @@ export default function EditUser() {
                                             title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <SelectList fullWidth data={period} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
+                                        <SelectList fullWidth data={interests?.turma_id ? period?.filter(item => item.idClass === interests?.turma_id) : period} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
                                             title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />

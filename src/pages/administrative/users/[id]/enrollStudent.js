@@ -183,9 +183,9 @@ export default function InterestEnroll() {
                         value: data?.id_resp_pag
                     },
                     {
-                        id: userDatails?.id,
-                        label: userDatails?.nome,
-                        value: userDatails?.id
+                        id: userDatails?.id || userData?.id,
+                        label: userDatails?.nome || userData?.nome,
+                        value: userDatails?.id || userData?.id
                     },
                 ])
             }
@@ -306,7 +306,6 @@ export default function InterestEnroll() {
             telefone_resp,
             email_resp,
             cpf_resp,
-            rg_resp,
             cep_resp,
             end_resp,
             numero_resp,
@@ -337,12 +336,6 @@ export default function InterestEnroll() {
             alert?.error('O campo cpf do responsável é obrigatório')
             return false
         }
-
-        if (!rg_resp) {
-            alert?.error('O campo rg do responsável é obrigatório')
-            return false
-        }
-
 
         if (!cep_resp) {
             alert?.error('O campo cep do responsável é obrigatório')
@@ -512,24 +505,26 @@ export default function InterestEnroll() {
                 usuario_resp: userId
             }
 
-            let paymentInstallmentsEnrollment = enrollment?.map((payment) => ({
-                usuario_id: id,
-                pagante: responsiblePayerData ? responsiblePayerData?.nome_resp : userData?.nome,
-                aluno: userData?.nome,
-                vencimento: formattedStringInDate(payment?.data_pagamento),
-                dt_pagamento: null,
-                valor_parcela: parseFloat(payment?.valor_parcela).toFixed(2),
-                n_parcela: payment?.n_parcela,
-                c_custo: `${classData?.nome_turma}-1SEM`,
-                forma_pagamento: payment?.tipo,
-                cartao_credito_id: payment?.pagamento > 0 ? payment?.pagamento : null,
-                conta: 'Melies - Bradesco',
-                obs_pagamento: null,
-                status_gateway: null,
-                status_parcela: 'Pendente',
-                parc_protestada: 0,
-                usuario_resp: userId
-            }));
+            let paymentInstallmentsEnrollment = enrollment?.map((payment) =>
+
+                payment?.filter(pay => pay?.valor_parcela)?.map((item) => ({
+                    usuario_id: id,
+                    pagante: responsiblePayerData ? responsiblePayerData?.nome_resp : userData?.nome,
+                    aluno: userData?.nome,
+                    vencimento: formattedStringInDate(item?.data_pagamento),
+                    dt_pagamento: null,
+                    valor_parcela: parseFloat(item?.valor_parcela).toFixed(2),
+                    n_parcela: item?.n_parcela,
+                    c_custo: `${classData?.nome_turma}-1SEM`,
+                    forma_pagamento: item?.tipo,
+                    cartao_credito_id: item?.pagamento > 0 ? item?.pagamento : null,
+                    conta: 'Melies - Bradesco',
+                    obs_pagamento: null,
+                    status_gateway: null,
+                    status_parcela: 'Pendente',
+                    parc_protestada: 0,
+                    usuario_resp: userId
+                })));
 
             setLoadingEnrollment(true);
             try {

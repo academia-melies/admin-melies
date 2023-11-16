@@ -88,8 +88,10 @@ export default function EditFrequency(props) {
     }, [frequencyData?.modulo_turma])
 
     useEffect(() => {
-        handleStudentsDiscipline()
-        listClassDay(frequencyData?.disciplina_id)
+        if(frequencyData?.disciplina_id){
+            handleStudentsDiscipline()
+            listClassDay(frequencyData?.disciplina_id)
+        }
     }, [frequencyData?.disciplina_id])
 
     const handleStudentsDiscipline = async () => {
@@ -284,7 +286,7 @@ export default function EditFrequency(props) {
         try {
             const response = await api.get(`/class/students/${id}/${disciplineId}/?moduleStudent=${moduleStudent}`)
             const { data } = response
-            if (data.length > 0) {
+            if (data) {
                 setHasStudents(true)
                 setStudentsList(data)
                 return true
