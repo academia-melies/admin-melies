@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
-import { RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
+import { CheckBoxComponent, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -29,11 +29,24 @@ export default function EditPricesCourse(props) {
     const [showHistoric, setShowHistoric] = useState(false)
     const [historicId, setHistoricId] = useState()
     const [arrayHistoricValuesCourse, setArrayHistoricValuesCourse] = useState([])
+    const [classesList, setClassesList] = useState([])
+    const [groupClasses, setGroupClasses] = useState([])
     const [historicEdit, setHistoricEdit] = useState({})
     const [readjustmentValue, setReadjustmentValue] = useState({})
-    const [showValueAdjustment, setShowValueAdjustment] = useState(false)
+    const [showClassesSelect, setShowClassesSelect] = useState(false)
     const [ajustmentAplicate, setAjustmentAplicate] = useState(false)
     const [beforeValueCourse, setBeforeValueCourse] = useState()
+    const [showClassTable, setShowClassTable] = useState({});
+    const [classSelected, setClassSelected] = useState()
+    const [showValueAdjustment, setShowValueAdjustment] = useState(false)
+    
+
+    const toggleClassTable = (index) => {
+        setShowClassTable(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
+    };
 
     const getPricesCourse = async () => {
         try {
@@ -52,6 +65,26 @@ export default function EditPricesCourse(props) {
             })
             setBeforeValueCourse(data?.valor_total_curso.toFixed(2))
             return data
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+
+    const getClasses = async (courseId) => {
+        try {
+            const response = await api.get(`/coursePrices/classes/${courseId}`)
+            const { data } = response
+            if (data) {
+                setClassesList(data)
+                const groupClass = data.map(c => ({
+                    label: c?.nome_turma,
+                    value: c?.id_turma.toString()
+                }));
+
+                setGroupClasses(groupClass);
+            }
         } catch (error) {
             console.log(error)
             return error
@@ -159,6 +192,7 @@ export default function EditPricesCourse(props) {
             const response = await getPricesCourse()
             if (response) {
                 await getHistoric()
+                await getClasses(response?.curso_id)
             }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Taxa')
@@ -270,7 +304,7 @@ export default function EditPricesCourse(props) {
                 const response = await api.post(`/coursePrices/create`, { pricesCourseData, userId, readjustment });
                 const { data } = response
                 if (response?.status === 201) {
-                    alert.success('Taxa cadastrada com sucesso.');
+                    alert.success('Valores cadastrados com sucesso.');
                     router.push(`/financial/priceCourses/list`)
                 }
             } catch (error) {
@@ -284,14 +318,14 @@ export default function EditPricesCourse(props) {
     const handleDeletePrices = async () => {
         setLoading(true)
         try {
-            const response = await api.post(`/coursePrices/delete/${id}`);
-            if (response?.status == 201) {
-                alert.success('Taxa excluída.');
+            const response = await api.delete(`/coursePrices/delete/${id}`);
+            if (response?.status == 200) {
+                alert.success('Valores excluídos.');
                 router.push(`/financial/priceCourses/list`)
             }
 
         } catch (error) {
-            alert.error('Tivemos um problema ao excluir a Taxa.');
+            alert.error('Tivemos um problema ao excluir os Valores.');
             console.log(error)
         } finally {
             setLoading(false)
@@ -305,14 +339,14 @@ export default function EditPricesCourse(props) {
             try {
                 const response = await api.patch(`/coursePrices/update/${id}`, { pricesCourseData, userId, readjustment })
                 if (response?.status === 201) {
-                    alert.success('Taxa atualizada com sucesso.');
+                    alert.success('Valores atualizados com sucesso.');
                     setShowValueAdjustment(false)
                     handleItems()
                     return
                 }
-                alert.error('Tivemos um problema ao atualizar Taxa.');
+                alert.error('Tivemos um problema ao atualizar os Valores.');
             } catch (error) {
-                alert.error('Tivemos um problema ao atualizar Taxa.');
+                alert.error('Tivemos um problema ao atualizar os Valores.');
             } finally {
                 setLoading(false)
             }
@@ -456,10 +490,62 @@ export default function EditPricesCourse(props) {
                     />
                 </Box>
 
+                <Button small text="selecionar turmas" onClick={() => { setShowClassesSelect(true) }} style={{ width: 140, height: 30 }} />
+
+                <Backdrop open={showClassesSelect} sx={{ zIndex: 99999, }}>
+
+                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: 'auto', marginLeft: { md: '180px', lg: '280px' } }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                            <Text bold large>Turmas</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_close})`,
+                                transition: '.3s',
+                                zIndex: 999999999,
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} onClick={() => setShowClassesSelect(false)}/>
+                        </Box>
+                        <ContentContainer style={{ boxShadow: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+                                <Text bold>Aplicar ás turmas:</Text>
+                                <CheckBoxComponent
+                                    boxGroup={groupClasses}
+                                    valueChecked={classSelected || ''}
+                                    horizontal={false}
+                                    onSelect={(value) => {
+                                        setClassSelected(value)
+                                    }}
+                                    sx={{ width: 1 }} />
+                            </Box>
+                        </ContentContainer>
+                        <Box style={{ display: 'flex' }}>
+                            <Button small
+                                style={{ width: '50%', marginRight: 1, height: 30 }}
+                                text='Salvar'
+                                onClick={() => {
+                                    setShowClassesSelect(false)
+                                    alert.info('Turmas salvas.')
+                                }}
+                            />
+                            <Button secondary small
+                                style={{ width: '50%', height: 30 }}
+                                text='Cancelar'
+                                onClick={() => {
+                                    setClassSelected('')
+                                    setShowClassesSelect(false)
+                                }}
+                            />
+                        </Box>
+                    </ContentContainer>
+                </Backdrop>
+
                 {
                     !newPrice &&
                     <>
-                        {!showValueAdjustment && <Button small text="reajuste" onClick={() => { setShowValueAdjustment(true) }} style={{ width: 80, height: 30 }} />}
+                        {!showValueAdjustment && <Button secondary small text="reajuste" onClick={() => { setShowValueAdjustment(true) }} style={{ width: 80, height: 30 }} />}
 
                         {showValueAdjustment &&
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
@@ -513,7 +599,7 @@ export default function EditPricesCourse(props) {
                     },
                     justifyContent: 'space-between'
                 }} onClick={() => setShowHistoric(!showHistoric)}>
-                    <Text title bold >Histórico de Valores</Text>
+                    <Text title bold >Histórico de Valores do Curso</Text>
                     <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: `url(${icons.gray_arrow_down})`,
@@ -593,6 +679,31 @@ export default function EditPricesCourse(props) {
                     </Box>
                 </ContentContainer>
             </Backdrop>
+
+            <Text title bold style={{ padding: '20px 0px 0px 10px' }}>Valores por turma:</Text>
+
+            {classesList.map((item, index) => {
+                return (
+                    <ContentContainer key={index} style={{ ...styles.containerRegister, padding: showClassTable[index] ? '40px' : '25px' }}>
+                        <Box sx={{
+                            display: 'flex', alignItems: 'center', gap: 1, padding: showClassTable[index] ? '0px 0px 20px 0px' : '0px', "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            },
+                            justifyContent: 'space-between'
+                        }} onClick={() => toggleClassTable(index)}>
+                            <Text large bold >{item?.nome_turma} - {item?.periodo}</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                transform: showClassTable[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                transition: '.3s',
+                            }} />
+                        </Box>
+                    </ContentContainer>
+                )
+
+            })}
 
         </>
     )

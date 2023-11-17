@@ -57,6 +57,7 @@ export default function EditUser() {
         numero: null,
         ativo: 1,
         admin_melies: 0,
+        portal_aluno: 0,
         login: null,
         nascimento: null,
         tipo_deficiencia: null,
@@ -457,7 +458,8 @@ export default function EditUser() {
 
             const groupPeriod = data.map(turma => ({
                 label: turma?.periodo,
-                value: turma?.periodo
+                value: turma?.periodo,
+                idClass: turma?.id_turma
             }));
 
             setClasses(groupClass);
@@ -1411,10 +1413,12 @@ export default function EditUser() {
                         onSelect={(value) => setUserData({
                             ...userData,
                             perfil: value,
-                            admin_melies: !value.includes('funcionario') ? 0 : 1
+                            admin_melies: !value.includes('funcionario') ? 0 : 1,
+                            portal_aluno: !value.includes('aluno') ? 0 : 1,
                         })}
                         sx={{ flex: 1, }}
                     />
+
                 </Box>
                 <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25, padding: '0px 0px 20px 15px' }}>
 
@@ -1431,7 +1435,12 @@ export default function EditUser() {
                     }
 
                 </Box>
-                <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, ativo: parseInt(value), admin_melies: value < 1 ? parseInt(value) : userData?.admin_melies })} />
+                <RadioItem valueRadio={userData?.ativo} group={groupStatus} title="Status *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({
+                    ...userData,
+                    ativo: parseInt(value),
+                    admin_melies: value < 1 ? parseInt(value) : userData?.admin_melies,
+                    portal_aluno: value < 1 ? parseInt(value) : userData?.admin_melies
+                })} />
             </ContentContainer>
 
 
@@ -1465,7 +1474,8 @@ export default function EditUser() {
                             <TextInput placeholder='Nova senha' name='nova_senha' onChange={handleChange} value={userData?.nova_senha || ''} type="password" label='Nova senha' sx={{ flex: 1, }} />
                             <TextInput placeholder='Confirmar senha' name='confirmar_senha' onChange={handleChange} value={userData?.confirmar_senha || ''} type="password" label='Confirmar senha' sx={{ flex: 1, }} />
                         </Box>}
-                        <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />
+                        {userData?.perfil.includes('funcionario') && <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />}
+                        {userData?.perfil.includes('aluno') && <RadioItem valueRadio={userData?.portal_aluno} group={groupAdmin} title="Acesso ao Portal do aluno *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, portal_aluno: parseInt(value) })} />}
                     </>}
             </ContentContainer>
 
@@ -1532,7 +1542,7 @@ export default function EditUser() {
                                         }}
                                     />
                                     <Button secondary small
-                                        style={{ width: '50%', height: 30}}
+                                        style={{ width: '50%', height: 30 }}
                                         text='Cancelar'
                                         onClick={() => setShowSections({ ...showSections, permissions: false })}
                                     />
@@ -2534,7 +2544,7 @@ export default function EditUser() {
                                             title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <SelectList fullWidth data={period} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
+                                        <SelectList fullWidth data={interests?.turma_id ? period?.filter(item => item.idClass === interests?.turma_id) : period} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
                                             title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />

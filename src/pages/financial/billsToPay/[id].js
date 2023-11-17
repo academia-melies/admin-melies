@@ -184,7 +184,7 @@ export default function EditBillToPay(props) {
                 const response = await api.post(`/expenses/${typeExpense}/create/${usuario_id}`, { billToPayData });
                 if (response?.status === 201) {
                     alert.success('Despesa cadastrada.');
-                    router.push(`/financial/billsToPay/list`)
+                    router.push(`/financial/billsToPay`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar a Despesa.');
@@ -200,7 +200,7 @@ export default function EditBillToPay(props) {
             const response = await api.delete(`/expenses/${typeExpense}/${id}`)
             if (response?.status == 200) {
                 alert.success('Despesa excluída com sucesso.');
-                router.push(`/financial/billsToPay/list`)
+                router.push(`/financial/billsToPay`)
             }
 
         } catch (error) {
