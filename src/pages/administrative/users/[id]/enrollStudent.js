@@ -474,12 +474,12 @@ export default function InterestEnroll() {
     }
 
     const checkEnrollmentData = (enrollmentData) => {
-        let paymentInvalid = enrollmentData?.filter(item => !item.pagamento)
+        let paymentInvalid = enrollmentData?.map(item => item?.filter(item => !item.pagamento))
 
-        if (paymentInvalid.length > 0) {
-            alert.info('A forma de pagamento precisa ser preenchida corretamente.')
-            return error
-        }
+        // if (paymentInvalid) {
+        //     alert.info('A forma de pagamento precisa ser preenchida corretamente.')
+        //     return
+        // }
 
         return true
     }
@@ -527,6 +527,7 @@ export default function InterestEnroll() {
                 })));
 
             setLoadingEnrollment(true);
+            
             try {
                 const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines });
                 if (response?.status === 201) {
@@ -2053,7 +2054,7 @@ export const ContractStudent = (props) => {
                 formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
 
                 setFormData(formData);
-                // handleCreateEnrollStudent(paymentData, valuesContract);
+                handleCreateEnrollStudent(paymentData, valuesContract);
 
                 return true
             });

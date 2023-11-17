@@ -273,6 +273,20 @@ export default function EditStudentGrade(props) {
         }
     }
 
+    const getStatusGrade = (item) => {
+    
+        if (parseFloat(item.nt_final) < 6) {
+            return "Reprovado";
+        }
+    
+        if (parseFloat(item.nt_final) >= 6) {
+            return "Aprovado";
+        }
+    
+        return "Pendente";
+    };
+    
+
     const groupAvaliationStatus = [
         { label: 'Sim', value: 1 },
         { label: 'Não', value: 0 },
@@ -327,6 +341,7 @@ export default function EditStudentGrade(props) {
                                                 <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Substitutiva</th>
                                                 <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Exame</th>
                                                 <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
+                                                <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Resultado</th>
                                                 <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
                                             </tr>
                                         </thead>
@@ -334,9 +349,11 @@ export default function EditStudentGrade(props) {
                                             {
                                                 studentData?.map((item, index) => {
 
+                                                    const statusGrade = getStatusGrade(item)
+                                                    const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
                                                     let avaliation = item?.nt_avaliacao_sem ? parseFloat(item.nt_avaliacao_sem) : null;
                                                     let substitutive = item?.nt_substitutiva ? parseFloat(item.nt_substitutiva) : null;
-                                                    let ntFinally = parseFloat(item.nt_final || 0);
+                                                    let ntFinally = parseFloat(item.nt_final) || 'Aguardando nota';
 
                                                     const isExam = (avaliation !== null && avaliation < 6)
                                                         ||
@@ -373,6 +390,11 @@ export default function EditStudentGrade(props) {
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {ntFinally}
+                                                            </td>
+                                                            <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                <Box sx={{ backgroundColor: colorStatus, borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
+                                                                    <Text xsmall bold style={{ color: "#fff", }}>{statusGrade}</Text>
+                                                                </Box>
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 <TextInput fullWidth name='obs_nt' value={item?.obs_nt || ''} sx={{ flex: 1, }} onChange={(e) => handleChange(item.usuario_id, 'obs_nt', e.target.value)} />
