@@ -4,7 +4,7 @@ import moment from "moment";
 import "moment/locale/pt-br";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms";
-import { SectionHeader, SelectList, Holidays } from "../../../organisms";
+import { SectionHeader, SelectList, Holidays, CheckBoxComponent } from "../../../organisms";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"; // Estilo para o recurso de arrastar e soltar (se estiver usando)
 import "react-big-calendar/lib/addons/dragAndDrop"; // Recurso de arrastar e soltar (se estiver usando)
 import { useAppContext } from "../../../context/AppContext";
@@ -185,7 +185,9 @@ export default function CalendarComponent(props) {
                     description: event.descricao,
                     location: event.local,
                     color: event.color,
+                    perfil_evento: event?.perfil_evento,
                     allDay: false, // Ajuste isso com base no seu caso de uso
+
                 }));
                 setEvents([...eventsMap, ...Holidays]);
                 return
@@ -250,6 +252,8 @@ export default function CalendarComponent(props) {
         } catch (error) {
         }
     }
+
+    console.log(eventData)
 
     const eventStyleGetter = (event, start, end, isSelected) => {
         const style = {
@@ -359,6 +363,11 @@ export default function CalendarComponent(props) {
     const groupMonths = [
         { label: '1º Semestre', value: '1º Semestre' },
         { label: '2º Semestre', value: '2º Semestre' },
+    ]
+
+    const groupPerfil = [
+        { label: 'Administrativo', value: 'Administrativo' },
+        { label: 'Aluno', value: 'Aluno' }
     ]
 
     return (
@@ -497,6 +506,17 @@ export default function CalendarComponent(props) {
                                     name="color"
                                     value={eventData.color}
                                     onChange={handleEventFormChange}
+                                />
+                                <CheckBoxComponent
+                                    valueChecked={eventData?.perfil_evento}
+                                    boxGroup={groupPerfil}
+                                    title="Mostrar para:"
+                                    horizontal={true}
+                                    onSelect={(value) => setEventData({
+                                        ...eventData,
+                                        perfil_evento: value
+                                    })}
+                                    sx={{ flex: 1, }}
                                 />
 
                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
