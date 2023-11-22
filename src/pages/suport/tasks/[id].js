@@ -53,7 +53,7 @@ export default function EditTask(props) {
 
     async function listUsers() {
         try {
-            const response = await api.get(`/users`)
+            const response = await api.get(`/users/area?area=${'TI - Suporte'}`)
             const { data } = response
             const groupResponsibles = data.map(responsible => ({
                 label: responsible.nome,

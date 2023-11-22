@@ -193,7 +193,8 @@ export default function ListUsers(props) {
                     </Box>
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
                         <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
-                            setFilterPayment('todos')
+                            setPerfil('todos')
+                            setFilterAtive('todos')
                             setFilterEnrollStatus('todos')
                             setFilterData('')
                         }} />

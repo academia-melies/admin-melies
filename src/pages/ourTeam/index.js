@@ -86,19 +86,23 @@ export default function OurTeamList(props) {
                 <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justufyContent: 'center' }}>
                     {employeeList?.filter(f => f.professor === 0).map((item, index) => {
                         return (
-                            <ContentContainer key={index} sx={{
-                                alignItems: 'center', maxHeight: '314px',"&:hover": {
-                                    opacity: 0.8,
-                                    transform: 'scale(0.9)',
-                                    transition: '.5s',
-                                }
-                            }}>
+                            <ContentContainer gap={1.75}
+                                key={index} sx={{
+                                    alignItems: 'center', maxHeight: '330px', "&:hover": {
+                                        opacity: 0.8,
+                                        transform: 'scale(0.9)',
+                                        transition: '.5s',
+                                    }
+                                }}>
                                 <Avatar src={item?.location} sx={{
                                     height: { xs: '100%', sm: 150, md: 150, lg: 180 },
                                     width: { xs: '100%', sm: 150, md: 150, lg: 180 },
                                 }} variant="circular" />
                                 <Text large bold>{item?.nome}</Text>
-                                <Text style={{ color: colorPalette.buttonColor }}>{item?.funcao || 'Administrativo'}</Text>
+                                <Box sx={{display: 'flex', flexDirection: 'column', justufyContent: 'center', alignItems: 'center'}}>
+                                    <Text style={{ color: colorPalette.buttonColor }}>{item?.funcao || 'Administrativo'}</Text>
+                                    <Text light>{item?.area}</Text>
+                                </Box>
                             </ContentContainer>
                         )
                     })}
@@ -136,8 +140,8 @@ export default function OurTeamList(props) {
                 <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justufyContent: 'center' }}>
                     {employeeList?.filter(f => f.professor === 1).map((item, index) => {
                         return (
-                            <ContentContainer key={index} sx={{
-                                alignItems: 'center', maxHeight: '314px', "&:hover": {
+                            <ContentContainer gap={1.75} key={index} sx={{
+                                alignItems: 'center', maxHeight: '330px', "&:hover": {
                                     opacity: 0.8,
                                     transform: 'scale(0.9)',
                                     transition: '.5s',
@@ -147,8 +151,11 @@ export default function OurTeamList(props) {
                                     height: { xs: '100%', sm: 150, md: 150, lg: 180 },
                                     width: { xs: '100%', sm: 150, md: 150, lg: 180 },
                                 }} variant="circular" />
-                                 <Text large bold>{item?.nome}</Text>
-                                <Text style={{ color: colorPalette.buttonColor }}>{item?.funcao || 'Professor'}</Text>
+                                <Text large bold>{item?.nome}</Text>
+                                <Box sx={{display: 'flex', flexDirection: 'column', justufyContent: 'center', alignItems: 'center'}}>
+                                    <Text style={{ color: colorPalette.buttonColor }}>{item?.funcao || 'Professor'}</Text>
+                                    <Text light>{item?.area}</Text>
+                                </Box>
                             </ContentContainer>
                         )
                     })}

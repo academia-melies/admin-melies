@@ -67,6 +67,7 @@ export default function EditUser() {
     })
     const [contract, setContract] = useState({
         funcao: null,
+        area: null,
         horario: null,
         admissao: null,
         desligamento: null,
@@ -934,7 +935,11 @@ export default function EditUser() {
             setLoading(true)
             try {
                 const response = await editeUser({ id, userData })
-                if (contract) { await editContract({ id, contract }) }
+                if (response.status === 422) return alert.error('CPF já cadastrado.')
+                console.log(response)
+                if (contract) {
+                    const contr = await editContract({ id, contract })
+                }
                 if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
                     await api.post(`/officeHours/create/${id}`, { officeHours })
                 }
@@ -1168,6 +1173,98 @@ export default function EditUser() {
         }
     }
 
+
+    const handleValidateGetway = async () => {
+        setLoading(true)
+        try {
+            const result = await api.post(`/user/validate/getway`, { userData })
+            return result
+        } catch (error) {
+            alert.error('Ocorreu um erro. Valide os seus dados (Verifique se seu CPF está correto) e tente novamente.')
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleEnrollment = async (interest) => {
+        if (verifyDataToGetway()) {
+            if (verifyEnrollment(interest)) {
+                setLoading(true)
+                try {
+                    const result = await handleValidateGetway()
+                    if (result?.status === 201 || result?.status === 200) {
+                        router.push(`/administrative/users/${id}/enrollStudent?interest=${interest?.id_interesse}`)
+                        return
+                    } else {
+                        alert.error('Ocorreu um erro. Valide os seus dados (Verifique se seu CPF está correto) e tente novamente.')
+                    }
+                } catch (error) {
+                    alert.error('Ocorreu um erro. Valide os seus dados (Verifique se seu CPF está correto) e tente novamente.')
+                    return error
+                } finally {
+                    setLoading(false)
+                }
+            }
+        }
+    }
+
+    const verifyDataToGetway = () => {
+
+        if (!userData?.nome) {
+            alert.error('Preencha o campo nome para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.cpf) {
+            alert.error('Preencha o campo cpf para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.nascimento) {
+            alert.error('Preencha o campo nascimento para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.telefone) {
+            alert.error('Preencha o campo telefone para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.rua) {
+            alert.error('Preencha o campo rua para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.numero) {
+            alert.error('Preencha o campo numero para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.bairro) {
+            alert.error('Preencha o campo bairro para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.cidade) {
+            alert.error('Preencha o campo cidade para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.uf) {
+            alert.error('Preencha o campo uf para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.cep) {
+            alert.error('Preencha o campo cep para seguirmos com a matrícula.')
+            return false
+        }
+
+        return true
+    }
+
+    const verifyEnrollment = (interest) => {
+        const isRegistered = enrollmentData?.filter(item => item.turma_id === interest?.turma_id)
+
+        if(isRegistered?.length > 0){
+            alert.info('O aluno já está matrículado na turma selecionada. Analíse bem antes de prosseguir, para não "duplicar" matrículas ativas.')
+            return false
+        }
+        return true
+    }
+
     const groupPerfil = [
         { label: 'Funcionário', value: 'funcionario' },
         { label: 'Aluno', value: 'aluno' },
@@ -1244,6 +1341,20 @@ export default function EditUser() {
         { label: 'Conta Corrente', value: 'Conta Corrente' },
         { label: 'Conta salário', value: 'Conta salário' },
         { label: 'Conta poupança', value: 'Conta poupança' }
+    ]
+
+    const groupArea = [
+        { label: 'Financeiro', value: 'Financeiro' },
+        { label: 'Biblioteca', value: 'Biblioteca' },
+        { label: 'TI - Suporte', value: 'TI - Suporte' },
+        { label: 'RH', value: 'RH' },
+        { label: 'Marketing', value: 'Marketing' },
+        { label: 'Atendimento/Recepção', value: 'Atendimento/Recepção' },
+        { label: 'Secretaria', value: 'Secretaria' },
+        { label: 'Administrativo', value: 'Administrativo' },
+        { label: 'Diretoria', value: 'Diretoria' },
+        { label: 'Acadêmica', value: 'Acadêmica' },
+
     ]
 
     const groupStatusProcess = [
@@ -1976,6 +2087,10 @@ export default function EditUser() {
                             <>
                                 <Box sx={styles.inputSection}>
                                     <TextInput placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' sx={{ flex: 1, }} />
+                                    <SelectList fullWidth data={groupArea} valueSelection={contract?.area} onSelect={(value) => setContract({ ...contract, area: value })}
+                                        title="Área de atuação" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
                                     <TextInput placeholder='Cartão de Ponto' name='cartao_ponto' onChange={handleChangeContract} value={contract?.cartao_ponto || ''} label='Cartão de Ponto' sx={{ flex: 1, }} />
                                 </Box>
                                 <Box sx={styles.inputSection}>
@@ -2478,10 +2593,7 @@ export default function EditUser() {
                                                                         opacity: 0.8,
                                                                         cursor: 'pointer'
                                                                     }
-                                                                }} onClick={() => {
-                                                                    let query = `?interest=${interest.id_interesse}`;
-                                                                    router.push(`/administrative/users/${id}/enrollStudent${query}`)
-                                                                }} />}
+                                                                }} onClick={() => handleEnrollment(interest)} />}
                                                                 {newUser &&
                                                                     <Box sx={{
                                                                         backgroundSize: 'cover',
