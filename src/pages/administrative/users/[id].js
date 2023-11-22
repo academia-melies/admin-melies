@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField, FileInput } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField, FileInput, Divider } from "../../../atoms"
 import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, TableOfficeHours, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
@@ -1258,7 +1258,7 @@ export default function EditUser() {
     const verifyEnrollment = (interest) => {
         const isRegistered = enrollmentData?.filter(item => item.turma_id === interest?.turma_id)
 
-        if(isRegistered?.length > 0){
+        if (isRegistered?.length > 0) {
             alert.info('O aluno já está matrículado na turma selecionada. Analíse bem antes de prosseguir, para não "duplicar" matrículas ativas.')
             return false
         }
@@ -2216,8 +2216,9 @@ export default function EditUser() {
                                                         />
                                                         <TextInput placeholder='Pendências' name='pendencia_aluno' value={item?.pendencia_aluno || ''} label='Pendências' sx={{ flex: 1, }} />
                                                     </Box>
+                                                    <Divider padding={0} />
                                                     <Box sx={styles.inputSection}>
-                                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1 }}>
                                                             <Text bold>Contrato do aluno:</Text>
                                                             <Box sx={{
                                                                 ...styles.menuIcon,
@@ -2272,8 +2273,9 @@ export default function EditUser() {
                                                             />
                                                         </Box>
                                                     </Box>
+                                                    <Divider padding={0} />
                                                     <Box sx={styles.inputSection}>
-                                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1 }}>
                                                             <Text bold>Boleto:</Text>
                                                             <Box sx={{
                                                                 ...styles.menuIcon,
@@ -2308,7 +2310,7 @@ export default function EditUser() {
                                                             }} />
                                                         </Box>
                                                     </Box>
-
+                                                    <Divider padding={0} />
                                                     <Box sx={styles.inputSection}>
                                                         <TextInput name='dt_inicio' type="date" value={(item?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
                                                         <TextInput name='dt_final' type="date" value={(item?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
@@ -2317,6 +2319,7 @@ export default function EditUser() {
                                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                         />
                                                     </Box>
+                                                    <Divider padding={0} />
                                                     {
                                                         enrollmentData.status?.includes('Desistente') &&
                                                         <>
@@ -2329,28 +2332,45 @@ export default function EditUser() {
                                                                 sx={{ width: 1 }}
                                                             />
                                                             <TextInput name='dt_desistencia' type="date" value={(item?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
+                                                            <Divider padding={0} />
                                                         </>
                                                     }
+
+
                                                     <RadioItem valueRadio={item?.certificado_emitido}
                                                         group={groupCertificate}
                                                         title="Certificado emitido:"
                                                         horizontal={mobile ? false : true}
                                                     />
+                                                    <Divider padding={0} />
+
                                                     <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                         <Text bold>Usuário responsável:</Text>
-                                                        <Text bold>{item?.nome_usuario_resp}</Text>
+                                                        <Text light>{item?.nome_usuario_resp}</Text>
                                                     </Box>
+                                                    <Divider padding={0} />
+
                                                     <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                         <Text bold>Data de criação:</Text>
-                                                        <Text>{formatTimeStamp(item?.dt_criacao)}</Text>
+                                                        <Text light>{formatTimeStamp(item?.dt_criacao)}</Text>
                                                     </Box>
+                                                    <Divider padding={0} />
+
                                                     <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                         <Text bold>Notas, frequências, atividades complementares:</Text>
                                                         <Link href={`/academic/teacherArea/${id}`} target="_blank">
                                                             <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
                                                         </Link>
-
                                                     </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Situação dos pagamentos:</Text>
+                                                        <Link href={`/administrative/users/${id}/statusPayment?enrollmentId=${enrollmentId}`} target="_blank">
+                                                            <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
+                                                        </Link>
+                                                    </Box>
+                                                    <Divider padding={0} />
+
                                                     <Button secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
                                                         setEnrollmentStudentEditId(item?.id_matricula)
                                                         handleEnrollStudentById(item?.id_matricula)
