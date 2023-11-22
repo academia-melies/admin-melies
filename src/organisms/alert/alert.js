@@ -18,7 +18,7 @@ const getColors = (alertType) => {
       progressBarBackgroundColor: '#f5f2f2',
       textColor: '#91604e',
    }
-   if(alertType === 'info') return {
+   if (alertType === 'info') return {
       backgroundColor: '#f5f3f2',
       progressBarColor: Colors.yellow,
       borderColor: '#71644844',
@@ -36,13 +36,11 @@ export const Alert = (props) => {
 
    useEffect(() => setTimer(defaultTimer), [props.active])
    useEffect(() => {
-      if (props.type !=='error' ) {
-         if (props.active && timer > 0) {
-            setTimeout(() => setTimer(prev => prev - 0.015), 15)
-            return
-         }
-         props.handleClose()
+      if (props.active && timer > 0) {
+         setTimeout(() => setTimer(prev => prev - 0.015), 15)
+         return
       }
+      props.handleClose()
    }, [timer, props.active])
 
    return (

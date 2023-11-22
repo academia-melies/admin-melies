@@ -119,7 +119,7 @@ export default function StudentData(props) {
     }, [id])
 
     useEffect(() => {
-        if(showClass?.turma_id){
+        if (showClass?.turma_id) {
             handleUpdateInfoEnrollment()
         }
     }, [showClass?.turma_id])
@@ -191,6 +191,20 @@ export default function StudentData(props) {
             }
         }
     }
+
+
+    const getStatusGrade = (item) => {
+    
+        if (parseFloat(item.nt_final) < 6) {
+            return "Reprovado";
+        }
+    
+        if (parseFloat(item.nt_final) >= 6) {
+            return "Aprovado";
+        }
+    
+        return "Pendente";
+    };
 
 
     const groupStatus = [
@@ -290,48 +304,48 @@ export default function StudentData(props) {
                     </Box>
                     {showBox?.disciplines && (
                         disciplines?.length > 0 ?
-                        <Box sx={{ display: 'flex' }}>
+                            <Box sx={{ display: 'flex' }}>
 
-                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
-                                <table style={{ borderCollapse: 'collapse', }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>#</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Disciplina</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Status</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Módulo/Semestre</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {
-                                            disciplines?.map((item, index) => {
-                                                return (
-                                                    <tr key={`${item}-${index}`}>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.disciplina_id}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.nome_disciplina}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.status}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.modulo}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
+                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                                    <table style={{ borderCollapse: 'collapse', }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>#</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Disciplina</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Status</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Módulo/Semestre</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {
+                                                disciplines?.map((item, index) => {
+                                                    return (
+                                                        <tr key={`${item}-${index}`}>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.disciplina_id}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.nome_disciplina}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.status}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.modulo}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
 
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </Box>
-                        :
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                        <Text ligth>Não foi possível encontrar matérias cadastradas.</Text>
-                    </Box>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </Box>
+                            :
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                <Text ligth>Não foi possível encontrar matérias cadastradas.</Text>
+                            </Box>
                     )}
                 </Box>
 
@@ -449,6 +463,7 @@ export default function StudentData(props) {
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Substitutiva</th>
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Exame</th>
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
+                                            <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Resultado</th>
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
 
                                         </tr>
@@ -457,6 +472,9 @@ export default function StudentData(props) {
                                         {
                                             gradesData?.map((item, index) => {
                                                 const avaliationStatus = item?.avaliacao_status === 1 ? 'Sim' : 'Não'
+                                                const statusGrade = getStatusGrade(item)
+                                                const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
+
                                                 return (
                                                     <tr key={`${item}-${index}`}>
                                                         <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
@@ -476,7 +494,14 @@ export default function StudentData(props) {
                                                         </td>
                                                         <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                             {item?.nt_final || '-'}
-                                                        </td><td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        </td>
+
+                                                        <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            <Box sx={{ backgroundColor: colorStatus, borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
+                                                                <Text xsmall bold style={{ color: "#fff", }}>{statusGrade}</Text>
+                                                            </Box>
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                             {item?.obs_nt || '-'}
                                                         </td>
                                                     </tr>
