@@ -3043,9 +3043,9 @@ export const EditFile = (props) => {
                                 const typePdf = file?.name_file
                                     ?.includes('pdf') || null;
                                 return (
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px' }}>
+                                    <Box key={`${file}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px' }}>
 
-                                        <Link key={`${file}-${index}`} style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }} href={file.location} target="_blank">
+                                        <Link style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }} href={file.location} target="_blank">
                                             <Box
                                                 sx={{
                                                     backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : file?.location}')`,
