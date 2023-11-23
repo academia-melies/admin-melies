@@ -118,7 +118,7 @@ export default function EditClass(props) {
         setLoading(true)
         try {
             const response = await deleteClass(id)
-            if (response?.status == 201) {
+            if (response?.status === 200) {
                 alert.success('Turma excluído com sucesso.');
                 router.push(`/administrative/class/list`)
             }

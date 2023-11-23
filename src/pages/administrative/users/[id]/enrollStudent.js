@@ -484,7 +484,8 @@ export default function InterestEnroll() {
         return true
     }
 
-    const handleCreateEnrollStudent = async (enrollment, valuesContract) => {
+    const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData) => {
+
         if (checkEnrollmentData(enrollment)) {
             let enrollmentData = {
                 usuario_id: id,
@@ -505,11 +506,11 @@ export default function InterestEnroll() {
                 usuario_resp: userId
             }
 
-            let paymentInstallmentsEnrollment = enrollment?.map((payment) =>
+            let paymentInstallmentsEnrollment = enrollment?.map((payment, index) =>
 
                 payment?.filter(pay => pay?.valor_parcela)?.map((item) => ({
                     usuario_id: id,
-                    pagante: responsiblePayerData ? responsiblePayerData?.nome_resp : userData?.nome,
+                    pagante: item?.pagante || userData?.nome,
                     aluno: userData?.nome,
                     vencimento: formattedStringInDate(item?.data_pagamento),
                     dt_pagamento: null,
@@ -526,10 +527,34 @@ export default function InterestEnroll() {
                     usuario_resp: userId
                 })));
 
+            let paymentEntryData = {};
+            if (paymentsInfoData?.valueEntry > 0) {
+                const dateForPaymentEntry = paymentsInfoData?.dateForPaymentEntry;
+
+                paymentEntryData = {
+                    usuario_id: id,
+                    pagante: responsiblePayerData?.nome_resp || userData?.nome,
+                    aluno: userData?.nome,
+                    vencimento: dateForPaymentEntry,
+                    dt_pagamento: dateForPaymentEntry,
+                    valor_parcela: parseFloat(paymentsInfoData?.valueEntry).toFixed(2),
+                    n_parcela: 0,
+                    c_custo: `${classData?.nome_turma}-1SEM`,
+                    forma_pagamento: paymentsInfoData?.typePaymentEntry,
+                    cartao_credito_id: null,
+                    conta: 'Melies - Bradesco',
+                    obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
+                    status_gateway: 'Pago',
+                    status_parcela: 'Pago',
+                    parc_protestada: 0,
+                    usuario_resp: userId
+                }
+            }
+
             setLoadingEnrollment(true);
-            
+
             try {
-                const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines });
+                const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData });
                 if (response?.status === 201) {
                     setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
                     alert.success('Matrícula efetivada.')
@@ -602,7 +627,8 @@ export default function InterestEnroll() {
                     showPaymentPerfl={showPaymentPerfl}
                     setShowPaymentPerfl={setShowPaymentPerfl}
                     pushRouteScreen={pushRouteScreen}
-                    paymentsInfoData={paymentsInfoData} setPaymentsInfoData={setPaymentsInfoData}
+                    paymentsInfoData={paymentsInfoData}
+                    setPaymentsInfoData={setPaymentsInfoData}
                 />
             </>
         ),
@@ -840,11 +866,14 @@ export const Payment = (props) => {
         })
         const dateNow = new Date();
         const year = dateNow.getFullYear();
-        const month = String(dateNow.getMonth() + 2).padStart(2, '0');
+        const nextMonth = String(dateNow.getMonth() + 2).padStart(2, '0');
+        const month = String(dateNow.getMonth() + 1).padStart(2, '0');
         const day = String(dateNow.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${month}-${day}`;
+        const formattedDate = `${year}-${nextMonth}-${day}`;
+        const formattedDateNow = `${year}-${month}-${day}`;
 
         setMonthDayForPayment(formattedDate)
+        setDateForPaymentEntry(formattedDateNow)
     }, [])
 
     const handleCalculationEntry = (value) => {
@@ -946,6 +975,7 @@ export const Payment = (props) => {
                     tipo: globalTypePaymentsSelected,
                     valor_parcela: paymentFirst,
                     data_pagamento: formattedPaymentDate,
+                    pagante: userData?.nome,
                     n_parcela: i + 1,
                 });
             }
@@ -1007,6 +1037,7 @@ export const Payment = (props) => {
                     tipo: globalTypePaymentsSelectedTwo,
                     valor_parcela: paymentTwo,
                     data_pagamento: formattedPaymentDate,
+                    pagante: responsiblePayerData?.nome_resp,
                     n_parcela: i + 1,
                 });
             }
@@ -1017,20 +1048,20 @@ export const Payment = (props) => {
     }, [purchaseValues, paymentEntry, numberOfInstallments, twoCards, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, globalTypePaymentsSelectedTwo, dayForPayment])
 
 
-    const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate, payment) => {
-        setTypePaymentsSelected((prevTypePaymentsSelected) => {
-            let paymentForm = (value === 'Cartão' && '') || (value === 'Pix' && 'Pix') || (value === 'Boleto' && 'Boleto')
-            const updatedTypePaymentsSelected = [...prevTypePaymentsSelected];
-            updatedTypePaymentsSelected[index] = {
-                pagamento: paymentForm,
-                tipo: value,
-                valor_parcela: valueParcel,
-                data_pagamento: formattedPaymentDate,
-                n_parcela: installmentNumber
-            };
-            return updatedTypePaymentsSelected;
-        });
-    };
+    // const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate, payment) => {
+    //     setTypePaymentsSelected((prevTypePaymentsSelected) => {
+    //         let paymentForm = (value === 'Cartão' && '') || (value === 'Pix' && 'Pix') || (value === 'Boleto' && 'Boleto')
+    //         const updatedTypePaymentsSelected = [...prevTypePaymentsSelected];
+    //         updatedTypePaymentsSelected[index] = {
+    //             pagamento: paymentForm,
+    //             tipo: value,
+    //             valor_parcela: valueParcel,
+    //             data_pagamento: formattedPaymentDate,
+    //             n_parcela: installmentNumber
+    //         };
+    //         return updatedTypePaymentsSelected;
+    //     });
+    // };
 
     const handlePaymentProfile = (index, value) => {
         setTypePaymentsSelected((prevTypePaymentsSelected) => {
@@ -1143,10 +1174,24 @@ export const Payment = (props) => {
     }
 
     const checkEnrollmentData = (index, route) => {
-        let paymentInvalid = typePaymentsSelected?.filter(item => !item.pagamento)
+        let totalValueFirst = 0;
+        let totalValueSecond = 0;
+        let totalValue = 0;
+        let totalValueEntry = 0;
+        let firstValueTotal = typePaymentsSelected?.map(item => parseFloat(item.valor_parcela));
+        let secondValueTotal = typePaymentsSelectedTwo?.map(item => parseFloat(item.valor_parcela));
+        if (firstValueTotal) { totalValueFirst = firstValueTotal?.reduce((acc, curr) => acc += curr, 0); }
+        if (secondValueTotal) { totalValueSecond = secondValueTotal?.reduce((acc, curr) => acc += curr, 0); }
+        if (paymentEntry) { totalValueEntry = handleCalculationEntry(paymentEntry) }
+        totalValue = totalValueFirst + totalValueSecond + totalValueEntry;
 
-        if (paymentInvalid.length > 0) {
-            alert.info('A forma de pagamento precisa ser preenchida corretamente.')
+        if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly)) {
+            alert.info('Existe divergência no saldo devedor. Verifique os valores das parcelas e entradas, antes de prosseguir.')
+            return
+        }
+
+        if (!globalTypePaymentsSelected || (twoCards && !globalTypePaymentsSelectedTwo)) {
+            alert.info('Insira uma forma de pagamento válida.')
             return
         }
 
@@ -1238,7 +1283,6 @@ export const Payment = (props) => {
             secondResponsible: responsiblesPayers?.second,
             valueEntry: handleCalculationEntry(paymentEntry),
             typePaymentEntry,
-            formPaymentEntry,
             dateForPaymentEntry
         })
 
@@ -1311,10 +1355,9 @@ export const Payment = (props) => {
     ]
 
     const listPaymentTypeEntry = [
-        { label: 'Boleto', value: 'Boleto' },
-        { label: 'Cartão', value: 'Cartão' },
-        { label: 'Dinheiro(Receber na hora)', value: 'Dinheiro' },
-        // { label: 'Pix', value: 'Pix' },
+        { label: 'Pix', value: 'Pix' },
+        { label: 'Dinheiro', value: 'Dinheiro' },
+        { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
     ]
 
     const listEntry = [
@@ -1448,10 +1491,6 @@ export const Payment = (props) => {
 
                                         <TextInput name='dateForPaymentEntry' onChange={(e) => setDateForPaymentEntry(e.target.value)} value={(dateForPaymentEntry)?.split('T')[0] || ''} type="date" label='Data pagamento' sx={{ flex: 1, }} />
                                     </Box>
-                                    {typePaymentEntry === 'Cartão' && <SelectList title="Selecione o cartão *" fullWidth data={groupPayment} valueSelection={formPaymentEntry || ''} onSelect={(value) => setFormPaymentEntry(value)}
-                                        filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />}
                                 </>}
                         </Box>
                     </ContentContainer>
@@ -1677,7 +1716,7 @@ export const Payment = (props) => {
                                     {twoCards &&
                                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginBottom: 5 }}>
                                             <Text large bold>Primeiro pagante:</Text>
-                                            <Text large light>{groupResponsible?.filter(item => item.id === responsiblesPayers?.first)?.map(item => item?.label)}</Text>
+                                            <Text large light>{userData?.nome}</Text>
                                         </Box>
                                     }
                                     <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
@@ -1700,13 +1739,6 @@ export const Payment = (props) => {
                                                 onChange={(event) => handleChangePaymentValuesParcels(event)}
                                                 value={purchaseValues?.firstCard || ''}
                                                 label='Valor a pagar' sx={{ flex: 1, }}
-                                            />
-                                            <SelectList fullWidth data={groupResponsible} valueSelection={responsiblesPayers?.first || ''}
-                                                onSelect={(value) => setResponsiblesPayers({ ...responsiblesPayers, first: value })}
-                                                filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                title="Selecione o pagante *"
-                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                clean={false}
                                             />
                                         </>}
 
@@ -1806,7 +1838,7 @@ export const Payment = (props) => {
                                         {twoCards &&
                                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginBottom: 5 }}>
                                                 <Text large bold>Segundo pagante:</Text>
-                                                <Text large light>{groupResponsible?.filter(item => item.id === responsiblesPayers?.second)?.map(item => item?.label)}</Text>
+                                                <Text large light>{responsiblePayerData?.nome_resp}</Text>
                                             </Box>
                                         }
                                         <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
@@ -1828,13 +1860,6 @@ export const Payment = (props) => {
                                                     onChange={(event) => handleChangePaymentValuesParcels(event)}
                                                     value={purchaseValues?.secondCard || ''}
                                                     label='Valor a pagar' sx={{ flex: 1, }}
-                                                />
-                                                <SelectList fullWidth data={groupResponsible} valueSelection={responsiblesPayers?.second || ''}
-                                                    onSelect={(value) => setResponsiblesPayers({ ...responsiblesPayers, second: value })}
-                                                    filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                    title="Selecione o 2º pagante *"
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                    clean={false}
                                                 />
                                             </>}
                                         </Box>
@@ -2054,7 +2079,7 @@ export const ContractStudent = (props) => {
                 formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
 
                 setFormData(formData);
-                handleCreateEnrollStudent(paymentData, valuesContract);
+                handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData);
 
                 return true
             });
@@ -2110,25 +2135,25 @@ export const ContractStudent = (props) => {
                                 </Box>
                                 <Box sx={styles.containerValues}>
                                     <Text small style={styles.textDataPayments} bold>Valor total do semestre:</Text>
-                                    <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.valorSemestre)}</Text>
+                                    <Text small style={styles.textDataPayments}>{formatter.format(valuesContract?.valorSemestre)}</Text>
                                 </Box>
                                 <Box sx={styles.containerValues}>
                                     <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas:</Text>
-                                    <Text small style={styles.textDataPayments}>{valuesContract.qntDispensadas}</Text>
+                                    <Text small style={styles.textDataPayments}>{valuesContract?.qntDispensadas}</Text>
                                 </Box>
-                                {valuesContract.descontoDispensadas > 0 &&
+                                {valuesContract?.descontoDispensadas > 0 &&
                                     <Box sx={styles.containerValues}>
                                         <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas - Desconto (R$):</Text>
                                         <Text small style={styles.textDataPayments}>{formatter.format(valuesContract.descontoDispensadas)}</Text>
                                     </Box>
                                 }
-                                {valuesContract.descontoPorcentagemDisp != '0.00%' &&
+                                {valuesContract?.descontoPorcentagemDisp != '0.00%' &&
                                     <Box sx={styles.containerValues}>
                                         <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas - Desconto (%):</Text>
-                                        <Text small style={styles.textDataPayments}>{valuesContract.descontoPorcentagemDisp}</Text>
+                                        <Text small style={styles.textDataPayments}>{valuesContract?.descontoPorcentagemDisp}</Text>
                                     </Box>
                                 }
-                                {valuesContract.descontoAdicional &&
+                                {valuesContract?.descontoAdicional &&
                                     <Box sx={styles.containerValues}>
                                         <Text small style={styles.textDataPayments} bold>DESCONTO (adicional):</Text>
 
@@ -2137,19 +2162,19 @@ export const ContractStudent = (props) => {
                                             || '0'}</Text>
                                     </Box>
                                 }
-                                {valuesContract.descontoAdicional && valuesContract.descontoDispensadas > 0 &&
+                                {valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0 &&
                                     <Box sx={styles.containerValues}>
                                         <Text small style={styles.textDataPayments} bold>DESCONTO TOTAL:</Text>
                                         <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))}</Text>
                                     </Box>
                                 }
-                                {paymentsInfoData.valueEntry &&
+                                {paymentsInfoData?.valueEntry > 0 &&
                                     <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
                                         <Text small style={styles.textDataPayments} bold>VALOR DE ENTRADA:</Text>
                                         <Text small style={styles.textDataPayments}>{formatter.format(paymentsInfoData?.valueEntry)}</Text>
                                     </Box>
                                 }
-                                {valuesContract.valorFinal &&
+                                {valuesContract?.valorFinal &&
                                     <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
                                         <Text small style={styles.textDataPayments} bold>VALOR A PAGAR:</Text>
                                         <Text small style={styles.textDataPayments}>{formatter.format(valuesContract?.valorFinal)}</Text>
@@ -2162,7 +2187,7 @@ export const ContractStudent = (props) => {
 
                         <ContentContainer style={{ display: 'flex', flexDirection: 'column', gap: 3, boxShadow: 'none', alignItems: 'center', marginBottom: 25 }}>
                             <Text bold>Forma de pagamento escolhida:</Text>
-                            {paymentsInfoData?.valueEntry &&
+                            {paymentsInfoData?.valueEntry > 0 &&
                                 <>
                                     <Text bold>Entrada</Text>
                                     <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
@@ -2184,7 +2209,7 @@ export const ContractStudent = (props) => {
                                                     <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                         {paymentsInfoData?.typePaymentEntry}</td>
                                                     <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                        {paymentsInfoData?.formPaymentEntry > 0 ? groupPayment?.filter(item => item.value === paymentsInfoData?.formPaymentEntry).map(item => item.label) : paymentsInfoData?.formPaymentEntry}
+                                                        Pagamento realizado presencialmente
                                                     </td>
                                                     <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                         {paymentsInfoData?.dateForPaymentEntry}</td>

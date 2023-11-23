@@ -177,8 +177,9 @@ export default function EditFrequency(props) {
                 const response = await api.post(`/frequency/create`, { studentsList, classDays, disciplineId });
                 if (response?.status === 201) {
                     alert.success('Turma cadastrado com sucesso.');
-                    handleItems()
-                    listClassDay(disciplineId)
+                    await handleItems()
+                    await handleStudent()
+                    await listClassDay(disciplineId)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar turma.');
