@@ -253,8 +253,6 @@ export default function CalendarComponent(props) {
         }
     }
 
-    console.log(eventData)
-
     const eventStyleGetter = (event, start, end, isSelected) => {
         const style = {
             backgroundColor: event.color,

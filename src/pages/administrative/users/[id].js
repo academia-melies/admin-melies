@@ -936,7 +936,6 @@ export default function EditUser() {
             try {
                 const response = await editeUser({ id, userData })
                 if (response.status === 422) return alert.error('CPF já cadastrado.')
-                console.log(response)
                 if (contract) {
                     const contr = await editContract({ id, contract })
                 }
@@ -3040,41 +3039,50 @@ export const EditFile = (props) => {
                     <ContentContainer>
                         <Text bold>Arquivos</Text>
                         <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-                            {fileData?.map((file, index) => (
-                                <Link key={`${file}-${index}`} style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }} href={file.location} target="_blank">
-                                    <Box
-                                        sx={{
-                                            backgroundImage: `url('${file?.location}')`,
-                                            backgroundSize: 'contain',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center center',
-                                            width: { xs: '100%', sm: 150, md: 150, lg: 150 },
-                                            aspectRatio: '1/1',
-                                        }}>
-                                    </Box>
-                                    <Box sx={{
-                                        backgroundSize: "cover",
-                                        backgroundRepeat: "no-repeat",
-                                        backgroundPosition: "center",
-                                        width: 22,
-                                        height: 22,
-                                        backgroundImage: `url(/icons/remove_icon.png)`,
-                                        position: 'absolute',
-                                        top: -5,
-                                        right: -5,
-                                        transition: ".3s",
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: "pointer",
-                                        },
-                                        zIndex: 9999999,
-                                    }} onClick={(event) => {
-                                        event.preventDefault()
-                                        handleDeleteFile(file)
-                                    }} />
-                                </Link>
+                            {fileData?.map((file, index) => {
+                                const typePdf = file?.name_file
+                                    ?.includes('pdf') || null;
+                                return (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px' }}>
 
-                            ))}
+                                        <Link key={`${file}-${index}`} style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }} href={file.location} target="_blank">
+                                            <Box
+                                                sx={{
+                                                    backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : file?.location}')`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'center center',
+                                                    width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                                                    aspectRatio: '1/1',
+                                                }}>
+                                            </Box>
+                                            <Box sx={{
+                                                backgroundSize: "cover",
+                                                backgroundRepeat: "no-repeat",
+                                                backgroundPosition: "center",
+                                                width: 22,
+                                                height: 22,
+                                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                                position: 'absolute',
+                                                top: -5,
+                                                right: -5,
+                                                transition: ".3s",
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: "pointer",
+                                                },
+                                                zIndex: 9999999,
+                                            }} onClick={(event) => {
+                                                event.preventDefault()
+                                                handleDeleteFile(file)
+                                            }} />
+                                        </Link>
+                                        <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {decodeURIComponent(file?.name_file)}
+                                        </Text>
+                                    </Box>
+                                )
+                            })}
                         </Box>
                     </ContentContainer>
                 }

@@ -194,15 +194,15 @@ export default function StudentData(props) {
 
 
     const getStatusGrade = (item) => {
-    
+
         if (parseFloat(item.nt_final) < 6) {
             return "Reprovado";
         }
-    
+
         if (parseFloat(item.nt_final) >= 6) {
             return "Aprovado";
         }
-    
+
         return "Pendente";
     };
 
@@ -377,49 +377,54 @@ export default function StudentData(props) {
                         />
                     </Box>
                     {showBox?.frequency && (
-                        <Box sx={{ display: 'flex' }}>
+                        frequencyData?.length > 0 ?
+                            <Box sx={{ display: 'flex' }}>
 
-                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
-                                <table style={{ borderCollapse: 'collapse', }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Matéria/Disciplina</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Presenças</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ausências</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Freqência</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Qnt Aulas</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style={{ flex: 1 }}>
-                                        {
-                                            frequencyData?.map((item, index) => {
-                                                const qntClass = (item?.quantidade_de_presencas + item?.quantidade_de_ausencias)
-                                                return (
-                                                    <tr key={`${item}-${index}`}>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.nome_disciplina}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.quantidade_de_presencas}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.quantidade_de_ausencias}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.frequencia_percentual_do_aluno}%
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {qntClass}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
+                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                                    <table style={{ borderCollapse: 'collapse', }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Matéria/Disciplina</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Presenças</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ausências</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Freqência</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Qnt Aulas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style={{ flex: 1 }}>
+                                            {
+                                                frequencyData?.map((item, index) => {
+                                                    const qntClass = (item?.quantidade_de_presencas + item?.quantidade_de_ausencias)
+                                                    return (
+                                                        <tr key={`${item}-${index}`}>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.nome_disciplina}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.quantidade_de_presencas}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.quantidade_de_ausencias}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.frequencia_percentual_do_aluno}%
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {qntClass}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
 
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </Box>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </Box>
+                            :
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                <Text ligth>Não foi encontrado frequências lançadas.</Text>
+                            </Box>
                     )}
                 </Box>
 
@@ -451,6 +456,7 @@ export default function StudentData(props) {
                         />
                     </Box>
                     {showBox?.grades && (
+                        gradesData?.length > 0 ?
                         <Box sx={{ display: 'flex' }}>
 
                             <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
@@ -512,6 +518,10 @@ export default function StudentData(props) {
                                     </tbody>
                                 </table>
                             </div>
+                        </Box>
+                        :
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                            <Text ligth>Não foi encontrado notas lançadas.</Text>
                         </Box>
                     )}
                 </Box>

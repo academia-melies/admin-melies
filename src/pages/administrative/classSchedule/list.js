@@ -163,7 +163,7 @@ export default function ClassSheduleList(props) {
                 newButton
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
-            {dateClass ? (
+            {dateClass?.length > 0 ? (
                 dateClass.map((item, index) => {
                     const classScheduleData = item.aulas;
                     const name = item.nome_cronograma;
