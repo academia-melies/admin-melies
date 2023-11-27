@@ -1,4 +1,3 @@
-
 export const Holidays = [
     {
         title: 'Ano Novo',
@@ -79,5 +78,21 @@ export const Holidays = [
         start: new Date(2023, 11, 25),
         end: new Date(2023, 11, 25)
     },
+];
+
+
+export const holidaysArray = [
+    new Date(2023, 0, 1),  // Ano Novo
+    new Date(2023, 1, 25), // Carnaval
+    new Date(2023, 1, 26), // Carnaval
+    new Date(2023, 3, 7),  // Sexta-feira Santa
+    new Date(2023, 3, 21), // Tiradentes
+    new Date(2023, 4, 1),  // Dia do Trabalhador
+    new Date(2023, 5, 15), // Corpus Christi
+    new Date(2023, 8, 7),  // Independência do Brasil
+    new Date(2023, 9, 12), // Nossa Senhora Aparecida
+    new Date(2023, 10, 2), // Dia de Finados
+    new Date(2023, 10, 15),// Proclamação da República
+    new Date(2023, 11, 25)  // Natal
 ];
 
