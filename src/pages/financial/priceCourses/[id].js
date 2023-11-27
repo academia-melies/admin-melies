@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
+import { Backdrop, CircularProgress, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
@@ -28,11 +28,14 @@ export default function EditPricesCourse(props) {
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [showHistoric, setShowHistoric] = useState(false)
+    const [loadingHistoric, setLoadingHistoric] = useState(false)
     const [historicId, setHistoricId] = useState()
+    const [historicClassId, setHistoricClassId] = useState()
     const [arrayHistoricValuesCourse, setArrayHistoricValuesCourse] = useState([])
     const [classesList, setClassesList] = useState([])
     const [groupClasses, setGroupClasses] = useState([])
     const [historicEdit, setHistoricEdit] = useState({})
+    const [historicClassEdit, setHistoricClassEdit] = useState({})
     const [readjustmentValue, setReadjustmentValue] = useState({})
     const [showClassesSelect, setShowClassesSelect] = useState(false)
     const [ajustmentAplicate, setAjustmentAplicate] = useState(false)
@@ -90,8 +93,6 @@ export default function EditPricesCourse(props) {
         try {
             const response = await api.get(`/classesPrices/list/${id}`)
             const { data } = response
-
-            console.log(data)
 
             if (data?.length > 0) {
                 let formatValue = (value) => {
@@ -186,7 +187,8 @@ export default function EditPricesCourse(props) {
 
     const handleHistoricValueClass = async (id) => {
         try {
-            const response = await api.get(`'/classesPrices/historic/${id}`)
+            setLoadingHistoric(true)
+            const response = await api.get(`/classesPrices/historic/${id}`)
             const { data } = response
 
             if (data) {
@@ -201,6 +203,8 @@ export default function EditPricesCourse(props) {
         } catch (error) {
             console.log(error)
             return error
+        } finally {
+            setLoadingHistoric(false)
         }
     }
 
@@ -221,7 +225,7 @@ export default function EditPricesCourse(props) {
 
     useEffect(() => {
         if (showHistoricClassId) {
-            handleHistoricValueClass()
+            handleHistoricValueClass(showHistoricClassId)
         }
     }, [showHistoricClassId])
 
@@ -231,11 +235,14 @@ export default function EditPricesCourse(props) {
         }
     }, [ajustmentAplicate])
 
-    // useEffect(() => {
-    //     if (ajustmentAplicateClass) {
-    //         handleEditPricesClass()
-    //     }
-    // }, [ajustmentAplicateClass])
+
+    useEffect(() => {
+        if (ajustmentAplicateClass) {
+            handleEditPricesClass(ajustmentAplicateClass)
+        }
+    }, [ajustmentAplicateClass])
+
+
 
     async function calculationValues({ porcent, remove, ajustmentAplicated }) {
         setLoading(true)
@@ -330,10 +337,10 @@ export default function EditPricesCourse(props) {
 
             if (alertMsg) alert.success(alertMsg)
             if (ajustmentAplicated) {
-                setAjustmentAplicateClass(true)
+                alert.info('Reajuste aplicado. Salve as alterações do reajuste.')
                 toggleClassAdjustment(index)
             }
-            return true
+
         } catch (error) {
             alert.error('Ocorreu um erro ao calcular os valores.')
             console.log(error)
@@ -417,6 +424,13 @@ export default function EditPricesCourse(props) {
         }));
     }
 
+    const handleChangeHistoricClass = (event) => {
+        setHistoricClassEdit((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }));
+    }
+
     const handleChangeReadjustment = (event) => {
 
         if (event.target.name === 'reajuste') {
@@ -463,6 +477,24 @@ export default function EditPricesCourse(props) {
                 const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
                 value = formattedValue;
 
+            }
+        }
+
+        if (field === 'reajuste') {
+            const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                value = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                value = formattedValue;
             }
         }
 
@@ -545,41 +577,53 @@ export default function EditPricesCourse(props) {
     }
 
     const handleEditPricesClass = async (classValueId) => {
-        if (checkRequiredFields()) {
-            setLoading(true)
+        let [classData] = await classesList?.filter(item => item?.id_valor_turma === classValueId)
+
+        if (classData?.valor_total && classData?.valor_parcelado && classData?.valor_avista) {
+            setLoading(true);
 
             try {
-                let [classData] = classesList?.filter(item => item?.id_valor_turma === classValueId)
                 const response = await api.patch(`/classPrices/update/${classValueId}`, { classData, userId })
                 if (response?.status === 200) {
                     alert.success('Valores da turma atualizados com sucesso.');
-                    handleItems()
-                    return
+                    handleItems();
+                    return true; // Importante: Indique que a atualização foi bem-sucedida.
                 }
                 alert.error('Tivemos um problema ao atualizar os Valores da turma.');
+                return
             } catch (error) {
                 alert.error('Tivemos um problema ao atualizar os Valores da turma.');
+                return error
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
+        } else {
+            alert.info('Preencha os valores corretamente.');
+            return false; // Importante: Indique que a atualização falhou.
         }
     }
 
+
     const handleCreatePricesClass = async (classId) => {
         let [classData] = classesList?.filter(item => item?.id_turma === classId)
-        setLoading(true)
-        try {
-            const response = await api.post(`/classPrices/create`, { classData, userId });
-            const { data } = response
-            if (response?.status === 201) {
-                alert.success('Valores cadastrados com sucesso.');
-                await handleItems()
+        if (classData?.valor_total && classData?.valor_parcelado && classData?.valor_avista) {
+            setLoading(true)
+            try {
+                const response = await api.post(`/classPrices/create`, { classData, userId });
+                const { data } = response
+                if (response?.status === 201) {
+                    alert.success('Valores cadastrados com sucesso.');
+                    await handleItems()
+                }
+            } catch (error) {
+                console.log(error)
+                alert.error('Tivemos um problema ao cadastrar valor.');
+            } finally {
+                setLoading(false)
             }
-        } catch (error) {
-            console.log(error)
-            alert.error('Tivemos um problema ao cadastrar valor.');
-        } finally {
-            setLoading(false)
+        } else {
+            alert.info('Preencha os valores corretamente.')
+            return
         }
     }
 
@@ -593,6 +637,32 @@ export default function EditPricesCourse(props) {
                 handleItems()
                 setShowValueAdjustment(false)
                 setHistoricId()
+                return
+            }
+            alert.error('Tivemos um problema ao excluir a Historico.');
+        } catch (error) {
+            alert.error('Tivemos um problema ao excluir a Historico.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleDeleteHistoricClass = async () => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/classesPrices/historic/delete/${historicClassId}`);
+            if (response?.status === 200) {
+                setArrayHistoricValuesClass(valueClass => (
+                    valueClass?.filter(item => item.id_hist_valor_turma !== historicClassId)
+                  ))
+                  
+                alert.success('Historico excluído.');
+                handleItems()
+                setShowValueAdjustmentClass(false)
+                setHistoricClassId()
+
                 return
             }
             alert.error('Tivemos um problema ao excluir a Historico.');
@@ -622,6 +692,26 @@ export default function EditPricesCourse(props) {
         }
     }
 
+
+    const handleGetHistoricClassId = async (value) => {
+        setLoadingHistoric(true)
+        setHistoricClassId(value)
+        try {
+            const response = await api.get(`/classesPrices/historicId/${value}`)
+            const { data } = response
+            if (data) {
+                setHistoricClassEdit(data)
+                return
+            }
+            setHistoricClassEdit('')
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoadingHistoric(false)
+        }
+    }
+
     const handleUpdateHistoricId = async () => {
         setLoading(true)
         try {
@@ -629,6 +719,25 @@ export default function EditPricesCourse(props) {
             if (response?.status === 200) {
                 alert.success('Historico atualizado.')
                 setHistoricId()
+                return
+            }
+            alert.error('Ocorreu um erro ao atualizar o histórico.')
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleUpdateHistoricClassId = async () => {
+        setLoading(true)
+        try {
+            const response = await api.patch(`/classesPrices/historic/update`, { historicClassEdit })
+            if (response?.status === 200) {
+                alert.success('Historico atualizado.')
+                setHistoricClassId()
                 return
             }
             alert.error('Ocorreu um erro ao atualizar o histórico.')
@@ -701,6 +810,17 @@ export default function EditPricesCourse(props) {
         { key: 'valor_parcelado_curso', label: 'Valor parcelado' },
         { key: 'dt_reajuste', label: 'Data do reajuste', date: true },
         { key: 'observacao_his_pr_cur', label: 'Observações' },
+    ];
+
+    const columnClass = [
+        { key: 'id_hist_valor_turma', label: 'ID' },
+        { key: 'reajuste', label: 'Reajuste %' },
+        { key: 'valor_total', label: 'Valor Final' },
+        { key: 'valor_avista', label: 'á vista (desconto 5%)' },
+        { key: 'n_parcelas', label: 'Parcelas' },
+        { key: 'valor_parcelado', label: 'Valor parcelado' },
+        { key: 'dt_reajuste', label: 'Data do reajuste', date: true },
+        { key: 'obs_hist_val_tur', label: 'Observações' },
     ];
 
     const menusFilters = [
@@ -998,14 +1118,20 @@ export default function EditPricesCourse(props) {
 
                                             {!newPrice && <> {!showValueAdjustmentClass[index] &&
                                                 <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                    <Button secondary small text="reajuste" onClick={() => { toggleClassAdjustment(index) }} style={{ width: 80, height: 30 }} />
-                                                    <Button text='Histórico' small style={{ width: 80, height: 30 }} onClick={() => setShowHistoricClassId(item?.id_valor_turma)} />
+                                                    {item?.id_valor_turma && <Button secondary small text="reajuste" onClick={() => { toggleClassAdjustment(index) }} style={{ width: 80, height: 30 }} />}
+                                                    <Button text='Histórico' small style={{ width: 80, height: 30 }} onClick={(e) => {
+                                                        e.preventDefault();  // Corrigido de prevDefault para preventDefault
+                                                        e.stopPropagation();
+                                                        setShowHistoricClassId(item?.id_valor_turma || '0');
+                                                    }} />
                                                 </Box>
                                             }
 
                                                 <Backdrop open={showHistoricClassId === item?.id_valor_turma} sx={{ zIndex: 9999 }}>
+
                                                     <ContentContainer style={{ marginLeft: { xs: '0px', sm: '214px', md: '180px', lg: '214px' } }}>
-                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999 }}>
+
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, zIndex: 999999 }}>
                                                             <Text bold large>Histórico de Reajustes</Text>
                                                             <Box sx={{
                                                                 ...styles.menuIcon,
@@ -1020,16 +1146,88 @@ export default function EditPricesCourse(props) {
                                                                 setShowHistoricClassId('')
                                                             }} />
                                                         </Box>
-                                                        {arrayHistoricValuesClass?.length > 0 ?
-                                                            <Table_V1 data={arrayHistoricValuesClass} columns={column} columnId={'id_hist_valor_turma'} columnActive={false} center routerPush={false}
-                                                                onSelect={(value) => handleGetHistoricId(value)} />
-                                                            :
-                                                            <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '30px 0px 0px 0px' }}>
-                                                                <Text light>Não encontramos histórico de valores</Text>
+                                                        {loadingHistoric ? (
+
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column', marginTop: 5 }}>
+                                                                <CircularProgress />
+                                                                <Text bold>Carregando histórico...</Text>
                                                             </Box>
-                                                        }
+                                                        ) : (
+                                                            <Box>
+                                                                {
+                                                                    arrayHistoricValuesClass?.length > 0 ?
+                                                                        <Table_V1 data={arrayHistoricValuesClass} columns={columnClass} columnId={'id_hist_valor_turma'} columnActive={false} center routerPush={false}
+                                                                            onSelect={(value) => handleGetHistoricClassId(value)} />
+                                                                        :
+                                                                        <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '30px 0px 0px 0px' }}>
+                                                                            <Text light>Não encontramos histórico de valores</Text>
+                                                                        </Box>
+                                                                }
+                                                            </Box>
+                                                        )}
                                                     </ContentContainer>
                                                 </Backdrop>
+
+                                                <Backdrop open={historicClassId} sx={{ zIndex: 9999 }}>
+                                                    <ContentContainer style={{ marginLeft: { xs: '0px', sm: '214px', md: '180px', lg: '214px' } }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999 }}>
+                                                            <Text bold large>Editar Reajuste</Text>
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                backgroundImage: `url(${icons.gray_close})`,
+                                                                transition: '.3s',
+                                                                zIndex: 999999999,
+                                                                "&:hover": {
+                                                                    opacity: 0.8,
+                                                                    cursor: 'pointer'
+                                                                }
+                                                            }} onClick={() => {
+                                                                setHistoricClassId()
+                                                                setHistoricClassEdit({})
+                                                            }} />
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
+                                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                                                                <Text bold>Reajuste %:</Text>
+                                                                <Text>{historicClassEdit?.reajuste || '-'}</Text>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                                                                <Text bold>Valor Final:</Text>
+                                                                <Text>{formatter.format(historicClassEdit?.valor_total || 0)}</Text>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                                                                <Text bold>á vista (desconto 5%):</Text>
+                                                                <Text>{formatter.format(historicClassEdit?.valor_avista || 0)}</Text>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                                                                <Text bold>Parcelas:</Text>
+                                                                <Text>{historicClassEdit?.n_parcelas || '-'}</Text>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                                                                <Text bold>Valor parcelado:</Text>
+                                                                <Text>{formatter.format(historicClassEdit?.valor_parcelado || 0)}</Text>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
+                                                                <Text bold>Data do reajuste:</Text>
+                                                                <Text>{formatTimeStamp(historicClassEdit?.dt_reajuste)}</Text>
+                                                            </Box>
+                                                            <TextInput
+                                                                placeholder='Observação'
+                                                                name='obs_hist_val_tur'
+                                                                onChange={handleChangeHistoricClass} value={historicClassEdit?.obs_hist_val_tur || ''}
+                                                                label='Observação' sx={{ flex: 1, }}
+                                                                multiline
+                                                                maxRows={8}
+                                                                rows={4}
+                                                            />
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                                                            <Button text='salvar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleUpdateHistoricClassId()} />
+                                                            <Button text='excluir' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteHistoricClass })} />
+                                                        </Box>
+                                                    </ContentContainer>
+                                                </Backdrop>
+
                                                 {showValueAdjustmentClass[index] &&
                                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
                                                         <ContentContainer gap={3} style={{ maxWidth: 400 }}>
@@ -1057,8 +1255,17 @@ export default function EditPricesCourse(props) {
                                                                 />
                                                             </Box>
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                                <Button text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => calculationValuesClass({ porcent: item?.reajuste, ajustmentAplicated: true, classId: item?.id_turma, index: index })} />
+                                                                <Button text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={async () => {
+                                                                    await calculationValuesClass({
+                                                                        porcent: item?.reajuste,
+                                                                        ajustmentAplicated: true,
+                                                                        classId: item?.id_turma,
+                                                                        index: index
+                                                                    });
+                                                                }}
+                                                                />
                                                             </Box>
+
 
                                                         </ContentContainer>
                                                     </Box>
