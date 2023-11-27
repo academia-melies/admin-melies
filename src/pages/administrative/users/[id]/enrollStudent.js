@@ -219,10 +219,10 @@ export default function InterestEnroll() {
         }
     }
 
-    const handleValuesCourse = async (courseId) => {
+    const handleValuesCourse = async (courseId, classId) => {
         setLoading(true)
         try {
-            const response = await api.get(`/coursePrices/course/historic/${courseId}`)
+            const response = await api.get(`/coursePrices/course/historic/${courseId}?classId=${classId}`)
             const { data } = response
             setValuesCourse(data)
             return data
@@ -283,7 +283,7 @@ export default function InterestEnroll() {
             const interests = await handleInterest()
             if (interests) {
                 await handleSelectModule(interests?.turma_id)
-                await handleValuesCourse(interests?.curso_id)
+                await handleValuesCourse(interests?.curso_id, interests?.turma_id)
                 await handleCourseData(interests?.curso_id)
                 await handleClassData(interests?.turma_id)
                 await handleResponsible(userDatails)
