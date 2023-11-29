@@ -5,6 +5,7 @@ import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { TablePagination } from "@mui/material"
 
 export default function ListTasks(props) {
     const [tasksList, setTasksList] = useState([])
@@ -25,13 +26,15 @@ export default function ListTasks(props) {
         filterName: 'nome',
         filterOrder: 'asc'
     })
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         responsible: (item) => filters.responsible === 'todos' || item.responsavel_chamado === filters.responsible,
         status: (item) => filters.status === 'todos' || item.status_chamado === filters.status,
         priority: (item) => filters.priority === 'todos' || item.prioridade_chamado === filters.priority,
-        actor: (item) => filters.actor === 'todos' || item.autor_chamado === filters.actor,
+        actor: (item) => filters.actor === 'todos' || item.autor === filters.actor,
         type: (item) => filters.type === 'todos' || item.tipo_chamado === filters.type
     };
 
@@ -43,8 +46,8 @@ export default function ListTasks(props) {
     useEffect(() => {
         getTasks();
         listUsers()
-        if (window.localStorage.getItem('list-users-filters')) {
-            const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-users-filters') || null);
+        if (window.localStorage.getItem('list-tasks-filters')) {
+            const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-tasks-filters') || null);
             setFiltersOrders({
                 filterName: meliesLocalStorage?.filterName,
                 filterOrder: meliesLocalStorage?.filterOrder
@@ -54,8 +57,20 @@ export default function ListTasks(props) {
 
     useEffect(() => {
         if (firstRender) return setFirstRender(false);
-        window.localStorage.setItem('list-users-filters', JSON.stringify({ filterName: filtersOrders.filterName, filterOrder: filtersOrders.filterOrder }));
+        window.localStorage.setItem('list-tasks-filters', JSON.stringify({ filterName: filtersOrders.filterName, filterOrder: filtersOrders.filterOrder }));
     }, [filtersOrders])
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
 
 
     const sortTasks = () => {
@@ -113,7 +128,7 @@ export default function ListTasks(props) {
         { key: 'id_chamado', label: 'ID' },
         { key: 'prioridade_chamado', label: 'Prioridade', task: true },
         { key: 'titulo_chamado', label: 'Título' },
-        { key: 'autor_chamado', label: 'Autor' },
+        { key: 'autor', label: 'Autor' },
         { key: 'nome', label: 'Executor' },
         { key: 'status_chamado', label: 'Status' },
         { key: 'dt_criacao', label: 'Criado em', date: true },
@@ -165,9 +180,8 @@ export default function ListTasks(props) {
                         <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
                         <Text bold style={{ color: '#d6d6d6' }} light>{tasksList.filter(filter)?.length || '0'}</Text>
                         <Text style={{ color: '#d6d6d6' }} light>de</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{tasksList?.length || 10}</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{tasksList?.length || '0'}</Text>
                         <Text style={{ color: '#d6d6d6' }} light>chamados</Text>
-
                     </Box>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -224,6 +238,17 @@ export default function ListTasks(props) {
                             type: 'todos'
                         })} />
                     </Box>
+                    <TablePagination
+                        component="div"
+                        count={sortTasks()?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
+                    />
                 </Box>
             </ContentContainer >
             <Table_V1 data={sortTasks().filter(filter)} columns={column} columnId={'id_chamado'} columnActive={false} filters={filtersOrders} onPress={(value) => setFiltersOrders(value)} onFilter />
