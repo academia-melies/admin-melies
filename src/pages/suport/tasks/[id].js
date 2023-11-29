@@ -20,7 +20,7 @@ export default function EditTask(props) {
     const [taskData, setTaskData] = useState({
         status_chamado: '',
         responsavel_chamado: '',
-        autor_chamado: user?.nome
+        autor_chamado: user?.id
     })
     const [alterationTask, setAlterationTask] = useState(false)
     const [showPriorityAltern, setShowPriorityAltern] = useState(false)
@@ -110,7 +110,7 @@ export default function EditTask(props) {
             setNewInteration({ ...newInteration, usuario_id: userId, chamado_id: id })
             return
         }
-        setTaskData({ ...taskData, autor_chamado: user?.nome, status_chamado: 'Em aberto' })
+        setTaskData({ ...taskData, autor_chamado: user?.id, status_chamado: 'Em aberto' })
 
     }, [id]);
 
@@ -276,7 +276,7 @@ export default function EditTask(props) {
     const handleAddParticipant = async (value, label) => {
         setLoading(true)
         try {
-            const response = await api.post(`/task/participant/create/${id}`, { participante_id: value })
+            const response = await api.post(`/task/participant/create/${id}`, { participante_id: value, usuario_id: taskData?.usuario_id })
             if (response?.status === 201) {
                 let description = `${user?.nome} adicionou ${label} á esta tarefa.`
                 await handleAddInteration(description)
@@ -394,7 +394,7 @@ export default function EditTask(props) {
                                     title="Prioridade *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
-                                <TextInput placeholder='Nome de quem está solicitando' name='autor_chamado' onChange={handleChange} value={taskData?.autor_chamado || user?.nome} label='Autor *' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Id de quem está solicitando' name='autor_chamado' onChange={handleChange} value={taskData?.autor_chamado || user?.nome} label='ID Autor *' sx={{ flex: 1, }} />
                                 <SelectList fullWidth data={responsibles} valueSelection={taskData?.responsavel_chamado} onSelect={(value) => setTaskData({ ...taskData, responsavel_chamado: value })}
                                     title="Responsável *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -475,7 +475,7 @@ export default function EditTask(props) {
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                     <Text bold>Aberto por:</Text>
-                                    <Text>{taskData?.autor_chamado}</Text>
+                                    <Text>{taskData?.autor}</Text>
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                     <Text bold>Data de criação:</Text>

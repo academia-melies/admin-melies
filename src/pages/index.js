@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
-import { Box, Button, ContentContainer, Text } from '../atoms'
+import { Box, Button, ContentContainer, Text, TextInput } from '../atoms'
 import { Carousel } from '../organisms'
 import { useAppContext } from '../context/AppContext'
 import { icons } from '../organisms/layout/Colors'
@@ -9,7 +9,7 @@ import { menuItems } from '../permissions'
 import { useRouter } from 'next/router'
 import { getImageByScreen } from '../validators/api-requests'
 import { api } from '../api/api'
-import { Avatar } from '@mui/material'
+import { Avatar, Backdrop } from '@mui/material'
 import { formatDate } from '../helpers'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -41,6 +41,8 @@ export default function Home() {
    const [imagesList, setImagesList] = useState([])
    const [listBirthDay, setListBirthDay] = useState([])
    const [listClassesDay, setListClassesDay] = useState([])
+   const [showMessageBirthDay, setShowMessageBirthDay] = useState(false)
+   const [idSelected, setIdSelected] = useState()
    let isProfessor = user?.professor === 1 ? true : false;
    const userId = user?.id;
 
@@ -82,27 +84,6 @@ export default function Home() {
          const response = await api.get(`/classDay/month/now`)
          if (response.status === 200) {
             setListClassesDay(response?.data)
-         }
-      } catch (error) {
-         console.log(error)
-         return error
-      } finally {
-         setLoading(false)
-      }
-   }
-
-   const handlePushNotification = async (id) => {
-      setLoading(true)
-      try {
-         const notificationData = {
-            titulo: `Parabéns!!`,
-            menssagem: `${user?.nome} te desejou muitas felicidades no seu dia!`,
-            vizualizado: 0,
-            usuario_env: user?.id
-         }
-         const response = await api.post(`/notification/create/${id}`, { notificationData })
-         if (response.status === 201) {
-            alert.success('Mensagem de parabéns enviada!')
          }
       } catch (error) {
          console.log(error)
@@ -242,7 +223,10 @@ export default function Home() {
                                        </Box>
                                     </Box>
                                     <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
-                                       <Button small secondary text="Dar parabéns" onClick={() => handlePushNotification(item?.id)} />
+                                       <Button small secondary text="Dar parabéns" onClick={() => {
+                                          setIdSelected(item?.id)
+                                          setShowMessageBirthDay(true)
+                                       }} />
                                     </Box>
                                  </ContentContainer>
                               )
@@ -254,6 +238,9 @@ export default function Home() {
                         </Box>
                      }
                   </Box>
+                  <Backdrop open={showMessageBirthDay} sx={{ zIndex: 9999 }}>
+                     <BirthDateDiaog idSelected={idSelected} setShowMessageBirthDay={setShowMessageBirthDay} userBirthDay={listBirthDay} />
+                  </Backdrop>
                </ContentContainer>
 
                <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'start', alignItems: 'center', gap: 1, maxWidth: 500, maxHeight: 300, overflowY: 'auto' }}>
@@ -311,6 +298,101 @@ export default function Home() {
             </ContentContainer>
          </Box>
       </>
+   )
+}
+
+
+const BirthDateDiaog = ({ idSelected, setShowMessageBirthDay, userBirthDay }) => {
+
+   const { user, colorPalette, theme, setLoading, alert } = useAppContext()
+
+   const [message, setMessage] = useState('')
+   const nameBirthDay = userBirthDay?.filter(item => item.id === idSelected).map(item => item.nome)
+
+   const handlePushNotification = async (id) => {
+      setLoading(true)
+      try {
+         const notificationData = {
+            titulo: `Parabéns!!`,
+            menssagem: message,
+            vizualizado: 0,
+            usuario_env: user?.id
+         }
+         const response = await api.post(`/notification/create/${id}`, { notificationData })
+         if (response.status === 201) {
+            alert.success('Mensagem de parabéns enviada!')
+            setShowMessageBirthDay(false)
+         }
+      } catch (error) {
+         console.log(error)
+         return error
+      } finally {
+         setLoading(false)
+      }
+   }
+
+   return (
+
+      <ContentContainer style={{ position: 'relative', width: 415, maxHeight: 600, overflowY: 'auto', padding: 4, display: 'flex', flexDirection: 'column' }}>
+
+         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'start', width: '100%', position: 'relative' }}>
+            <Text bold>Escreva uma mensagem de aniversário</Text>
+            <Box sx={{
+               ...styles.menuIcon,
+               backgroundImage: `url(${icons.gray_close})`,
+               transition: '.3s',
+               zIndex: 999999999,
+               position: 'absolute',
+               right: 5,
+               top: 2,
+               "&:hover": {
+                  opacity: 0.8,
+                  cursor: 'pointer'
+               }
+            }} onClick={() => setShowMessageBirthDay(false)} />
+         </Box>
+
+         <Box sx={{ width: '100%', height: '1px', backgroundColor: '#eaeaea', margin: '0px 0px 20px 0px' }} />
+
+         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'start', flex: 1 }}>
+            <Text style={{ whiteSpace: 'nowrap' }}>Escreva sua mensagem de aniversário para</Text>
+            <Text style={{ whiteSpace: 'nowrap' }} bold>{nameBirthDay},</Text>
+            <Text style={{ whiteSpace: 'nowrap' }}>ou envie mensagens pré-montadas!</Text>
+         </Box>
+         <Box sx={{ display: 'flex', gap: 1.75, }}>
+            <TextInput
+               placeholder='Feliz aniversário!'
+               name='message'
+               onChange={(e) => setMessage(e.target.value)}
+               value={message || ''}
+               multiline
+               maxRows={6}
+               rows={3}
+               sx={{ flex: 1, }}
+            />
+         </Box>
+
+         <Box sx={{display: 'flex', flexDirection: 'column', gap: 0.5}}>
+            <Text bold xsmall>Mensagens pré-montadas:</Text>
+            <Box sx={{
+               display: 'flex', padding: '5px 15px', backgroundColor: colorPalette?.buttonColor, alignItems: 'center', justifyContent: 'center', borderRadius: 8,
+               "&:hover": {
+                  opacity: 0.8,
+                  cursor: 'pointer'
+               }
+            }}
+               onClick={() => setMessage(`${user?.nome} te desejou muitas felicidades no seu dia!`)}>
+               <Text xsmall style={{ color: '#fff', }}>{user?.nome} te desejou muitas felicidades no seu dia!</Text>
+            </Box>
+         </Box>
+         <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 1, alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+               <Button small text="Enviar" style={{ height: 30, width: 80 }} onClick={() => handlePushNotification(idSelected)} />
+               <Button secondary small text="Apagar" style={{ height: 30, width: 80 }} onClick={() => setMessage('')} />
+            </Box>
+         </Box>
+
+      </ContentContainer>
    )
 }
 
