@@ -1264,6 +1264,24 @@ export default function EditUser() {
         return true
     }
 
+    const handleSendSelectiveProcess = async (type) => {
+        try {
+            setLoading(true)
+            const result = await api.post(`/user/selectProcess/send/${userData?.id}?type=${type}`)
+            if (result.status !== 200) {
+                alert.error('Houve um erro ao enviar e-mail.')
+                return
+            } else {
+                alert.success('E-mail enviado com sucesso.')
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const groupPerfil = [
         { label: 'Funcionário', value: 'funcionario' },
         { label: 'Aluno', value: 'aluno' },
@@ -1628,6 +1646,7 @@ export default function EditUser() {
                                         }
                                     }} onClick={() => setShowSections({ ...showSections, permissions: false })} />
                                 </Box>
+                                <Divider padding={0} />
                                 <ContentContainer style={{ boxShadow: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
                                         <Text bold>Grupo de permissões</Text>
@@ -1641,6 +1660,7 @@ export default function EditUser() {
                                             sx={{ width: 1 }} />
                                     </Box>
                                 </ContentContainer>
+                                <Divider padding={0} />
                                 <Box style={{ display: 'flex' }}>
                                     <Button small
                                         style={{ width: '50%', marginRight: 1, height: 30 }}
@@ -2394,7 +2414,7 @@ export default function EditUser() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 
                     <ContentContainer>
-                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
                             <Text bold>Editar Matrícula</Text>
                             <Box sx={{
                                 ...styles.menuIcon,
@@ -2407,7 +2427,7 @@ export default function EditUser() {
                                 }
                             }} onClick={() => setShowSections({ ...showSections, editEnroll: false })} />
                         </Box>
-
+                        <Divider padding={0} />
                         <Box sx={styles.inputSection}>
                             <SelectList fullWidth data={classes} valueSelection={enrollmentStudentEditData?.turma_id} onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, turma_id: value })}
                                 title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -2446,6 +2466,7 @@ export default function EditUser() {
                             title="Certificado emitido:"
                             horizontal={mobile ? false : true}
                             onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, certificado_emitido: parseInt(value) })} />
+                        <Divider padding={0} />
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flex: 1, justifyContent: 'flex-start' }}>
                             <Button small text="salvar" onClick={() => handleEnrollStudentEdit()} />
                             <Button secondary small text="cancelar" style={{}} onClick={() => setShowSections({ ...showSections, editEnroll: false })} />
@@ -2489,8 +2510,8 @@ export default function EditUser() {
                                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '10px 0px 10px 5px', flexDirection: 'column' }}>
                                         <Text bold>Redação:</Text>
                                         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                            <Button text="enviar" onClick={() => console.log('enviar')} style={{ width: 120, height: 30 }} />
-                                            <Button secondary text="re-enviar" onClick={() => console.log('enviar')} style={{ width: 120, height: 30 }} />
+                                            <Button text="enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
+                                            <Button secondary text="re-enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
                                         </Box>
                                     </Box>
 
@@ -2519,8 +2540,8 @@ export default function EditUser() {
                                         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '10px 0px 10px 5px', flexDirection: 'column' }}>
                                             <Text bold>Pré-Matrícula/Cadastro:</Text>
                                             <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                <Button text="enviar" onClick={() => console.log('enviar')} style={{ width: 120, height: 30 }} />
-                                                <Button secondary text="re-enviar" onClick={() => console.log('enviar')} style={{ width: 120, height: 30 }} />
+                                                <Button text="enviar" onClick={() => handleSendSelectiveProcess('pre-cadastro')} style={{ width: 120, height: 30 }} />
+                                                <Button secondary text="re-enviar" onClick={() => handleSendSelectiveProcess('pre-cadastro')} style={{ width: 120, height: 30 }} />
                                             </Box>
                                         </Box>
                                     </>
@@ -2558,6 +2579,7 @@ export default function EditUser() {
                                 alert.info('Lembresse de salvar antes de sair da tela.')
                             }} />
                         </Box>
+                        <Divider padding={0} />
                         <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
                             <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid #eaeaea`, }}>
                                 <table style={{ borderCollapse: 'collapse', }}>
@@ -2642,14 +2664,19 @@ export default function EditUser() {
                                 </table>
                             </div>
 
-                            {(!showSections.addInterest && !showSections.viewInterest) && <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button small text='novo' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, addInterest: true })} />
-                            </Box>}
+                            {(!showSections.addInterest && !showSections.viewInterest) &&
+                                <>
+                                    <Divider padding={0} />
+                                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                        <Button small text='novo' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, addInterest: true })} />
+                                    </Box>
+                                </>
+                            }
 
                             {showSections.addInterest &&
                                 <ContentContainer style={{ overflowY: matches && 'auto' }}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Text bold style={{ padding: '5px 0px 8px 0px' }}>Novo Interesse</Text>
+                                        <Text bold style={{ padding: '5px 0px 0px 0px' }}>Novo Interesse</Text>
                                         <Box sx={{
                                             ...styles.menuIcon,
                                             width: 15,
@@ -2663,6 +2690,7 @@ export default function EditUser() {
                                             }
                                         }} onClick={() => setShowSections({ ...showSections, addInterest: false })} />
                                     </Box>
+                                    <Divider padding={0} />
                                     <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                         <SelectList fullWidth data={courses} valueSelection={interests?.curso_id} onSelect={(value) => {
                                             handleChangeInterest(value, 'curso_id')
@@ -2691,6 +2719,7 @@ export default function EditUser() {
                                         maxRows={5}
                                         rows={3}
                                     />
+                                    <Divider padding={0} />
                                     <Button small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
                                         newUser ? addInterest() : handleAddInterest()
                                         setShowSections({ ...showSections, addInterest: false })
@@ -2701,7 +2730,7 @@ export default function EditUser() {
                             {showSections.viewInterest &&
                                 <ContentContainer style={{ overflowY: matches && 'auto' }}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Text bold style={{ padding: '5px 0px 8px 0px' }}>Interesse</Text>
+                                        <Text bold style={{ padding: '5px 0px 0px 0px' }}>Interesse</Text>
                                         <Box sx={{
                                             ...styles.menuIcon,
                                             width: 15,
@@ -2715,7 +2744,7 @@ export default function EditUser() {
                                             }
                                         }} onClick={() => setShowSections({ ...showSections, viewInterest: false })} />
                                     </Box>
-
+                                    <Divider padding={0} />
                                     <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                         <SelectList fullWidth data={courses} valueSelection={interestSelected?.curso_id}
                                             title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
@@ -2746,6 +2775,7 @@ export default function EditUser() {
                                         maxRows={5}
                                         rows={3}
                                     />
+                                    <Divider padding={0} />
                                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                         <Button small text="atualizar" style={{ padding: '5px 6px 5px 6px', width: 100 }}
                                             onClick={() => {
@@ -2780,6 +2810,7 @@ export default function EditUser() {
                                 }
                             }} onClick={() => setShowSections({ ...showSections, historic: false })} />
                         </Box>
+                        <Divider padding={0} />
                         <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
                             <Table_V1 columns={columnHistoric}
                                 data={arrayHistoric}
@@ -2811,6 +2842,7 @@ export default function EditUser() {
                                                 }
                                             }} onClick={() => setShowSections({ ...showSections, addHistoric: false })} />
                                         </Box>
+                                        <Divider  />
                                         <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                             <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historicData?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
                                             <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historicData?.responsavel || ''} label="Responsável" sx={{ flex: 1 }} />
@@ -2826,7 +2858,7 @@ export default function EditUser() {
                                             maxRows={5}
                                             rows={3}
                                         />
-
+                                        <Divider  />
                                         <Button small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
                                             newUser ? addHistoric() : handleAddHistoric()
                                             setShowSections({ ...showSections, addHistoric: false })
@@ -2853,6 +2885,7 @@ export default function EditUser() {
                                                 }
                                             }} onClick={() => setValueIdHistoric('')} />
                                         </Box>
+                                        <Divider  />
                                         <Box key={historic} sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                             <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historic?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
                                             <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historic?.responsavel || ''} label="Responsável" sx={{ flex: 1 }} />
@@ -2868,6 +2901,7 @@ export default function EditUser() {
                                             maxRows={5}
                                             rows={3}
                                         />
+                                        <Divider  />
                                         <Button small secondary text='excluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
                                             newUser ? deleteHistoric(valueIdHistoric) : handleDeleteHistoric(historic?.id_historico)
                                         }} />
@@ -2989,6 +3023,7 @@ export const EditFile = (props) => {
                         onSet(false)
                     }} />
                 </Box>
+                <Divider  />
                 <Box sx={{
                     display: 'flex',
                     whiteSpace: 'wrap',
@@ -3025,6 +3060,7 @@ export const EditFile = (props) => {
 
                 {bgImage &&
                     <>
+                        <Divider padding={0} />
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                 <Button secondary small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {

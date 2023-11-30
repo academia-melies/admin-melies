@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms";
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms";
 import { CheckBoxComponent, SectionHeader, SelectList, Table_V1 } from "../../../organisms";
 import { useAppContext } from "../../../context/AppContext";
 import { useRouter } from "next/router";
@@ -299,6 +299,7 @@ export default function ClassSheduleList(props) {
                                     }
                                 }} onClick={() => setShowClassDay(false)} />
                             </Box>
+                            <Divider />
                             <ContentContainer style={{ backgroundColor: 'none', boxShadow: 'none' }}>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.disciplina_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, disciplina_id: value })}
@@ -328,6 +329,7 @@ export default function ClassSheduleList(props) {
                                 </Box>
                             </ContentContainer>
                             <Box>
+                            <Divider />
                                 <Box sx={{ display: 'flex', justifyContent: 'end', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                     <Button text='atualizar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => handleEditClassDay()} />
                                 </Box>

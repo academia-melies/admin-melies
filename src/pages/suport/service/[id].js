@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../../atoms"
 import { ContainDropzone, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createCourse, deleteCourse, editCourse } from "../../../validators/api-requests"
@@ -422,6 +422,7 @@ export default function EditService(props) {
                                             }
                                         }} onClick={() => setShowRenewal({ ...showRenewel, historicRenewal: false })} />
                                     </Box>
+                                    <Divider distance={0} />
                                     {arrayRenewal.length > 0 ?
                                         arrayRenewal.map((ren, index) => (
                                             <>

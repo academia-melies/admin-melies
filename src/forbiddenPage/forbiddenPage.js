@@ -16,7 +16,7 @@ export const Forbidden = () => {
                Desculpe
             </Text>
             <Text>
-               Você não possui autorização para acessar esta seção.
+               A seção não foi encontrada ou você não possui autorização para acessa-la.
             </Text>
          </Box>
       </>
