@@ -3,7 +3,7 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "moment/locale/pt-br";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms";
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms";
 import { SectionHeader, SelectList, Holidays, CheckBoxComponent } from "../../../organisms";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"; // Estilo para o recurso de arrastar e soltar (se estiver usando)
 import "react-big-calendar/lib/addons/dragAndDrop"; // Recurso de arrastar e soltar (se estiver usando)
@@ -450,7 +450,7 @@ export default function CalendarComponent(props) {
                 showEventForm && (
                     <Backdrop open={showEventForm} sx={{ zIndex: 999 }}>
                         <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, marginLeft: { md: '180px', lg: '280px' }, maxHeight: { md: '180px', lg: '1280px' }, overflowY: matches && 'auto', width: 400 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Text bold large>{selectedEvent ? eventData?.title : "Adicionar evento"}</Text>
                                 <Box sx={{
                                     ...styles.menuIcon,
@@ -471,6 +471,7 @@ export default function CalendarComponent(props) {
                                     });
                                 }} />
                             </Box>
+                            <Divider/>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <SelectList
                                     fullWidth
@@ -516,7 +517,7 @@ export default function CalendarComponent(props) {
                                     })}
                                     sx={{ flex: 1, }}
                                 />
-
+                                <Divider />
                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                     <Button
                                         small

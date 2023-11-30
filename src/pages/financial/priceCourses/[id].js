@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Backdrop, CircularProgress, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
@@ -656,8 +656,8 @@ export default function EditPricesCourse(props) {
             if (response?.status === 200) {
                 setArrayHistoricValuesClass(valueClass => (
                     valueClass?.filter(item => item.id_hist_valor_turma !== historicClassId)
-                  ))
-                  
+                ))
+
                 alert.success('Historico excluído.');
                 handleItems()
                 setShowValueAdjustmentClass(false)
@@ -915,7 +915,7 @@ export default function EditPricesCourse(props) {
 
                                 {showValueAdjustment &&
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
-                                        <ContentContainer gap={3} style={{ maxWidth: 400 }}>
+                                        <ContentContainer  style={{ maxWidth: 400 }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 99999 }}>
                                                 <Text bold large>Novo reajuste de valor</Text>
                                                 <Box sx={{
@@ -929,7 +929,7 @@ export default function EditPricesCourse(props) {
                                                     }
                                                 }} onClick={() => setShowValueAdjustment(false)} />
                                             </Box>
-
+                                            <Divider distance={0} />
                                             <Box sx={{ ...styles.inputSection, alignItems: 'center', justifyContent: 'start' }}>
                                                 <TextInput
                                                     placeholder='0.00'
@@ -999,6 +999,7 @@ export default function EditPricesCourse(props) {
                                     setHistoricEdit({})
                                 }} />
                             </Box>
+                            <Divider distance={0} />
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
                                 <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
                                     <Text bold>Reajuste %:</Text>
@@ -1034,7 +1035,8 @@ export default function EditPricesCourse(props) {
                                     rows={4}
                                 />
                             </Box>
-                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                            <Divider distance={0} />
+                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center' }}>
                                 <Button text='salvar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleUpdateHistoricId()} />
                                 <Button text='excluir' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteHistoric })} />
                             </Box>
@@ -1146,6 +1148,7 @@ export default function EditPricesCourse(props) {
                                                                 setShowHistoricClassId('')
                                                             }} />
                                                         </Box>
+                                                        <Divider distance={0} />
                                                         {loadingHistoric ? (
 
                                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column', marginTop: 5 }}>
@@ -1186,6 +1189,7 @@ export default function EditPricesCourse(props) {
                                                                 setHistoricClassEdit({})
                                                             }} />
                                                         </Box>
+                                                        <Divider distance={0} />
                                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
                                                             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'center' }}>
                                                                 <Text bold>Reajuste %:</Text>
@@ -1221,7 +1225,8 @@ export default function EditPricesCourse(props) {
                                                                 rows={4}
                                                             />
                                                         </Box>
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                                                        <Divider distance={0} />
+                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center' }}>
                                                             <Button text='salvar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleUpdateHistoricClassId()} />
                                                             <Button text='excluir' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteHistoricClass })} />
                                                         </Box>
@@ -1230,7 +1235,7 @@ export default function EditPricesCourse(props) {
 
                                                 {showValueAdjustmentClass[index] &&
                                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
-                                                        <ContentContainer gap={3} style={{ maxWidth: 400 }}>
+                                                        <ContentContainer style={{ maxWidth: 400 }}>
                                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 99999 }}>
                                                                 <Text bold large>Novo reajuste de valor</Text>
                                                                 <Box sx={{
@@ -1244,7 +1249,7 @@ export default function EditPricesCourse(props) {
                                                                     }
                                                                 }} onClick={() => toggleClassAdjustment(index)} />
                                                             </Box>
-
+                                                            <Divider distance={0} />
                                                             <Box sx={{ ...styles.inputSection, alignItems: 'center', justifyContent: 'start' }}>
                                                                 <TextInput
                                                                     placeholder='0.00'

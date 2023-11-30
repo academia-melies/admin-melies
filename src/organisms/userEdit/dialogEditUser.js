@@ -1,6 +1,6 @@
 import { Avatar, Backdrop } from "@mui/material"
 import { useEffect, useState } from "react"
-import { Box, Text, ContentContainer, TextInput, Button, PhoneInputField } from "../../atoms"
+import { Box, Text, ContentContainer, TextInput, Button, PhoneInputField, Divider } from "../../atoms"
 import { useAppContext } from "../../context/AppContext"
 import { api } from "../../api/api"
 import { EditFile } from "../../pages/administrative/users/[id]"
@@ -135,6 +135,7 @@ export const DialogUserEdit = (props) => {
                      }
                   }} onClick={() => onClick(false)} />
                </Box>
+               <Divider distance={0} />
                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: 1, position: 'relative', transition: '.3s', }}
                   onMouseEnter={() => setShowEditPhoto(true)}
                   onMouseLeave={() => setShowEditPhoto(false)}>
@@ -236,13 +237,14 @@ export const DialogUserEdit = (props) => {
                      sx={{ flex: 1 }}
                   />
                </Box>
+               <Divider distance={0} />
                <Box style={{ display: 'flex' }}>
-                  <Button
+                  <Button small
                      style={{ width: '50%', marginRight: 1 }}
                      text='Salvar'
                      onClick={handleChangeUserData}
                   />
-                  <Button secondary
+                  <Button secondary small
                      style={{ width: '50%', }}
                      text='Cancelar'
                      onClick={() => onClick(false)}

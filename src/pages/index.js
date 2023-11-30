@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
-import { Box, Button, ContentContainer, Text, TextInput } from '../atoms'
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from '../atoms'
 import { Carousel } from '../organisms'
 import { useAppContext } from '../context/AppContext'
 import { icons } from '../organisms/layout/Colors'
@@ -351,7 +351,7 @@ const BirthDateDiaog = ({ idSelected, setShowMessageBirthDay, userBirthDay }) =>
                }
             }} onClick={() => setShowMessageBirthDay(false)} />
          </Box>
-
+         
          <Box sx={{ width: '100%', height: '1px', backgroundColor: '#eaeaea', margin: '0px 0px 20px 0px' }} />
 
          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'start', flex: 1 }}>
@@ -385,6 +385,7 @@ const BirthDateDiaog = ({ idSelected, setShowMessageBirthDay, userBirthDay }) =>
                <Text xsmall style={{ color: '#fff', }}>{user?.nome} te desejou muitas felicidades no seu dia!</Text>
             </Box>
          </Box>
+         <Divider distance={0} />
          <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 1, alignItems: 'center' }}>
             <Box sx={{ display: 'flex', gap: 1 }}>
                <Button small text="Enviar" style={{ height: 30, width: 80 }} onClick={() => handlePushNotification(idSelected)} />
