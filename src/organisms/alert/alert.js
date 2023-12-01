@@ -2,34 +2,35 @@
 import { useEffect, useState } from "react";
 import { Box, Text } from "../../atoms";
 import { Colors } from "../../organisms"
+import { useAppContext } from "../../context/AppContext";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import InfoIcon from '@mui/icons-material/Info';
 
 const getColors = (alertType) => {
    if (alertType === 'success') return {
-      backgroundColor: '#e5e9e2',
       progressBarColor: Colors.green,
-      borderColor: '#b3c2a8',
+      // borderColor: '#b3c2a8',
       progressBarBackgroundColor: '#b3c2a8',
       textColor: '#556746',
    }
    if (alertType === 'error') return {
-      backgroundColor: '#f5f2f2',
       progressBarColor: Colors.red,
-      borderColor: Colors.red + '44',
+      // borderColor: Colors.red + '44',
       progressBarBackgroundColor: '#f5f2f2',
       textColor: '#91604e',
    }
    if (alertType === 'info') return {
-      backgroundColor: '#f5f3f2',
       progressBarColor: Colors.yellow,
-      borderColor: '#71644844',
+      // borderColor: '#71644844',
       progressBarBackgroundColor: '#716448',
       textColor: '#716448',
    }
 }
 
 export const Alert = (props) => {
-
-   const defaultTimer = props.type === 'success' ? 5 : 12
+   const { colorPalette } = useAppContext()
+   const defaultTimer = props.type === 'success' ? 7 : 12
 
    const [timer, setTimer] = useState(defaultTimer)
    const theme = getColors(props.type)
@@ -49,25 +50,30 @@ export const Alert = (props) => {
             <Box sx={styles.alertContainer}>
                <Box sx={{
                   ...styles.alertContent,
-                  backgroundColor: theme.backgroundColor,
-                  border: `1px solid ${theme.borderColor}`,
+                  backgroundColor: colorPalette.secondary,
+                  border: `1px solid ${colorPalette.primary}`,
                }}>
-                  <Box sx={{ ...styles.progressBarContainer, backgroundColor: theme.progressBarBackgroundColor, }}>
+                  {props.type !== 'info' && <Box sx={{ ...styles.progressBarContainer, backgroundColor: theme.progressBarBackgroundColor, }}>
                      <Box sx={{
                         position: 'absolute',
                         width: '100%',
                         height: `${(timer * 100) / defaultTimer}%`,
                         backgroundColor: theme.progressBarColor
                      }} />
+                  </Box>}
+                  <Box>
+                     {props.type === 'success' && <CheckCircleIcon style={{ color: 'green', fontSize: 30 }} />}
+                     {props.type === 'error' && <CancelIcon style={{ color: 'red', fontSize: 30 }} />}
+                     {props.type === 'info' && <InfoIcon style={{ color: Colors.yellow, fontSize: 30 }} />}
                   </Box>
                   <Box sx={styles.innerAlertContent}>
                      <Box sx={styles.alertTitleContainer}>
-                        <Text bold='true' style={{ color: theme.textColor }}>
+                        <Text bold='true' style={{ color: colorPalette.textColor }}>
                            {props?.title}
                         </Text>
                      </Box>
                      <Box sx={styles.messageContainer}>
-                        <Text small style={{ color: theme.textColor }}>
+                        <Text small style={{ color: colorPalette.textColor }}>
                            {props?.message}
                         </Text>
                      </Box>
@@ -103,6 +109,7 @@ const styles = {
       gap: 2,
       padding: 2,
       borderRadius: 3,
+      boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
    },
    innerAlertContent: {
       flex: 1,
