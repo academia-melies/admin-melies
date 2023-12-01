@@ -217,7 +217,7 @@ class ShowAlert {
         this.setAlertData = setAlertData
     }
 
-    success(message = '') {
+    success(message = '',) {
         this.setAlertData({
             active: true,
             type: 'success',
