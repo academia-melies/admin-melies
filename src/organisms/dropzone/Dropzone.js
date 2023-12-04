@@ -6,7 +6,7 @@ import { Box, Button, ContentContainer, Text } from "../../atoms";
 import { useState } from "react";
 import { icons } from "../layout/Colors";
 import { CheckBoxComponent } from "../checkBox/CheckBox";
-import { useMediaQuery, useTheme } from "@mui/material";
+import { Backdrop, useMediaQuery, useTheme } from "@mui/material";
 
 export const CustomDropzone = (props) => {
 
@@ -32,7 +32,8 @@ export const CustomDropzone = (props) => {
         screen,
         contract = false,
         taskId = null,
-        matricula_id
+        matricula_id,
+        material_id
     } = props;
 
     const onDropFiles = async (files) => {
@@ -69,7 +70,7 @@ export const CustomDropzone = (props) => {
             try {
                 const response = await uploadFile({
                     formData, usuario_id, campo, tipo: typeOpition ? typeFile : tipo, images, tela,
-                    contract, servicoId, screen, taskId, matricula_id
+                    contract, servicoId, screen, taskId, matricula_id, material_id
                 });
                 const { data = {}, status } = response;
                 const { fileId } = data
@@ -131,64 +132,66 @@ export const CustomDropzone = (props) => {
                     )}
                 </Dropzone>
                 {filesDrop?.length > 0 &&
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <Backdrop open={filesDrop?.length > 0} sx={{zIndex: 99999}}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'center', alignItems: 'center' }}>
 
-                        <ContentContainer>
-                            <Text bold>Preview</Text>
-                            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-                                {filesDrop?.map((file, index) => {
-                                    const typePdf = file?.name?.includes('pdf') || null;
-                                    return (
-                                        <Box key={`${file}-${index}`} sx={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}>
-                                            <Box key={`${file}-${index}`}
-                                                sx={{
-                                                    backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png': file?.preview}')`,
-                                                    backgroundSize: campo === 'foto_perfil' ? 'cover' : 'contain',
-                                                    backgroundRepeat: 'no-repeat',
-                                                    backgroundPosition: 'center center',
-                                                    borderRadius: campo === 'foto_perfil' ? '50%' : '',
-                                                    width: { xs: '100%', sm: 150, md: 150, lg: 150 },
-                                                    aspectRatio: '1/1',
-                                                }}>
+                            <ContentContainer>
+                                <Text bold>Preview</Text>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                                    {filesDrop?.map((file, index) => {
+                                        const typePdf = file?.name?.includes('pdf') || null;
+                                        return (
+                                            <Box key={`${file}-${index}`} sx={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}>
+                                                <Box key={`${file}-${index}`}
+                                                    sx={{
+                                                        backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : file?.preview}')`,
+                                                        backgroundSize: campo === 'foto_perfil' ? 'cover' : 'contain',
+                                                        backgroundRepeat: 'no-repeat',
+                                                        backgroundPosition: 'center center',
+                                                        borderRadius: campo === 'foto_perfil' ? '50%' : '',
+                                                        width: { xs: '100%', sm: 150, md: 150, lg: 500, xl: 600 },
+                                                        aspectRatio: '1/1',
+                                                    }}>
+                                                </Box>
+                                                <Box sx={{
+                                                    backgroundSize: "cover",
+                                                    backgroundRepeat: "no-repeat",
+                                                    backgroundPosition: "center",
+                                                    width: 20,
+                                                    height: 20,
+                                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                                    position: 'absolute',
+                                                    top: -5,
+                                                    right: -5,
+                                                    transition: ".3s",
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: "pointer",
+                                                    },
+                                                }} onClick={() => handleRemoveFile(file)} />
                                             </Box>
-                                            <Box sx={{
-                                                backgroundSize: "cover",
-                                                backgroundRepeat: "no-repeat",
-                                                backgroundPosition: "center",
-                                                width: 20,
-                                                height: 20,
-                                                backgroundImage: `url(/icons/remove_icon.png)`,
-                                                position: 'absolute',
-                                                top: -5,
-                                                right: -5,
-                                                transition: ".3s",
-                                                "&:hover": {
-                                                    opacity: 0.8,
-                                                    cursor: "pointer",
-                                                },
-                                            }} onClick={() => handleRemoveFile(file)} />
-                                        </Box>
 
-                                    )
-                                })}
+                                        )
+                                    })}
+                                </Box>
+                            </ContentContainer>
+                            {typeOpition && <Box>
+                                <CheckBoxComponent
+                                    valueChecked={typeFile}
+                                    boxGroup={groupType}
+                                    title="Tema *"
+                                    horizontal={mobile ? false : true}
+                                    onSelect={(value) => setTypeFile(value)}
+                                    sx={{ flex: 1, }}
+                                />
+                            </Box>}
+                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                <Button small text='Salvar' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
+                                    handleUpload()
+                                }} />
                             </Box>
-                        </ContentContainer>
-                        {typeOpition && <Box>
-                            <CheckBoxComponent
-                                valueChecked={typeFile}
-                                boxGroup={groupType}
-                                title="Tema *"
-                                horizontal={mobile ? false : true}
-                                onSelect={(value) => setTypeFile(value)}
-                                sx={{ flex: 1, }}
-                            />
-                        </Box>}
-                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                            <Button small text='Salvar' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
-                                handleUpload()
-                            }} />
                         </Box>
-                    </Box>
+                    </Backdrop>
                 }
             </Box>
         </>

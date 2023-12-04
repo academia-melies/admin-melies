@@ -1604,27 +1604,6 @@ export default function EditUser() {
                         </Box>}
                         {userData?.perfil.includes('funcionario') && <RadioItem valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />}
                         {userData?.perfil.includes('aluno') && <RadioItem valueRadio={userData?.portal_aluno} group={groupAdmin} title="Acesso ao Portal do aluno *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, portal_aluno: parseInt(value) })} />}
-                    </>}
-            </ContentContainer>
-
-            <ContentContainer style={{ ...styles.containerRegister, padding: showSections.registration ? '40px' : '25px' }}>
-                <Box sx={{
-                    display: 'flex', alignItems: 'center', gap: 1, padding: showSections.registration ? '0px 0px 20px 0px' : '0px', "&:hover": {
-                        opacity: 0.8,
-                        cursor: 'pointer'
-                    },
-                    justifyContent: 'space-between'
-                }} onClick={() => setShowSections({ ...showSections, registration: !showSections.registration })}>
-                    <Text title bold >Cadastro Completo</Text>
-                    <Box sx={{
-                        ...styles.menuIcon,
-                        backgroundImage: `url(${icons.gray_arrow_down})`,
-                        transform: showSections.registration ? 'rotate(0deg)' : 'rotate(-90deg)',
-                        transition: '.3s',
-                    }} />
-                </Box>
-                {showSections.registration &&
-                    <>
 
                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'start', marginTop: 2, flexDirection: 'column', padding: '0px 0px 20px 12px' }}>
                             <Button small text='permissões' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, permissions: true })} />
@@ -1657,7 +1636,8 @@ export default function EditUser() {
                                             onSelect={(value) => {
                                                 setPermissionPerfil(value)
                                             }}
-                                            sx={{ width: 1 }} />
+                                            sx={{ width: 1 }}
+                                        />
                                     </Box>
                                 </ContentContainer>
                                 <Divider padding={0} />
@@ -1680,6 +1660,27 @@ export default function EditUser() {
                             </ContentContainer>
                         </Backdrop>
 
+                    </>}
+            </ContentContainer>
+
+            <ContentContainer style={{ ...styles.containerRegister, padding: showSections.registration ? '40px' : '25px' }}>
+                <Box sx={{
+                    display: 'flex', alignItems: 'center', gap: 1, padding: showSections.registration ? '0px 0px 20px 0px' : '0px', "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                    },
+                    justifyContent: 'space-between'
+                }} onClick={() => setShowSections({ ...showSections, registration: !showSections.registration })}>
+                    <Text title bold >Cadastro Completo</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        transform: showSections.registration ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: '.3s',
+                    }} />
+                </Box>
+                {showSections.registration &&
+                    <>
                         <RadioItem valueRadio={userData?.professor}
                             group={groupProfessor}
                             title="Professor *"
@@ -2842,7 +2843,7 @@ export default function EditUser() {
                                                 }
                                             }} onClick={() => setShowSections({ ...showSections, addHistoric: false })} />
                                         </Box>
-                                        <Divider  />
+                                        <Divider />
                                         <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                             <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historicData?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
                                             <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historicData?.responsavel || ''} label="Responsável" sx={{ flex: 1 }} />
@@ -2858,7 +2859,7 @@ export default function EditUser() {
                                             maxRows={5}
                                             rows={3}
                                         />
-                                        <Divider  />
+                                        <Divider />
                                         <Button small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
                                             newUser ? addHistoric() : handleAddHistoric()
                                             setShowSections({ ...showSections, addHistoric: false })
@@ -2885,7 +2886,7 @@ export default function EditUser() {
                                                 }
                                             }} onClick={() => setValueIdHistoric('')} />
                                         </Box>
-                                        <Divider  />
+                                        <Divider />
                                         <Box key={historic} sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                             <TextInput placeholder='Data' name='dt_ocorrencia' onChange={handleChangeHistoric} value={(historic?.dt_ocorrencia)?.split('T')[0] || ''} type="date" sx={{ flex: 1 }} />
                                             <TextInput placeholder='Responsável' name='responsavel' onChange={handleChangeHistoric} value={historic?.responsavel || ''} label="Responsável" sx={{ flex: 1 }} />
@@ -2901,7 +2902,7 @@ export default function EditUser() {
                                             maxRows={5}
                                             rows={3}
                                         />
-                                        <Divider  />
+                                        <Divider />
                                         <Button small secondary text='excluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
                                             newUser ? deleteHistoric(valueIdHistoric) : handleDeleteHistoric(historic?.id_historico)
                                         }} />
@@ -3023,7 +3024,7 @@ export const EditFile = (props) => {
                         onSet(false)
                     }} />
                 </Box>
-                <Divider  />
+                <Divider />
                 <Box sx={{
                     display: 'flex',
                     whiteSpace: 'wrap',

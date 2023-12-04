@@ -374,7 +374,7 @@ const MenuItem = (props) => {
          <Link
             href={to || '/#'}
             onClick={onClick}
-            style={{ display: 'flex', width: 'auto', padding: `8px 16px`, }}
+            style={{ display: 'flex', width: 'auto', padding: `8px 12px`, maxWidth: '115px', minWidth: '115px', justifyContent: 'center'}}
             onMouseEnter={() => setShowSubItems(true)}
             onMouseLeave={() => setShowSubItems(false)}
          >

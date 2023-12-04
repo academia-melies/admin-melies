@@ -197,7 +197,7 @@ export const editGrid = async ({ id, gridData }) => {
 
 export const uploadFile = async (data) => {
 
-   const { formData, usuario_id = null, campo = null, tipo = null, images = false, tela = null, contract, servicoId, screen, taskId, matricula_id = null } = data;
+   const { formData, usuario_id = null, campo = null, tipo = null, images = false, tela = null, contract, servicoId, screen, taskId, matricula_id = null, material_id = null } = data;
 
    let query = `?usuario_id=${usuario_id}`;
 
@@ -208,6 +208,7 @@ export const uploadFile = async (data) => {
    if (screen) query += `&screen=${screen}`;
    if (taskId) query += `&taskId=${taskId}`;
    if (matricula_id) query += `&matricula_id=${matricula_id}`;
+   if (material_id) query += `&material_id=${material_id}`;
    
    try {
       if (images) {
@@ -230,9 +231,16 @@ export const uploadFile = async (data) => {
          return response
       }
 
+      if(material_id){
+         const response = await api.post(`/catalog/material/image/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+         return response
+      }
+
       const response = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
       return response
    } catch (error) {
+      console.log(error)
+
       return (error)
    }
 }

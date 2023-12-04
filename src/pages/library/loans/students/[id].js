@@ -1,0 +1,392 @@
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
+import { Avatar, useMediaQuery, useTheme } from "@mui/material"
+import { api } from "../../../../api/api"
+import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../../../atoms"
+import { RadioItem, SectionHeader } from "../../../../organisms"
+import { icons } from "../../../../organisms/layout/Colors"
+import { formatDate, formatTimeStamp } from "../../../../helpers"
+import { useAppContext } from "../../../../context/AppContext"
+
+export default function LoansStudentEdit(props) {
+    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const usuario_id = user.id;
+    const router = useRouter()
+    const { id, slug } = router.query;
+    const [studentData, setStudentData] = useState({})
+    const [showEnrollTable, setShowEnrollTable] = useState({})
+    const [showClass, setShowClass] = useState({ turma_id: null, nome_turma: null })
+    const [frequencyData, setFrequency] = useState([])
+    const [gradesData, setGrades] = useState([])
+    const [disciplines, setDisciplines] = useState([])
+    const [enrollmentData, setEnrollment] = useState([])
+    const [moduleStudent, setModuleStudent] = useState(1)
+    const [bgPhoto, setBgPhoto] = useState({})
+    const [showBox, setShowBox] = useState({
+        disciplines: false,
+        frequency: false,
+        grades: false,
+        additionalActivities: false
+    });
+    const themeApp = useTheme()
+    const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+
+    const toggleEnrollTable = (index) => {
+        setShowEnrollTable(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
+    };
+
+    const getStudent = async () => {
+        try {
+            const userResponse = await api.get(`/user/${id}`)
+            const { response } = userResponse.data
+            setStudentData(response)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+    const getPhoto = async () => {
+        try {
+            const response = await api.get(`/photo/${id}`)
+            const { data } = response
+            setBgPhoto(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const getEnrollment = async () => {
+        try {
+            const response = await api.get(`/enrollment/${id}}`)
+            const { data } = response
+            setEnrollment(data)
+            let [enrollment] = data
+            setShowClass({
+                turma_id: enrollment?.turma_id,
+                nome_turma: enrollment?.nome_turma
+            })
+            return enrollment
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+    const getFrequency = async (turma_id) => {
+        try {
+            const response = await api.get(`/frequency/student/${id}/${turma_id}`)
+            const { data } = response
+            setFrequency(data)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+    const getGrades = async (moduleStudent, turma_id) => {
+        try {
+            const response = await api.get(`/studentGrade/student/${id}/${moduleStudent}/${turma_id}`)
+            const { data } = response
+            setGrades(data)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+
+
+    async function handleSelectModule(turma_id, moduleStudent) {
+        try {
+            if (turma_id) {
+                const response = await api.get(`/student/enrrolments/disciplines/${id}/${turma_id}?moduleStudent=${moduleStudent}`)
+                const { data } = response
+                setDisciplines(data);
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+
+    useEffect(() => {
+        handleItems();
+    }, [id])
+
+    useEffect(() => {
+        if (showClass?.turma_id) {
+            handleUpdateInfoEnrollment()
+        }
+    }, [showClass?.turma_id])
+
+    const handleUpdateInfoEnrollment = async () => {
+        setLoading(true)
+        try {
+            await getFrequency(showClass?.turma_id)
+            await getGrades(moduleStudent, showClass?.turma_id)
+            await handleSelectModule(showClass?.turma_id, moduleStudent)
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleItems = async () => {
+        setLoading(true)
+        try {
+            await getStudent()
+            await getPhoto()
+            const enrollment = await getEnrollment()
+            if (enrollment) {
+                await handleSelectModule(enrollment?.turma_id, moduleStudent)
+                await getFrequency(enrollment?.turma_id)
+                await getGrades(moduleStudent, enrollment?.turma_id)
+            }
+        } catch (error) {
+            alert.error('Ocorreu um arro ao carregar a Disciplina')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleChange = (value) => {
+
+        setStudentData((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
+
+    const checkRequiredFields = () => {
+        // if (!studentData.nome) {
+        //     alert.error('Usuário precisa de nome')
+        //     return false
+        // }
+        return true
+    }
+
+    const handleEdit = async () => {
+        if (checkRequiredFields()) {
+            setLoading(true)
+            try {
+                const response = await api.post(``)
+                if (response?.status === 201) {
+                    alert.success('Disciplina atualizado com sucesso.');
+                    handleItems()
+                    return
+                }
+                alert.error('Tivemos um problema ao atualizar Disciplina.');
+            } catch (error) {
+                alert.error('Tivemos um problema ao atualizar Disciplina.');
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+
+    const getStatusGrade = (item) => {
+
+        if (parseFloat(item.nt_final) < 6) {
+            return "Reprovado";
+        }
+
+        if (parseFloat(item.nt_final) >= 6) {
+            return "Aprovado";
+        }
+
+        return "Pendente";
+    };
+
+
+    const groupStatus = [
+        { label: 'ativo', value: 1 },
+        { label: 'inativo', value: 0 },
+    ]
+
+    const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+
+    return (
+        <>
+            <SectionHeader
+                perfil={'Empréstimos'}
+                title={studentData?.nome}
+            />
+
+            {/* usuario */}
+            <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
+                <Box>
+                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Empréstimos Aluno</Text>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'space-between' }}>
+                    <Box sx={{ display: 'flex', gap: 2.5, flexDirection: 'column', flex: 1, marginTop: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Nome: </Text>
+                            <Text>{studentData?.nome}</Text>
+                        </Box>
+                        <Divider distance={0} />
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Registro (RA): </Text>
+                            <Text>{studentData?.id}</Text>
+                        </Box>
+                        <Divider distance={0} />
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Text bold>Status: </Text>
+                            <Text>{enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.status)}</Text>
+                        </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', padding: 5, width: 260 }}>
+                        <Avatar src={bgPhoto?.location} sx={{
+                            height: 'auto',
+                            borderRadius: '16px',
+                            width: { xs: '100%', sm: 180, md: 180, lg: 180 },
+                            aspectRatio: '1/1',
+                        }} variant="square" />
+                    </Box>
+                </Box>
+                <Divider />
+
+                <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }}
+                        onClick={() => setShowBox({ ...showBox, grades: !showBox?.grades })}
+                    >
+                        <Text bold>Notas:</Text>
+                        <Box
+                            sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                transform: showBox?.grades ? 'rotate(0)' : 'rotate(-90deg)',
+                                transition: '.3s',
+                                width: 17,
+                                height: 17
+                            }}
+                        />
+                    </Box>
+                    {showBox?.grades && (
+                        gradesData?.length > 0 ?
+                        <Box sx={{ display: 'flex' }}>
+
+                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                                <table style={{ borderCollapse: 'collapse', }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Matéria/Disciplina</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Realizou a avaliação?</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Avaliação Semestral</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Substitutiva</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Exame</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
+                                            <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Resultado</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody style={{ flex: 1 }}>
+                                        {
+                                            gradesData?.map((item, index) => {
+                                                const avaliationStatus = item?.avaliacao_status === 1 ? 'Sim' : 'Não'
+                                                const statusGrade = getStatusGrade(item)
+                                                const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
+
+                                                return (
+                                                    <tr key={`${item}-${index}`}>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nome_disciplina}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {avaliationStatus}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nt_avaliacao_sem || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nt_substitutiva || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nt_exame || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.nt_final || '-'}
+                                                        </td>
+
+                                                        <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            <Box sx={{ backgroundColor: colorStatus, borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
+                                                                <Text xsmall bold style={{ color: "#fff", }}>{statusGrade}</Text>
+                                                            </Box>
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            {item?.obs_nt || '-'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Box>
+                        :
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                            <Text ligth>Não foi encontrado notas lançadas.</Text>
+                        </Box>
+                    )}
+                </Box>
+
+                <Divider />
+
+            </ContentContainer>
+        </>
+    )
+}
+
+const styles = {
+    containerRegister: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: 1.5,
+        padding: '40px'
+    },
+    menuIcon: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
+    },
+    inputSection: {
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'space-around',
+        gap: 1.8,
+        flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
+    },
+    disciplinesText: {
+
+        "&:hover": {
+            opacity: 0.8,
+            cursor: 'pointer'
+        },
+    }
+}

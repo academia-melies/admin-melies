@@ -24,7 +24,8 @@ export const Table_V1 = (props) => {
         tolltip = false,
         onDelete = false,
         onPress = () => { },
-        query = ``
+        query = ``,
+        route = false
     } = props;
 
 
@@ -34,6 +35,10 @@ export const Table_V1 = (props) => {
     const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
     const handleRowClick = (id) => {
+        if(route) {
+            router.push(`/${route}/${id}${query}`);
+            return
+        }
         router.push(`/${menu}/${subMenu}/${id}${query}`);
     };
 
