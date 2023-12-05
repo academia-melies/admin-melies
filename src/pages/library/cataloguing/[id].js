@@ -55,6 +55,7 @@ export default function EditCatalogMaterial(props) {
         autor_sec: '',
         edicao: '',
         ativo: 1,
+        qnt_exempl: 1,
         usuario_resp: userId
     })
     const themeApp = useTheme()
@@ -300,57 +301,57 @@ export default function EditCatalogMaterial(props) {
 
                 <Box sx={{ display: 'flex', gap: 1.75, width: '700px', flexDirection: 'column' }}>
                     <Text bold large>Imagens de capa:</Text>
-                    {imagesCatalog?.length > 0 ? 
-                    <Box sx={{ display: 'flex', gap: 1.75, width: '700px', flexDirection: 'row', padding: 2 }}>
-                        {imagesCatalog?.map((file, index) => {
-                            const typePdf = file?.name_file
-                                ?.includes('pdf') || null;
+                    {imagesCatalog?.length > 0 ?
+                        <Box sx={{ display: 'flex', gap: 1.75, width: '700px', flexDirection: 'row', padding: 2 }}>
+                            {imagesCatalog?.map((file, index) => {
+                                const typePdf = file?.name_file
+                                    ?.includes('pdf') || null;
 
-                            return (
-                                <Box key={`${file}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px', }}>
+                                return (
+                                    <Box key={`${file}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px', }}>
 
-                                    <Link style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px', padding: '5px' }} href={file?.location || file?.filePreview} target="_blank">
-                                        <Box
-                                            sx={{
-                                                backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : file?.location || file?.filePreview}')`,
-                                                backgroundSize: 'contain',
-                                                backgroundRepeat: 'no-repeat',
-                                                backgroundPosition: 'center center',
-                                                width: { xs: '100%', sm: 150, md: 150, lg: 150 },
-                                                aspectRatio: '1/1',
-                                            }}>
-                                        </Box>
-                                        <Box sx={{
-                                            backgroundSize: "cover",
-                                            backgroundRepeat: "no-repeat",
-                                            backgroundPosition: "center",
-                                            width: 22,
-                                            height: 22,
-                                            backgroundImage: `url(/icons/remove_icon.png)`,
-                                            position: 'absolute',
-                                            top: -5,
-                                            right: -5,
-                                            transition: ".3s",
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: "pointer",
-                                            },
-                                            zIndex: 9999,
-                                        }} onClick={(event) => {
-                                            event.preventDefault()
-                                            handleDeleteFile(file)
-                                        }} />
-                                    </Link>
-                                    {file?.name_file && <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {decodeURIComponent(file?.name_file)}
-                                    </Text>}
-                                </Box>
-                            )
-                        })}
-                    </Box>
-                : 
-                <Text small light>Esse Material não possuí arquivos anexados. Clique no botão abaixo para adicionar arquivo.</Text>    
-                }
+                                        <Link style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px', padding: '5px' }} href={file?.location || file?.filePreview} target="_blank">
+                                            <Box
+                                                sx={{
+                                                    backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : file?.location || file?.filePreview}')`,
+                                                    backgroundSize: 'contain',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'center center',
+                                                    width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                                                    aspectRatio: '1/1',
+                                                }}>
+                                            </Box>
+                                            <Box sx={{
+                                                backgroundSize: "cover",
+                                                backgroundRepeat: "no-repeat",
+                                                backgroundPosition: "center",
+                                                width: 22,
+                                                height: 22,
+                                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                                position: 'absolute',
+                                                top: -5,
+                                                right: -5,
+                                                transition: ".3s",
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: "pointer",
+                                                },
+                                                zIndex: 9999,
+                                            }} onClick={(event) => {
+                                                event.preventDefault()
+                                                handleDeleteFile(file)
+                                            }} />
+                                        </Link>
+                                        {file?.name_file && <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {decodeURIComponent(file?.name_file)}
+                                        </Text>}
+                                    </Box>
+                                )
+                            })}
+                        </Box>
+                        :
+                        <Text small light>Esse Material não possuí arquivos anexados. Clique no botão abaixo para adicionar arquivo.</Text>
+                    }
                     <Button secondary small text="Escolher Arquivo" style={{ maxWidth: 150, height: 30 }} onClick={() => setShowDropzone(true)} />
                     <Divider />
 
@@ -495,10 +496,13 @@ export default function EditCatalogMaterial(props) {
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
                     </Box>
-                    <SelectList data={courses} valueSelection={materialData?.curso_id} onSelect={(value) => setMaterialData({ ...materialData, curso_id: value })}
-                        title="Curso:" filterOpition="value" sx={{ color: colorPalette.textColor, maxWidth: 500 }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
+                    <Box sx={styles.inputSection}>
+                        <SelectList fullWidth data={courses} valueSelection={materialData?.curso_id} onSelect={(value) => setMaterialData({ ...materialData, curso_id: value })}
+                            title="Curso:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', flex: 1 }}
+                        />
+                        <TextInput name='qnt_exempl' onChange={handleChange} type="number" value={materialData?.qnt_exempl || ''} label='Quantidade de exemplares: ' sx={{ minWidth: 300 }} />
+                    </Box>
                 </>
                 <RadioItem valueRadio={materialData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setMaterialData({ ...materialData, ativo: parseInt(value) })} />
             </ContentContainer>

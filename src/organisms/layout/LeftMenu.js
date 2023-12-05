@@ -374,7 +374,7 @@ const MenuItem = (props) => {
          <Link
             href={to || '/#'}
             onClick={onClick}
-            style={{ display: 'flex', width: 'auto', padding: `8px 12px`, maxWidth: '115px', minWidth: '115px', justifyContent: 'center'}}
+            style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`,}}
             onMouseEnter={() => setShowSubItems(true)}
             onMouseLeave={() => setShowSubItems(false)}
          >
@@ -427,14 +427,14 @@ const MenuItem = (props) => {
                         width: 15,
                         aspectRatio: '1/1',
                         height: 15,
-                        position: 'absolute',
+                        // position: 'absolute',
                         "&:hover": {
                            opacity: 0.8,
                            cursor: 'pointer'
                         }
                      }} />}
                </Box>
-               <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 11, xl: 12.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
+               <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 10, xl: 12.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
                   {showSubItems &&
                      subitem?.map((item, index) => {
                         const currentPage = item.to === pathname;
