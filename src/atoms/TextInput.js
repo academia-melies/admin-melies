@@ -34,11 +34,27 @@ export const TextInput = (props) => {
                maxHeight: props.multiline ? 'none' : '45px',
             },
 
-            startAdornment: props.type === "coin" && (
-               <InputAdornment position="start">
-                  <Text>R$ </Text>
-               </InputAdornment>
-            ),
+            startAdornment: props.type === "coin"
+               ? (
+                  <InputAdornment position="start">
+                     <Text>R$ </Text>
+                  </InputAdornment>
+               )
+               : props.type === "search"
+                  ? (
+                     <InputAdornment position="start">
+                        <Box sx={{
+                           ...styles.menuIcon,
+                           backgroundImage: `url('/icons/search_input_icon.png')`,
+                           transition: '.3s',
+                           "&:hover": {
+                              opacity: 0.8,
+                              cursor: 'pointer'
+                           }
+                        }} />
+                     </InputAdornment>
+                  )
+                  : null,
          }}
          InputLabelProps={
             props.type === "date" || props.type === "datetime-local"
@@ -80,5 +96,12 @@ const styles = {
       display: 'block',
       fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' },
       fontFamily: 'MetropolisBold',
-   }
+   },
+   menuIcon: {
+      backgroundSize: 'contain',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      width: 20,
+      height: 20,
+   },
 }
