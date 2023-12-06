@@ -866,10 +866,11 @@ export const Payment = (props) => {
         })
         const dateNow = new Date();
         const year = dateNow.getFullYear();
-        const nextMonth = String(dateNow.getMonth() + 2).padStart(2, '0');
+        const nextMonth = dateNow.getMonth() + 2 > 12 ? 1 : dateNow.getMonth() + 2;
+        const nextMonthString = String(nextMonth).padStart(2, '0');
         const month = String(dateNow.getMonth() + 1).padStart(2, '0');
         const day = String(dateNow.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${nextMonth}-${day}`;
+        const formattedDate = `${year}-${nextMonthString}-${day}`;
         const formattedDateNow = `${year}-${month}-${day}`;
 
         setMonthDayForPayment(formattedDate)
@@ -929,11 +930,12 @@ export const Payment = (props) => {
                 const paymentDate = date;
                 const selectedDay = dayForPayment;
                 const typePayment = prevTypePaymentsSelected[i + 1]
-                let month = paymentDate.getMonth() + i;
+                let month = (paymentDate.getMonth() + i + 1) % 12;
+                month = month === 0 ? 12 : month;
                 let isSaturday = false; // Sabado
                 let isSunday = false; // Domingo
 
-                paymentDate.setMonth(month);
+                paymentDate.setMonth(month - 1);
 
                 const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
                 if (selectedDay > lastDayOfMonth) {
