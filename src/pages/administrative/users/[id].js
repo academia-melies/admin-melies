@@ -1360,6 +1360,12 @@ export default function EditUser() {
         { label: 'Conta poupança', value: 'Conta poupança' }
     ]
 
+
+    const groupBank = [
+        { label: 'Itaú', value: 'Itau' },
+        { label: 'Bradesco', value: 'Bradesco' },
+    ]
+
     const groupArea = [
         { label: 'Financeiro', value: 'Financeiro' },
         { label: 'Biblioteca', value: 'Biblioteca' },
@@ -1730,7 +1736,7 @@ export default function EditUser() {
                                     ))}
                                 <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                     <SelectList
-                                        clean={false}
+                                       
                                         fullWidth={true}
                                         data={disciplines}
                                         valueSelection={disciplinesProfessor?.disciplina_id}
@@ -2126,7 +2132,10 @@ export default function EditUser() {
                                     <TextInput placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
                                 </Box>
                                 <Box sx={styles.inputSection}>
-                                    <TextInput placeholder='Banco' name='banco_1' onChange={handleChangeContract} value={contract?.banco_1 || ''} label='Banco' sx={{ flex: 1, }} />
+                                    <SelectList fullWidth data={groupBank} valueSelection={contract?.banco_1} onSelect={(value) => setContract({ ...contract, banco_1: value })}
+                                        title="Banco" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
                                     <TextInput placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
                                     <TextInput placeholder='Agência' name='agencia_1' onChange={handleChangeContract} value={contract?.agencia_1 || ''} label='Agência' sx={{ flex: 1, }} />
                                     <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_1} onSelect={(value) => setContract({ ...contract, tipo_conta_1: value })}
@@ -2135,7 +2144,10 @@ export default function EditUser() {
                                     />
                                 </Box>
                                 <Box sx={styles.inputSection}>
-                                    <TextInput placeholder='Banco 2' name='banco_2' onChange={handleChangeContract} value={contract?.banco_2 || ''} label='Banco 2' sx={{ flex: 1, }} />
+                                <SelectList fullWidth data={groupBank} valueSelection={contract?.banco_2} onSelect={(value) => setContract({ ...contract, banco_2: value })}
+                                        title="Banco 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
                                     <TextInput placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
                                     <TextInput placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
                                     <SelectList fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
