@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text } from "../../../../atoms"
+import { Box, Button, ContentContainer, Text, TextInput } from "../../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { getUsersPerfil } from "../../../../validators/api-requests"
 import { useAppContext } from "../../../../context/AppContext"
@@ -24,15 +24,29 @@ export default function ListStudentsLoans(props) {
         filterName: 'nome',
         filterOrder: 'asc'
     })
+    const [filtersField, setFiltersField] = useState({
+        search: '',
+        classStudent: 'todos',
+        status: 'todos'
+    })
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-    const filter = (item) => {
-        if (filterAtive === 'todos') {
-            return item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase());
-        } else {
-            return item?.ativo === filterAtive && (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
-        }
+    const filterFunctions = {
+        status: (item) => filtersField.status === 'todos' || item.ativo === filtersField.status,
+        search: (item) => {
+            const normalizedSearchTerm = removeAccents(filtersField.search.toLowerCase());
+            const normalizedItemName = removeAccents(item.nome.toLowerCase());
+            return normalizedItemName.includes(normalizedSearchTerm);
+        },
     };
+
+    const removeAccents = (str) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
+    const filter = (item) => {
+        return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
+    };;
 
     useEffect(() => {
         if (perfil) {
@@ -60,7 +74,7 @@ export default function ListStudentsLoans(props) {
 
     const sortUsers = () => {
         const { filterName, filterOrder } = filters;
-    
+
         const sortedUsers = [...usersList].sort((a, b) => {
             const valueA = filterName === 'id' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
             const valueB = filterName === 'id' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
@@ -68,10 +82,10 @@ export default function ListStudentsLoans(props) {
             if (filterName === 'id') {
                 return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
             }
-    
+
             return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
         });
-    
+
         return sortedUsers;
     }
 
@@ -94,11 +108,12 @@ export default function ListStudentsLoans(props) {
         try {
             const response = await api.get(`/classes`)
             const { data } = response
+
             const groupClasses = data.map(classes => ({
                 label: classes.nome_turma,
                 value: classes?.id_turma
             }));
-            setClasses(groupClasses);
+            setClasses([...groupClasses, { label: 'Todos', value: 'todos' }]);
         } catch (error) {
             return error;
         }
@@ -152,8 +167,8 @@ export default function ListStudentsLoans(props) {
         <>
             <SectionHeader
                 title={`Empréstimos por aluno (${usersList.filter(filter)?.length})`}
-                // newButton
-                // newButtonAction={() => router.push(`/library/${pathname}/new`)}
+            // newButton
+            // newButtonAction={() => router.push(`/library/${pathname}/new`)}
             />
             <ContentContainer>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
@@ -166,36 +181,38 @@ export default function ListStudentsLoans(props) {
                         <Text style={{ color: '#d6d6d6' }} light>alunos</Text>
                     </Box>
                 </Box>
-                <SearchBar placeholder='Busque por nome, sobrenome, CPF...' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
+                <TextInput placeholder="Buscar por nome, sobrenome" name='filters' type="search" onChange={(event) => setFiltersField({ ...filtersField, search: event.target.value })} value={filtersField?.search} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
-                    <SelectList
-                        fullWidth
-                        data={classes}
-                        valueSelection={classSelected}
-                        onSelect={(value) => setClassesSelected(value)}
-                        title="Turma"
-                        filterOpition="value"      
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                        clean={false}
-                    />
+                        {/* <SelectList
+                            fullWidth
+                            data={classes}
+                            valueSelection={filtersField?.classStudent}
+                            onSelect={(value) => setFiltersField({ ...filtersField, classStudent: value })}
+                            title="Turma"
+                            filterOpition="value"
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                            clean={false}
+                        /> */}
 
-                    <SelectList
-                        fullWidth
-                        data={listAtivo}
-                        valueSelection={filterAtive}
-                        onSelect={(value) => setFilterAtive(value)}
-                        title="Status"
-                        filterOpition="value"
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                        clean={false}
-                    />
+                        <SelectList
+                            fullWidth
+                            data={listAtivo}
+                            valueSelection={filtersField?.status}
+                            onSelect={(value) => setFiltersField({ ...filtersField, status: value })}
+                            title="Status"
+                            filterOpition="value"
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                            clean={false}
+                        />
                     </Box>
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
                         <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
-                            setClassesSelected('')
-                            setFilterAtive('todos')
-                            setFilterData('')
+                            setFiltersField({
+                                search: '',
+                                classStudent: 'todos',
+                                status: 'todos'
+                            })
                         }} />
                     </Box>
                     <TablePagination
@@ -211,9 +228,9 @@ export default function ListStudentsLoans(props) {
                     />
                 </Box>
             </ContentContainer>
-         
+
             {usersList.length > 0 ?
-                <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter route={`/library/loans/students`}/>
+                <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter route={`/library/loans/students`} />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não foi encontrados alunos.</Text>

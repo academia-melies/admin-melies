@@ -145,7 +145,7 @@ export default function LoansStudentEdit(props) {
     }
 
     const handleCreate = async () => {
-        if (materialsSelected?.length > 0) {
+        if (materialsSelected?.length > 0 && returnDate) {
             setLoading(true)
             let loanData = {
                 usuario_id: id,
@@ -166,14 +166,26 @@ export default function LoansStudentEdit(props) {
                     handleItems()
                     return
                 }
-                alert.error('Tivemos um problema ao realizar Empréstimos.');
+                if (response?.data?.status === 'unavailable') {
+                    alert.error(`Todos os exemplares já estão reservados do material ${response?.data?.unavailableMaterials}.`);
+                    return
+                }
+
+                if (response?.data?.status === 'open reservation') {
+                    alert.error(`Já existe uma reserva ativa para o material: ${response?.data?.unavailableMaterials}.`);
+                    return
+                }
+
+               
+
+                
             } catch (error) {
-                alert.error('Tivemos um problema ao atualizar Disciplina.');
+                alert.error('Tivemos um problema ao realizar Empréstimos.');
             } finally {
                 setLoading(false)
             }
         } else {
-            alert.info('Por favor, selecione um livro ou DVD para realizar o emprestimo.')
+            alert.info('Por favor, selecione um livro ou DVD para realizar o emprestimo, e insira uma data "Prevista" de devolução.')
             return
         }
     }
@@ -239,13 +251,13 @@ export default function LoansStudentEdit(props) {
                 <Divider distance={0} />
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <Text bold>Selecionar Livros, DVDs ou Periódicos: </Text>
-                    <Button small text="pesquisar" style={{ height: 22 }} onClick={() => setShowSearchMaterial(true)} />
+                    <Button small text="pesquisar" style={{ height: 22, }} onClick={() => setShowSearchMaterial(true)} />
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: .5 }}>
                     <Text small>Selecionados:</Text>
                     {materialsSelected?.map((item, index) => {
                         return (
-                            <Box key={index} sx={{ display: 'flex', gap: 1, maxWidth: 180, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
+                            <Box key={index} sx={{ display: 'flex', gap: 1, maxWidth: 300, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
                                 <Text small>{item?.titulo}</Text>
                                 <Box sx={{
                                     ...styles.menuIcon,
@@ -397,7 +409,7 @@ export default function LoansStudentEdit(props) {
                                     <table style={{ borderCollapse: 'collapse', }}>
                                         <thead>
                                             <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>ID Material</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>ID Emprestimo</th>
                                                 <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Material</th>
                                                 <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data prevista devolução</th>
                                                 <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data devolução</th>
@@ -414,7 +426,7 @@ export default function LoansStudentEdit(props) {
                                                     return (
                                                         <tr key={`${item}-${index}`}>
                                                             <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.material_id}
+                                                                {item?.id_emprestimo}
                                                             </td>
                                                             <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {item?.titulo}
@@ -432,10 +444,10 @@ export default function LoansStudentEdit(props) {
                                                                 {item?.status_emprestimo || '-'}
                                                             </td>
                                                             {item?.status_emprestimo === 'emprestado' && <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <Button small text="Renovar" style={{ height: 20 }} />
+                                                                <Button secondary small text="Renovar" style={{ height: 25, borderRadius: 2 }} />
                                                             </td>}
                                                             {item?.status_emprestimo === 'emprestado' && <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <Button small text="Devolver" style={{ height: 20 }} onClick={() => handleReturnLoan(item?.id_emprestimo)} />
+                                                                <Button small text="Devolver" style={{ height: 25, borderRadius: 2 }} onClick={() => handleReturnLoan(item?.id_emprestimo)} />
                                                             </td>}
                                                         </tr>
                                                     );
@@ -507,7 +519,7 @@ export default function LoansStudentEdit(props) {
                                         handleSelectedMaterial(item)
                                     }>
                                         {selected?.length > 0 && <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />}
-                                        <Text bold>{item?.titulo}</Text>
+                                        <Text bold small>{item?.titulo}</Text>
                                     </Box>
                                 )
                             })}
