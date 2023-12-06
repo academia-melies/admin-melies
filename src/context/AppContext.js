@@ -2,7 +2,7 @@ import { Backdrop, CircularProgress, useMediaQuery } from "@mui/material";
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
-import { Box, Button, Text } from "../atoms";
+import { Box, Button, Divider, Text } from "../atoms";
 import { getDialogPosition } from "../helpers";
 import { Alert, Colors } from "../organisms";
 import { api } from "../api/api";
@@ -193,17 +193,19 @@ export const ConfirmationModal = (props) => {
                     <Box>
                         <Text bold='true'>{title}</Text>
                     </Box>
+                    <Divider distance={0} />
                     {message &&
                         <Box>
                             <Text>{message}</Text>
                         </Box>
                     }
+                    <Divider distance={0} />
                     <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'center' }}>
-                        <Button small='true' text='Sim' onClick={() => {
+                        <Button small='true' text='Sim' style={{ height: 30, width: '100%' }} onClick={() => {
                             closeDialog()
                             acceptAction()
                         }} />
-                        <Button small='true' secondary='true' text='Não' onClick={closeDialog} />
+                        <Button small='true' secondary='true' style={{ height: 30, width: '100%' }} text='Não' onClick={closeDialog} />
                     </Box>
                 </Box>
             }
