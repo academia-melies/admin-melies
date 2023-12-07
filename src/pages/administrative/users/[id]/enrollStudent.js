@@ -14,6 +14,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { bodyContractEnrollment, responsiblePayerDataTable, userDataTable } from "../../../../helpers/bodyContract";
+
 
 export default function InterestEnroll() {
     const router = useRouter();
@@ -484,7 +488,7 @@ export default function InterestEnroll() {
         return true
     }
 
-    const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData) => {
+    const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData, urlDoc, contractData) => {
 
         if (checkEnrollmentData(enrollment)) {
             let enrollmentData = {
@@ -555,9 +559,19 @@ export default function InterestEnroll() {
 
             try {
                 const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData });
+                const { data } = response
                 if (response?.status === 201) {
                     setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
-                    alert.success('Matrícula efetivada.')
+                    
+                    const sendDoc = await api.post('/contract/enrollment/signatures/upload', { urlDoc, contractData, enrollmentId: data })
+                    if (sendDoc?.status === 200) {
+                        alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
+                        router.push(`/administrative/users/${id}`);
+                        return;
+                    } else {
+                        alert.error('Houve um erro ao enviar contrato para assinatura.')
+                    }
+                    alert.success('Matrícula efetivada. Confira se o contrato foi enviado para o aluno.')
                     router.push(`/administrative/users/${id}`);
                     return
                 }
@@ -1992,6 +2006,8 @@ export const ContractStudent = (props) => {
     const [paymentData, setPaymentData] = useState([])
     const [userData, setUserData] = useState({})
     const contractService = useRef()
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
 
     const handleUserData = async () => {
         setLoading(true)
@@ -2012,16 +2028,16 @@ export const ContractStudent = (props) => {
     }, [])
 
 
-    const handleSubmitEnrollment = async () => {
-        setLoading(true)
-        try {
-            handleGeneratePdf()
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false)
-        }
-    }
+    // const handleSubmitEnrollment = async () => {
+    //     setLoading(true)
+    //     try {
+    //         handleGeneratePdf()
+    //     } catch (error) {
+    //         console.error(error);
+    //     } finally {
+    //         setLoading(false)
+    //     }
+    // }
 
 
 
@@ -2064,29 +2080,298 @@ export const ContractStudent = (props) => {
     if (courseName) nameContract += `${courseName}_`;
     if (modalityCourse) nameContract += `${modalityCourse}`;
 
-    const handleGeneratePdf = useReactToPrint({
-        content: () => contractService.current,
-        documentTitle: `${nameContract}`,
-        onAfterPrint: () => {
-            html2canvas(contractService.current).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
+    // const handleGeneratePdf = useReactToPrint({
+    //     content: () => contractService.current,
+    //     documentTitle: `${nameContract}`,
+    //     onAfterPrint: () => {
+    //         html2canvas(contractService.current).then(canvas => {
+    //             const imgData = canvas.toDataURL('image/png');
 
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // 210x297 mm (A4)
+    //             const pdf = new jsPDF('p', 'mm', 'a4');
+    //             pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // 210x297 mm (A4)
 
-                const pdfData = pdf.output('blob');
-                const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
+    //             const pdfData = pdf.output('blob');
+    //             const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
 
-                const formData = new FormData();
-                formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
+    //             const formData = new FormData();
+    //             formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
 
-                setFormData(formData);
-                handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData);
+    //             setFormData(formData);
+    //             handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData);
 
-                return true
-            });
+    //             return true
+    //         });
+    //     }
+    // });
+
+
+    const handleSubmitEnrollment = async () => {
+        setLoading(true);
+
+        try {
+            const pdfBlob = await handleGeneratePdf();
+            const urlDoc = await convertBlobToBase64(pdfBlob);
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+
+            let contractData = {
+                name_file: nameContract,
+                size: null,
+                key_file: null,
+                location: null,
+                usuario_id: userData?.id,
+                status_assinaturas: 'Pendente de assinatura',
+                modulo: 1,
+                matricula_id: null,
+                token_doc: null,
+                external_id: null,
+                deletado: 0,
+                dt_deletado: null
+            }
+
+            handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData, urlDoc, contractData);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
-    });
+    };
+
+    const convertBlobToBase64 = (blob) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                resolve(reader.result.split(',')[1]); // Retorna apenas a parte do Base64
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    };
+
+    const handleGeneratePdf = async () => {
+        return new Promise(async (resolve, reject) => {
+
+            const currentDate = new Date();
+            const options = {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+            };
+            const formattedDate = new Intl.DateTimeFormat("pt-BR", options).format(currentDate);
+
+            try {
+                const documentDefinition = {
+                    content: [
+                        { text: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS', fontSize: 16, alignment: 'center', fontFamily: 'MetropolisBold', bold: true },
+
+                        { text: '', margin: [0, 20, 0, 20], },
+                        {
+                            table: {
+                                widths: ['30%', '70%'],
+                                body: userDataTable(userData).map(row => [
+                                    { text: row?.title, bold: true, fontFamily: 'Metropolis Regular' }, // Aplica negrito para os títulos
+                                    { text: row?.value || '', fontFamily: 'MetropolisBold' }, // Adiciona o valor
+                                ]),
+                                layout: {
+                                    hLineWidth: function (i, node) {
+                                        return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                                    },
+                                    vLineWidth: function (i, node) {
+                                        return 0; // Remove todas as linhas verticais
+                                    },
+                                },
+                            },
+                        },
+
+                        {
+                            text: 'Dados do(a) Responsável / Empresa / Pagante',
+                            fontFamily: 'MetropolisBold',
+                            background: '#F49519',
+                            bold: true,
+                            alignment: 'center',
+                            width: '100%',
+                            margin: [0, 20, 0, 20],
+                        },
+
+                        {
+                            table: {
+                                widths: ['30%', '70%'],
+                                body: responsiblePayerDataTable(responsiblePayerData, userData).map(row => [
+                                    { text: row.title, bold: true }, // Aplica negrito para os títulos
+                                    { text: row.value || '' }, // Adiciona o valor
+                                ]),
+                                layout: {
+                                    hLineWidth: function (i, node) {
+                                        return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                                    },
+                                    vLineWidth: function (i, node) {
+                                        return 0; // Remove todas as linhas verticais
+                                    },
+                                },
+                            },
+                        },
+
+
+
+                        { text: query || 'Dados de pagamento', bold: true, margin: [0, 40, 0, 20], alignment: 'center', fontFamily: 'MetropolisBold' },
+
+                        {
+                            margin: [80, 0],
+
+                            table: {
+                                widths: ['45%', '50%'],
+                                body: [
+                                    userData?.nome ? ['Aluno:', userData?.nome] : [],
+                                    ['Resp. pagante:', responsiblePayerData?.nome_resp || userData?.nome],
+                                    ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
+                                    ['Disciplinas dispensadas:', valuesContract?.qntDispensadas],
+                                    valuesContract?.descontoDispensadas > 0 && ['Disciplinas dispensadas - Desconto (R$):', formatter.format(valuesContract.descontoDispensadas)],
+                                    valuesContract?.descontoPorcentagemDisp != '0.00%' && ['Disciplinas dispensadas - Desconto (%):', valuesContract?.descontoPorcentagemDisp],
+                                    valuesContract?.descontoAdicional && ['DESCONTO (adicional):', (typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
+                                        || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
+                                        || '0'],
+                                    (valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0) && ['DESCONTO TOTAL:', formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))],
+                                    paymentsInfoData?.valueEntry > 0 && ['VALOR DE ENTRADA:', formatter.format(paymentsInfoData?.valueEntry)],
+                                    ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],
+                                ].filter(row => row.length > 0),
+                                layout: {
+                                    hLineWidth: function (i, node) {
+                                        return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                                    },
+                                    vLineWidth: function (i, node) {
+                                        return 0; // Remove todas as linhas verticais
+                                    },
+                                },
+                            },
+                        },
+
+                        { text: 'Forma de pagamento escolhida:', bold: true, margin: [0, 40, 0, 10], alignment: 'center' },
+                        ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20] }] : []),
+                        createPaymentEntryTable(paymentsInfoData, paymentsInfoData?.valueEntry > 0 ? true : false),
+                        ...(paymentData?.map((payment, index) => {
+                            const nonNullPayments = payment?.filter(pay => pay?.valor_parcela);
+                            if (nonNullPayments?.length > 0) {
+                                return [
+                                    { text: `${index + 1}º Pagante/Pagamento:`, bold: true, margin: [10, 20, 10, 20], alignment: 'center', },
+                                    createPaymentTable(payment),
+                                ];
+                            }
+                            return null;
+                        }).filter(Boolean)),
+                        { text: ``, margin: [10, 30, 10, 30] },
+                        ...(bodyContractEnrollment?.map((body, index) => {
+                            const title = body?.title ? true : false;
+                            return [
+                                { text: `${body?.text}`, fontFamily: title ? 'MetropolisBold' : 'Metropolis Regular', margin: title ? [10, 30, 10, 10] : [10, 5], bold: title ? true : false, fontSize: title ? 12 : 10 },
+                            ];
+                        })),
+                        { text: `São Paulo, ${formattedDate}`, margin: [80, 30, 10, 10], fontFamily: 'MetropolisBold', }
+                    ],
+                    styles: {
+                        header: { fontSize: 18, bold: true },
+                    },
+                };
+
+                const pdfDocGenerator = pdfMake.createPdf(documentDefinition);
+
+                // Aguarde a geração do PDF antes de continuar
+                const pdfBlob = await new Promise((pdfResolve) => {
+                    pdfDocGenerator.getBlob(pdfResolve);
+                });
+
+                resolve(pdfBlob);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    };
+
+
+    const createPaymentTable = (paymentData) => {
+        const tableBody = [];
+        tableBody.push([
+            { text: 'Nº Parcela', style: 'tableHeader', fillColor: '#F49519' }, // Adicione a cor de fundo aqui
+            { text: 'Forma', style: 'tableHeader', fillColor: '#F49519' },
+            { text: 'Pagamento', style: 'tableHeader', fillColor: '#F49519' },
+            { text: 'Valor da Parcela', style: 'tableHeader', fillColor: '#F49519' },
+            { text: 'Data de Pagamento', style: 'tableHeader', fillColor: '#F49519' },
+        ]);
+
+        paymentData?.forEach((pay) => {
+            const payment = pay?.pagamento > 0 ? groupPayment?.filter((item) => item.value === pay?.pagamento).map((item) => item.label) : pay?.pagamento;
+
+            tableBody.push([
+                pay?.n_parcela,
+                pay?.tipo,
+                payment,
+                formatter.format(pay?.valor_parcela),
+                pay?.data_pagamento
+            ]);
+        });
+
+        const tableDefinition = {
+            table: {
+                widths: ['auto', 'auto', 'auto', 'auto', 'auto'],
+                body: tableBody,
+                alignment: 'center'
+            },
+            margin: [60, 0],
+            layout: {
+                hLineWidth: function (i, node) {
+                    return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                },
+                vLineWidth: function (i, node) {
+                    return 0; // Remove todas as linhas verticais
+                },
+            },
+        };
+
+        return tableDefinition;
+    };
+
+
+    const createPaymentEntryTable = (paymentData, isEntry = false) => {
+        const tableBody = [];
+
+        if (isEntry) {
+            tableBody.push([
+                { text: 'Valor de entrada', style: 'tableHeader', alignment: 'center' },
+                { text: 'Forma de pagamento', style: 'tableHeader', alignment: 'center' },
+                { text: 'Pagamento', style: 'tableHeader', alignment: 'center' },
+                { text: 'Data de Pagamento', style: 'tableHeader', alignment: 'center' },
+            ]);
+
+            paymentData?.forEach((pay) => {
+                tableBody.push([
+                    { text: paymentData?.n_parcela, alignment: 'center' },
+                    { text: paymentData?.typePaymentEntry, alignment: 'center' },
+                    { text: 'Pagamento realizado presencialmente', alignment: 'center' },
+                    { text: paymentData?.dateForPaymentEntry, alignment: 'center' },
+                ]);
+            });
+
+            const tableDefinition = {
+                table: {
+                    widths: ['auto', 'auto', 'auto', 'auto', 'auto'],
+                    body: tableBody,
+                    alignment: 'center',
+                },
+                margin: [60, 0],
+                layout: {
+                    hLineWidth: function (i, node) {
+                        return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                    },
+                    vLineWidth: function (i, node) {
+                        return 0; // Remove todas as linhas verticais
+                    },
+                },
+            };
+
+            return tableDefinition;
+        } else {
+            return
+        }
+    };
+
 
 
     const handleChange = (event) => {
