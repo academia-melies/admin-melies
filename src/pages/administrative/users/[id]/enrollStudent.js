@@ -562,7 +562,7 @@ export default function InterestEnroll() {
                 const { data } = response
                 if (response?.status === 201) {
                     setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
-                    
+
                     const sendDoc = await api.post('/contract/enrollment/signatures/upload', { urlDoc, contractData, enrollmentId: data })
                     if (sendDoc?.status === 200) {
                         alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
@@ -849,11 +849,9 @@ export const Payment = (props) => {
     const [responsiblesPayers, setResponsiblesPayers] = useState({ first: '', second: '' });
     const [hasEntry, setHasEntry] = useState()
     const [paymentEntry, setPaymentEntry] = useState()
-    const [typePaymentEntry, setTypePaymentEntry] = useState()
+    const [typePaymentEntry, setTypePaymentEntry] = useState('')
     const [formPaymentEntry, setFormPaymentEntry] = useState()
     const [dateForPaymentEntry, setDateForPaymentEntry] = useState()
-
-
 
     useEffect(() => {
         const disciplinesDispensed = quantityDisciplinesModule - quantityDisciplinesSelected;
@@ -879,7 +877,7 @@ export const Payment = (props) => {
             valorFinal: valueFinally
         })
         const dateNow = new Date();
-        const year = dateNow.getFullYear();
+        const year = dateNow.getMonth() + 2 > 12 ? dateNow.getFullYear() + 1 : dateNow.getFullYear();
         const nextMonth = dateNow.getMonth() + 2 > 12 ? 1 : dateNow.getMonth() + 2;
         const nextMonthString = String(nextMonth).padStart(2, '0');
         const month = String(dateNow.getMonth() + 1).padStart(2, '0');
@@ -1298,12 +1296,12 @@ export const Payment = (props) => {
             firsResponsible: responsiblesPayers?.first || userData?.id,
             secondResponsible: responsiblesPayers?.second,
             valueEntry: handleCalculationEntry(paymentEntry),
-            typePaymentEntry,
+            typePaymentEntry: typePaymentEntry,
             dateForPaymentEntry
         })
 
         setPaymentForm([typePaymentsSelected, typePaymentsSelectedTwo]);
-    }, [updatedScreen, typePaymentsSelected, typePaymentsSelectedTwo, numberOfInstallments, totalValueFinnaly, dispensedDisciplines, discountDispensed, disciplineDispensedPorcent, aditionalDiscount, valuesCourse, setValuesContract, setPaymentForm]);
+    }, [updatedScreen, typePaymentEntry, typePaymentsSelected, typePaymentsSelectedTwo, numberOfInstallments, totalValueFinnaly, dispensedDisciplines, discountDispensed, disciplineDispensedPorcent, aditionalDiscount, valuesCourse, setValuesContract, setPaymentForm]);
 
 
     const handleChangePaymentEntry = async (event) => {
@@ -1472,7 +1470,15 @@ export const Payment = (props) => {
                                 title="Selecione o dia do vencimento *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
-                            <TextInput name='monthForPayment' onChange={(e) => setMonthDayForPayment(e.target.value)} value={(monthForPayment)?.split('T')[0] || ''} type="date" label='Primeira cobrança' sx={{ flex: 1, }} />
+                            <TextInput name='monthForPayment' onChange={(e) => {
+                                setMonthDayForPayment(e.target.value)
+                                let date = new Date(e.target.value)
+                                if (date?.getDate() >= 1 && date?.getDate() <= 31) {
+                                    setDayForPayment(date?.getDate() + 1);
+                                } else {
+                                   return
+                                }
+                            }} value={(monthForPayment)?.split('T')[0] || ''} type="date" label='Primeira cobrança' sx={{ flex: 1, }} />
                             <CheckBoxComponent
                                 padding={false}
                                 valueChecked={hasEntry}
@@ -2168,15 +2174,15 @@ export const ContractStudent = (props) => {
                             table: {
                                 widths: ['30%', '70%'],
                                 body: userDataTable(userData).map(row => [
-                                    { text: row?.title, bold: true, fontFamily: 'Metropolis Regular' }, // Aplica negrito para os títulos
-                                    { text: row?.value || '', fontFamily: 'MetropolisBold' }, // Adiciona o valor
+                                    { text: row?.title, bold: true, fontFamily: 'Metropolis Regular' }, 
+                                    { text: row?.value || '', fontFamily: 'MetropolisBold' },
                                 ]),
                                 layout: {
                                     hLineWidth: function (i, node) {
-                                        return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                                        return i === 0 ? 0 : 1; 
                                     },
                                     vLineWidth: function (i, node) {
-                                        return 0; // Remove todas as linhas verticais
+                                        return 0; 
                                     },
                                 },
                             },
@@ -2196,15 +2202,15 @@ export const ContractStudent = (props) => {
                             table: {
                                 widths: ['30%', '70%'],
                                 body: responsiblePayerDataTable(responsiblePayerData, userData).map(row => [
-                                    { text: row.title, bold: true }, // Aplica negrito para os títulos
-                                    { text: row.value || '' }, // Adiciona o valor
+                                    { text: row.title, bold: true },
+                                    { text: row.value || '' },
                                 ]),
                                 layout: {
                                     hLineWidth: function (i, node) {
-                                        return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                                        return i === 0 ? 0 : 1;
                                     },
                                     vLineWidth: function (i, node) {
-                                        return 0; // Remove todas as linhas verticais
+                                        return 0; 
                                     },
                                 },
                             },
@@ -2235,18 +2241,18 @@ export const ContractStudent = (props) => {
                                 ].filter(row => row.length > 0),
                                 layout: {
                                     hLineWidth: function (i, node) {
-                                        return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                                        return i === 0 ? 0 : 1; 
                                     },
                                     vLineWidth: function (i, node) {
-                                        return 0; // Remove todas as linhas verticais
+                                        return 0;
                                     },
                                 },
                             },
                         },
 
                         { text: 'Forma de pagamento escolhida:', bold: true, margin: [0, 40, 0, 10], alignment: 'center' },
-                        ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20] }] : []),
-                        createPaymentEntryTable(paymentsInfoData, paymentsInfoData?.valueEntry > 0 ? true : false),
+                        ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20], alignment: 'center' }] : []),
+                        createPaymentEntryTable(paymentsInfoData),
                         ...(paymentData?.map((payment, index) => {
                             const nonNullPayments = payment?.filter(pay => pay?.valor_parcela);
                             if (nonNullPayments?.length > 0) {
@@ -2261,7 +2267,7 @@ export const ContractStudent = (props) => {
                         ...(bodyContractEnrollment?.map((body, index) => {
                             const title = body?.title ? true : false;
                             return [
-                                { text: `${body?.text}`, fontFamily: title ? 'MetropolisBold' : 'Metropolis Regular', margin: title ? [10, 30, 10, 10] : [10, 5], bold: title ? true : false, fontSize: title ? 12 : 10 },
+                                { text: `${body?.text}`, fontFamily: title ? 'MetropolisBold' : 'Metropolis Regular', margin: title ? [10, 30, 10, 10] : [10, 10], bold: title ? true : false, fontSize: title ? 12 : 10 },
                             ];
                         })),
                         { text: `São Paulo, ${formattedDate}`, margin: [80, 30, 10, 10], fontFamily: 'MetropolisBold', }
@@ -2314,7 +2320,7 @@ export const ContractStudent = (props) => {
                 body: tableBody,
                 alignment: 'center'
             },
-            margin: [60, 0],
+            margin: [60, 0, 0, 0],
             layout: {
                 hLineWidth: function (i, node) {
                     return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
@@ -2329,33 +2335,44 @@ export const ContractStudent = (props) => {
     };
 
 
-    const createPaymentEntryTable = (paymentData, isEntry = false) => {
-        const tableBody = [];
-
-        if (isEntry) {
-            tableBody.push([
-                { text: 'Valor de entrada', style: 'tableHeader', alignment: 'center' },
-                { text: 'Forma de pagamento', style: 'tableHeader', alignment: 'center' },
-                { text: 'Pagamento', style: 'tableHeader', alignment: 'center' },
-                { text: 'Data de Pagamento', style: 'tableHeader', alignment: 'center' },
-            ]);
-
-            paymentData?.forEach((pay) => {
-                tableBody.push([
-                    { text: paymentData?.n_parcela, alignment: 'center' },
-                    { text: paymentData?.typePaymentEntry, alignment: 'center' },
-                    { text: 'Pagamento realizado presencialmente', alignment: 'center' },
-                    { text: paymentData?.dateForPaymentEntry, alignment: 'center' },
-                ]);
+    const createPaymentEntryTable = (paymentData) => {
+        try {
+            const tableBody = [];
+            const formatter = new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
             });
-
+    
+            tableBody.push([
+                { text: 'Valor de entrada', style: 'tableHeader', fillColor: '#F49519' },
+                { text: 'Forma de pagamento', style: 'tableHeader', fillColor: '#F49519' },
+                { text: 'Pagamento', style: 'tableHeader', fillColor: '#F49519' },
+                { text: 'Data de Pagamento', style: 'tableHeader', fillColor: '#F49519' },
+            ]);
+    
+            const dateForPaymentEntry = paymentData?.dateForPaymentEntry;
+            const isValidDate = !isNaN(new Date(dateForPaymentEntry).getTime());
+    
+            if (isValidDate) {
+                tableBody.push([
+                    formatter.format(paymentData?.valueEntry),
+                    paymentData?.typePaymentEntry || '',
+                    'Pagamento realizado presencialmente',
+                    { text: dateForPaymentEntry, alignment: 'center' }, // Format the date
+                ]);
+            } else {
+                // Handle invalid date, you might want to show an error message or handle it in a different way
+                console.error('Invalid dateForPaymentEntry:', dateForPaymentEntry);
+                return null; // or handle it accordingly
+            }
+    
             const tableDefinition = {
                 table: {
-                    widths: ['auto', 'auto', 'auto', 'auto', 'auto'],
+                    widths: ['auto', 'auto', 'auto', 'auto'],
                     body: tableBody,
                     alignment: 'center',
                 },
-                margin: [60, 0],
+                margin: [60, 10],
                 layout: {
                     hLineWidth: function (i, node) {
                         return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
@@ -2365,12 +2382,14 @@ export const ContractStudent = (props) => {
                     },
                 },
             };
-
+    
             return tableDefinition;
-        } else {
-            return
+        } catch (error) {
+            alert.error('Houve um erro ao processar contrato.');
+            return error;
         }
     };
+    
 
 
 

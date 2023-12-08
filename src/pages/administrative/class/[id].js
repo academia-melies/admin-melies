@@ -301,7 +301,7 @@ export default function EditClass(props) {
                                                     -
                                                 </td>
                                                 <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                    Aprovado
+                                                    -
                                                 </td>
                                             </tr>
                                         );

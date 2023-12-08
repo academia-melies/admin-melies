@@ -374,7 +374,7 @@ const MenuItem = (props) => {
          <Link
             href={to || '/#'}
             onClick={onClick}
-            style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`,}}
+            style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`, minWidth: 110}}
             onMouseEnter={() => setShowSubItems(true)}
             onMouseLeave={() => setShowSubItems(false)}
          >
@@ -434,7 +434,7 @@ const MenuItem = (props) => {
                         }
                      }} />}
                </Box>
-               <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 10, xl: 12.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
+               <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 10, xl: 11.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
                   {showSubItems &&
                      subitem?.map((item, index) => {
                         const currentPage = item.to === pathname;

@@ -317,6 +317,7 @@ export default function EditUser() {
             if (data.length > 0) {
                 setContractStudent(data)
             }
+            console.log(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -2198,7 +2199,7 @@ export default function EditUser() {
                     {showEnrollment &&
                         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
 
-                            {enrollmentData ?
+                            {enrollmentData.length > 0 ?
                                 enrollmentData?.map((item, index) => {
                                     const className = item?.nome_turma;
                                     const courseName = item?.nome_curso;
@@ -2206,9 +2207,8 @@ export default function EditUser() {
                                     const startDate = formatDate(item.dt_inicio)
                                     const title = `${className} - ${courseName} - ${startDate} - ${period}`
                                     const enrollmentId = item?.id_matricula;
-                                    const files = contractStudent?.filter((file) => file?.matricula_id === enrollmentId);
-                                    const bgImagePdf = files?.name_file?.includes('pdf') ? '/icons/pdf_icon.png' : files?.location
-                                    const installments = installmentsStudent?.filter(item => item.matricula_id === item?.enrollmentId)
+                                    const files = contractStudent?.filter((file) => file?.matricula_id === item?.id_matricula);
+                                    const bgImagePdf = files?.filter(file => file.matricula_id === item?.id_matricula)?.name_file?.includes('pdf') ? '/icons/pdf_icon.png' : files?.location
 
                                     return (
 
@@ -2303,43 +2303,6 @@ export default function EditUser() {
                                                                     }
                                                                 }}
                                                             />
-                                                        </Box>
-                                                    </Box>
-                                                    <Divider padding={0} />
-                                                    <Box sx={styles.inputSection}>
-                                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1 }}>
-                                                            <Text bold>Boleto:</Text>
-                                                            <Box sx={{
-                                                                ...styles.menuIcon,
-                                                                width: 22,
-                                                                height: 22,
-                                                                backgroundImage: `url('${icons.print}')`,
-                                                                transition: '.3s',
-                                                                "&:hover": {
-                                                                    opacity: 0.8,
-                                                                    cursor: 'pointer'
-                                                                }
-                                                            }} />
-                                                            <Box sx={{
-                                                                ...styles.menuIcon,
-                                                                backgroundImage: `url('${icons.file}')`,
-                                                                transition: '.3s',
-                                                                "&:hover": {
-                                                                    opacity: 0.8,
-                                                                    cursor: 'pointer'
-                                                                }
-                                                            }} />
-                                                            <Box sx={{
-                                                                ...styles.menuIcon,
-                                                                width: 22,
-                                                                height: 22,
-                                                                backgroundImage: `url('${icons.send}')`,
-                                                                transition: '.3s',
-                                                                "&:hover": {
-                                                                    opacity: 0.8,
-                                                                    cursor: 'pointer'
-                                                                }
-                                                            }} />
                                                         </Box>
                                                     </Box>
                                                     <Divider padding={0} />
