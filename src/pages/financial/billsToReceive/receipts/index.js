@@ -92,6 +92,7 @@ export default function ListReceipts(props) {
         (data === 'Pago' && 'green') ||
         (data === 'Aprovado' && 'blue') ||
         (data === 'Inativa' && '#f0f0f0') ||
+        (data === 'Erro com o pagamento' && 'red') ||
         (data === 'Estornada' && '#f0f0f0'))
 
 
@@ -119,7 +120,7 @@ export default function ListReceipts(props) {
         { label: 'Em processamento', value: 'Em processamento' },
         { label: 'Estornada', value: 'Estornada' },
         { label: 'Não Autorizado', value: 'Não Autorizado' },
-
+        { label: 'Erro com o pagamento', value: 'Erro com o pagamento' },
     ]
 
     const listPayment = [
@@ -398,7 +399,7 @@ export default function ListReceipts(props) {
                                                     display: 'flex',
                                                     height: 30,
                                                     backgroundColor: colorPalette.primary,
-                                                    gap: 2,
+                                                    gap: 1,
                                                     alignItems: 'center',
                                                     width: 100,
                                                     borderRadius: 2,
@@ -407,7 +408,7 @@ export default function ListReceipts(props) {
                                                 }}
                                             >
                                                 <Box sx={{ display: 'flex', backgroundColor: priorityColor(item?.status_parcela), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                <Text small bold>{item?.status_parcela || ''}</Text>
+                                                <Text small bold style={{textAlign: 'center', flex: 1}}>{item?.status_parcela || ''}</Text>
                                             </Box>
                                         </td>
                                     </tr>

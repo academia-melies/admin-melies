@@ -208,7 +208,7 @@ export default function Home() {
                               const month = date?.split('-')[1]
                               return (
                                  <ContentContainer row key={index} style={{ display: 'flex', backgroundColor: colorPalette?.primary, position: 'relative', boxShadow: 'none', alignItems: 'center', maxHeight: 100 }}>
-                                    <Box sx={{ display: 'flex', borderRadius: 40, backgroundColor: colorPalette?.buttonColor, width: 40, height: 40, padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: 15, left: 10, zIndex: 999999 }}>
+                                    <Box sx={{ display: 'flex', borderRadius: 40, backgroundColor: colorPalette?.buttonColor, width: 40, height: 40, padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: 15, left: 10, zIndex: 999 }}>
                                        <Text bold small style={{ color: '#fff' }}>{day}/{month}</Text>
                                     </Box>
                                     <Avatar src={item?.location} sx={{
@@ -267,7 +267,7 @@ export default function Home() {
                                        position: 'absolute',
                                        top: 3,  // Ajuste aqui para mover para cima
                                        left: 3, // Ajuste aqui para mover para a esquerda
-                                       zIndex: 999999
+                                       zIndex: 999
                                     }}>
                                        <Text bold small style={{ color: '#fff' }}>{date}</Text>
                                     </Box>

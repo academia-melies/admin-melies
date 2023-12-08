@@ -110,6 +110,7 @@ export default function StuatusPayment() {
         (data === 'Pago' && 'green') ||
         (data === 'Aprovado' && 'blue') ||
         (data === 'Inativa' && '#f0f0f0') ||
+        (data === 'Erro com o pagamento' && 'red') ||
         (data === 'Estornada' && '#f0f0f0'))
 
 
