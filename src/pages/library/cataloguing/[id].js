@@ -126,7 +126,6 @@ export default function EditCatalogMaterial(props) {
         // }
         return true
     }
-
     const handleCreate = async () => {
         setLoading(true)
         if (checkRequiredFields()) {
@@ -135,7 +134,7 @@ export default function EditCatalogMaterial(props) {
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Material catalogado com sucesso.');
-                    // router.push(`/suport/schoolRoom/list`)
+                    router.push(`/library/cataloguing/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar Sala.');
@@ -388,7 +387,6 @@ export default function EditCatalogMaterial(props) {
                                             }
                                         ]);
                                         await setShowDropzone(false)
-                                        await getImage()
                                     }
                                 }}
                                 usuario_id={userId}
