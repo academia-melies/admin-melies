@@ -96,27 +96,41 @@ export default function ListInvoices(props) {
         });
     };
 
-
     const handleGenerateInvoice = async () => {
-        try {
-            setLoading(true)
-            let [installmentData] = invoicesSelected && invoicesList?.filter(item => item?.id_parcela_matr.toString()?.includes(invoicesSelected))
-            const response = await api.post(`/nfse/create/${user?.id}`, { installmentData })
-            const { data } = response;
-            if (response?.status === 201) {
-                alert.success('Notas enviadas para processamento.')
-                setInvoicesSelected('')
-                await getInstallments()
-            } else {
+        if (verifyExistsNfse()) {
+            try {
+                setLoading(true)
+                const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
+                let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
+                const response = await api.post(`/nfse/create/${user?.id}`, { installmentData })
+                const { data } = response;
+                if (response?.status === 201) {
+                    alert.success('Notas enviadas para processamento.')
+                    await getInstallments()
+                    setInvoicesSelected('')
+                } else {
+                    alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
+                    return
+                }
+            } catch (error) {
+                console.log(error)
                 alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
+                return error
+            } finally {
+                setLoading(false)
             }
-        } catch (error) {
-            console.log(error)
-            alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
-            return error
-        } finally {
-            setLoading(false)
         }
+    }
+
+    const verifyExistsNfse = () => {
+        const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
+        let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
+        let [verifyNfseExists] = installmentData?.map(item => item.url_nfse_pdf !== null)
+        if (verifyNfseExists) {
+            alert.error('Você selecionou alguma nota que já possui NFSe gerada. Selecione apenas notas que ainda não foram emitidas. ')
+            return false
+        }
+        return true
     }
 
     const priorityColor = (data) => (
@@ -209,7 +223,7 @@ export default function ListInvoices(props) {
                 </Box>
                 <TextInput placeholder="Buscar pelo nome.." name='filters' type="search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} value={filters?.search} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
                             data={listAtivo}
                             valueSelection={filters?.parcel}
@@ -228,21 +242,21 @@ export default function ListInvoices(props) {
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                             clean={false}
                         />
-                        <Box sx={{ ...styles.inputSection, padding: '20px 0px', marginLeft: 10 }}>
+                        <Box sx={{ ...styles.inputSection, gap: 1, padding: '20px 0px' }}>
                             <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
                             <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
                         </Box>
-                    </Box>
-                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
-                        <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
-                            setFilters({
-                                parcel: 'todos',
-                                nfse: 'todos',
-                                search: '',
-                                startDate: '',
-                                endDate: ''
-                            })
-                        }} />
+                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
+                            <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
+                                setFilters({
+                                    parcel: 'todos',
+                                    nfse: 'todos',
+                                    search: '',
+                                    startDate: '',
+                                    endDate: ''
+                                })
+                            }} />
+                        </Box>
                     </Box>
                     <TablePagination
                         component="div"
