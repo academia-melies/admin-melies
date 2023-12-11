@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text } from "../../../atoms"
+import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
@@ -166,7 +166,7 @@ export default function ListStudents(props) {
                         <Text style={{ color: '#d6d6d6' }} light>alunos</Text>
                     </Box>
                 </Box>
-                <SearchBar placeholder='Busque por nome, sobrenome, CPF...' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
+                <TextInput placeholder="Buscar Nome, Sobrenome, CPF.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                     <SelectList
