@@ -197,7 +197,7 @@ export default function Home() {
 
             <ContentContainer row style={{ display: 'flex', marginTop: 5, backgroundColor: 'none', boxShadow: 'none', position: 'relative', alignItems: 'start', justifyContent: 'start' }}>
 
-               <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 1, maxHeight: 350, overflowY: 'auto' }}>
+               <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 1, maxHeight: 350, overflowY: 'auto' }}>
                   <Text large bold style={{ textAlign: 'center' }}>Aniversáriantes de {formattedMonth} 🎉🎉</Text>
                   <Box sx={{ display: 'flex', justifyContent: 'center', }}>
                      {listBirthDay.length > 0 ?

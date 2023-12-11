@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/system"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text } from "../../../atoms"
+import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms"
 import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
 import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
@@ -132,7 +132,7 @@ export default function StudentGrade(props) {
                         <Text style={{ color: '#d6d6d6' }} light>Turmas</Text>
                     </Box>
                 </Box>
-                <SearchBar placeholder='Nome, Sobrenome, CPF.' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
+                <TextInput placeholder="Buscar turma.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                     <SelectList

@@ -173,7 +173,7 @@ export default function ListReceipts(props) {
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                 </Box>
-                <SearchBar placeholder='Pesquise pelo pagante ou aluno' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
+                <TextInput placeholder="Buscar pelo pagante ou aluno" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
