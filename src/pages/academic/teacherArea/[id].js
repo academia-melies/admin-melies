@@ -61,7 +61,7 @@ export default function StudentData(props) {
 
     const getEnrollment = async () => {
         try {
-            const response = await api.get(`/enrollment/${id}}`)
+            const response = await api.get(`/enrollment/${id}`)
             const { data } = response
             setEnrollment(data)
             let [enrollment] = data
@@ -254,12 +254,12 @@ export default function StudentData(props) {
                         <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Cursando: </Text>
-                            <Text>{moduleStudent}º Modulo/Semestre</Text>
+                            <Text>{enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.modulo) || '1'}º Modulo/Semestre</Text>
                         </Box>
                         <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'start' }}>
                             <Text bold>Inicio Matricula: </Text>
-                            <Text>{formatTimeStamp(enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.dt_inicio) || '')}</Text>
+                            <Text>{formatTimeStamp(enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.dt_inicio_cronograma || item?.dt_inicio) || '')}</Text>
                         </Box>
                         <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -457,72 +457,73 @@ export default function StudentData(props) {
                     </Box>
                     {showBox?.grades && (
                         gradesData?.length > 0 ?
-                        <Box sx={{ display: 'flex' }}>
+                            <Box sx={{ display: 'flex', flex: 1, gap: 3, marginTop: '10px', }}>
 
-                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
-                                <table style={{ borderCollapse: 'collapse', }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Matéria/Disciplina</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Realizou a avaliação?</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Avaliação Semestral</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Substitutiva</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Exame</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
-                                            <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Resultado</th>
-                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
+                                <div style={{ borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colorPalette.textColor}`, }}>
+                                    <table style={{ borderCollapse: 'collapse', }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Matéria/Disciplina</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Realizou a avaliação?</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Avaliação Semestral</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Substitutiva</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Exame</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
+                                                <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Resultado</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
 
-                                        </tr>
-                                    </thead>
-                                    <tbody style={{ flex: 1 }}>
-                                        {
-                                            gradesData?.map((item, index) => {
-                                                const avaliationStatus = item?.avaliacao_status === 1 ? 'Sim' : 'Não'
-                                                const statusGrade = getStatusGrade(item)
-                                                const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
+                                            </tr>
+                                        </thead>
+                                        <tbody style={{ flex: 1 }}>
+                                            {
+                                                gradesData?.map((item, index) => {
+                                                    const avaliationStatus = item?.avaliacao_status === 1 ? 'Sim' : 'Não'
+                                                    const statusGrade = getStatusGrade(item)
+                                                    const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
 
-                                                return (
-                                                    <tr key={`${item}-${index}`}>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.nome_disciplina}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {avaliationStatus}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.nt_avaliacao_sem || '-'}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.nt_substitutiva || '-'}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.nt_exame || '-'}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.nt_final || '-'}
-                                                        </td>
+                                                    return (
+                                                        <tr key={`${item}-${index}`}>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.nome_disciplina}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {avaliationStatus}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.nt_avaliacao_sem || '-'}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.nt_substitutiva || '-'}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.nt_exame || '-'}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.nt_final || '-'}
+                                                            </td>
 
-                                                        <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            <Box sx={{ backgroundColor: colorStatus, borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
-                                                                <Text xsmall bold style={{ color: "#fff", }}>{statusGrade}</Text>
-                                                            </Box>
-                                                        </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                            {item?.obs_nt || '-'}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
+                                                            <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                <Box sx={{ backgroundColor: colorStatus, borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
+                                                                    <Text xsmall bold style={{ color: "#fff", }}>{statusGrade}</Text>
+                                                                </Box>
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.obs_nt || '-'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
 
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </Box>
-                        :
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                            <Text ligth>Não foi encontrado notas lançadas.</Text>
-                        </Box>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <Button text="rematrícular" style={{ height: 30 }} />
+                            </Box>
+                            :
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                <Text ligth>Não foi encontrado notas lançadas.</Text>
+                            </Box>
                     )}
                 </Box>
 
