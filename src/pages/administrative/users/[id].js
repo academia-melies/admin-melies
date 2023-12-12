@@ -12,6 +12,7 @@ import { emailValidator, formatCEP, formatCPF, formatDate, formatRg, formatTimeS
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 import { da } from "date-fns/locale"
+import { getYear } from "date-fns"
 
 export default function EditUser() {
     const { setLoading, alert, colorPalette, user, matches, theme, setShowConfirmationDialog } = useAppContext()
@@ -156,8 +157,11 @@ export default function EditUser() {
     const [enrollmentStudentEditId, setEnrollmentStudentEditId] = useState()
     const [enrollmentStudentEditData, setEnrollmentStudentEditData] = useState({})
     const [disciplines, setDisciplines] = useState([])
+    const [disciplinesEnrollment, setDisciplinesEnrollment] = useState([])
     const [installmentsStudent, setInstallmentsStudent] = useState([])
     const [showEditPhoto, setShowEditPhoto] = useState(false)
+    const [disciplinesSelected, setDisciplinesSelected] = useState('')
+    const [showDisciplinesClassCall, setShowDisciplinesClassCall] = useState({ active: false, moduleStudent: null, enrollmentId: null })
 
 
     useEffect(() => {
@@ -171,6 +175,11 @@ export default function EditUser() {
     useEffect(() => {
         listClass()
     }, [enrollmentData?.curso_id, interests.curso_id, interestSelected?.curso_id])
+
+    useEffect(() => {
+        if (showDisciplinesClassCall.active === true) { listDisciplinesEnrollment() }
+    }, [showDisciplinesClassCall.active])
+
 
 
     const getUserData = async () => {
@@ -317,7 +326,6 @@ export default function EditUser() {
             if (data.length > 0) {
                 setContractStudent(data)
             }
-            console.log(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -522,6 +530,26 @@ export default function EditUser() {
 
             setDisciplines(groupDisciplines);
         } catch (error) {
+        }
+    }
+
+
+    async function listDisciplinesEnrollment() {
+        try {
+            const response = await api.get(`/enrollment/disciplines/${showDisciplinesClassCall?.enrollmentId}?moduleStudent=${showDisciplinesClassCall?.moduleStudent}`)
+            const { data } = response
+            const groupDisciplines = data.map(disciplines => ({
+                label: disciplines.nome_disciplina,
+                value: disciplines?.disciplina_id?.toString()
+            }));
+
+            const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
+            const flattenedDisciplinesSelected = disciplinesSelect.join(', ');
+            setDisciplinesSelected(flattenedDisciplinesSelected)
+            setDisciplinesEnrollment(groupDisciplines);
+            return groupDisciplines;
+        } catch (error) {
+            console.log(error)
         }
     }
 
@@ -1147,6 +1175,7 @@ export default function EditUser() {
             }
 
         } catch (error) {
+            console.log(error)
             return error
         } finally {
             setLoading(false)
@@ -1737,7 +1766,7 @@ export default function EditUser() {
                                     ))}
                                 <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                     <SelectList
-                                       
+
                                         fullWidth={true}
                                         data={disciplines}
                                         valueSelection={disciplinesProfessor?.disciplina_id}
@@ -2145,7 +2174,7 @@ export default function EditUser() {
                                     />
                                 </Box>
                                 <Box sx={styles.inputSection}>
-                                <SelectList fullWidth data={groupBank} valueSelection={contract?.banco_2} onSelect={(value) => setContract({ ...contract, banco_2: value })}
+                                    <SelectList fullWidth data={groupBank} valueSelection={contract?.banco_2} onSelect={(value) => setContract({ ...contract, banco_2: value })}
                                         title="Banco 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
@@ -2201,18 +2230,24 @@ export default function EditUser() {
 
                             {enrollmentData.length > 0 ?
                                 enrollmentData?.map((item, index) => {
+                                    const isReenrollment = item.status === 'Concluído' && true;
                                     const className = item?.nome_turma;
                                     const courseName = item?.nome_curso;
                                     const period = item?.periodo;
-                                    const startDate = formatDate(item.dt_inicio)
-                                    const title = `${className} - ${courseName} - ${startDate} - ${period}`
+                                    let datePeriod = new Date(item?.dt_inicio_cronograma || item?.dt_inicio)
+                                    let year = datePeriod.getFullYear()
+                                    let month = datePeriod.getMonth()
+                                    let moduloYear = month >= 6 ? '2' : '1';
+                                    let periodEnrollment = `${year}.${moduloYear}`
+                                    const startDate = formatDate(item?.dt_inicio_cronograma || item?.dt_inicio)
+                                    const title = `${periodEnrollment} - ${className}_${item?.modulo}SEM_${courseName}_${startDate}_${period}`
                                     const enrollmentId = item?.id_matricula;
                                     const files = contractStudent?.filter((file) => file?.matricula_id === item?.id_matricula);
                                     const bgImagePdf = files?.filter(file => file.matricula_id === item?.id_matricula)?.name_file?.includes('pdf') ? '/icons/pdf_icon.png' : files?.location
 
                                     return (
 
-                                        <ContentContainer key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <ContentContainer key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 2, border: isReenrollment && `1px solid ${colorPalette.buttonColor}` }}>
                                             <Box
                                                 sx={{
                                                     display: 'flex',
@@ -2238,15 +2273,26 @@ export default function EditUser() {
                                                     }}
                                                 />
                                                 <Text bold style={{ color: colorPalette.buttonColor }}>{title}</Text>
+                                                {isReenrollment && <Box sx={{ padding: '5px 15px', backgroundColor: colorPalette.buttonColor, borderRadius: 2 }}>
+                                                    <Text bold small style={{ color: '#fff' }}>Pendente de Rematrícula - {item?.modulo + 1} Semetre/Módulo</Text>
+                                                </Box>}
                                             </Box>
                                             {showEnrollTable[index] && (
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '20px 0px 0px 0px' }}>
-                                                    <Box sx={styles.inputSection}>
-                                                        <SelectList fullWidth data={classes} valueSelection={item?.turma_id} clean={false}
-                                                            title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                        />
-                                                        <TextInput placeholder='Pendências' name='pendencia_aluno' value={item?.pendencia_aluno || ''} label='Pendências' sx={{ flex: 1, }} />
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Turma:</Text>
+                                                        <Text light>{item?.nome_turma}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Pendências:</Text>
+                                                        <Text light>{item?.qnt_disci_dp || 0}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Semestre/Módulo cursando:</Text>
+                                                        <Text light>{item?.modulo}º Módulo</Text>
                                                     </Box>
                                                     <Divider padding={0} />
                                                     <Box sx={styles.inputSection}>
@@ -2306,7 +2352,22 @@ export default function EditUser() {
                                                         </Box>
                                                     </Box>
                                                     <Divider padding={0} />
-                                                    <Box sx={styles.inputSection}>
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Data de Início:</Text>
+                                                        <Text light>{formatTimeStamp(item?.dt_inicio_cronograma)}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Data Final:</Text>
+                                                        <Text light>{formatTimeStamp(item?.dt_fim_cronograma)}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Status/Situação:</Text>
+                                                        <Text light>{item?.status}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    {/* <Box sx={styles.inputSection}>
                                                         <TextInput name='dt_inicio' type="date" value={(item?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
                                                         <TextInput name='dt_final' type="date" value={(item?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
                                                         <SelectList fullWidth data={groupSituation} valueSelection={item?.status} clean={false}
@@ -2314,7 +2375,7 @@ export default function EditUser() {
                                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                         />
                                                     </Box>
-                                                    <Divider padding={0} />
+                                                    <Divider padding={0} /> */}
                                                     {
                                                         enrollmentData.status?.includes('Desistente') &&
                                                         <>
@@ -2365,12 +2426,20 @@ export default function EditUser() {
                                                         </Link>
                                                     </Box>
                                                     <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Incluir aluno na chamada:</Text>
+                                                        <Button small text="disciplinas" style={{ width: 105, height: 25, alignItems: 'center' }} onClick={() => setShowDisciplinesClassCall({ active: true, moduleStudent: item?.modulo, enrollmentId: enrollmentId })} />
+                                                    </Box>
+                                                    <Divider padding={0} />
 
-                                                    <Button secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
-                                                        setEnrollmentStudentEditId(item?.id_matricula)
-                                                        handleEnrollStudentById(item?.id_matricula)
-                                                        setShowSections({ ...showSections, editEnroll: true })
-                                                    }} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Button secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
+                                                            setEnrollmentStudentEditId(item?.id_matricula)
+                                                            handleEnrollStudentById(item?.id_matricula)
+                                                            setShowSections({ ...showSections, editEnroll: true })
+                                                        }} />
+                                                        {isReenrollment && <Button small text="rematrícula" style={{ width: 140, height: 30, alignItems: 'center' }} />}
+                                                    </Box>
                                                 </Box>
                                             )}
                                         </ContentContainer>
@@ -2385,6 +2454,48 @@ export default function EditUser() {
 
                 </ContentContainer >
             }
+
+            <Backdrop open={showDisciplinesClassCall?.active} sx={{ zIndex: 999 }}>
+                <ContentContainer gap={3}>
+                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', gap: 4 }}>
+                        <Text bold>Lista de Chamada</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setShowDisciplinesClassCall({ active: false, moduleStudent: null, enrollmentId: null })
+                            setDisciplinesSelected("")
+                        }} />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', maxHeight: 500, overflowY: 'auto' }}>
+                        <CheckBoxComponent
+                            padding={false}
+                            valueChecked={disciplinesSelected}
+                            boxGroup={disciplinesEnrollment}
+                            title="Selecione as disciplinas*"
+                            horizontal={false}
+                            onSelect={(value) => setDisciplinesSelected(value)}
+                            sx={{ flex: 1, }}
+                        />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button text="salvar" small style={{ height: 30, flex: 1 }} />
+                        <Button secondary text="cancelar" small style={{ height: 30, flex: 1 }} onClick={() => {
+                            setShowDisciplinesClassCall({ active: false, moduleStudent: null, enrollmentId: null })
+                            setDisciplinesSelected("")
+                        }}
+                        />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
 
             <Backdrop open={showSections?.editEnroll} sx={{ zIndex: 999 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -2409,7 +2520,7 @@ export default function EditUser() {
                                 title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
-                            <TextInput placeholder='Pendências' name='pendencia_aluno' onChange={handleChangeEnrollmentEdit} value={enrollmentStudentEditData?.pendencia_aluno || ''} label='Pendências' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Pendências' name='qnt_disci_dp' onChange={handleChangeEnrollmentEdit} type="number" value={enrollmentStudentEditData?.qnt_disci_dp || '0'} label='Pendências' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
                             <TextInput name='dt_inicio' onChange={handleChangeEnrollmentEdit} type="date" value={(enrollmentStudentEditData?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />

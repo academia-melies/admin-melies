@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { Box, Button, ContentContainer, PhoneInputField, Text, TextInput } from "../../../../atoms";
+import { Box, Button, ContentContainer, Divider, PhoneInputField, Text, TextInput } from "../../../../atoms";
 import { api } from "../../../../api/api";
 import { useRef, useEffect, useState } from "react";
 import { CheckBoxComponent, SectionHeader, SelectList } from "../../../../organisms";
@@ -23,7 +23,8 @@ export default function InterestEnroll() {
     const router = useRouter();
     const { setLoading, user, alert } = useAppContext()
     const userId = user?.id;
-    const { id, interest } = router.query;
+    const { id, interest, reenrollment } = router.query;
+    let isReenrollment = reenrollment ? true : false
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [interestData, setInterestData] = useState({})
@@ -50,6 +51,8 @@ export default function InterestEnroll() {
     const [routeScreen, setRouteScreen] = useState('interesse >')
     const [quantityDisciplinesSelected, setQuantityDisciplinesSelected] = useState(0)
     const [quantityDisciplinesModule, setQuantityDisciplinesModule] = useState(0)
+    const [quantityDisciplinesDp, setQuantityDisciplinesDp] = useState(0)
+    const [valuesDisciplinesDp, setValuesDisciplinesDp] = useState()
     const [valuesCourse, setValuesCourse] = useState({})
     const [courseData, setCourseData] = useState({})
     const [classData, setClassData] = useState({})
@@ -507,7 +510,10 @@ export default function InterestEnroll() {
                 valor_tl_desc: (parseFloat(valuesContract?.valorDescontoAdicional || 0) + parseFloat(valuesContract?.descontoDispensadas)),
                 valor_matricula: valuesContract?.valorFinal || 0,
                 qnt_disci_disp: valuesContract?.qntDispensadas || 0,
-                usuario_resp: userId
+                usuario_resp: userId,
+                vl_disci_dp: isReenrollment ? valuesDisciplinesDp : null,
+                qnt_disci_dp: isReenrollment ? quantityDisciplinesDp : null,
+                rematricula: isReenrollment ? 1 : 0
             }
 
             let paymentInstallmentsEnrollment = enrollment?.map((payment, index) =>
@@ -600,6 +606,7 @@ export default function InterestEnroll() {
                     disciplines={disciplines}
                     valuesCourse={valuesCourse}
                     userData={userData}
+                    isReenrollment={isReenrollment}
                     interestData={interestData}
                     setLoading={setLoading}
                     setCheckValidateScreen={setCheckValidateScreen}
@@ -611,6 +618,7 @@ export default function InterestEnroll() {
             <>
                 <Payment
                     setCheckValidateScreen={setCheckValidateScreen}
+                    isReenrollment={isReenrollment}
                     quantityDisciplinesSelected={quantityDisciplinesSelected}
                     quantityDisciplinesModule={quantityDisciplinesModule}
                     valuesCourse={valuesCourse}
@@ -651,6 +659,7 @@ export default function InterestEnroll() {
                 <ContractStudent
                     setCheckValidateScreen={setCheckValidateScreen}
                     paymentForm={paymentForm}
+                    isReenrollment={isReenrollment}
                     valuesContract={valuesContract}
                     courseData={courseData}
                     classData={classData}
@@ -676,9 +685,9 @@ export default function InterestEnroll() {
             <>
                 <SectionHeader
                     perfil={routeScreen || 'Matricula'}
-                    title={'Matrícula' || 'Rematrícula'}
+                    title={!isReenrollment ? 'Matrícula' : 'Rematrícula'}
                 />
-                <Text>{userData?.nome}, você está iniciando sua matrícula no curso escolhido.
+                <Text>{userData?.nome}, você está iniciando sua {!isReenrollment ? 'matrícula' : 'rematrícula'} no curso escolhido.
                     Para realizá-la é necessário cumprir os 3 passos:
                 </Text>
 
@@ -712,7 +721,8 @@ export const EnrollStudentDetails = (props) => {
         setDisciplinesSelected,
         interestData,
         pushRouteScreen,
-        valuesCourse
+        valuesCourse,
+        isReenrollment
     } = props
 
     const { colorPalette, theme } = useAppContext()
@@ -726,7 +736,7 @@ export const EnrollStudentDetails = (props) => {
     return (
         <>
             <ContentContainer gap={2}>
-                <Text bold title>Interesse</Text>
+                <Text bold title>{!isReenrollment ? 'Interesse' : 'Dados Curso'}</Text>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                     <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
@@ -779,6 +789,22 @@ export const EnrollStudentDetails = (props) => {
                     />
                 </ContentContainer>
             </ContentContainer>
+
+            {isReenrollment &&
+                <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px', border: `1px solid ${colorPalette.buttonColor}` }} gap={3}>
+                    <ContentContainer fullWidth gap={4}>
+                        <Text bold title>Disciplinas em Pendência</Text>
+                        <CheckBoxComponent
+                            padding={false}
+                            valueChecked={disciplinesSelected}
+                            boxGroup={disciplines}
+                            title="Selecione as disciplinas*"
+                            horizontal={false}
+                            onSelect={(value) => setDisciplinesSelected(value)}
+                            sx={{ flex: 1, }}
+                        />
+                    </ContentContainer>
+                </ContentContainer>}
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Button text="Continuar" onClick={() => pushRouteScreen(1, 'interesse > Pagamento')} style={{ width: 120 }} />
             </Box>
@@ -788,6 +814,7 @@ export const EnrollStudentDetails = (props) => {
 
 export const Payment = (props) => {
     const {
+        isReenrollment,
         quantityDisciplinesSelected,
         quantityDisciplinesModule,
         valuesCourse,
@@ -1416,22 +1443,40 @@ export const Payment = (props) => {
                         <Text bold title>Resumo da contratação</Text>
 
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Total:</Text>
                                 <Text>{formatter.format(valuesCourse?.valor_total_curso)}</Text>
                             </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                           
+                            {isReenrollment && <>
+                                <Divider distance={0} />
+                                <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
+                                    <Text bold>Disciplinas em pendência (DP):</Text>
+                                    <Text>0</Text>
+                                </Box>
+                                <Divider distance={0} />
+                                <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
+                                    <Text bold>Disciplinas em pendência (DP) - Valor R$:</Text>
+                                    <Text>R$ 0,00</Text>
+                                </Box>
+                            </>
+                            }
+                            <Divider distance={0} />
+                            <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Disciplinas dispensadas:</Text>
                                 <Text>{dispensedDisciplines}</Text>
                             </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                            <Divider distance={0} />
+                            <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Disciplinas dispensadas - Desconto (R$):</Text>
                                 <Text>{formatter.format(discountDispensed)}</Text>
                             </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                            <Divider distance={0} />
+                            <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Disciplinas dispensadas - Desconto (%):</Text>
                                 <Text>{disciplineDispensedPorcent}</Text>
                             </Box>
+                            <Divider distance={0} />
                             <ContentContainer sx={{ display: 'flex', gap: 2.5, flexDirection: 'column' }}>
                                 <Box sx={{ display: 'flex' }}>
                                     <Button small secondary={typeDiscountAdditional?.porcent ? false : true} text="porcentagem" onClick={() => setTypeDiscountAdditional({
@@ -1456,16 +1501,19 @@ export const Payment = (props) => {
                                     <Button secondary small text="remover" onClick={() => handleCalculationDiscount('remover')} style={{ width: '90px', height: '30px' }} />
                                 </Box>
                             </ContentContainer>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                            <Divider distance={0} />
+                            <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Desconto adicional:</Text>
                                 <Text>{(typeDiscountAdditional?.real && formatter.format(aditionalDiscount?.desconto_adicional || 0))
                                     || (typeDiscountAdditional?.porcent && parseFloat(aditionalDiscount?.desconto_adicional || 0).toFixed(2) + '%')
                                     || '0'}</Text>
                             </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column' }}>
+                            <Divider distance={0} />
+                            <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Valor Total com desconto:</Text>
                                 <Text>{formatter.format(totalValueFinnaly)}</Text>
                             </Box>
+                            <Divider distance={0} />
                             <SelectList fullWidth data={groupDaysForPay} valueSelection={dayForPayment || ''} onSelect={(value) => setDayForPayment(value)}
                                 title="Selecione o dia do vencimento *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -1476,7 +1524,7 @@ export const Payment = (props) => {
                                 if (date?.getDate() >= 1 && date?.getDate() <= 31) {
                                     setDayForPayment(date?.getDate() + 1);
                                 } else {
-                                   return
+                                    return
                                 }
                             }} value={(monthForPayment)?.split('T')[0] || ''} type="date" label='Primeira cobrança' sx={{ flex: 1, }} />
                             <CheckBoxComponent
@@ -1989,6 +2037,7 @@ export const Payment = (props) => {
 
 export const ContractStudent = (props) => {
     const {
+        isReenrollment,
         paymentForm,
         valuesContract,
         courseData,
@@ -2174,15 +2223,15 @@ export const ContractStudent = (props) => {
                             table: {
                                 widths: ['30%', '70%'],
                                 body: userDataTable(userData).map(row => [
-                                    { text: row?.title, bold: true, fontFamily: 'Metropolis Regular' }, 
+                                    { text: row?.title, bold: true, fontFamily: 'Metropolis Regular' },
                                     { text: row?.value || '', fontFamily: 'MetropolisBold' },
                                 ]),
                                 layout: {
                                     hLineWidth: function (i, node) {
-                                        return i === 0 ? 0 : 1; 
+                                        return i === 0 ? 0 : 1;
                                     },
                                     vLineWidth: function (i, node) {
-                                        return 0; 
+                                        return 0;
                                     },
                                 },
                             },
@@ -2210,7 +2259,7 @@ export const ContractStudent = (props) => {
                                         return i === 0 ? 0 : 1;
                                     },
                                     vLineWidth: function (i, node) {
-                                        return 0; 
+                                        return 0;
                                     },
                                 },
                             },
@@ -2241,7 +2290,7 @@ export const ContractStudent = (props) => {
                                 ].filter(row => row.length > 0),
                                 layout: {
                                     hLineWidth: function (i, node) {
-                                        return i === 0 ? 0 : 1; 
+                                        return i === 0 ? 0 : 1;
                                     },
                                     vLineWidth: function (i, node) {
                                         return 0;
@@ -2342,17 +2391,17 @@ export const ContractStudent = (props) => {
                 style: 'currency',
                 currency: 'BRL',
             });
-    
+
             tableBody.push([
                 { text: 'Valor de entrada', style: 'tableHeader', fillColor: '#F49519' },
                 { text: 'Forma de pagamento', style: 'tableHeader', fillColor: '#F49519' },
                 { text: 'Pagamento', style: 'tableHeader', fillColor: '#F49519' },
                 { text: 'Data de Pagamento', style: 'tableHeader', fillColor: '#F49519' },
             ]);
-    
+
             const dateForPaymentEntry = paymentData?.dateForPaymentEntry;
             const isValidDate = !isNaN(new Date(dateForPaymentEntry).getTime());
-    
+
             if (isValidDate) {
                 tableBody.push([
                     formatter.format(paymentData?.valueEntry),
@@ -2365,7 +2414,7 @@ export const ContractStudent = (props) => {
                 console.error('Invalid dateForPaymentEntry:', dateForPaymentEntry);
                 return null; // or handle it accordingly
             }
-    
+
             const tableDefinition = {
                 table: {
                     widths: ['auto', 'auto', 'auto', 'auto'],
@@ -2382,14 +2431,14 @@ export const ContractStudent = (props) => {
                     },
                 },
             };
-    
+
             return tableDefinition;
         } catch (error) {
             alert.error('Houve um erro ao processar contrato.');
             return error;
         }
     };
-    
+
 
 
 

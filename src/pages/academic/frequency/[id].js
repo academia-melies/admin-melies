@@ -10,7 +10,7 @@ import { formatDate, formatTimeStamp } from "../../../helpers"
 import { icons } from "../../../organisms/layout/Colors"
 
 export default function EditFrequency(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, theme } = useAppContext()
     let idUser = user?.id;
     const router = useRouter()
     const query = router.query
@@ -88,7 +88,7 @@ export default function EditFrequency(props) {
     }, [frequencyData?.modulo_turma])
 
     useEffect(() => {
-        if(frequencyData?.disciplina_id){
+        if (frequencyData?.disciplina_id) {
             handleStudentsDiscipline()
             listClassDay(frequencyData?.disciplina_id)
         }
@@ -341,7 +341,7 @@ export default function EditFrequency(props) {
         const dateA = new Date(a.dt_aula);
         const dateB = new Date(b.dt_aula);
 
-        return dateA - dateB;
+        return dateB - dateA;
     });
 
     const getStatusDoDia = (classData) => {
@@ -383,99 +383,116 @@ export default function EditFrequency(props) {
                     (<>
                         {sortedStudentData.map((item, index) => {
                             const classData = item?.turma;
-                            const aulaId = item?.aula_id
-                            const dt_class = formatTimeStamp(item?.dt_aula)
-                            const statusFreq = getStatusDoDia(classData)
+                            const aulaId = item?.aula_id;
+                            const dt_class = formatTimeStamp(item?.dt_aula);
+                            const statusFreq = getStatusDoDia(classData);
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+
+                            const classDay = new Date(item?.dt_aula);
+                            classDay.setHours(0, 0, 0, 0);
+
+                            // Copiando a data de hoje e subtraindo um dia
+                            const yesterday = new Date(today);
+
+                            // Comparando as datas
+                            const todayClass = classDay.getTime() === yesterday.getTime();
 
                             return (
-                                <ContentContainer key={`${item}-${index}`} sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 4,
-                                            width: 350,
-                                            justifyContent: 'space-between',
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: 'pointer',
-                                                color: colorPalette.buttonColor
-                                            }
-                                        }}
-                                        onClick={() => toggleClassTable(index)}
-                                    >
-                                        <Box sx={{
-                                            display: 'flex', alignItems: 'center', gap: 4, width: 150, justifyContent: 'space-between',
-                                        }}>
-                                            <Text bold style={{ color: 'inherit' }}>{dt_class}</Text>
-                                            <Box
-                                                sx={{
-                                                    ...styles.menuIcon,
-                                                    backgroundImage: `url(${icons.gray_arrow_down})`,
-                                                    transform: showClassTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
-                                                    transition: '.3s',
-                                                    width: 17,
-                                                    height: 17
-                                                }}
-                                            />
+                                <Box key={`${item}-${index}`} sx={{ position: 'relative' }}>
+                                    {todayClass && <Box sx={{
+                                        padding: '5px 15px', backgroundColor: colorPalette?.buttonColor, position: 'absolute', top: -10, left: 5, zIndex: 99999,
+                                        borderRadius: 8
+                                    }}><Text bold small style={{ color: '#fff' }}>Aula do dia</Text></Box>}
+                                    <ContentContainer sx={{ display: 'flex', gap: 2, flexDirection: 'column', border: todayClass && `1px solid ${colorPalette?.buttonColor}` }}>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 4,
+                                                width: 350,
+                                                justifyContent: 'space-between',
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer',
+                                                    color: colorPalette.buttonColor
+                                                }
+                                            }}
+                                            onClick={() => toggleClassTable(index)}
+                                        >
+                                            <Box sx={{
+                                                display: 'flex', alignItems: 'center', gap: 4, width: 150, justifyContent: 'space-between',
+                                            }}>
+                                                <Text bold style={{ color: !theme ? '#fff' : colorPalette.textColor }}>{dt_class}</Text>
+                                                <Box
+                                                    sx={{
+                                                        ...styles.menuIcon,
+                                                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                        transform: showClassTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
+                                                        transition: '.3s',
+                                                        width: 17,
+                                                        height: 17
+                                                    }}
+                                                />
+                                            </Box>
+
+                                            <Box sx={{ backgroundColor: statusFreq === 'Pendente' ? 'red' : 'green', borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
+                                                <Text xsmall bold style={{ color: "#fff", }}>{statusFreq}</Text>
+                                            </Box>
                                         </Box>
+                                        {showClassTable[index] && (
+                                            <Box sx={{ display: 'flex' }}>
 
-                                        <Box sx={{ backgroundColor: statusFreq === 'Pendente' ? 'red' : 'green', borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
-                                            <Text xsmall bold style={{ color: "#fff", }}>{statusFreq}</Text>
-                                        </Box>
-                                    </Box>
-                                    {showClassTable[index] && (
-                                        <Box sx={{ display: 'flex' }}>
+                                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
+                                                    <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                                        <thead>
+                                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
+                                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>1º Periodo</th>
+                                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>2º Periodo</th>
+                                                                <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
 
-                                            <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, width: '100%' }}>
-                                                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                                                    <thead>
-                                                        <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
-                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>1º Periodo</th>
-                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>2º Periodo</th>
-                                                            <th style={{ padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody style={{ flex: 1 }}>
+                                                            {
+                                                                classData?.map((item, index) => {
+                                                                    return (
+                                                                        <tr key={`${item}-${index}`}>
+                                                                            <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                                <Text>{item?.nome}</Text>
+                                                                            </td>
+                                                                            <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                                <RadioItem
+                                                                                    valueRadio={item?.periodo_1}
+                                                                                    group={groupFrequency}
+                                                                                    horizontal={true}
+                                                                                    onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_1', parseInt(value), aulaId)}
+                                                                                />
+                                                                            </td>
+                                                                            <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                                <RadioItem
+                                                                                    valueRadio={item?.periodo_2}
+                                                                                    group={groupFrequency}
+                                                                                    horizontal={true}
+                                                                                    onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_2', parseInt(value), aulaId)}
+                                                                                />
+                                                                            </td>
+                                                                            <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                                <TextInput fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })
 
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody style={{ flex: 1 }}>
-                                                        {
-                                                            classData?.map((item, index) => {
-                                                                return (
-                                                                    <tr key={`${item}-${index}`}>
-                                                                        <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                            {item?.nome}
-                                                                        </td>
-                                                                        <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                            <RadioItem
-                                                                                valueRadio={item?.periodo_1}
-                                                                                group={groupFrequency}
-                                                                                horizontal={true}
-                                                                                onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_1', parseInt(value), aulaId)}
-                                                                            />
-                                                                        </td>
-                                                                        <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                            <RadioItem
-                                                                                valueRadio={item?.periodo_2}
-                                                                                group={groupFrequency}
-                                                                                horizontal={true}
-                                                                                onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_2', parseInt(value), aulaId)}
-                                                                            />
-                                                                        </td>
-                                                                        <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                            <TextInput fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            })
-
-                                                        }
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </Box>
-                                    )}
-                                </ContentContainer>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </Box>
+                                        )}
+                                    </ContentContainer>
+                                </Box>
                             )
                         })}
                     </>
