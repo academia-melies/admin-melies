@@ -397,17 +397,14 @@ export default function EditFrequency(props) {
 
                             // Comparando as datas
                             const todayClass = classDay.getTime() === yesterday.getTime();
-                            console.log(todayClass)
-                            console.log(yesterday)
-                            console.log(classDay)
 
                             return (
-                                <Box sx={{ position: 'relative' }}>
+                                <Box key={`${item}-${index}`} sx={{ position: 'relative' }}>
                                     {todayClass && <Box sx={{
                                         padding: '5px 15px', backgroundColor: colorPalette?.buttonColor, position: 'absolute', top: -10, left: 5, zIndex: 99999,
                                         borderRadius: 8
                                     }}><Text bold small style={{ color: '#fff' }}>Aula do dia</Text></Box>}
-                                    <ContentContainer key={`${item}-${index}`} sx={{ display: 'flex', gap: 2, flexDirection: 'column', border: todayClass && `1px solid ${colorPalette?.buttonColor}` }}>
+                                    <ContentContainer sx={{ display: 'flex', gap: 2, flexDirection: 'column', border: todayClass && `1px solid ${colorPalette?.buttonColor}` }}>
                                         <Box
                                             sx={{
                                                 display: 'flex',
