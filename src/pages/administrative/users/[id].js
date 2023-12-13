@@ -11,8 +11,6 @@ import { createContract, createEnrollment, createUser, deleteFile, deleteUser, e
 import { emailValidator, formatCEP, formatCPF, formatDate, formatRg, formatTimeStamp } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
-import { da } from "date-fns/locale"
-import { getYear } from "date-fns"
 
 export default function EditUser() {
     const { setLoading, alert, colorPalette, user, matches, theme, setShowConfirmationDialog } = useAppContext()
@@ -90,7 +88,6 @@ export default function EditUser() {
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
-    const [classesEnrollment, setClassesEnrollment] = useState([])
     const [period, setPeriod] = useState([])
     const [periodSelected, setPeriodSelected] = useState([])
     const [classesInterest, setClassesInterest] = useState([])
@@ -142,7 +139,6 @@ export default function EditUser() {
     const [valueIdHistoric, setValueIdHistoric] = useState()
     const [valueIdInterst, setValueIdInterst] = useState()
     const [interestSelected, setInterestSelected] = useState({})
-    const [testSelectiveProcess, setTestSelectiveProcess] = useState('')
     const [filesUser, setFilesUser] = useState([])
     const [contractStudent, setContractStudent] = useState([])
     const [officeHours, setOfficeHours] = useState([
@@ -157,11 +153,7 @@ export default function EditUser() {
     const [enrollmentStudentEditId, setEnrollmentStudentEditId] = useState()
     const [enrollmentStudentEditData, setEnrollmentStudentEditData] = useState({})
     const [disciplines, setDisciplines] = useState([])
-    const [disciplinesEnrollment, setDisciplinesEnrollment] = useState([])
-    const [installmentsStudent, setInstallmentsStudent] = useState([])
     const [showEditPhoto, setShowEditPhoto] = useState(false)
-    const [disciplinesSelected, setDisciplinesSelected] = useState('')
-    const [showDisciplinesClassCall, setShowDisciplinesClassCall] = useState({ active: false, moduleStudent: null, enrollmentId: null })
 
 
     useEffect(() => {
@@ -175,12 +167,6 @@ export default function EditUser() {
     useEffect(() => {
         listClass()
     }, [enrollmentData?.curso_id, interests.curso_id, interestSelected?.curso_id])
-
-    useEffect(() => {
-        if (showDisciplinesClassCall.active === true) { listDisciplinesEnrollment() }
-    }, [showDisciplinesClassCall.active])
-
-
 
     const getUserData = async () => {
         try {
@@ -340,23 +326,6 @@ export default function EditUser() {
             const { data = [] } = response
             if (data.length > 0) {
                 setOfficeHours(data)
-                return
-            }
-        } catch (error) {
-            console.log(error)
-            return error
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const getInstallments = async () => {
-        setLoading(true)
-        try {
-            const response = await api.get(`/student/installment/user/${id}`)
-            const { data = [] } = response
-            if (data?.length > 0) {
-                setInstallmentsStudent(data)
                 return
             }
         } catch (error) {
@@ -534,25 +503,6 @@ export default function EditUser() {
     }
 
 
-    async function listDisciplinesEnrollment() {
-        try {
-            const response = await api.get(`/enrollment/disciplines/${showDisciplinesClassCall?.enrollmentId}?moduleStudent=${showDisciplinesClassCall?.moduleStudent}`)
-            const { data } = response
-            const groupDisciplines = data.map(disciplines => ({
-                label: disciplines.nome_disciplina,
-                value: disciplines?.disciplina_id?.toString()
-            }));
-
-            const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
-            const flattenedDisciplinesSelected = disciplinesSelect.join(', ');
-            setDisciplinesSelected(flattenedDisciplinesSelected)
-            setDisciplinesEnrollment(groupDisciplines);
-            return groupDisciplines;
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
     async function autoEmailMelies(email) {
         try {
             const name = userData?.nome?.split(' ');
@@ -588,7 +538,6 @@ export default function EditUser() {
             getDependent()
             getDisciplineProfessor()
             await listClass()
-            getInstallments()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -2427,12 +2376,6 @@ export default function EditUser() {
                                                     </Box>
                                                     <Divider padding={0} />
                                                     <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Incluir aluno na chamada:</Text>
-                                                        <Button small text="disciplinas" style={{ width: 105, height: 25, alignItems: 'center' }} onClick={() => setShowDisciplinesClassCall({ active: true, moduleStudent: item?.modulo, enrollmentId: enrollmentId })} />
-                                                    </Box>
-                                                    <Divider padding={0} />
-
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                         <Button secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
                                                             setEnrollmentStudentEditId(item?.id_matricula)
                                                             handleEnrollStudentById(item?.id_matricula)
@@ -2454,48 +2397,6 @@ export default function EditUser() {
 
                 </ContentContainer >
             }
-
-            <Backdrop open={showDisciplinesClassCall?.active} sx={{ zIndex: 999 }}>
-                <ContentContainer gap={3}>
-                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', gap: 4 }}>
-                        <Text bold>Lista de Chamada</Text>
-                        <Box sx={{
-                            ...styles.menuIcon,
-                            backgroundImage: `url(${icons.gray_close})`,
-                            transition: '.3s',
-                            zIndex: 999999999,
-                            "&:hover": {
-                                opacity: 0.8,
-                                cursor: 'pointer'
-                            }
-                        }} onClick={() => {
-                            setShowDisciplinesClassCall({ active: false, moduleStudent: null, enrollmentId: null })
-                            setDisciplinesSelected("")
-                        }} />
-                    </Box>
-                    <Divider />
-                    <Box sx={{ display: 'flex', maxHeight: 500, overflowY: 'auto' }}>
-                        <CheckBoxComponent
-                            padding={false}
-                            valueChecked={disciplinesSelected}
-                            boxGroup={disciplinesEnrollment}
-                            title="Selecione as disciplinas*"
-                            horizontal={false}
-                            onSelect={(value) => setDisciplinesSelected(value)}
-                            sx={{ flex: 1, }}
-                        />
-                    </Box>
-                    <Divider />
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button text="salvar" small style={{ height: 30, flex: 1 }} />
-                        <Button secondary text="cancelar" small style={{ height: 30, flex: 1 }} onClick={() => {
-                            setShowDisciplinesClassCall({ active: false, moduleStudent: null, enrollmentId: null })
-                            setDisciplinesSelected("")
-                        }}
-                        />
-                    </Box>
-                </ContentContainer>
-            </Backdrop>
 
             <Backdrop open={showSections?.editEnroll} sx={{ zIndex: 999 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

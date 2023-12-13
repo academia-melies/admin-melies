@@ -6,7 +6,7 @@ import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { formatDate, formatTimeStamp } from "../../../helpers"
+import { formatDate, formatTimeStamp, formattedStringInDate } from "../../../helpers"
 import { icons } from "../../../organisms/layout/Colors"
 
 export default function EditFrequency(props) {
@@ -89,16 +89,59 @@ export default function EditFrequency(props) {
 
     useEffect(() => {
         if (frequencyData?.disciplina_id) {
-            handleStudentsDiscipline()
-            listClassDay(frequencyData?.disciplina_id)
+            handleFrequencyList(frequencyData?.disciplina_id)
         }
     }, [frequencyData?.disciplina_id])
 
-    const handleStudentsDiscipline = async () => {
-        const students = await listStudents(frequencyData?.disciplina_id, frequencyData?.modulo_turma)
-        if (frequencyData?.disciplina_id !== null && students) {
-            handleStudent(id)
+    const handleFrequencyList = async (disciplina_id) => {
+        setLoading(true)
+        try {
+            const students = await handleStudentsDiscipline(disciplina_id)
+            if (!students.length > 0) {
+                alert.error('A turma não possui estudantes cadastrados para esse módulo.')
+                return
+            }
+
+            const classesDays = await listClassDay(disciplina_id)
+            if (!classesDays.length > 0) {
+                alert.info('Não existe cronograma/ aulas agendadas para essa disciplina.')
+                return
+            }
+
+            let dataFrequency = [];
+            classesDays.forEach(classDay => {
+                const classDayData = {
+                    aula_id: classDay.value,
+                    dt_aula: classDay.label,
+                    turma: students.map(student => ({
+                        aula_id: classDay.value,
+                        disciplina_id: disciplina_id,
+                        periodo_1: null,
+                        periodo_2: null,
+                        professor_id_1: null,
+                        professor_id_2: null,
+                        turma_id: parseInt(id),
+                        usuario_id: student.usuario_id,
+                        nome: student.nome,
+                    })),
+                };
+
+                dataFrequency.push(classDayData);
+            });
+
+            if (dataFrequency?.length > 0) {
+                await handleStudent(dataFrequency)
+            }
+        } catch (error) {
+            return error
+        } finally {
+            setLoading(false)
         }
+    }
+
+    const handleStudentsDiscipline = async (disciplina_id) => {
+        const students = await listStudents(disciplina_id, frequencyData?.modulo_turma)
+        return students
     }
 
     const handleClassDay = async () => {
@@ -141,7 +184,6 @@ export default function EditFrequency(props) {
 
 
     const handleChangeFrequency = (userId, field, value, aulaId) => {
-        // Copie os dados dos alunos em uma nova matriz (mantenha a imutabilidade)
         const updatedStudents = studentData.map(day => {
             const turmaCopy = [...day.turma];
             const studentToUpdate = turmaCopy.find(item => item.usuario_id === userId);
@@ -160,74 +202,99 @@ export default function EditFrequency(props) {
                 turma: turmaCopy,
             };
         });
-
-        // Atualize o estado com os dados atualizados
         setStudentData(updatedStudents);
     };
 
     const handleCreateFrequency = async () => {
-
-        let disciplineId = frequencyData?.disciplina_id
-        if (classDays?.length < 1) {
-            alert.info('Não existe cronograma/ aulas agendadas para essa disciplina.')
-            return
-        } else {
-            setLoading(true)
-            try {
-                const response = await api.post(`/frequency/create`, { studentsList, classDays, disciplineId });
-                if (response?.status === 201) {
-                    alert.success('Turma cadastrado com sucesso.');
-                    await handleItems()
-                    await handleStudent()
-                    await listClassDay(disciplineId)
-                }
-            } catch (error) {
-                alert.error('Tivemos um problema ao cadastrar turma.');
-            } finally {
-                setLoading(false)
-            }
-        }
-    }
-
-
-    const handleEditFrequency = async () => {
         setLoading(true)
         try {
-            const response = await api.patch(`/frequency/update`, { studentData });
-            if (response?.status === 201) {
+            let disciplineId = frequencyData?.disciplina_id;
+            const newFrequencyStudentListArray = studentData?.flatMap(day => day.turma.filter(student => !student.id_freq_aluno && (student['periodo_1'] !== null || student['periodo_2'] !== null)));
+            const updateFrequencyStudentListArray = studentData?.flatMap(day => day.turma.filter(student => student.id_freq_aluno));
+            let status;
+
+            if (newFrequencyStudentListArray.length > 0) {
+                const response = await api.post(`/frequency/create`, { newFrequencyStudentListArray });
+                if (response?.status === 201) {
+                    status = 201;
+                } else {
+                    status = 422
+                }
+            }
+
+            if (updateFrequencyStudentListArray.length > 0) {
+                const response = await api.patch(`/frequency/update`, { updateFrequencyStudentListArray });
+                if (response?.status === 201) {
+                    status = 201;
+                } else {
+                    status = 422
+                }
+            }
+            if (status === 201) {
                 alert.success('Chamada atualizada com sucesso.');
+                await getClass()
+                await handleItems()
+                await handleFrequencyList(disciplineId)
+                return
+            } else {
+                alert.error('Ocorreu um erro ao atualizar lista de chamada.')
                 return
             }
-            alert.error('Tivemos um problema ao atualizar Chamada.');
         } catch (error) {
-            alert.error('Tivemos um problema ao atualizar Chamada.');
+            alert.error('Tivemos um problema ao lançar chamada.');
         } finally {
             setLoading(false)
         }
     }
 
-    const handleStudent = async () => {
-        setLoading(true)
+
+    const handleStudent = async (dataFrequency) => {
         let disciplineId = frequencyData?.disciplina_id;
         try {
             const response = await api.get(`/frequency/discipline/${disciplineId}/${id}`)
             const { data } = response
             if (data.length > 0) {
-                setStudentData(data)
+                const updatedStudentData = [...dataFrequency];
+
+                data.forEach(newClassDayData => {
+                    const existingClassDayDataIndex = updatedStudentData.findIndex(existingClassDayData =>
+                        existingClassDayData.aula_id === newClassDayData.aula_id
+                    );
+
+                    if (existingClassDayDataIndex !== -1) {
+                        // Verificar cada aluno na turma individualmente
+                        newClassDayData.turma.forEach(newStudent => {
+                            const existingStudentIndex = updatedStudentData[existingClassDayDataIndex].turma.findIndex(
+                                existingStudent => existingStudent.usuario_id === newStudent.usuario_id
+                            );
+
+                            if (existingStudentIndex !== -1) {
+                                // Atualizar dados do aluno existente
+                                updatedStudentData[existingClassDayDataIndex].turma[existingStudentIndex] = newStudent;
+                            } else {
+                                // Adicionar novo aluno à turma existente
+                                updatedStudentData[existingClassDayDataIndex].turma.push(newStudent);
+                            }
+                        });
+                    } else {
+                        // Adicionar totalmente novo dia de aula
+                        updatedStudentData.push(newClassDayData);
+                    }
+                });
+
+
+
+                setStudentData(updatedStudentData);
                 setShowStudents(true);
                 setNewCallList(false)
             } else {
-                alert.info('A turma não possui uma lista de chamada para a disciplina e modulo selecionado. Por favor, crie uma chamada.')
+                setStudentData(dataFrequency);
                 setShowStudents(true);
                 setNewCallList(true)
-                setStudentData([])
             }
         } catch (error) {
             console.log(error)
             return error;
-        }
-        finally {
-            setLoading(false)
         }
     }
 
@@ -283,24 +350,21 @@ export default function EditFrequency(props) {
     }
 
     async function listStudents(disciplineId, moduleStudent) {
-        setLoading(true)
         try {
             const response = await api.get(`/class/students/${id}/${disciplineId}/?moduleStudent=${moduleStudent}`)
             const { data } = response
             if (data) {
                 setHasStudents(true)
                 setStudentsList(data)
-                return true
+                return data
             } else {
                 setHasStudents(false)
-                alert.error('A turma não possui estudantes cadastrados')
+                alert.error('A turma não possui estudantes cadastrados para esse módulo.')
                 return false
             }
 
         } catch (error) {
             return error;
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -310,16 +374,20 @@ export default function EditFrequency(props) {
             const response = await api.get(`/classDay/discipline/${id}/${disciplineId}`)
             const { data } = response
             if (data.length > 0) {
-                const groupClassDay = data.map(day => ({
-                    label: formatDate(day?.dt_aula),
-                    value: day?.id_aula,
-                    dateObject: new Date(day?.dt_aula),
-                }));
+                const groupClassDay = data.map(day => {
+                    const dateObject = new Date(day?.dt_aula);
+                    const adjustedDate = new Date(dateObject.getTime() + dateObject.getTimezoneOffset() * 60000);
+                    return {
+                        label: day?.dt_aula,
+                        value: day?.id_aula,
+                        dateObject: adjustedDate,
+                    };
+                });
 
                 groupClassDay.sort((a, b) => a.dateObject - b.dateObject);
                 const sortedClassDays = groupClassDay.map(({ dateObject, ...rest }) => rest);
-
                 setClassDays(sortedClassDays);
+                return sortedClassDays
             }
 
         } catch (error) {
@@ -338,9 +406,11 @@ export default function EditFrequency(props) {
     });
 
     const sortedStudentData = [...studentData].sort((a, b) => {
-        const dateA = new Date(a.dt_aula);
-        const dateB = new Date(b.dt_aula);
+        let dateA = formattedStringInDate(a.dt_aula);
+        let dateB = formattedStringInDate(b.dt_aula);
 
+        dateA = new Date(a.dt_aula);
+        dateB = new Date(b.dt_aula);
         return dateB - dateA;
     });
 
@@ -356,10 +426,10 @@ export default function EditFrequency(props) {
     return (
         <>
             <SectionHeader
-                perfil={'turma'}
-                title={classData?.nome_turma}
+                perfil={classData?.nome_turma}
+                title={'Lista de Chamada'}
                 saveButton={studentData.length > 0 ? true : false}
-                saveButtonAction={handleEditFrequency}
+                saveButtonAction={handleCreateFrequency}
             />
             <ContentContainer row style={{ display: 'flex', justifyContent: 'space-between', gap: 1.8, padding: 5, alignItems: 'center' }}>
                 <SelectList fullWidth data={modules} valueSelection={frequencyData?.modulo_turma || ''} onSelect={(value) => handleSelectModule(value)}
@@ -371,9 +441,9 @@ export default function EditFrequency(props) {
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
 
-                {newCallList && hasStudents && frequencyData?.disciplina_id && (
+                {/* {newCallList && hasStudents && frequencyData?.disciplina_id && (
                     <Button secondary text="criar chamada" small onClick={() => handleCreateFrequency()} style={{ width: 120, height: 30 }} />
-                )}
+                )} */}
             </ContentContainer>
 
 
@@ -388,14 +458,9 @@ export default function EditFrequency(props) {
                             const statusFreq = getStatusDoDia(classData);
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
-
                             const classDay = new Date(item?.dt_aula);
                             classDay.setHours(0, 0, 0, 0);
-
-                            // Copiando a data de hoje e subtraindo um dia
                             const yesterday = new Date(today);
-
-                            // Comparando as datas
                             const todayClass = classDay.getTime() === yesterday.getTime();
 
                             return (
