@@ -23,11 +23,12 @@ export default function InterestEnroll() {
     const router = useRouter();
     const { setLoading, user, alert } = useAppContext()
     const userId = user?.id;
-    const { id, interest, reenrollment } = router.query;
+    const { id, interest, reenrollment, classId, courseId } = router.query;
     let isReenrollment = reenrollment ? true : false
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [interestData, setInterestData] = useState({})
+    const [enrollmentsList, setEnrollmentsList] = useState([])
     const [responsiblePayerData, setResponsiblePayerData] = useState({
         nome_resp: '',
         usuario_id: id,
@@ -47,10 +48,12 @@ export default function InterestEnroll() {
     const [disciplines, setDisciplines] = useState([])
     const [userData, setUserData] = useState({})
     const [disciplinesSelected, setDisciplinesSelected] = useState()
+    const [disciplinesDpSelected, setDisciplinesDpSelected] = useState()
     const [indiceTela, setIndiceTela] = useState(0);
     const [routeScreen, setRouteScreen] = useState('interesse >')
     const [quantityDisciplinesSelected, setQuantityDisciplinesSelected] = useState(0)
     const [quantityDisciplinesModule, setQuantityDisciplinesModule] = useState(0)
+    const [disciplinesDp, setDisciplinesDp] = useState([])
     const [quantityDisciplinesDp, setQuantityDisciplinesDp] = useState(0)
     const [valuesDisciplinesDp, setValuesDisciplinesDp] = useState()
     const [valuesCourse, setValuesCourse] = useState({})
@@ -88,6 +91,7 @@ export default function InterestEnroll() {
     ])
     const [formData, setFormData] = useState()
     const [paymentsInfoData, setPaymentsInfoData] = useState()
+    const [currentModule, setCurrentModule] = useState(1)
 
 
 
@@ -172,6 +176,29 @@ export default function InterestEnroll() {
         }
     }
 
+
+    const handleEnrollments = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/enrollments/user/reenrollment/${id}`)
+            const { data } = response
+            if (data.length > 0) {
+                const lastModule = data?.map(item => item.modulo)
+                lastModule.sort((a, b) => a - b)
+                const highestModule = Math.max(...lastModule);
+                setCurrentModule(highestModule + 1)
+                setEnrollmentsList(data)
+                return highestModule + 1
+            }
+            return false
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleResponsible = async (userDatails) => {
         try {
             const response = await api.get(`/responsible/${id}`)
@@ -203,10 +230,10 @@ export default function InterestEnroll() {
         }
     }
 
-    async function handleSelectModule(turma_id) {
+    async function handleSelectModule(turma_id, currentModule) {
         setLoading(true)
         try {
-            const response = await api.get(`/classSchedule/disciplines/${turma_id}/1`)
+            const response = await api.get(`/classSchedule/disciplines/${turma_id}/${currentModule}`)
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
                 label: disciplines.nome_disciplina,
@@ -218,6 +245,34 @@ export default function InterestEnroll() {
             setQuantityDisciplinesModule(groupDisciplines?.length)
             setDisciplinesSelected(flattenedDisciplinesSelected)
             setDisciplines(groupDisciplines);
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    async function handleDisciplinesDP() {
+        setLoading(true)
+        try {
+            const response = await api.get(`/enrollment/disciplines/dp/${id}`)
+            const { data } = response
+            if (data.length > 0) {
+
+                const groupDisciplines = data.map(disciplines => ({
+                    label: disciplines.nome_disciplina,
+                    value: disciplines?.disciplina_id.toString()
+                }));
+
+                const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
+                const flattenedDisciplinesSelected = disciplinesSelect.join(', ');
+                setQuantityDisciplinesDp(groupDisciplines?.length)
+                setDisciplinesDpSelected(flattenedDisciplinesSelected)
+                setDisciplinesDp(groupDisciplines);
+
+            }
         } catch (error) {
             console.log(error)
             return error
@@ -286,16 +341,23 @@ export default function InterestEnroll() {
 
     const handleItems = async () => {
         try {
+            let moduleCurrent = currentModule;
             const userDatails = await handleUserData()
             const interests = await handleInterest()
-            if (interests) {
-                await handleSelectModule(interests?.turma_id)
-                await handleValuesCourse(interests?.curso_id, interests?.turma_id)
-                await handleCourseData(interests?.curso_id)
-                await handleClassData(interests?.turma_id)
-                await handleResponsible(userDatails)
-                await handlePaymentsProfile()
+            let classIdEnrollment = interests?.turma_id
+            let courseIdEnrollment = interests?.curso_id
+            if (isReenrollment) {
+                moduleCurrent = await handleEnrollments()
+                await handleDisciplinesDP()
+                classIdEnrollment = classId
+                courseIdEnrollment = courseId
             }
+            await handleSelectModule(classIdEnrollment, moduleCurrent)
+            await handleValuesCourse(courseIdEnrollment, classIdEnrollment)
+            await handleCourseData(courseIdEnrollment)
+            await handleClassData(classIdEnrollment)
+            await handleResponsible(userDatails)
+            await handlePaymentsProfile()
         } catch (error) {
             console.log(error)
             return error
@@ -596,7 +658,6 @@ export default function InterestEnroll() {
         }
     }
 
-
     const telas = [
         (
             <>
@@ -611,6 +672,13 @@ export default function InterestEnroll() {
                     setLoading={setLoading}
                     setCheckValidateScreen={setCheckValidateScreen}
                     pushRouteScreen={pushRouteScreen}
+                    disciplinesDp={disciplinesDp}
+                    disciplinesDpSelected={disciplinesDpSelected}
+                    courseData={courseData}
+                    classData={classData}
+                    currentModule={currentModule}
+                    valuesDisciplinesDp={valuesDisciplinesDp}
+                    setValuesDisciplinesDp={setValuesDisciplinesDp}
                 />
             </>
         ),
@@ -651,6 +719,11 @@ export default function InterestEnroll() {
                     pushRouteScreen={pushRouteScreen}
                     paymentsInfoData={paymentsInfoData}
                     setPaymentsInfoData={setPaymentsInfoData}
+                    quantityDisciplinesDp={quantityDisciplinesDp}
+                    setValuesDisciplinesDp={setValuesDisciplinesDp}
+                    valuesDisciplinesDp={valuesDisciplinesDp}
+                    disciplinesDpSelected={disciplinesDpSelected}
+
                 />
             </>
         ),
@@ -674,6 +747,7 @@ export default function InterestEnroll() {
                     pushRouteScreen={pushRouteScreen}
                     setFormData={setFormData}
                     paymentsInfoData={paymentsInfoData} setPaymentsInfoData={setPaymentsInfoData}
+                    quantityDisciplinesDp={quantityDisciplinesDp}
                 />
             </>
         )
@@ -681,35 +755,31 @@ export default function InterestEnroll() {
 
 
     return (
-        <> {interest ?
-            <>
-                <SectionHeader
-                    perfil={routeScreen || 'Matricula'}
-                    title={!isReenrollment ? 'Matrícula' : 'Rematrícula'}
-                />
-                <Text>{userData?.nome}, você está iniciando sua {!isReenrollment ? 'matrícula' : 'rematrícula'} no curso escolhido.
-                    Para realizá-la é necessário cumprir os 3 passos:
-                </Text>
+        <>
+            <SectionHeader
+                perfil={routeScreen || 'Matricula'}
+                title={!isReenrollment ? 'Matrícula' : 'Rematrícula'}
+            />
+            <Text>{userData?.nome}, você está iniciando sua {!isReenrollment ? 'matrícula' : 'rematrícula'} no curso escolhido.
+                Para realizá-la é necessário cumprir os 3 passos:
+            </Text>
 
-                {telas[indiceTela]}
-                <Backdrop sx={{ zIndex: 99999999, backgroundColor: '#0E0D15' }} open={loadingEnrollment}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column' }}>
-                        {enrollmentCompleted?.active ? (
-                            enrollmentCompleted.status === 201 ?
-                                <CheckCircleIcon style={{ color: 'green', fontSize: 30 }} /> :
-                                <CancelIcon style={{ color: 'red', fontSize: 30 }} />
-                        ) : <CircularProgress />}
-                        <Text bold style={{ color: '#fff' }}>{messageEnrollment}</Text>
-                    </Box>
-                </Backdrop>
-            </>
-            :
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                <Text bold title> Você precisa adicionar um interesse antes para prosseguir com a Matícula</Text>
-            </Box>
-        }
-
+            {telas[indiceTela]}
+            <Backdrop sx={{ zIndex: 99999999, backgroundColor: '#0E0D15' }} open={loadingEnrollment}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column' }}>
+                    {enrollmentCompleted?.active ? (
+                        enrollmentCompleted.status === 201 ?
+                            <CheckCircleIcon style={{ color: 'green', fontSize: 30 }} /> :
+                            <CancelIcon style={{ color: 'red', fontSize: 30 }} />
+                    ) : <CircularProgress />}
+                    <Text bold style={{ color: '#fff' }}>{messageEnrollment}</Text>
+                </Box>
+            </Backdrop>
         </>
+        // :
+        // <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+        //     <Text bold title> Ocorreu um erro ao buscar turma.</Text>
+        // </Box>
     )
 }
 
@@ -718,11 +788,18 @@ export const EnrollStudentDetails = (props) => {
     const {
         disciplinesSelected,
         disciplines,
+        disciplinesDp,
         setDisciplinesSelected,
+        disciplinesDpSelected,
         interestData,
         pushRouteScreen,
         valuesCourse,
-        isReenrollment
+        isReenrollment,
+        courseData,
+        classData,
+        currentModule,
+        valuesDisciplinesDp,
+        setValuesDisciplinesDp
     } = props
 
     const { colorPalette, theme } = useAppContext()
@@ -738,24 +815,45 @@ export const EnrollStudentDetails = (props) => {
             <ContentContainer gap={2}>
                 <Text bold title>{!isReenrollment ? 'Interesse' : 'Dados Curso'}</Text>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
-                            <Text bold>Curso:</Text>
-                            <Text>{interestData?.nome_curso}</Text>
+                    {!isReenrollment ?
+                        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                                <Text bold>Curso:</Text>
+                                <Text>{interestData?.nome_curso}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                                <Text bold>Turma:</Text>
+                                <Text>{interestData?.nome_turma}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                                <Text bold>Periodo:</Text>
+                                <Text>{interestData?.periodo_interesse}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                                <Text bold>Observação: </Text>
+                                <Text>{interestData?.observacao_int || '-'}</Text>
+                            </Box>
                         </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
-                            <Text bold>Turma:</Text>
-                            <Text>{interestData?.nome_turma}</Text>
+                        :
+                        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                                <Text bold>Curso:</Text>
+                                <Text>{courseData?.nome_curso}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                                <Text bold>Turma:</Text>
+                                <Text>{classData?.nome_turma}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                                <Text bold>Periodo:</Text>
+                                <Text>{classData?.periodo}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
+                                <Text bold>Observação: </Text>
+                                <Text>Reematricula - {currentModule} Semestre/Módulo</Text>
+                            </Box>
                         </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
-                            <Text bold>Periodo:</Text>
-                            <Text>{interestData?.periodo_interesse}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
-                            <Text bold>Observação: </Text>
-                            <Text>{interestData?.observacao_int || '-'}</Text>
-                        </Box>
-                    </Box>
+                    }
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5, backgroundColor: colorPalette?.primary, padding: '5px 10px' }}>
                         <Box sx={{
                             ...styles.menuIcon,
@@ -790,14 +888,14 @@ export const EnrollStudentDetails = (props) => {
                 </ContentContainer>
             </ContentContainer>
 
-            {isReenrollment &&
+            {(isReenrollment && disciplinesDp.length > 0) &&
                 <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px', border: `1px solid ${colorPalette.buttonColor}` }} gap={3}>
                     <ContentContainer fullWidth gap={4}>
                         <Text bold title>Disciplinas em Pendência</Text>
                         <CheckBoxComponent
                             padding={false}
-                            valueChecked={disciplinesSelected}
-                            boxGroup={disciplines}
+                            valueChecked={disciplinesDpSelected}
+                            boxGroup={disciplinesDp}
                             title="Selecione as disciplinas*"
                             horizontal={false}
                             onSelect={(value) => setDisciplinesSelected(value)}
@@ -844,7 +942,11 @@ export const Payment = (props) => {
         showPaymentPerfl,
         setShowPaymentPerfl,
         pushRouteScreen,
-        paymentsInfoData, setPaymentsInfoData
+        paymentsInfoData, setPaymentsInfoData,
+        quantityDisciplinesDp,
+        valuesDisciplinesDp,
+        setValuesDisciplinesDp,
+        disciplinesDpSelected
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -887,13 +989,17 @@ export const Payment = (props) => {
         const valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
         const costDiscipline = (valueModuleCourse / quantityDisciplinesModule).toFixed(2);
         const calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
-        const valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
+        let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
+        const valuesDisciplineDpTotal = (costDiscipline * disciplinesDpSelected?.length).toFixed(2)
 
+        if (isReenrollment) {
+            valueFinally = (parseFloat(valueFinally) + parseFloat(valuesDisciplineDpTotal))
+        }
         setTotalValueFinnaly(valueFinally)
         setDisciplineDispensedPorcent(porcentDisciplineDispensed)
         setDispensedDisciplines(disciplinesDispensed)
         setDiscountDispensed(calculationDiscount)
-
+        setValuesDisciplinesDp(valuesDisciplineDpTotal)
         setValuesContract({
             valorSemestre: valuesCourse?.valor_total_curso,
             qntDispensadas: disciplinesDispensed,
@@ -1447,17 +1553,17 @@ export const Payment = (props) => {
                                 <Text bold>Total:</Text>
                                 <Text>{formatter.format(valuesCourse?.valor_total_curso)}</Text>
                             </Box>
-                           
+
                             {isReenrollment && <>
                                 <Divider distance={0} />
                                 <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                     <Text bold>Disciplinas em pendência (DP):</Text>
-                                    <Text>0</Text>
+                                    <Text>{quantityDisciplinesDp}</Text>
                                 </Box>
                                 <Divider distance={0} />
                                 <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                     <Text bold>Disciplinas em pendência (DP) - Valor R$:</Text>
-                                    <Text>R$ 0,00</Text>
+                                    <Text>{formatter.format(valuesDisciplinesDp || 0.0)}</Text>
                                 </Box>
                             </>
                             }
