@@ -2180,6 +2180,7 @@ export default function EditUser() {
                             {enrollmentData.length > 0 ?
                                 enrollmentData?.map((item, index) => {
                                     const isReenrollment = item.status === 'Concluído' && true;
+
                                     const className = item?.nome_turma;
                                     const courseName = item?.nome_curso;
                                     const period = item?.periodo;
@@ -2381,7 +2382,11 @@ export default function EditUser() {
                                                             handleEnrollStudentById(item?.id_matricula)
                                                             setShowSections({ ...showSections, editEnroll: true })
                                                         }} />
-                                                        {isReenrollment && <Button small text="rematrícula" style={{ width: 140, height: 30, alignItems: 'center' }} />}
+                                                        {isReenrollment &&
+                                                            <Link href={`/administrative/users/${id}/enrollStudent?classId=${item?.turma_id}&courseId=${item?.curso_id}&reenrollment=true`} target="_blank">
+                                                                <Button small text="rematrícula" style={{ width: 140, height: 30, alignItems: 'center' }} />
+                                                            </Link>
+                                                        }
                                                     </Box>
                                                 </Box>
                                             )}

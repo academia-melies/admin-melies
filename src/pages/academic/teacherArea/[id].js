@@ -22,6 +22,7 @@ export default function StudentData(props) {
     const [enrollmentData, setEnrollment] = useState([])
     const [moduleStudent, setModuleStudent] = useState(1)
     const [bgPhoto, setBgPhoto] = useState({})
+    const [statusGradeFinally, setStatusGradeFinally] = useState('Pendente')
     const [showBox, setShowBox] = useState({
         disciplines: false,
         frequency: false,
@@ -92,6 +93,7 @@ export default function StudentData(props) {
             const response = await api.get(`/studentGrade/student/${id}/${moduleStudent}/${turma_id}`)
             const { data } = response
             setGrades(data)
+            await getStatusGradeFinally(data)
         } catch (error) {
             console.log(error)
             return error
@@ -116,27 +118,27 @@ export default function StudentData(props) {
 
     useEffect(() => {
         handleItems();
-    }, [id])
-
-    useEffect(() => {
-        if (showClass?.turma_id) {
-            handleUpdateInfoEnrollment()
-        }
     }, [showClass?.turma_id])
 
-    const handleUpdateInfoEnrollment = async () => {
-        setLoading(true)
-        try {
-            await getFrequency(showClass?.turma_id)
-            await getGrades(moduleStudent, showClass?.turma_id)
-            await handleSelectModule(showClass?.turma_id, moduleStudent)
-        } catch (error) {
-            console.log(error)
-            return error
-        } finally {
-            setLoading(false)
-        }
-    }
+    // useEffect(() => {
+    //     if (showClass?.turma_id) {
+    //         handleUpdateInfoEnrollment()
+    //     }
+    // }, [showClass?.turma_id])
+
+    // const handleUpdateInfoEnrollment = async () => {
+    //     setLoading(true)
+    //     try {
+    //         await getFrequency(showClass?.turma_id)
+    //         await getGrades(moduleStudent, showClass?.turma_id)
+    //         await handleSelectModule(showClass?.turma_id, moduleStudent)
+    //     } catch (error) {
+    //         console.log(error)
+    //         return error
+    //     } finally {
+    //         setLoading(false)
+    //     }
+    // }
 
 
     const handleItems = async () => {
@@ -152,6 +154,7 @@ export default function StudentData(props) {
             }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
+            console.log(error)
         } finally {
             setLoading(false)
         }
@@ -205,6 +208,38 @@ export default function StudentData(props) {
 
         return "Pendente";
     };
+
+
+    const getStatusGradeFinally = async (data) => {
+
+        let status;
+
+        const gradesStudent = data?.map((item, index) => {
+
+            const disciplinesGrades = {
+                qnt: index + 1,
+                nota_final: item?.nt_final
+            }
+
+            return disciplinesGrades;
+        })
+
+        let nt_reprovado = gradesStudent.filter(item => item.nota_final < 6)
+
+        if (gradesStudent?.length > 0) {
+            if (nt_reprovado.length > 2) {
+                status = 'Reprovado'
+            } else {
+                status = "Aprovado";
+            }
+        } else {
+            status = "Pendente"
+        }
+
+        if (status) {
+            setStatusGradeFinally(status)
+        }
+    }
 
 
     const groupStatus = [
@@ -503,8 +538,20 @@ export default function StudentData(props) {
                                                             </td>
 
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <Box sx={{ backgroundColor: colorStatus, borderRadius: 2, padding: '5px 12px 2px 12px', transition: 'background-color 1s', }}>
-                                                                    <Text xsmall bold style={{ color: "#fff", }}>{statusGrade}</Text>
+                                                                <Box
+                                                                    sx={{
+                                                                        display: 'flex',
+                                                                        height: 30,
+                                                                        backgroundColor: colorPalette.primary,
+                                                                        width: 100,
+                                                                        alignItems: 'center',
+                                                                        borderRadius: 2,
+                                                                        justifyContent: 'start',
+
+                                                                    }}
+                                                                >
+                                                                    <Box sx={{ display: 'flex', backgroundColor: colorStatus, padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                                                    <Text small bold style={{ textAlign: 'center', flex: 1 }}>{statusGrade}</Text>
                                                                 </Box>
                                                             </td>
                                                             <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
@@ -518,7 +565,19 @@ export default function StudentData(props) {
                                         </tbody>
                                     </table>
                                 </div>
-                                <Button text="rematrícular" style={{ height: 30 }} />
+                                <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column' }}>
+                                    <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'center', width: '130px', border: `1px solid ${colorPalette.textColor}`, borderRadius: 2, padding: '4px 4px' }}>
+                                        <Box sx={{
+                                            backgroundColor: (statusGradeFinally === 'Pendente' && 'gray') ||
+                                                (statusGradeFinally === 'Reprovado' && 'red') || (statusGradeFinally === 'Aprovado' && 'green')
+                                            , borderRadius: 2, width: '100%', height: 25, transition: 'background-color 1s', alignItems: 'center', justifyContent: 'center', display: 'flex'
+                                        }}>
+                                            <Text xsmall bold style={{ color: "#fff", }}>{statusGradeFinally}</Text>
+                                        </Box>
+                                        <Text bold small>Status geral</Text>
+                                    </Box>
+                                    {statusGradeFinally === 'Aprovado' && <Button text="rematrícular" />}
+                                </Box>
                             </Box>
                             :
                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
