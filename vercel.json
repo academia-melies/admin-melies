@@ -1,3 +1,9 @@
 {
-    "installCommand": "npm install --force"
-  }
+  "installCommand": "npm install --force",
+  "crons": [
+    {
+      "path": "/api/updateStatusPayment",
+      "schedule": "*/2 * * * *"
+    }
+  ]
+}
