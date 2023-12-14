@@ -331,7 +331,13 @@ export default function EditClassSchedule(props) {
                 saveButton
                 saveButtonAction={newClassSchedule ? handleCreate : handleEdit}
                 deleteButton={!newClassSchedule}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ 
+                    active: true,
+                     event,
+                      acceptAction: handleDelete,
+                       title: 'Realmente deseja prosseguir?',
+                        message: 'Afeterá as aulas, notas e chamada vinculádas a esse semestre.'
+                     })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
