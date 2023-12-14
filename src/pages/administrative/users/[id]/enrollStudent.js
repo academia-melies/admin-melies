@@ -59,6 +59,7 @@ export default function InterestEnroll() {
     const [valuesCourse, setValuesCourse] = useState({})
     const [courseData, setCourseData] = useState({})
     const [classData, setClassData] = useState({})
+    const [classScheduleData, setClassScheduleData] = useState({})
     const [valuesContract, setValuesContract] = useState([])
     const [paymentsProfile, setPaymentsProfile] = useState([])
     const [groupResponsible, setGroupResponsible] = useState([])
@@ -314,6 +315,17 @@ export default function InterestEnroll() {
         }
     }
 
+
+    const handleScheduleClassData = async (classId, currentModule) => {
+        try {
+            const response = await api.get(`/classSchedules/moduleClass/${classId}?moduleEnrollment=${currentModule}`)
+            setClassScheduleData(response?.data)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
     const handlePaymentsProfile = async () => {
         try {
             const response = await api.get(`/order/paymentProfile/${id}`)
@@ -355,7 +367,8 @@ export default function InterestEnroll() {
             await handleSelectModule(classIdEnrollment, moduleCurrent)
             await handleValuesCourse(courseIdEnrollment, classIdEnrollment)
             await handleCourseData(courseIdEnrollment)
-            await handleClassData(classIdEnrollment)
+            await handleClassData(classIdEnrollment, moduleCurrent)
+            await handleScheduleClassData(classIdEnrollment, moduleCurrent)
             await handleResponsible(userDatails)
             await handlePaymentsProfile()
         } catch (error) {
@@ -559,8 +572,8 @@ export default function InterestEnroll() {
             let enrollmentData = {
                 usuario_id: id,
                 pendencia_aluno: null,
-                dt_inicio: new Date(classData?.inicio),
-                dt_final: new Date(classData?.fim),
+                dt_inicio: isReenrollment ? new Date(classScheduleData?.dt_inicio_cronograma) : new Date(classData?.inicio),
+                dt_final: isReenrollment ? new Date(classScheduleData?.dt_fim_cronograma) : new Date(classData?.fim),
                 status: 'Pendente de assinatura do contrato',
                 turma_id: classData?.id_turma,
                 motivo_desistencia: null,
@@ -575,7 +588,8 @@ export default function InterestEnroll() {
                 usuario_resp: userId,
                 vl_disci_dp: isReenrollment ? valuesDisciplinesDp : null,
                 qnt_disci_dp: isReenrollment ? quantityDisciplinesDp : null,
-                rematricula: isReenrollment ? 1 : 0
+                rematricula: isReenrollment ? 1 : 0,
+                modulo: currentModule ? currentModule : 1
             }
 
             let paymentInstallmentsEnrollment = enrollment?.map((payment, index) =>
@@ -588,7 +602,7 @@ export default function InterestEnroll() {
                     dt_pagamento: null,
                     valor_parcela: parseFloat(item?.valor_parcela).toFixed(2),
                     n_parcela: item?.n_parcela,
-                    c_custo: `${classData?.nome_turma}-1SEM`,
+                    c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
                     forma_pagamento: item?.tipo,
                     cartao_credito_id: item?.pagamento > 0 ? item?.pagamento : null,
                     conta: 'Melies - Bradesco',
@@ -611,7 +625,7 @@ export default function InterestEnroll() {
                     dt_pagamento: dateForPaymentEntry,
                     valor_parcela: parseFloat(paymentsInfoData?.valueEntry).toFixed(2),
                     n_parcela: 0,
-                    c_custo: `${classData?.nome_turma}-1SEM`,
+                    c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
                     forma_pagamento: paymentsInfoData?.typePaymentEntry,
                     cartao_credito_id: null,
                     conta: 'Melies - Bradesco',
@@ -676,6 +690,7 @@ export default function InterestEnroll() {
                     disciplinesDpSelected={disciplinesDpSelected}
                     courseData={courseData}
                     classData={classData}
+                    classScheduleData={classScheduleData}
                     currentModule={currentModule}
                     valuesDisciplinesDp={valuesDisciplinesDp}
                     setValuesDisciplinesDp={setValuesDisciplinesDp}
@@ -723,7 +738,8 @@ export default function InterestEnroll() {
                     setValuesDisciplinesDp={setValuesDisciplinesDp}
                     valuesDisciplinesDp={valuesDisciplinesDp}
                     disciplinesDpSelected={disciplinesDpSelected}
-
+                    currentModule={currentModule}
+                    classScheduleData={classScheduleData}
                 />
             </>
         ),
@@ -748,6 +764,8 @@ export default function InterestEnroll() {
                     setFormData={setFormData}
                     paymentsInfoData={paymentsInfoData} setPaymentsInfoData={setPaymentsInfoData}
                     quantityDisciplinesDp={quantityDisciplinesDp}
+                    currentModule={currentModule}
+                    classScheduleData={classScheduleData}
                 />
             </>
         )
@@ -799,7 +817,8 @@ export const EnrollStudentDetails = (props) => {
         classData,
         currentModule,
         valuesDisciplinesDp,
-        setValuesDisciplinesDp
+        setValuesDisciplinesDp,
+        classScheduleData
     } = props
 
     const { colorPalette, theme } = useAppContext()
@@ -850,7 +869,7 @@ export const EnrollStudentDetails = (props) => {
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
                                 <Text bold>Observação: </Text>
-                                <Text>Reematricula - {currentModule} Semestre/Módulo</Text>
+                                <Text>Reematricula - {currentModule}º Semestre/Módulo</Text>
                             </Box>
                         </Box>
                     }
@@ -946,7 +965,8 @@ export const Payment = (props) => {
         quantityDisciplinesDp,
         valuesDisciplinesDp,
         setValuesDisciplinesDp,
-        disciplinesDpSelected
+        disciplinesDpSelected,
+        classScheduleData
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -2158,7 +2178,9 @@ export const ContractStudent = (props) => {
         handleCreateEnrollStudent,
         pushRouteScreen,
         setFormData,
-        paymentsInfoData, setPaymentsInfoData
+        paymentsInfoData, setPaymentsInfoData,
+        currentModule,
+        classScheduleData
     } = props
 
 
@@ -2217,13 +2239,13 @@ export const ContractStudent = (props) => {
 
 
     const className = classData?.nome_turma;
-    const startDateClass = formatDate(classData?.inicio);
+    const startDateClass = formatTimeStamp(classScheduleData?.dt_inicio_cronograma) || formatDate(classData?.inicio);
     const courseSigle = courseData?.sigla;
     const courseName = courseData?.nome_curso;
     const modalityCourse = courseData?.modalidade_curso;
 
     let query = `Curso: `;
-    if (className) query += `${className}-1SEM - `;
+    if (className) query += `${className}-${currentModule}SEM - `;
     if (courseSigle) query += `${courseSigle} `;
     if (courseName) query += `${courseName} `;
     if (modalityCourse) query += `${modalityCourse} `;
@@ -2237,7 +2259,7 @@ export const ContractStudent = (props) => {
 
     let nameContract = `contrato_ `;
     if (userData?.nome) nameContract += `${userData?.nome}_`;
-    if (className) nameContract += `${className}-1SEM_`;
+    if (className) nameContract += `${className}-${currentModule}SEM_`;
     if (courseName) nameContract += `${courseName}_`;
     if (modalityCourse) nameContract += `${modalityCourse}`;
 
@@ -2281,7 +2303,7 @@ export const ContractStudent = (props) => {
                 location: null,
                 usuario_id: userData?.id,
                 status_assinaturas: 'Pendente de assinatura',
-                modulo: 1,
+                modulo: currentModule ? currentModule : 1,
                 matricula_id: null,
                 token_doc: null,
                 external_id: null,
