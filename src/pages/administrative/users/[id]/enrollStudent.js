@@ -929,13 +929,13 @@ export const EnrollStudentDetails = (props) => {
                     <ContentContainer fullWidth gap={4}>
                         <Text bold title>Disciplinas em Pendência</Text>
                         {
-                            classesDisciplinesDp.map((item) => {
+                            classesDisciplinesDp.map((item, index) => {
                                 const title = `${item?.nome_disciplina}-${item.nome_turma}_${item.modulo_grade}_${item?.periodo}`
                                 // const selected = classesDisciplinesDpSelected
                                 const selected = (classesDisciplinesDpSelected.turma === item.turma_id &&
                                     classesDisciplinesDpSelected.disciplina_id === item.disciplina_id) ? true : false
                                 return (
-                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <Box key={index} sx={{ display: 'flex', gap: 2 }}>
                                         <Box sx={{
                                             display: 'flex',
                                             width: 15, height: 15, borderRadius: 15,
