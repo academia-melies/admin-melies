@@ -19,6 +19,7 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { bodyContractEnrollment, responsiblePayerDataTable, userDataTable } from "../../../../helpers/bodyContract";
 
 
+
 export default function InterestEnroll() {
     const router = useRouter();
     const { setLoading, user, alert } = useAppContext()
@@ -54,6 +55,8 @@ export default function InterestEnroll() {
     const [quantityDisciplinesSelected, setQuantityDisciplinesSelected] = useState(0)
     const [quantityDisciplinesModule, setQuantityDisciplinesModule] = useState(0)
     const [disciplinesDp, setDisciplinesDp] = useState([])
+    const [classesDisciplinesDp, setClassesDisciplinesDp] = useState([])
+    const [classesDisciplinesDpSelected, setClassesDisciplinesDpSelected] = useState({ turma: null, disciplina_id: null })
     const [quantityDisciplinesDp, setQuantityDisciplinesDp] = useState(0)
     const [valuesDisciplinesDp, setValuesDisciplinesDp] = useState()
     const [valuesCourse, setValuesCourse] = useState({})
@@ -256,12 +259,11 @@ export default function InterestEnroll() {
 
 
     async function handleDisciplinesDP() {
-        setLoading(true)
+        setLoading(true);
         try {
-            const response = await api.get(`/enrollment/disciplines/dp/${id}`)
-            const { data } = response
+            const response = await api.get(`/enrollment/disciplines/dp/${id}`);
+            const { data } = response;
             if (data.length > 0) {
-
                 const groupDisciplines = data.map(disciplines => ({
                     label: disciplines.nome_disciplina,
                     value: disciplines?.disciplina_id.toString()
@@ -273,14 +275,23 @@ export default function InterestEnroll() {
                 setDisciplinesDpSelected(flattenedDisciplinesSelected)
                 setDisciplinesDp(groupDisciplines);
 
+                const [classesList] = await Promise.all(data.map(async (item) => {
+                    const handleClassesToDiscipline = await api.get(`/class/next/discipline/dp/${item?.disciplina_id}`);
+                    const { data: classesData } = handleClassesToDiscipline;
+
+                    return classesData;
+                }));
+
+                setClassesDisciplinesDp(classesList)
             }
         } catch (error) {
-            console.log(error)
-            return error
+            console.log(error);
+            return error;
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
+
 
     const handleValuesCourse = async (courseId, classId) => {
         setLoading(true)
@@ -687,6 +698,9 @@ export default function InterestEnroll() {
                     setCheckValidateScreen={setCheckValidateScreen}
                     pushRouteScreen={pushRouteScreen}
                     disciplinesDp={disciplinesDp}
+                    classesDisciplinesDp={classesDisciplinesDp}
+                    classesDisciplinesDpSelected={classesDisciplinesDpSelected}
+                    setClassesDisciplinesDpSelected={setClassesDisciplinesDpSelected}
                     disciplinesDpSelected={disciplinesDpSelected}
                     courseData={courseData}
                     classData={classData}
@@ -818,7 +832,10 @@ export const EnrollStudentDetails = (props) => {
         currentModule,
         valuesDisciplinesDp,
         setValuesDisciplinesDp,
-        classScheduleData
+        classScheduleData,
+        classesDisciplinesDp,
+        classesDisciplinesDpSelected,
+        setClassesDisciplinesDpSelected
     } = props
 
     const { colorPalette, theme } = useAppContext()
@@ -911,15 +928,40 @@ export const EnrollStudentDetails = (props) => {
                 <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px', border: `1px solid ${colorPalette.buttonColor}` }} gap={3}>
                     <ContentContainer fullWidth gap={4}>
                         <Text bold title>Disciplinas em Pendência</Text>
-                        <CheckBoxComponent
-                            padding={false}
-                            valueChecked={disciplinesDpSelected}
-                            boxGroup={disciplinesDp}
-                            title="Selecione as disciplinas*"
-                            horizontal={false}
-                            onSelect={(value) => setDisciplinesSelected(value)}
-                            sx={{ flex: 1, }}
-                        />
+                        {
+                            classesDisciplinesDp.map((item) => {
+                                const title = `${item?.nome_disciplina}-${item.nome_turma}_${item.modulo_grade}_${item?.periodo}`
+                                // const selected = classesDisciplinesDpSelected
+                                const selected = (classesDisciplinesDpSelected.turma === item.turma_id &&
+                                    classesDisciplinesDpSelected.disciplina_id === item.disciplina_id) ? true : false
+                                return (
+                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            width: 15, height: 15, borderRadius: 15,
+                                            cursor: 'pointer',
+                                            "&:hover": {
+                                                backgroundColor: selected ? '' : 'green',
+                                                boxShadow: selected ? 'none' : `#2e8b57 0px 6px 24px`,
+                                            }
+                                        }} onClick={() => {
+                                            if (selected) {
+                                                setClassesDisciplinesDpSelected({ turma: null, disciplina: null })
+                                            } else {
+                                                setClassesDisciplinesDpSelected({ turma: item.turma_id, disciplina: item?.disciplina_id })
+                                            }
+                                        }}>
+                                            {selected ?
+                                                <CheckCircleIcon style={{ color: 'green', fontSize: 18 }} />
+                                                :
+                                                <Box sx={{ width: 15, height: 15, borderRadius: 15, border: '1px solid black' }} />
+                                            }
+                                        </Box>
+                                        <Text>{title}</Text>
+                                    </Box>
+                                )
+                            })
+                        }
                     </ContentContainer>
                 </ContentContainer>}
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
