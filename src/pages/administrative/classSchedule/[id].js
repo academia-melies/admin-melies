@@ -283,7 +283,7 @@ export default function EditClassSchedule(props) {
     const handleEdit = async () => {
         setLoading(true)
         try {
-            const response = await api.post(`/classSchedule/update/${id}`, { classScheduleData })
+            const response = await api.patch(`/classSchedule/update/${id}`, { classScheduleData })
             if (response?.status === 201) {
                 alert.success('Cronograma atualizado com sucesso.');
                 handleItems()

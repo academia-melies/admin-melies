@@ -8,10 +8,11 @@ import Head from "next/head"
 import { getImageByScreen } from "../validators/api-requests"
 import { icons } from "../organisms/layout/Colors"
 import Link from "next/link"
+import { api } from "../api/api"
 
 export default function Login() {
 
-    const { login, alert, theme, colorPalette } = useAppContext()
+    const { login, alert, theme, colorPalette, setLoading } = useAppContext()
     const [userData, setUserData] = useState([])
     const [themeName, setThemeName] = useState('')
     const [imagesList, setImagesList] = useState([])
@@ -43,31 +44,74 @@ export default function Login() {
     }, [theme])
 
     const handleLogin = async () => {
-        const { email, senha } = userData
+        setLoading(true)
+        try {
+            const { email, senha } = userData
 
-        if (!email) {
+            if (!email) {
 
-            return alert.error("O email está inválido!")
-        }
-
-        if (email.includes('@')) {
-            if (!emailValidator(email)) {
                 return alert.error("O email está inválido!")
             }
+
+            if (email.includes('@')) {
+                if (!emailValidator(email)) {
+                    return alert.error("O email está inválido!")
+                }
+            }
+
+            if (!senha || senha.length < 4) { return alert.error('A senha deve conter no mínimo 4 digitos.') }
+
+
+            const data = await login({ email, senha })
+
+            if (data === 0) {
+                return alert.error('Desculpe. Você não tem acesso ao painel administrativo. Consulte o Suporte Melies.')
+            }
+
+            if (!data) {
+                return alert.error('Usuário não encontrado ou senha incorreta. Verifique os dados e tente novamente!')
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao fazer login.')
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const resetPassword = async () => {
+        setLoading(true)
+        try {
+            const { email } = userData
+            if (!email) {
+                return alert.error("Preencha o e-mail que será enviada a nova senha")
+            }
+            if (email.includes('@')) {
+                if (!emailValidator(email)) {
+                    return alert.error("O email está inválido!")
+                }
+            }
+
+            const response = await api.patch(`/users/reset/password`, { email })
+            console.log(response)
+            if (response.status === 422) {
+                alert.error("Não encontrei usuário com o e-mail informado.")
+                return false
+            }
+
+            if (response.status === 200) {
+                alert.success("Nova senha enviada por e-mail.")
+                return true
+            }
+
+        } catch (error) {
+            alert.error("Houve um erro ao resetar senha.")
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
         }
 
-        if (!senha || senha.length < 4) { return alert.error('A senha deve conter no mínimo 4 digitos.') }
-
-
-        const data = await login({ email, senha })
-
-        if (data === 0) {
-            return alert.error('Desculpe. Você não tem acesso ao painel administrativo. Consulte o Suporte Melies.')
-        }
-
-        if (!data) {
-            return alert.error('Usuário não encontrado ou senha incorreta. Verifique os dados e tente novamente!')
-        }
     }
 
     const handleChange = (value) => {
@@ -118,7 +162,7 @@ export default function Login() {
                             alignItems: 'center',
                             flex: 1,
                             gap: 3,
-                            backgroundColor: Colors.darkBlue,
+
                             position: 'relative'
                         }}>
 
@@ -215,6 +259,32 @@ export default function Login() {
                                         <Text small bold style={{ color: 'inherit' }}>Entrar</Text>
                                     </Button>
                                 </Box>
+                                <Text light small style={{ marginTop: 5 }}>Esqueceu sua senha?</Text>
+                                <Button
+                                    style={{
+                                        width: '205px',
+                                        padding: '10px 30px',
+                                        marginBottom: 5,
+                                        borderRadius: '100px',
+                                        border: `1px solid ${colorPalette.buttonColor}`,
+                                        transition: 'background-color 1s',
+                                        "&:hover": {
+                                            backgroundColor: colorPalette.buttonColor + '22',
+                                            cursor: 'pointer'
+                                        },
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        color: '#f0f0f0',
+                                        // padding: { xs: `6px 10px`, xm: `8px 16px`, md: `8px 16px`, lg: `8px 16px` },
+                                        borderRadius: '100px',
+                                    }}
+                                    text='Entrar'
+                                    onClick={() => resetPassword()}
+                                    type="submit"
+                                >
+                                    <Text small bold style={{ color: colorPalette.buttonColor }}>Redefinir</Text>
+                                </Button>
                             </form>
                             <Box>
                                 {smallWidthDevice ? <Box sx={{ ...styles.favicon, backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: 11, marginLeft: 0, }} />
@@ -279,7 +349,7 @@ const CompanyLogo = ({ size = 14, style = {}, theme = {}, images = [] }) => {
             gap: 1,
             ...style
         }}>
-            <img src={imageUrl} alt="Admin-melies" style={{ height: '100%', width: 'auto' }} />
+            <img src={imageUrl} alt="Admin-melies" style={{ height: '100%', width: '100%' }} />
         </Box >
     )
 };
