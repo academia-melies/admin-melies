@@ -55,7 +55,7 @@ export default function InterestEnroll() {
     const [quantityDisciplinesSelected, setQuantityDisciplinesSelected] = useState(0)
     const [quantityDisciplinesModule, setQuantityDisciplinesModule] = useState(0)
     const [disciplinesDp, setDisciplinesDp] = useState([])
-    const [classesDisciplinesDpSelected, setClassesDisciplinesDpSelected] = useState({ turma: null, disciplina_id: null })
+    const [classesDisciplinesDpSelected, setClassesDisciplinesDpSelected] = useState([])
     const [quantityDisciplinesDp, setQuantityDisciplinesDp] = useState(0)
     const [valuesDisciplinesDp, setValuesDisciplinesDp] = useState()
     const [valuesCourse, setValuesCourse] = useState({})
@@ -601,7 +601,8 @@ export default function InterestEnroll() {
                 vl_disci_dp: isReenrollment ? valuesDisciplinesDp : null,
                 qnt_disci_dp: isReenrollment ? quantityDisciplinesDp : null,
                 rematricula: isReenrollment ? 1 : 0,
-                modulo: currentModule ? currentModule : 1
+                modulo: currentModule ? currentModule : 1,
+                cursando_dp: isReenrollment ? (classesDisciplinesDpSelected?.length > 0 ? 1 : 0) : 0
             }
 
             let paymentInstallmentsEnrollment = enrollment?.map((payment, index) =>
@@ -722,6 +723,7 @@ export default function InterestEnroll() {
                     setValuesContract={setValuesContract}
                     setPaymentForm={setPaymentForm}
                     valuesContract={valuesContract}
+                    classesDisciplinesDpSelected={classesDisciplinesDpSelected}
                     paymentForm={paymentForm}
                     updatedScreen={updatedScreen}
                     responsiblePayerData={responsiblePayerData}
@@ -844,6 +846,39 @@ export const EnrollStudentDetails = (props) => {
         currency: 'BRL'
     });
 
+    const handleSelect = (item, uniqueKey) => {
+        const isSelected = classesDisciplinesDpSelected.some(
+            (selection) => selection.uniqueKey === uniqueKey
+        );
+
+        const disciplineSelected = classesDisciplinesDpSelected.some(
+            (selection) => selection.disciplina === item.id_disciplina
+        );
+
+        if (isSelected) {
+            const newSelections = classesDisciplinesDpSelected.filter(
+                (selection) => selection.uniqueKey !== uniqueKey
+            );
+            setClassesDisciplinesDpSelected(newSelections);
+        } else {
+            if (disciplineSelected) {
+                const newSelectionsDisc = classesDisciplinesDpSelected.filter(
+                    (selection) => selection.disciplina !== item.id_disciplina
+                );
+                setClassesDisciplinesDpSelected((prevSelections) => [
+                    ...newSelectionsDisc,
+                    { uniqueKey, turma: item.turma_id, disciplina: item.id_disciplina },
+                ]);
+            } else {
+                setClassesDisciplinesDpSelected((prevSelections) => [
+                    ...prevSelections,
+                    { uniqueKey, turma: item.turma_id, disciplina: item.id_disciplina },
+                ]);
+            }
+        }
+    };
+
+
 
     return (
         <>
@@ -933,10 +968,14 @@ export const EnrollStudentDetails = (props) => {
                                 <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                                     {discipl?.classes?.map((item, index) => {
                                         const title = `${item?.nome_disciplina}-${item.nome_turma}_${item.modulo_grade}_${item?.periodo}`;
-                                        const selected = classesDisciplinesDpSelected.turma === item.turma_id &&
-                                            classesDisciplinesDpSelected.disciplina_id === item.disciplina_id;
+                                        // const selected = classesDisciplinesDpSelected.turma === item.turma_id &&
+                                        //     classesDisciplinesDpSelected.disciplina_id === item.disciplina_id;
+                                        const uniqueKey = `${item.turma_id}-${item.id_disciplina}`;
+                                        const selected = classesDisciplinesDpSelected.some(
+                                            (selection) => selection.uniqueKey === uniqueKey
+                                        )
                                         return (
-                                            <Box key={index} sx={{ display: 'flex', gap: 2 }}>
+                                            <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                                                 <Box
                                                     sx={{
                                                         display: 'flex',
@@ -945,15 +984,18 @@ export const EnrollStudentDetails = (props) => {
                                                         width: 16,
                                                         height: 16,
                                                         borderRadius: 16,
+                                                        cursor: 'pointer',
+                                                        transition: '.5s',
                                                         border: !selected ? `1px solid ${colorPalette.textColor}` : '',
+                                                        '&:hover': {
+                                                            opacity: selected ? 0.8 : 0.6,
+                                                            boxShadow: selected ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                        }
                                                     }}
-                                                    onClick={() => {
-                                                        const newSelection = selected ? { turma: null, disciplina: null } : { turma: item.turma_id, disciplina: item?.disciplina_id };
-                                                        setClassesDisciplinesDpSelected(newSelection);
-                                                    }}
+                                                    onClick={() => handleSelect(item, uniqueKey)}
                                                 >
                                                     {selected ? (
-                                                        <CheckCircleIcon style={{ color: 'green', fontSize: 18 }} />
+                                                        <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
                                                     ) : (
                                                         <Box
                                                             sx={{
@@ -961,9 +1003,10 @@ export const EnrollStudentDetails = (props) => {
                                                                 height: 11,
                                                                 borderRadius: 11,
                                                                 cursor: 'pointer',
-                                                                transition: 'background-color .5s',
+
                                                                 '&:hover': {
-                                                                    backgroundColor: selected ? '' : '#1976d2',
+                                                                    opacity: selected ? 0.8 : 0.6,
+                                                                    boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                                                                 },
                                                             }}
                                                         />
@@ -1023,7 +1066,8 @@ export const Payment = (props) => {
         valuesDisciplinesDp,
         setValuesDisciplinesDp,
         disciplinesDpSelected,
-        classScheduleData
+        classScheduleData,
+        classesDisciplinesDpSelected
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -1065,9 +1109,13 @@ export const Payment = (props) => {
 
         const valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
         const costDiscipline = (valueModuleCourse / quantityDisciplinesModule).toFixed(2);
+        console.log(costDiscipline)
         const calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
         let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
-        const valuesDisciplineDpTotal = (costDiscipline * disciplinesDpSelected?.length).toFixed(2)
+        const valuesDisciplineDpTotal = (costDiscipline * (classesDisciplinesDpSelected?.length)).toFixed(2)
+        console.log(classesDisciplinesDpSelected?.length)
+
+
 
         if (isReenrollment) {
             valueFinally = (parseFloat(valueFinally) + parseFloat(valuesDisciplineDpTotal))
@@ -1635,7 +1683,7 @@ export const Payment = (props) => {
                                 <Divider distance={0} />
                                 <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                     <Text bold>Disciplinas em pendência (DP):</Text>
-                                    <Text>{quantityDisciplinesDp}</Text>
+                                    <Text>{classesDisciplinesDpSelected?.length}</Text>
                                 </Box>
                                 <Divider distance={0} />
                                 <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>

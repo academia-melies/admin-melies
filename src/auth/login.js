@@ -79,37 +79,46 @@ export default function Login() {
         }
     }
 
+    const checkedReset = (email) => {
+
+        if (!email) {
+            alert.error("Preencha o e-mail que será enviada a nova senha")
+            return false 
+        }
+        if (email.includes('@')) {
+            if (!emailValidator(email)) {
+                alert.error("O email está inválido!")
+                return false 
+            }
+        }
+        return true
+    }
+
     const resetPassword = async () => {
-        setLoading(true)
-        try {
-            const { email } = userData
-            if (!email) {
-                return alert.error("Preencha o e-mail que será enviada a nova senha")
-            }
-            if (email.includes('@')) {
-                if (!emailValidator(email)) {
-                    return alert.error("O email está inválido!")
+        const { email } = userData
+        if (checkedReset(email)) {
+            setLoading(true)
+            try {
+                const { email } = userData
+                const response = await api.patch(`/users/reset/password`, { email })
+
+                if (response.status === 422) {
+                    alert.error("Não encontrei usuário com o e-mail informado.")
+                    return false
                 }
-            }
 
-            const response = await api.patch(`/users/reset/password`, { email })
-            console.log(response)
-            if (response.status === 422) {
-                alert.error("Não encontrei usuário com o e-mail informado.")
-                return false
-            }
+                if (response.status === 200) {
+                    alert.success("Nova senha enviada por e-mail.")
+                    return true
+                }
 
-            if (response.status === 200) {
-                alert.success("Nova senha enviada por e-mail.")
-                return true
+            } catch (error) {
+                alert.error("Houve um erro ao resetar senha.")
+                console.log(error)
+                return error
+            } finally {
+                setLoading(false)
             }
-
-        } catch (error) {
-            alert.error("Houve um erro ao resetar senha.")
-            console.log(error)
-            return error
-        } finally {
-            setLoading(false)
         }
 
     }
