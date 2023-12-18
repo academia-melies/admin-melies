@@ -55,7 +55,6 @@ export default function InterestEnroll() {
     const [quantityDisciplinesSelected, setQuantityDisciplinesSelected] = useState(0)
     const [quantityDisciplinesModule, setQuantityDisciplinesModule] = useState(0)
     const [disciplinesDp, setDisciplinesDp] = useState([])
-    const [classesDisciplinesDp, setClassesDisciplinesDp] = useState([])
     const [classesDisciplinesDpSelected, setClassesDisciplinesDpSelected] = useState({ turma: null, disciplina_id: null })
     const [quantityDisciplinesDp, setQuantityDisciplinesDp] = useState(0)
     const [valuesDisciplinesDp, setValuesDisciplinesDp] = useState()
@@ -275,14 +274,16 @@ export default function InterestEnroll() {
                 setDisciplinesDpSelected(flattenedDisciplinesSelected)
                 setDisciplinesDp(groupDisciplines);
 
-                const [classesList] = await Promise.all(data.map(async (item) => {
+                const classesList = await Promise.all(data.map(async (item) => {
                     const handleClassesToDiscipline = await api.get(`/class/next/discipline/dp/${item?.disciplina_id}`);
                     const { data: classesData } = handleClassesToDiscipline;
 
                     return classesData;
                 }));
 
-                setClassesDisciplinesDp(classesList)
+                classesList.forEach((classes, index) => {
+                    groupDisciplines[index].classes = classes;
+                });
             }
         } catch (error) {
             console.log(error);
@@ -698,7 +699,6 @@ export default function InterestEnroll() {
                     setCheckValidateScreen={setCheckValidateScreen}
                     pushRouteScreen={pushRouteScreen}
                     disciplinesDp={disciplinesDp}
-                    classesDisciplinesDp={classesDisciplinesDp}
                     classesDisciplinesDpSelected={classesDisciplinesDpSelected}
                     setClassesDisciplinesDpSelected={setClassesDisciplinesDpSelected}
                     disciplinesDpSelected={disciplinesDpSelected}
@@ -833,7 +833,6 @@ export const EnrollStudentDetails = (props) => {
         valuesDisciplinesDp,
         setValuesDisciplinesDp,
         classScheduleData,
-        classesDisciplinesDp,
         classesDisciplinesDpSelected,
         setClassesDisciplinesDpSelected
     } = props
@@ -928,42 +927,58 @@ export const EnrollStudentDetails = (props) => {
                 <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px', border: `1px solid ${colorPalette.buttonColor}` }} gap={3}>
                     <ContentContainer fullWidth gap={4}>
                         <Text bold title>Disciplinas em Pendência</Text>
-                        {
-                            classesDisciplinesDp.map((item, index) => {
-                                const title = `${item?.nome_disciplina}-${item.nome_turma}_${item.modulo_grade}_${item?.periodo}`
-                                // const selected = classesDisciplinesDpSelected
-                                const selected = (classesDisciplinesDpSelected.turma === item.turma_id &&
-                                    classesDisciplinesDpSelected.disciplina_id === item.disciplina_id) ? true : false
-                                return (
-                                    <Box key={index} sx={{ display: 'flex', gap: 2 }}>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            width: 15, height: 15, borderRadius: 15,
-                                            cursor: 'pointer',
-                                            "&:hover": {
-                                                backgroundColor: selected ? '' : 'green',
-                                                boxShadow: selected ? 'none' : `#2e8b57 0px 6px 24px`,
-                                            }
-                                        }} onClick={() => {
-                                            if (selected) {
-                                                setClassesDisciplinesDpSelected({ turma: null, disciplina: null })
-                                            } else {
-                                                setClassesDisciplinesDpSelected({ turma: item.turma_id, disciplina: item?.disciplina_id })
-                                            }
-                                        }}>
-                                            {selected ?
-                                                <CheckCircleIcon style={{ color: 'green', fontSize: 18 }} />
-                                                :
-                                                <Box sx={{ width: 15, height: 15, borderRadius: 15, border: '1px solid black' }} />
-                                            }
-                                        </Box>
-                                        <Text>{title}</Text>
-                                    </Box>
-                                )
-                            })
-                        }
+                        {disciplinesDp.map((discipl, index) => (
+                            <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+                                <Text bold large>{discipl.label}</Text>
+                                <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                    {discipl?.classes?.map((item, index) => {
+                                        const title = `${item?.nome_disciplina}-${item.nome_turma}_${item.modulo_grade}_${item?.periodo}`;
+                                        const selected = classesDisciplinesDpSelected.turma === item.turma_id &&
+                                            classesDisciplinesDpSelected.disciplina_id === item.disciplina_id;
+                                        return (
+                                            <Box key={index} sx={{ display: 'flex', gap: 2 }}>
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        width: 16,
+                                                        height: 16,
+                                                        borderRadius: 16,
+                                                        border: !selected ? `1px solid ${colorPalette.textColor}` : '',
+                                                    }}
+                                                    onClick={() => {
+                                                        const newSelection = selected ? { turma: null, disciplina: null } : { turma: item.turma_id, disciplina: item?.disciplina_id };
+                                                        setClassesDisciplinesDpSelected(newSelection);
+                                                    }}
+                                                >
+                                                    {selected ? (
+                                                        <CheckCircleIcon style={{ color: 'green', fontSize: 18 }} />
+                                                    ) : (
+                                                        <Box
+                                                            sx={{
+                                                                width: 11,
+                                                                height: 11,
+                                                                borderRadius: 11,
+                                                                cursor: 'pointer',
+                                                                transition: 'background-color .5s',
+                                                                '&:hover': {
+                                                                    backgroundColor: selected ? '' : '#1976d2',
+                                                                },
+                                                            }}
+                                                        />
+                                                    )}
+                                                </Box>
+                                                <Text>{title}</Text>
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
+                            </Box>
+                        ))}
                     </ContentContainer>
-                </ContentContainer>}
+                </ContentContainer>
+            }
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Button text="Continuar" onClick={() => pushRouteScreen(1, 'interesse > Pagamento')} style={{ width: 120 }} />
             </Box>
