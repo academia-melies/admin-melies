@@ -266,7 +266,7 @@ export default function LoansStudentEdit(props) {
                                     aspectRatio: '1:1',
                                     backgroundImage: `url(${icons.gray_close})`,
                                     transition: '.3s',
-                                    zIndex: 999999999,
+                                    zIndex: 999,
                                     "&:hover": {
                                         opacity: 0.8,
                                         cursor: 'pointer'
@@ -466,15 +466,15 @@ export default function LoansStudentEdit(props) {
                 </Box>
             </ContentContainer>
 
-            <Backdrop open={showMaterials}>
-                <ContentContainer sx={{ zIndex: 99999 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
+            <Backdrop open={showMaterials} sx={{ zIndex: 999}}>
+                <ContentContainer sx={{ zIndex: 9999}}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
                         <Text bold large>Selecione o material para emprestímo</Text>
                         <Box sx={{
                             ...styles.menuIcon,
                             backgroundImage: `url(${icons.gray_close})`,
                             transition: '.3s',
-                            zIndex: 999999999,
+                            zIndex: 99999,
                             "&:hover": {
                                 opacity: 0.8,
                                 cursor: 'pointer'
@@ -496,14 +496,14 @@ export default function LoansStudentEdit(props) {
                         />
                     </Box>
                     {cataloguesList?.filter(filter).length > 0 ?
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 2, alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', marginTop: 2, alignItems: 'center', justifyContent: 'center' }}>
                             {cataloguesList?.filter(filter)?.map((item, index) => {
                                 const selected = materialsSelected?.filter(mat => mat.id_material === item?.id_material)
                                 return (
                                     <Box key={index} sx={{
                                         display: 'flex',
                                         backgroundColor: colorPalette.primary,
-                                        padding: '8px 12px',
+                                        padding: '8px 5px',
                                         alignItems: 'center',
                                         width: '100%',
                                         justifyContent: 'center',

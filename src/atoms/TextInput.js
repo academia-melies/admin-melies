@@ -45,6 +45,7 @@ export const TextInput = (props) => {
                      <InputAdornment position="start">
                         <Box sx={{
                            ...styles.menuIcon,
+                           filter: 'brightness(0) invert(.7)',
                            backgroundImage: `url('/icons/search_input_icon.png')`,
                            transition: '.3s',
                            "&:hover": {
@@ -64,10 +65,10 @@ export const TextInput = (props) => {
                      color: colorPalette.textColor,
                      fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '13px', xl: '14px' },
                      fontFamily: 'MetropolisBold',
-                     zIndex: 99
+                     zIndex: 9
                   },
                   sx: {
-                     zIndex: 99
+                     zIndex: 9
                   }
                }
                : {

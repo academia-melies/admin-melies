@@ -84,12 +84,10 @@ export default function EditStudentGrade(props) {
         setStudentData((prevValues) => {
             return prevValues.map((student) => {
                 if (student.usuario_id === userId) {
-                    // Clona o objeto do aluno e atualiza o campo desejado
                     const updatedStudent = {
                         ...student,
                         [field]: value,
                     };
-
                     if (updatedStudent.nt_avaliacao_sem !== null || updatedStudent.nt_avaliacao_sem !== "") {
                         updatedStudent.nt_final = updatedStudent.nt_avaliacao_sem?.toString();
                     }
@@ -99,10 +97,15 @@ export default function EditStudentGrade(props) {
                     if (updatedStudent?.nt_exame !== null && updatedStudent?.nt_exame !== "") {
                         updatedStudent.nt_final = updatedStudent?.nt_exame?.toString();
                     }
-
+                    if ((updatedStudent.nt_avaliacao_sem !== '' || updatedStudent.nt_avaliacao_sem !== null) && (parseFloat(updatedStudent.nt_avaliacao_sem) > parseFloat(updatedStudent?.nt_exame))) {
+                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString();
+                    }
+                    if ((updatedStudent.nt_substitutiva !== '' || updatedStudent.nt_substitutiva !== null) && (parseFloat(updatedStudent.nt_substitutiva) > parseFloat(updatedStudent?.nt_exame))) {
+                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString();
+                    }
                     return updatedStudent;
                 }
-                return student; // Mantém outros alunos inalterados
+                return student;
             });
         });
     };
@@ -274,18 +277,18 @@ export default function EditStudentGrade(props) {
     }
 
     const getStatusGrade = (item) => {
-    
+
         if (parseFloat(item.nt_final) < 6) {
             return "Reprovado";
         }
-    
+
         if (parseFloat(item.nt_final) >= 6) {
             return "Aprovado";
         }
-    
+
         return "Pendente";
     };
-    
+
 
     const groupAvaliationStatus = [
         { label: 'Sim', value: 1 },

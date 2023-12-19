@@ -567,25 +567,15 @@ export default function InterestEnroll() {
         }
     }
 
-    const checkEnrollmentData = (enrollmentData) => {
-        let paymentInvalid = enrollmentData?.map(item => item?.filter(item => !item.pagamento))
-
-        // if (paymentInvalid) {
-        //     alert.info('A forma de pagamento precisa ser preenchida corretamente.')
-        //     return
-        // }
-
-        return true
-    }
-
     const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData, urlDoc, contractData) => {
+        let reenrollmentDataDp = {}
 
-        if (checkEnrollmentData(enrollment)) {
-            let enrollmentData = {
+        if (isReenrollment) {
+            reenrollmentDataDp = {
                 usuario_id: id,
-                pendencia_aluno: null,
-                dt_inicio: isReenrollment ? new Date(classScheduleData?.dt_inicio_cronograma) : new Date(classData?.inicio),
-                dt_final: isReenrollment ? new Date(classScheduleData?.dt_fim_cronograma) : new Date(classData?.fim),
+                pendencia_aluno: classesDisciplinesDpSelected?.length,
+                dt_inicio: new Date(classScheduleData?.dt_inicio_cronograma),
+                dt_final: new Date(classScheduleData?.dt_fim_cronograma),
                 status: 'Pendente de assinatura do contrato',
                 turma_id: classData?.id_turma,
                 motivo_desistencia: null,
@@ -604,86 +594,112 @@ export default function InterestEnroll() {
                 modulo: currentModule ? currentModule : 1,
                 cursando_dp: isReenrollment ? (classesDisciplinesDpSelected?.length > 0 ? 1 : 0) : 0
             }
+        }
 
-            let paymentInstallmentsEnrollment = enrollment?.map((payment, index) =>
+        let enrollmentData = {
+            usuario_id: id,
+            pendencia_aluno: null,
+            dt_inicio: isReenrollment ? new Date(classScheduleData?.dt_inicio_cronograma) : new Date(classData?.inicio),
+            dt_final: isReenrollment ? new Date(classScheduleData?.dt_fim_cronograma) : new Date(classData?.fim),
+            status: 'Pendente de assinatura do contrato',
+            turma_id: classData?.id_turma,
+            motivo_desistencia: null,
+            dt_desistencia: null,
+            certificado_emitido: 0,
+            desc_disp_disc: valuesContract?.descontoDispensadas || 0,
+            desc_adicional: valuesContract?.valorDescontoAdicional || 0,
+            desc_adicional_porc: valuesContract?.descontoAdicional || 0,
+            valor_tl_desc: (parseFloat(valuesContract?.valorDescontoAdicional || 0) + parseFloat(valuesContract?.descontoDispensadas)),
+            valor_matricula: valuesContract?.valorFinal || 0,
+            qnt_disci_disp: valuesContract?.qntDispensadas || 0,
+            usuario_resp: userId,
+            vl_disci_dp: isReenrollment ? valuesDisciplinesDp : null,
+            qnt_disci_dp: isReenrollment ? quantityDisciplinesDp : null,
+            rematricula: isReenrollment ? 1 : 0,
+            modulo: currentModule ? currentModule : 1,
+            cursando_dp: isReenrollment ? (classesDisciplinesDpSelected?.length > 0 ? 1 : 0) : 0
+        }
 
-                payment?.filter(pay => pay?.valor_parcela)?.map((item) => ({
-                    usuario_id: id,
-                    pagante: item?.pagante || userData?.nome,
-                    aluno: userData?.nome,
-                    vencimento: formattedStringInDate(item?.data_pagamento),
-                    dt_pagamento: null,
-                    valor_parcela: parseFloat(item?.valor_parcela).toFixed(2),
-                    n_parcela: item?.n_parcela,
-                    c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
-                    forma_pagamento: item?.tipo,
-                    cartao_credito_id: item?.pagamento > 0 ? item?.pagamento : null,
-                    conta: 'Melies - Bradesco',
-                    obs_pagamento: null,
-                    status_gateway: null,
-                    status_parcela: 'Pendente',
-                    parc_protestada: 0,
-                    usuario_resp: userId
-                })));
+        let paymentInstallmentsEnrollment = enrollment?.map((payment, index) =>
 
-            let paymentEntryData = {};
-            if (paymentsInfoData?.valueEntry > 0) {
-                const dateForPaymentEntry = paymentsInfoData?.dateForPaymentEntry;
+            payment?.filter(pay => pay?.valor_parcela)?.map((item) => ({
+                usuario_id: id,
+                pagante: item?.pagante || userData?.nome,
+                aluno: userData?.nome,
+                vencimento: formattedStringInDate(item?.data_pagamento),
+                dt_pagamento: null,
+                valor_parcela: parseFloat(item?.valor_parcela).toFixed(2),
+                n_parcela: item?.n_parcela,
+                c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
+                forma_pagamento: item?.tipo,
+                cartao_credito_id: item?.pagamento > 0 ? item?.pagamento : null,
+                conta: 'Melies - Bradesco',
+                obs_pagamento: null,
+                status_gateway: null,
+                status_parcela: 'Pendente',
+                parc_protestada: 0,
+                usuario_resp: userId
+            })));
 
-                paymentEntryData = {
-                    usuario_id: id,
-                    pagante: responsiblePayerData?.nome_resp || userData?.nome,
-                    aluno: userData?.nome,
-                    vencimento: dateForPaymentEntry,
-                    dt_pagamento: dateForPaymentEntry,
-                    valor_parcela: parseFloat(paymentsInfoData?.valueEntry).toFixed(2),
-                    n_parcela: 0,
-                    c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
-                    forma_pagamento: paymentsInfoData?.typePaymentEntry,
-                    cartao_credito_id: null,
-                    conta: 'Melies - Bradesco',
-                    obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
-                    status_gateway: 'Pago',
-                    status_parcela: 'Pago',
-                    parc_protestada: 0,
-                    usuario_resp: userId
-                }
-            }
+        let paymentEntryData = {};
+        if (paymentsInfoData?.valueEntry > 0) {
+            const dateForPaymentEntry = paymentsInfoData?.dateForPaymentEntry;
 
-            setLoadingEnrollment(true);
-
-            try {
-                const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData });
-                const { data } = response
-                if (response?.status === 201) {
-                    setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
-
-                    const sendDoc = await api.post('/contract/enrollment/signatures/upload', { urlDoc, contractData, enrollmentId: data })
-                    if (sendDoc?.status === 200) {
-                        alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
-                        router.push(`/administrative/users/${id}`);
-                        return;
-                    } else {
-                        alert.error('Houve um erro ao enviar contrato para assinatura.')
-                    }
-                    alert.success('Matrícula efetivada. Confira se o contrato foi enviado para o aluno.')
-                    router.push(`/administrative/users/${id}`);
-                    return
-                }
-                else {
-                    setEnrollmentCompleted({ ...enrollmentCompleted, status: 500 });
-                    alert.error('Ocorreu um erro ao maticular o aluno.')
-                    return
-                }
-            } catch (error) {
-                console.log(error);
-                alert.error('Ocorreu um erro ao maticular o aluno.')
-                return error;
-            } finally {
-                setLoadingEnrollment(false)
+            paymentEntryData = {
+                usuario_id: id,
+                pagante: responsiblePayerData?.nome_resp || userData?.nome,
+                aluno: userData?.nome,
+                vencimento: dateForPaymentEntry,
+                dt_pagamento: dateForPaymentEntry,
+                valor_parcela: parseFloat(paymentsInfoData?.valueEntry).toFixed(2),
+                n_parcela: 0,
+                c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
+                forma_pagamento: paymentsInfoData?.typePaymentEntry,
+                cartao_credito_id: null,
+                conta: 'Melies - Bradesco',
+                obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
+                status_gateway: 'Pago',
+                status_parcela: 'Pago',
+                parc_protestada: 0,
+                usuario_resp: userId
             }
         }
+
+        setLoadingEnrollment(true);
+
+        try {
+            const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData });
+            const { data } = response
+            if (response?.status === 201) {
+                setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
+
+                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { urlDoc, contractData, enrollmentId: data })
+                if (sendDoc?.status === 200) {
+                    alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
+                    router.push(`/administrative/users/${id}`);
+                    return;
+                } else {
+                    alert.error('Houve um erro ao enviar contrato para assinatura.')
+                }
+                alert.success('Matrícula efetivada. Confira se o contrato foi enviado para o aluno.')
+                router.push(`/administrative/users/${id}`);
+                return
+            }
+            else {
+                setEnrollmentCompleted({ ...enrollmentCompleted, status: 500 });
+                alert.error('Ocorreu um erro ao maticular o aluno.')
+                return
+            }
+        } catch (error) {
+            console.log(error);
+            alert.error('Ocorreu um erro ao maticular o aluno.')
+            return error;
+        } finally {
+            setLoadingEnrollment(false)
+        }
     }
+
+    console.log(classesDisciplinesDpSelected)
 
     const telas = [
         (
