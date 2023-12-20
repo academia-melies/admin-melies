@@ -274,6 +274,7 @@ export default function InterestEnroll() {
                 setDisciplinesDpSelected(flattenedDisciplinesSelected)
                 setDisciplinesDp(groupDisciplines);
 
+
                 const classesList = await Promise.all(data.map(async (item) => {
                     const handleClassesToDiscipline = await api.get(`/class/next/discipline/dp/${item?.disciplina_id}`);
                     const { data: classesData } = handleClassesToDiscipline;
@@ -362,6 +363,11 @@ export default function InterestEnroll() {
     useEffect(() => {
         handleItems()
     }, [])
+
+
+    useEffect(() => {
+        test()
+    }, [classesDisciplinesDpSelected])
 
     const handleItems = async () => {
         try {
@@ -567,34 +573,147 @@ export default function InterestEnroll() {
         }
     }
 
-    const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData, urlDoc, contractData) => {
-        let reenrollmentDataDp = {}
-
+    const test = () => {
+        let reenrollmentDataDp = []
+        const valueModuleCourse = (valuesCourse?.valor_total_curso)?.toFixed(2)
+        const costDiscipline = (valueModuleCourse / quantityDisciplinesModule)?.toFixed(2);
         if (isReenrollment) {
-            reenrollmentDataDp = {
-                usuario_id: id,
-                pendencia_aluno: classesDisciplinesDpSelected?.length,
-                dt_inicio: new Date(classScheduleData?.dt_inicio_cronograma),
-                dt_final: new Date(classScheduleData?.dt_fim_cronograma),
-                status: 'Pendente de assinatura do contrato',
-                turma_id: classData?.id_turma,
-                motivo_desistencia: null,
-                dt_desistencia: null,
-                certificado_emitido: 0,
-                desc_disp_disc: valuesContract?.descontoDispensadas || 0,
-                desc_adicional: valuesContract?.valorDescontoAdicional || 0,
-                desc_adicional_porc: valuesContract?.descontoAdicional || 0,
-                valor_tl_desc: (parseFloat(valuesContract?.valorDescontoAdicional || 0) + parseFloat(valuesContract?.descontoDispensadas)),
-                valor_matricula: valuesContract?.valorFinal || 0,
-                qnt_disci_disp: valuesContract?.qntDispensadas || 0,
-                usuario_resp: userId,
-                vl_disci_dp: isReenrollment ? valuesDisciplinesDp : null,
-                qnt_disci_dp: isReenrollment ? quantityDisciplinesDp : null,
-                rematricula: isReenrollment ? 1 : 0,
-                modulo: currentModule ? currentModule : 1,
-                cursando_dp: isReenrollment ? (classesDisciplinesDpSelected?.length > 0 ? 1 : 0) : 0
+
+            const areDisciplinesInSameClass = classesDisciplinesDpSelected.every(
+                (item, index, array) => index === 0 || item.turma === array[index - 1].turma
+            );
+
+
+            if (areDisciplinesInSameClass) {
+
+                let startDate = new Date(classesDisciplinesDpSelected[0]?.dt_inicio);
+                let endDate = new Date(classesDisciplinesDpSelected[0]?.dt_fim);
+                reenrollmentDataDp = [
+                    {
+                        usuario_id: id,
+                        pendencia_aluno: classesDisciplinesDpSelected?.length,
+                        dt_inicio: startDate?.toString(),
+                        dt_final: endDate?.toString(),
+                        status: 'Pendente de assinatura do contrato',
+                        turma_id: classesDisciplinesDpSelected[0]?.turma,
+                        motivo_desistencia: null,
+                        dt_desistencia: null,
+                        certificado_emitido: 0,
+                        desc_disp_disc: 0,
+                        desc_adicional: 0,
+                        desc_adicional_porc: 0,
+                        valor_tl_desc: 0,
+                        valor_matricula: costDiscipline * (classesDisciplinesDpSelected?.length),
+                        qnt_disci_dp: classesDisciplinesDpSelected?.length,
+                        usuario_resp: userId,
+                        vl_disci_dp: costDiscipline * (classesDisciplinesDpSelected?.length),
+                        rematricula: 1,
+                        modulo: classesDisciplinesDpSelected[0]?.modulo,
+                        cursando_dp: 1
+                    }
+                ]
+
+                return reenrollmentDataDp;
+
+            } else {
+                reenrollmentDataDp = classesDisciplinesDpSelected.map((item, index) => ({
+                    usuario_id: id,
+                    pendencia_aluno: 1,
+                    dt_inicio: (new Date(item?.dt_inicio))?.toString(),
+                    dt_final: (new Date(item?.dt_fim)?.toString()),
+                    status: 'Pendente de assinatura do contrato',
+                    turma_id: item.turma,
+                    motivo_desistencia: null,
+                    dt_desistencia: null,
+                    certificado_emitido: 0,
+                    desc_disp_disc: 0,
+                    desc_adicional: 0,
+                    desc_adicional_porc: 0,
+                    valor_tl_desc: 0,
+                    valor_matricula: costDiscipline,
+                    qnt_disci_dp: 1,
+                    usuario_resp: userId,
+                    vl_disci_dp: costDiscipline,
+                    rematricula: 1,
+                    modulo: item?.modulo,
+                    cursando_dp: 1
+                }))
+
+                return reenrollmentDataDp;
             }
         }
+    }
+
+    const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData, urlDoc, contractData) => {
+        let reenrollmentDataDp = []
+        const valueModuleCourse = (valuesCourse?.valor_total_curso)?.toFixed(2)
+        const costDiscipline = (valueModuleCourse / quantityDisciplinesModule)?.toFixed(2);
+        if (isReenrollment) {
+
+            const areDisciplinesInSameClass = classesDisciplinesDpSelected.every(
+                (item, index, array) => index === 0 || item.turma === array[index - 1].turma
+            );
+
+
+            if (areDisciplinesInSameClass) {
+
+                let startDate = new Date(classesDisciplinesDpSelected[0]?.dt_inicio);
+                let endDate = new Date(classesDisciplinesDpSelected[0]?.dt_fim);
+                reenrollmentDataDp = [
+                    {
+                        usuario_id: id,
+                        pendencia_aluno: classesDisciplinesDpSelected?.length,
+                        dt_inicio: startDate?.toString(),
+                        dt_final: endDate?.toString(),
+                        status: 'Pendente de assinatura do contrato',
+                        turma_id: classesDisciplinesDpSelected[0]?.turma,
+                        motivo_desistencia: null,
+                        dt_desistencia: null,
+                        certificado_emitido: 0,
+                        desc_disp_disc: 0,
+                        desc_adicional: 0,
+                        desc_adicional_porc: 0,
+                        valor_tl_desc: 0,
+                        valor_matricula: costDiscipline * (classesDisciplinesDpSelected?.length),
+                        qnt_disci_dp: classesDisciplinesDpSelected?.length,
+                        usuario_resp: userId,
+                        vl_disci_dp: costDiscipline * (classesDisciplinesDpSelected?.length),
+                        rematricula: 1,
+                        modulo: classesDisciplinesDpSelected[0]?.modulo,
+                        cursando_dp: 1
+                    }
+                ]
+
+                return reenrollmentDataDp;
+
+            } else {
+                reenrollmentDataDp = classesDisciplinesDpSelected.map((item, index) => ({
+                    usuario_id: id,
+                    pendencia_aluno: 1,
+                    dt_inicio: (new Date(item?.dt_inicio))?.toString(),
+                    dt_final: (new Date(item?.dt_fim)?.toString()),
+                    status: 'Pendente de assinatura do contrato',
+                    turma_id: item.turma,
+                    motivo_desistencia: null,
+                    dt_desistencia: null,
+                    certificado_emitido: 0,
+                    desc_disp_disc: 0,
+                    desc_adicional: 0,
+                    desc_adicional_porc: 0,
+                    valor_tl_desc: 0,
+                    valor_matricula: costDiscipline,
+                    qnt_disci_dp: 1,
+                    usuario_resp: userId,
+                    vl_disci_dp: costDiscipline,
+                    rematricula: 1,
+                    modulo: item?.modulo,
+                    cursando_dp: 1
+                }))
+
+                return reenrollmentDataDp;
+            }
+        }
+
 
         let enrollmentData = {
             usuario_id: id,
@@ -698,8 +817,6 @@ export default function InterestEnroll() {
             setLoadingEnrollment(false)
         }
     }
-
-    console.log(classesDisciplinesDpSelected)
 
     const telas = [
         (
@@ -883,12 +1000,32 @@ export const EnrollStudentDetails = (props) => {
                 );
                 setClassesDisciplinesDpSelected((prevSelections) => [
                     ...newSelectionsDisc,
-                    { uniqueKey, turma: item.turma_id, disciplina: item.id_disciplina },
+                    {
+                        uniqueKey,
+                        turma: item.turma_id,
+                        disciplina: item.id_disciplina,
+                        dt_fim: item?.dt_fim_cronograma,
+                        dt_inicio: item?.dt_inicio_cronograma,
+                        modulo: item?.modulo_grade,
+                        periodo: item?.periodo,
+                        nome_disciplina: item?.nome_disciplina,
+                        nome_turma: item?.nome_turma
+                    },
                 ]);
             } else {
                 setClassesDisciplinesDpSelected((prevSelections) => [
                     ...prevSelections,
-                    { uniqueKey, turma: item.turma_id, disciplina: item.id_disciplina },
+                    {
+                        uniqueKey,
+                        turma: item.turma_id,
+                        disciplina: item.id_disciplina,
+                        dt_fim: item?.dt_fim_cronograma,
+                        dt_inicio: item?.dt_inicio_cronograma,
+                        modulo: item?.modulo_grade,
+                        periodo: item?.periodo,
+                        nome_disciplina: item?.nome_disciplina,
+                        nome_turma: item?.nome_turma
+                    },
                 ]);
             }
         }
@@ -1125,13 +1262,9 @@ export const Payment = (props) => {
 
         const valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
         const costDiscipline = (valueModuleCourse / quantityDisciplinesModule).toFixed(2);
-        console.log(costDiscipline)
         const calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
         let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
         const valuesDisciplineDpTotal = (costDiscipline * (classesDisciplinesDpSelected?.length)).toFixed(2)
-        console.log(classesDisciplinesDpSelected?.length)
-
-
 
         if (isReenrollment) {
             valueFinally = (parseFloat(valueFinally) + parseFloat(valuesDisciplineDpTotal))
