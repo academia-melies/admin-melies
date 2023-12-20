@@ -1307,11 +1307,11 @@ export default function EditUser() {
 
     const groupRacaCor = [
         { label: 'Prefiro não declarar', value: 'Prefiro não declarar' },
-        { label: 'Branca', value: 'Branca' },
-        { label: 'Preta', value: 'Preta' },
-        { label: 'Parda', value: 'Parda' },
-        { label: 'Amarela', value: 'Amarela' },
-        { label: 'Indigena', value: 'Indigena' },
+        { label: 'Branco', value: 'Branco' },
+        { label: 'Preto', value: 'Preto' },
+        { label: 'Pardo', value: 'Pardo' },
+        { label: 'Amarelo', value: 'Amarelo' },
+        { label: 'Indígena', value: 'Indígena' },
     ]
 
     const groupGender = [
@@ -1399,19 +1399,28 @@ export default function EditUser() {
     ]
 
     const groupDeficiency = [
-        { label: 'Baixa visão', value: 'Baixa visão' },
+        { label: 'Deficiência visual', value: 'Deficiência visual' },
         { label: 'Deficiência intelectual', value: 'Deficiência intelectual' },
-        { label: 'Cegueira', value: 'Cegueira' },
-        { label: 'Surdez', value: 'Surdez' },
+        { label: 'Deficiência múltipla ', value: 'Deficiência múltipla ' },
+        { label: 'Surdez e deficiência auditiva', value: 'Surdez e deficiência auditiva' },
         { label: 'Deficiência auditiva', value: 'Deficiência auditiva' },
-        { label: 'Surdocegueira', value: 'Surdocegueira' },
-        { label: 'Deficiência fisica', value: 'Deficiência fisica' }
+        { label: 'Deficiência fisica e motora', value: 'Deficiência fisica e motora' }
+    ]
+
+
+    const groupOrigemEnsinoMedio = [
+        { label: 'Pública', value: 'Pública' },
+        { label: 'Privada', value: 'Privada' }
     ]
 
     const groupAutism = [
         {
-            label: 'Transtorno global do desenvolvimento (TGD)/Transtorno do espectro autista (TEA)',
-            value: 'Transtorno global do desenvolvimento (TGD)/Transtorno do espectro autista (TEA)'
+            label: 'Transtorno global do desenvolvimento (TGD)',
+            value: 'Transtorno global do desenvolvimento (TGD)'
+        },
+        {
+            label: 'Transtorno do espectro autista (TEA)',
+            value: 'Transtorno do espectro autista (TEA)'
         },
     ]
 
@@ -1834,7 +1843,7 @@ export default function EditUser() {
                         <Box sx={styles.inputSection}>
 
                             <SelectList fullWidth data={groupRacaCor} valueSelection={userData.cor_raca} onSelect={(value) => setUserData({ ...userData, cor_raca: value })}
-                                title="Etnia *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                title="Cor/raça *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
@@ -1844,7 +1853,7 @@ export default function EditUser() {
                             />
 
                             <SelectList fullWidth data={groupDisability} valueSelection={userData?.deficiencia} onSelect={(value) => setUserData({ ...userData, deficiencia: value })}
-                                title="Deficiência Física*" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                title="Deficiência Física/Necessidade especial educacional*" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
 
@@ -1962,7 +1971,14 @@ export default function EditUser() {
                             </Box>
                         </ContentContainer>
                         <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, schoolRecord: value })} style={{ alignItems: 'center' }}>
-                            <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, escolaridade: value })} />
+                            <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => {
+                                if (value !== 'Ensino médio') {
+                                    setUserData({ ...userData, escolaridade: value, tipo_origem_ensi_med: '' })
+                                }else{
+                                    setUserData({ ...userData, escolaridade: value })
+                                }
+                            }
+                            } />
                             <EditFile
                                 columnId="id_doc_usuario"
                                 open={showEditFile.schoolRecord}
@@ -1988,6 +2004,14 @@ export default function EditUser() {
                                 }}
                             />
                         </FileInput>
+                        {userData?.escolaridade === 'Ensino médio' && <RadioItem
+                            valueRadio={userData?.tipo_origem_ensi_med}
+                            group={groupOrigemEnsinoMedio}
+                            title="Origem Ensino Médio *"
+                            horizontal={mobile ? false : true}
+                            onSelect={(value) => setUserData({ ...userData, tipo_origem_ensi_med: value })}
+                        />}
+
                         <Box sx={styles.inputSection}>
                             <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, address: value })}>
                                 <TextInput placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
