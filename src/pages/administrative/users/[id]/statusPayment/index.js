@@ -9,11 +9,12 @@ import { CheckBoxComponent, DeclarationPayment, SectionHeader } from "../../../.
 import { icons } from "../../../../../organisms/layout/Colors";
 import { Backdrop } from "@mui/material";
 import { useReactToPrint } from "react-to-print";
+import axios from "axios";
 
 export default function StuatusPayment() {
     const router = useRouter();
     const { id, enrollmentId } = router.query;
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, alert, theme } = useAppContext()
     const [userData, setUserData] = useState({})
     const [enrollmentData, setEnrollmentData] = useState({})
     const [responsiblePayerData, setResponsiblePayerData] = useState({})
@@ -26,7 +27,47 @@ export default function StuatusPayment() {
         firstDate: '',
         endDate: ''
     })
+    const [groupStates, setGroupStates] = useState([]);
 
+    useEffect(() => {
+        const popUps = [
+            { id: 1, generate: false },
+            { id: 2, sendEmail: false },
+        ];
+        setGroupStates(popUps.map(() => ({ generate: false, sendEmail: false })));
+    }, []);
+
+    const handleGroupMouseEnter = (index, field) => {
+        setTimeout(() => {
+            setGroupStates((prevGroupStates) => {
+                const newGroupStates = [...prevGroupStates];
+
+                // Certifique-se de que newGroupStates[index] seja um objeto
+                if (!newGroupStates[index]) {
+                    newGroupStates[index] = {};
+                }
+
+                newGroupStates[index][field] = true;
+                return newGroupStates;
+            });
+        }, 300);
+    };
+
+    const handleGroupMouseLeave = (index, field) => {
+        setTimeout(() => {
+            setGroupStates((prevGroupStates) => {
+                const newGroupStates = [...prevGroupStates];
+
+                // Certifique-se de que newGroupStates[index] seja um objeto
+                if (!newGroupStates[index]) {
+                    newGroupStates[index] = {};
+                }
+
+                newGroupStates[index][field] = false;
+                return newGroupStates;
+            });
+        }, 300);
+    };
     const handleUser = async () => {
         try {
             const response = await api.get(`/user/${id}`)
@@ -118,6 +159,58 @@ export default function StuatusPayment() {
     if (enrollmentData?.nome_curso) nameContract += `${enrollmentData?.nome_curso}_`;
     if (enrollmentData?.modalidade_curso) nameContract += `${enrollmentData?.modalidade_curso}`;
     if (enrollmentData?.nome_turma) nameContract += ` (${enrollmentData?.nome_turma}-1SEM)`;
+
+
+    const emitirBoleto = async (item) => {
+        try {
+            setLoading(true)
+            if (item?.link_pdf) {
+                const response = await api.get(`/student/installment/generate/pdf?linkPdf=${item?.link_pdf}`)
+                const { pdfData } = response.data;
+
+                // Convertendo a string base64 de volta para um arraybuffer
+                const pdfBlob = new Blob([Uint8Array.from(atob(pdfData), c => c.charCodeAt(0))], { type: 'application/pdf' });
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+
+                // Abra o link do boleto (PDF) em uma nova janela
+                window.open(pdfUrl, '_blank');
+            } else {
+                alert.error('O arquivo não possui pdf.')
+                return
+            }
+
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const sendEmailBoleto = async (item) => {
+        try {
+            setLoading(true)
+            if (item?.link_pdf) {
+                const response = await api.post(`/student/installment/sendEmail/boleto?linkPdf=${item?.link_pdf}`)
+                if (response.status === 200) {
+                    alert.success('Email enviado com sucesso.')
+                    return
+                }
+            } else {
+                alert.error('O arquivo não possui pdf.')
+                return
+            }
+            alert.error('Ocorreu um erro ao enviar email.')
+            return
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
 
     return (
@@ -220,6 +313,7 @@ export default function StuatusPayment() {
                                             <th style={{ padding: '8px 2px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Obs</th>
                                             <th style={{ padding: '8px 2px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Status parcela</th>
                                             <th style={{ padding: '8px 2px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '180px' }}>Protestada?</th>
+                                            <th style={{ padding: '8px 8px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>PDF</th>
                                         </tr>
                                     </thead>
                                     <tbody style={{ flex: 1, }}>
@@ -271,6 +365,72 @@ export default function StuatusPayment() {
                                                     <td style={{ fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                                         {item?.parc_protestada === 1 ? 'Sim' : 'Não'}
                                                     </td>
+                                                    <td style={{ padding: '5px 5px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', flex: 1, }}>
+                                                            {item?.forma_pagamento === 'Boleto' ?
+                                                                <>
+                                                                    <Box sx={{ position: 'relative', display: 'flex' }}
+                                                                        onMouseEnter={() => handleGroupMouseEnter(index, 'generate')}
+                                                                        onMouseLeave={() => handleGroupMouseLeave(index, 'generate')}>
+                                                                        <Box sx={{
+                                                                            ...styles.menuIcon,
+                                                                            backgroundImage: `url('/icons/boleto_icon.png')`,
+                                                                            transition: '.3s',
+                                                                            width: 30, height: 'auto', aspectRatio: '1/1',
+                                                                            "&:hover": {
+                                                                                opacity: 0.8,
+                                                                                cursor: 'pointer'
+                                                                            }
+                                                                        }} onClick={() => emitirBoleto(item)} />
+                                                                        {groupStates[index]?.generate &&
+                                                                            <Box sx={{
+                                                                                position: 'absolute',
+                                                                                top: 10,
+                                                                                width: 'auto',
+                                                                                borderRadius: 2,
+                                                                                right: 30,
+                                                                                padding: '5px 10px',
+                                                                                backgroundColor: colorPalette.secondary,
+                                                                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                            }}>
+                                                                                <Text xsmall bold>Emitir boleto</Text>
+                                                                            </Box>
+                                                                        }
+                                                                    </Box>
+                                                                    <Box sx={{ position: 'relative', display: 'flex' }}
+                                                                        onMouseEnter={() => handleGroupMouseEnter(index, 'sendEmail')}
+                                                                        onMouseLeave={() => handleGroupMouseLeave(index, 'sendEmail')}>
+                                                                        <Box sx={{
+                                                                            ...styles.menuIcon,
+                                                                            width: 22,
+                                                                            height: 22,
+                                                                            backgroundImage: `url('${icons.send}')`,
+                                                                            transition: '.3s',
+                                                                            "&:hover": {
+                                                                                opacity: 0.8,
+                                                                                cursor: 'pointer'
+                                                                            }
+                                                                        }} onClick={() => sendEmailBoleto(item)}/>
+                                                                        {groupStates[index]?.sendEmail &&
+                                                                            <Box sx={{
+                                                                                position: 'absolute',
+                                                                                zIndex: 999,
+                                                                                top: 10,
+                                                                                minWidth: '120px',
+                                                                                borderRadius: 2,
+                                                                                right: 30,
+                                                                                padding: '5px 10px',
+                                                                                backgroundColor: colorPalette.secondary,
+                                                                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                            }}>
+                                                                                <Text xsmall bold>Enviar por e-mail</Text>
+                                                                            </Box>
+                                                                        }
+                                                                    </Box>
+                                                                </>
+                                                                : <Text>-</Text>}
+                                                        </Box>
+                                                    </td>
                                                 </tr>
                                             );
                                         })}
@@ -304,7 +464,7 @@ export default function StuatusPayment() {
                         </Box>
                     }
                 </ContentContainer>
-            </Box>
+            </Box >
 
             <Backdrop open={showDeclatation?.filterDate} sx={{ zIndex: 99999, overflow: 'auto', }}>
                 <ContentContainer>

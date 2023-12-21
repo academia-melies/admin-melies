@@ -5,15 +5,12 @@ import { useRef, useEffect, useState } from "react";
 import { CheckBoxComponent, SectionHeader, SelectList } from "../../../../organisms";
 import { Backdrop, CircularProgress, useMediaQuery, useTheme } from "@mui/material";
 import { useAppContext } from "../../../../context/AppContext";
-import { useReactToPrint } from "react-to-print";
 import { calculationAge, emailValidator, findCEP, formatCEP, formatCPF, formatCreditCardNumber, formatDate, formatRg, formatTimeStamp, formattedStringInDate } from "../../../../helpers";
 import { ContractStudentComponent } from "../../../../organisms/contractStudent/contractStudent";
 import { Forbidden } from "../../../../forbiddenPage/forbiddenPage";
 import Cards from 'react-credit-cards'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { bodyContractEnrollment, responsiblePayerDataTable, userDataTable } from "../../../../helpers/bodyContract";
@@ -95,7 +92,7 @@ export default function InterestEnroll() {
     const [formData, setFormData] = useState()
     const [paymentsInfoData, setPaymentsInfoData] = useState()
     const [currentModule, setCurrentModule] = useState(1)
-
+    const [showScreenDp, setShowScreenDp] = useState(false)
 
 
     // useEffect(() => {
@@ -684,6 +681,7 @@ export default function InterestEnroll() {
                     }
                 ]
 
+
                 return reenrollmentDataDp;
 
             } else {
@@ -842,6 +840,7 @@ export default function InterestEnroll() {
                     currentModule={currentModule}
                     valuesDisciplinesDp={valuesDisciplinesDp}
                     setValuesDisciplinesDp={setValuesDisciplinesDp}
+                    showScreenDp={showScreenDp} setShowScreenDp={setShowScreenDp}
                 />
             </>
         ),
@@ -969,7 +968,9 @@ export const EnrollStudentDetails = (props) => {
         setValuesDisciplinesDp,
         classScheduleData,
         classesDisciplinesDpSelected,
-        setClassesDisciplinesDpSelected
+        setClassesDisciplinesDpSelected,
+        showScreenDp,
+        setShowScreenDp
     } = props
 
     const { colorPalette, theme } = useAppContext()
@@ -1113,11 +1114,13 @@ export const EnrollStudentDetails = (props) => {
 
             {(isReenrollment && disciplinesDp.length > 0) &&
                 <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px', border: `1px solid ${colorPalette.buttonColor}` }} gap={3}>
-                    <ContentContainer fullWidth gap={4}>
-                        <Text bold title>Disciplinas em Pendência</Text>
+                    <ContentContainer fullWidth gap={3}>
+                        <Text bold title >Disciplinas em Pendência</Text>
+                        <Text bold style={{ color: 'red' }}>Se optar por matrícular as disciplinas em pêndencia, é necessário primeiro efeturar o pagamento das mesmas,
+                            e então seguir com o processo de rematrícula.</Text>
                         {disciplinesDp.map((discipl, index) => (
                             <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
-                                <Text bold large>{discipl.label}</Text>
+                                <Text bold>{discipl.label}</Text>
                                 <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                                     {discipl?.classes?.map((item, index) => {
                                         const title = `${item?.nome_disciplina}-${item.nome_turma}_${item.modulo_grade}_${item?.periodo}`;
@@ -1156,7 +1159,6 @@ export const EnrollStudentDetails = (props) => {
                                                                 height: 11,
                                                                 borderRadius: 11,
                                                                 cursor: 'pointer',
-
                                                                 '&:hover': {
                                                                     opacity: selected ? 0.8 : 0.6,
                                                                     boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
@@ -1165,19 +1167,28 @@ export const EnrollStudentDetails = (props) => {
                                                         />
                                                     )}
                                                 </Box>
-                                                <Text>{title}</Text>
+                                                <Text small>{title}</Text>
                                             </Box>
                                         );
                                     })}
                                 </Box>
                             </Box>
                         ))}
+                        <Box sx={{ width: '100%', justifyContent: 'flex-start', display: 'flex' }}>
+                            <Button small text="pagamento" style={{ width: 120, height: 30 }} onClick={() => setShowScreenDp(true)} />
+                        </Box>
                     </ContentContainer>
                 </ContentContainer>
             }
             <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Button text="Continuar" onClick={() => pushRouteScreen(1, 'interesse > Pagamento')} style={{ width: 120 }} />
             </Box>
+
+            <Backdrop open={showScreenDp}>
+                <ContentContainer>
+                    <Text>Pagamento Disciplinas em Pêndencia</Text>
+                </ContentContainer>
+            </Backdrop>
         </>
     )
 }
@@ -1713,19 +1724,19 @@ export const Payment = (props) => {
 
     const handleChangePaymentEntry = async (event) => {
 
-        const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+        const rawValue = event.target.value.replace(/[^\d]/g, '');
 
         if (rawValue === '') {
             event.target.value = '';
         } else {
-            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
-            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+            let intValue = rawValue.slice(0, -2) || '0';
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');
 
             if (intValue === '0' && rawValue.length > 2) {
                 intValue = '';
             }
 
-            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`;
             event.target.value = formattedValue;
 
         }
@@ -1738,19 +1749,19 @@ export const Payment = (props) => {
 
     const handleChangePaymentValuesParcels = async (event) => {
 
-        const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+        const rawValue = event.target.value.replace(/[^\d]/g, '');
 
         if (rawValue === '') {
             event.target.value = '';
         } else {
-            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
-            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+            let intValue = rawValue.slice(0, -2) || '0';
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');
 
             if (intValue === '0' && rawValue.length > 2) {
                 intValue = '';
             }
 
-            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`;
             event.target.value = formattedValue;
 
         }
@@ -2464,20 +2475,6 @@ export const ContractStudent = (props) => {
         handleUserData()
     }, [])
 
-
-    // const handleSubmitEnrollment = async () => {
-    //     setLoading(true)
-    //     try {
-    //         handleGeneratePdf()
-    //     } catch (error) {
-    //         console.error(error);
-    //     } finally {
-    //         setLoading(false)
-    //     }
-    // }
-
-
-
     useEffect(() => {
 
         const updatedPaymentForm = paymentForm.map((payment) =>
@@ -2516,30 +2513,6 @@ export const ContractStudent = (props) => {
     if (className) nameContract += `${className}-${currentModule}SEM_`;
     if (courseName) nameContract += `${courseName}_`;
     if (modalityCourse) nameContract += `${modalityCourse}`;
-
-    // const handleGeneratePdf = useReactToPrint({
-    //     content: () => contractService.current,
-    //     documentTitle: `${nameContract}`,
-    //     onAfterPrint: () => {
-    //         html2canvas(contractService.current).then(canvas => {
-    //             const imgData = canvas.toDataURL('image/png');
-
-    //             const pdf = new jsPDF('p', 'mm', 'a4');
-    //             pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // 210x297 mm (A4)
-
-    //             const pdfData = pdf.output('blob');
-    //             const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
-
-    //             const formData = new FormData();
-    //             formData.append('file', pdfBlob, `contrato-${userData?.nome}.pdf`);
-
-    //             setFormData(formData);
-    //             handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData);
-
-    //             return true
-    //         });
-    //     }
-    // });
 
 
     const handleSubmitEnrollment = async () => {
@@ -2709,8 +2682,6 @@ export const ContractStudent = (props) => {
                 };
 
                 const pdfDocGenerator = pdfMake.createPdf(documentDefinition);
-
-                // Aguarde a geração do PDF antes de continuar
                 const pdfBlob = await new Promise((pdfResolve) => {
                     pdfDocGenerator.getBlob(pdfResolve);
                 });
@@ -2726,7 +2697,7 @@ export const ContractStudent = (props) => {
     const createPaymentTable = (paymentData) => {
         const tableBody = [];
         tableBody.push([
-            { text: 'Nº Parcela', style: 'tableHeader', fillColor: '#F49519' }, // Adicione a cor de fundo aqui
+            { text: 'Nº Parcela', style: 'tableHeader', fillColor: '#F49519' },
             { text: 'Forma', style: 'tableHeader', fillColor: '#F49519' },
             { text: 'Pagamento', style: 'tableHeader', fillColor: '#F49519' },
             { text: 'Valor da Parcela', style: 'tableHeader', fillColor: '#F49519' },
@@ -2754,10 +2725,10 @@ export const ContractStudent = (props) => {
             margin: [60, 0, 0, 0],
             layout: {
                 hLineWidth: function (i, node) {
-                    return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                    return i === 0 ? 0 : 1;
                 },
                 vLineWidth: function (i, node) {
-                    return 0; // Remove todas as linhas verticais
+                    return 0;
                 },
             },
         };
@@ -2792,7 +2763,6 @@ export const ContractStudent = (props) => {
                     { text: dateForPaymentEntry, alignment: 'center' }, // Format the date
                 ]);
             } else {
-                // Handle invalid date, you might want to show an error message or handle it in a different way
                 console.error('Invalid dateForPaymentEntry:', dateForPaymentEntry);
                 return null; // or handle it accordingly
             }
@@ -2806,10 +2776,10 @@ export const ContractStudent = (props) => {
                 margin: [60, 10],
                 layout: {
                     hLineWidth: function (i, node) {
-                        return i === 0 ? 0 : 1; // Remove linhas horizontais, exceto a primeira
+                        return i === 0 ? 0 : 1;
                     },
                     vLineWidth: function (i, node) {
-                        return 0; // Remove todas as linhas verticais
+                        return 0;
                     },
                 },
             };
@@ -3010,7 +2980,6 @@ export const ContractStudent = (props) => {
                     </ContractStudentComponent>
                 </div>
             </ContentContainer>
-            {/* <Button text="gerar contrato" onClick={handleGeneratePdf} style={{ width: 180 }} /> */}
             <ContentContainer gap={2}>
                 <Text bold>Assinatura Digital:</Text>
                 <Box sx={{ ...styles.inputSection, marginTop: 2 }}>
