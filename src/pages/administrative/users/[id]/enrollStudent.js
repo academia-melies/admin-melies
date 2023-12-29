@@ -14,6 +14,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { bodyContractEnrollment, responsiblePayerDataTable, userDataTable } from "../../../../helpers/bodyContract";
+import { icons } from "../../../../organisms/layout/Colors";
 
 
 
@@ -93,6 +94,7 @@ export default function InterestEnroll() {
     const [paymentsInfoData, setPaymentsInfoData] = useState()
     const [currentModule, setCurrentModule] = useState(1)
     const [showScreenDp, setShowScreenDp] = useState(false)
+    const [reenrollmentDp, setReenrollmentDp] = useState([])
 
 
     // useEffect(() => {
@@ -237,7 +239,8 @@ export default function InterestEnroll() {
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
                 label: disciplines.nome_disciplina,
-                value: disciplines?.id_disciplina.toString()
+                value: disciplines?.id_disciplina.toString(),
+                
             }));
 
             const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
@@ -262,7 +265,8 @@ export default function InterestEnroll() {
             if (data.length > 0) {
                 const groupDisciplines = data.map(disciplines => ({
                     label: disciplines.nome_disciplina,
-                    value: disciplines?.disciplina_id.toString()
+                    value: disciplines?.disciplina_id.toString(),
+                    id_disc_matricula: disciplines?.id_disc_matricula
                 }));
 
                 const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
@@ -275,7 +279,7 @@ export default function InterestEnroll() {
                 const classesList = await Promise.all(data.map(async (item) => {
                     const handleClassesToDiscipline = await api.get(`/class/next/discipline/dp/${item?.disciplina_id}`);
                     const { data: classesData } = handleClassesToDiscipline;
-
+                    classData.id_disc_matricula = item?.id_disc_matricula
                     return classesData;
                 }));
 
@@ -580,7 +584,6 @@ export default function InterestEnroll() {
                 (item, index, array) => index === 0 || item.turma === array[index - 1].turma
             );
 
-
             if (areDisciplinesInSameClass) {
 
                 let startDate = new Date(classesDisciplinesDpSelected[0]?.dt_inicio);
@@ -606,11 +609,12 @@ export default function InterestEnroll() {
                         vl_disci_dp: costDiscipline * (classesDisciplinesDpSelected?.length),
                         rematricula: 1,
                         modulo: classesDisciplinesDpSelected[0]?.modulo,
-                        cursando_dp: 1
+                        cursando_dp: 1,
+                        nome_turma: classesDisciplinesDpSelected[0]?.nome_turma
                     }
                 ]
 
-                return reenrollmentDataDp;
+                setReenrollmentDp(reenrollmentDataDp)
 
             } else {
                 reenrollmentDataDp = classesDisciplinesDpSelected.map((item, index) => ({
@@ -633,10 +637,11 @@ export default function InterestEnroll() {
                     vl_disci_dp: costDiscipline,
                     rematricula: 1,
                     modulo: item?.modulo,
-                    cursando_dp: 1
-                }))
+                    cursando_dp: 1,
+                    nome_turma: item?.nome_turma
 
-                return reenrollmentDataDp;
+                }))
+                setReenrollmentDp(reenrollmentDataDp)
             }
         }
     }
@@ -734,7 +739,7 @@ export default function InterestEnroll() {
             qnt_disci_dp: isReenrollment ? quantityDisciplinesDp : null,
             rematricula: isReenrollment ? 1 : 0,
             modulo: currentModule ? currentModule : 1,
-            cursando_dp: isReenrollment ? (classesDisciplinesDpSelected?.length > 0 ? 1 : 0) : 0
+            cursando_dp: classesDisciplinesDpSelected?.length > 0 ? 1 : 0
         }
 
         let paymentInstallmentsEnrollment = enrollment?.map((payment, index) =>
@@ -841,6 +846,42 @@ export default function InterestEnroll() {
                     valuesDisciplinesDp={valuesDisciplinesDp}
                     setValuesDisciplinesDp={setValuesDisciplinesDp}
                     showScreenDp={showScreenDp} setShowScreenDp={setShowScreenDp}
+                    quantityDisciplinesSelected={quantityDisciplinesSelected}
+                    quantityDisciplinesModule={quantityDisciplinesModule}
+                    setValuesContract={setValuesContract}
+                    setPaymentForm={setPaymentForm}
+                    valuesContract={valuesContract}
+                    paymentForm={paymentForm}
+                    updatedScreen={updatedScreen}
+                    responsiblePayerData={responsiblePayerData}
+                    setResponsiblePayerData={setResponsiblePayerData}
+                    handleAddResponsible={handleCreateResponsible}
+                    handleUpdateResponsible={handleUpdateResponsible}
+                    handleDeleteResponsible={handleDeleteResponsible}
+                    groupResponsible={groupResponsible}
+                    paying={paying}
+                    setPaying={setPaying}
+                    userIsOfLegalAge={userIsOfLegalAge}
+                    newResponsible={newResponsible}
+                    setNewResponsible={setNewResponsible}
+                    typeDiscountAdditional={typeDiscountAdditional}
+                    setTypeDiscountAdditional={setTypeDiscountAdditional}
+                    newPaymentProfile={newPaymentProfile}
+                    setNewPaymentProfile={setNewPaymentProfile}
+                    paymentsProfile={paymentsProfile}
+                    handleCreatePaymentProfile={handleCreatePaymentProfile}
+                    groupPayment={groupPayment}
+                    showPaymentPerfl={showPaymentPerfl}
+                    setShowPaymentPerfl={setShowPaymentPerfl}
+                    paymentsInfoData={paymentsInfoData}
+                    setPaymentsInfoData={setPaymentsInfoData}
+                    quantityDisciplinesDp={quantityDisciplinesDp}
+                    userId={id}
+                    emailDigitalSignature={emailDigitalSignature}
+                    setEmailDigitalSignature={setEmailDigitalSignature}
+                    handleCreateEnrollStudent={handleCreateEnrollStudent}
+                    setFormData={setFormData}
+                    reenrollmentDp={reenrollmentDp}
                 />
             </>
         ),
@@ -914,10 +955,12 @@ export default function InterestEnroll() {
                     quantityDisciplinesDp={quantityDisciplinesDp}
                     currentModule={currentModule}
                     classScheduleData={classScheduleData}
+                    classesDisciplinesDpSelected={classesDisciplinesDpSelected}
                 />
             </>
         )
     ];
+
 
 
     return (
@@ -970,17 +1013,60 @@ export const EnrollStudentDetails = (props) => {
         classesDisciplinesDpSelected,
         setClassesDisciplinesDpSelected,
         showScreenDp,
-        setShowScreenDp
+        setShowScreenDp,
+        quantityDisciplinesSelected,
+        quantityDisciplinesModule,
+        setValuesContract,
+        valuesContract,
+        setPaymentForm,
+        responsiblePayerData,
+        updatedScreen,
+        setResponsiblePayerData,
+        handleAddResponsible,
+        handleUpdateResponsible,
+        groupResponsible,
+        paying,
+        setPaying,
+        userData,
+        userIsOfLegalAge,
+        newResponsible,
+        setNewResponsible,
+        handleDeleteResponsible,
+        typeDiscountAdditional,
+        setTypeDiscountAdditional,
+        newPaymentProfile,
+        setNewPaymentProfile,
+        paymentsProfile,
+        handleCreatePaymentProfile,
+        groupPayment,
+        showPaymentPerfl,
+        setShowPaymentPerfl,
+        paymentsInfoData, setPaymentsInfoData,
+        quantityDisciplinesDp,
+        setCheckValidateScreen,
+        paymentForm,
+        userId,
+        emailDigitalSignature,
+        setEmailDigitalSignature,
+        handleCreateEnrollStudent,
+        reenrollmentDp
     } = props
 
-    const { colorPalette, theme } = useAppContext()
+    const { colorPalette, theme, alert } = useAppContext()
+    const [indiceScreenDp, setIndiceScreenDp] = useState(0)
+    const [routeScreenDp, setRouteScreenDp] = useState('Pagamento >')
+
+    const patchRouthDp = (indice, route) => {
+        setIndiceScreenDp(indice)
+        setRouteScreenDp(route);
+    }
 
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
     });
 
-    const handleSelect = (item, uniqueKey) => {
+    const handleSelect = (item, uniqueKey, discipl) => {
         const isSelected = classesDisciplinesDpSelected.some(
             (selection) => selection.uniqueKey === uniqueKey
         );
@@ -1002,6 +1088,7 @@ export const EnrollStudentDetails = (props) => {
                 setClassesDisciplinesDpSelected((prevSelections) => [
                     ...newSelectionsDisc,
                     {
+                        id_disc_matricula: discipl?.id_disc_matricula,
                         uniqueKey,
                         turma: item.turma_id,
                         disciplina: item.id_disciplina,
@@ -1018,6 +1105,7 @@ export const EnrollStudentDetails = (props) => {
                     ...prevSelections,
                     {
                         uniqueKey,
+                        id_disc_matricula: discipl?.id_disc_matricula,
                         turma: item.turma_id,
                         disciplina: item.id_disciplina,
                         dt_fim: item?.dt_fim_cronograma,
@@ -1032,7 +1120,83 @@ export const EnrollStudentDetails = (props) => {
         }
     };
 
-
+    const screensDP = [
+        (
+            <>
+                <Payment
+                    setCheckValidateScreen={setCheckValidateScreen}
+                    isReenrollment={isReenrollment}
+                    quantityDisciplinesSelected={quantityDisciplinesSelected}
+                    quantityDisciplinesModule={quantityDisciplinesModule}
+                    valuesCourse={valuesCourse}
+                    setValuesContract={setValuesContract}
+                    setPaymentForm={setPaymentForm}
+                    valuesContract={valuesContract}
+                    paymentForm={paymentForm}
+                    updatedScreen={updatedScreen}
+                    responsiblePayerData={responsiblePayerData}
+                    setResponsiblePayerData={setResponsiblePayerData}
+                    handleUpdateResponsible={handleUpdateResponsible}
+                    handleDeleteResponsible={handleDeleteResponsible}
+                    groupResponsible={groupResponsible}
+                    paying={paying}
+                    setPaying={setPaying}
+                    userData={userData}
+                    userIsOfLegalAge={userIsOfLegalAge}
+                    newResponsible={newResponsible}
+                    setNewResponsible={setNewResponsible}
+                    typeDiscountAdditional={typeDiscountAdditional}
+                    setTypeDiscountAdditional={setTypeDiscountAdditional}
+                    newPaymentProfile={newPaymentProfile}
+                    setNewPaymentProfile={setNewPaymentProfile}
+                    paymentsProfile={paymentsProfile}
+                    handleCreatePaymentProfile={handleCreatePaymentProfile}
+                    groupPayment={groupPayment}
+                    showPaymentPerfl={showPaymentPerfl}
+                    setShowPaymentPerfl={setShowPaymentPerfl}
+                    pushRouteScreen={pushRouteScreen}
+                    paymentsInfoData={paymentsInfoData}
+                    setPaymentsInfoData={setPaymentsInfoData}
+                    quantityDisciplinesDp={quantityDisciplinesDp}
+                    setValuesDisciplinesDp={setValuesDisciplinesDp}
+                    valuesDisciplinesDp={valuesDisciplinesDp}
+                    currentModule={currentModule}
+                    classScheduleData={classScheduleData}
+                    isDp={true}
+                    classesDisciplinesDpSelected={classesDisciplinesDpSelected}
+                />
+            </>
+        ),
+        (
+            <>
+                {paymentForm.length > 0 && <ContractStudent
+                    setCheckValidateScreen={setCheckValidateScreen}
+                    paymentForm={paymentForm}
+                    isReenrollment={isReenrollment}
+                    valuesContract={valuesContract}
+                    courseData={courseData}
+                    classData={classData}
+                    userId={userId}
+                    responsiblePayerData={responsiblePayerData}
+                    emailDigitalSignature={emailDigitalSignature}
+                    setEmailDigitalSignature={setEmailDigitalSignature}
+                    typeDiscountAdditional={typeDiscountAdditional}
+                    setTypeDiscountAdditional={setTypeDiscountAdditional}
+                    groupPayment={groupPayment}
+                    handleCreateEnrollStudent={handleCreateEnrollStudent}
+                    pushRouteScreen={pushRouteScreen}
+                    // setFormData={setFormData}
+                    paymentsInfoData={paymentsInfoData} setPaymentsInfoData={setPaymentsInfoData}
+                    quantityDisciplinesDp={quantityDisciplinesDp}
+                    currentModule={currentModule}
+                    classScheduleData={classScheduleData}
+                    isDp={true}
+                    reenrollmentDp={reenrollmentDp}
+                    classesDisciplinesDpSelected={classesDisciplinesDpSelected}
+                />}
+            </>
+        )
+    ]
 
     return (
         <>
@@ -1148,7 +1312,7 @@ export const EnrollStudentDetails = (props) => {
                                                             boxShadow: selected ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                                                         }
                                                     }}
-                                                    onClick={() => handleSelect(item, uniqueKey)}
+                                                    onClick={() => handleSelect(item, uniqueKey, discipl)}
                                                 >
                                                     {selected ? (
                                                         <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
@@ -1175,7 +1339,13 @@ export const EnrollStudentDetails = (props) => {
                             </Box>
                         ))}
                         <Box sx={{ width: '100%', justifyContent: 'flex-start', display: 'flex' }}>
-                            <Button small text="pagamento" style={{ width: 120, height: 30 }} onClick={() => setShowScreenDp(true)} />
+                            <Button small text="pagamento" style={{ width: 120, height: 30 }} onClick={() => {
+                                if (classesDisciplinesDpSelected.length > 0) {
+                                    setShowScreenDp(true)
+                                } else {
+                                    alert.info('Selecione as disciplinas em pendência que deseja cursar.')
+                                }
+                            }} />
                         </Box>
                     </ContentContainer>
                 </ContentContainer>
@@ -1185,8 +1355,38 @@ export const EnrollStudentDetails = (props) => {
             </Box>
 
             <Backdrop open={showScreenDp}>
-                <ContentContainer>
-                    <Text>Pagamento Disciplinas em Pêndencia</Text>
+                <ContentContainer style={{
+                    height: 700,
+                    width: 1080,
+                    marginLeft: 20,
+                    overflowY: 'auto',
+                    position: 'relative'
+                }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+                        <Text bold={true} large={true}>Pagamento Disciplinas em Pêndencia</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 17,
+                            height: 17,
+                            aspectRatio: '1/1',
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowScreenDp(false)} />
+                    </Box>
+
+                    {showScreenDp === true &&
+                        <Box sx={{ overflowY: 'auto', }}>
+                            {screensDP[indiceScreenDp]}
+                        </Box>
+                    }
+                    <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'flex-end', alignItems: 'center', }}>
+                        <Button text="Voltar" onClick={() => indiceScreenDp[indiceScreenDp] !== 0 && patchRouthDp(0, 'Pagamento >')} style={{ width: 120, opacity: indiceScreenDp[indiceScreenDp] === 0 ? 0.5 : 1 }} />
+                        <Button text="Continuar" onClick={() => patchRouthDp(1, 'Pagamento > Contrato')} style={{ width: 120 }} />
+                    </Box>
                 </ContentContainer>
             </Backdrop>
         </>
@@ -1231,7 +1431,8 @@ export const Payment = (props) => {
         setValuesDisciplinesDp,
         disciplinesDpSelected,
         classScheduleData,
-        classesDisciplinesDpSelected
+        classesDisciplinesDpSelected,
+        isDp
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -1268,17 +1469,24 @@ export const Payment = (props) => {
     const [dateForPaymentEntry, setDateForPaymentEntry] = useState()
 
     useEffect(() => {
-        const disciplinesDispensed = quantityDisciplinesModule - quantityDisciplinesSelected;
-        const porcentDisciplineDispensed = `${((disciplinesDispensed / quantityDisciplinesModule) * 100).toFixed(2)}%`;
 
-        const valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
-        const costDiscipline = (valueModuleCourse / quantityDisciplinesModule).toFixed(2);
-        const calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
+        let disciplinesDispensed = quantityDisciplinesModule - quantityDisciplinesSelected;
+        let porcentDisciplineDispensed = `${((disciplinesDispensed / quantityDisciplinesModule) * 100).toFixed(2)}%`;
+
+        let valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
+        let costDiscipline = (valueModuleCourse / quantityDisciplinesModule).toFixed(2);
+        let calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
         let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
-        const valuesDisciplineDpTotal = (costDiscipline * (classesDisciplinesDpSelected?.length)).toFixed(2)
+        let valuesDisciplineDpTotal = (costDiscipline * (classesDisciplinesDpSelected?.length)).toFixed(2)
 
         if (isReenrollment) {
-            valueFinally = (parseFloat(valueFinally) + parseFloat(valuesDisciplineDpTotal))
+            if (isDp) {
+                disciplinesDispensed = 0;
+                porcentDisciplineDispensed = '0.00%';
+                valueModuleCourse = valuesDisciplineDpTotal;
+                calculationDiscount = 0;
+                valueFinally = parseFloat(valuesDisciplineDpTotal)
+            }
         }
         setTotalValueFinnaly(valueFinally)
         setDisciplineDispensedPorcent(porcentDisciplineDispensed)
@@ -1836,22 +2044,9 @@ export const Payment = (props) => {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Total:</Text>
-                                <Text>{formatter.format(valuesCourse?.valor_total_curso)}</Text>
+                                {isDp ? <Text>{formatter.format(totalValueFinnaly)}</Text>
+                                    : <Text>{formatter.format(valuesCourse?.valor_total_curso)}</Text>}
                             </Box>
-
-                            {isReenrollment && <>
-                                <Divider distance={0} />
-                                <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
-                                    <Text bold>Disciplinas em pendência (DP):</Text>
-                                    <Text>{classesDisciplinesDpSelected?.length}</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
-                                    <Text bold>Disciplinas em pendência (DP) - Valor R$:</Text>
-                                    <Text>{formatter.format(valuesDisciplinesDp || 0.0)}</Text>
-                                </Box>
-                            </>
-                            }
                             <Divider distance={0} />
                             <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Disciplinas dispensadas:</Text>
@@ -2416,10 +2611,10 @@ export const Payment = (props) => {
                 </Box >
 
             </ContentContainer >
-            <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            {!isDp && <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Button secondary text="Voltar" onClick={() => pushRouteScreen(0, 'interesse >')} style={{ width: 120 }} />
                 <Button text="Continuar" onClick={() => checkEnrollmentData(2, 'interesse > Pagamento > Contrato')} style={{ width: 120 }} />
-            </Box>
+            </Box>}
         </>
     )
 
@@ -2445,7 +2640,10 @@ export const ContractStudent = (props) => {
         setFormData,
         paymentsInfoData, setPaymentsInfoData,
         currentModule,
-        classScheduleData
+        classScheduleData,
+        isDp,
+        reenrollmentDp,
+        classesDisciplinesDpSelected
     } = props
 
 
@@ -2506,6 +2704,15 @@ export const ContractStudent = (props) => {
         style: 'currency',
         currency: 'BRL'
     });
+
+    if (isDp) {
+        for (let dpData of reenrollmentDp) {
+            query = `Cursando DP: ${dpData?.nome_turma}-${dpData?.modulo}SEM - `;
+            if (courseSigle) query += `${courseSigle} `;
+            if (courseName) query += `${courseName} EAD `;
+            if (dpData?.dt_inicio) query += `- ${formatTimeStamp(dpData?.dt_inicio)}`;
+        }
+    }
 
 
     let nameContract = `contrato_ `;
@@ -2632,8 +2839,9 @@ export const ContractStudent = (props) => {
                                 body: [
                                     userData?.nome ? ['Aluno:', userData?.nome] : [],
                                     ['Resp. pagante:', responsiblePayerData?.nome_resp || userData?.nome],
-                                    ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
+                                    isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
                                     ['Disciplinas dispensadas:', valuesContract?.qntDispensadas],
+                                    classesDisciplinesDpSelected?.length > 0 && ['Disciplinas DP:', classesDisciplinesDpSelected?.length],
                                     valuesContract?.descontoDispensadas > 0 && ['Disciplinas dispensadas - Desconto (R$):', formatter.format(valuesContract.descontoDispensadas)],
                                     valuesContract?.descontoPorcentagemDisp != '0.00%' && ['Disciplinas dispensadas - Desconto (%):', valuesContract?.descontoPorcentagemDisp],
                                     valuesContract?.descontoAdicional && ['DESCONTO (adicional):', (typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
@@ -2842,8 +3050,12 @@ export const ContractStudent = (props) => {
                                 </Box>
                                 <Box sx={styles.containerValues}>
                                     <Text small style={styles.textDataPayments} bold>Valor total do semestre:</Text>
-                                    <Text small style={styles.textDataPayments}>{formatter.format(valuesContract?.valorSemestre)}</Text>
+                                    <Text small style={styles.textDataPayments}>{isDp ? formatter?.format(valuesContract?.valorFinal) : formatter.format(valuesContract?.valorSemestre)}</Text>
                                 </Box>
+                                {isDp && <Box sx={styles.containerValues}>
+                                    <Text small style={styles.textDataPayments} bold>Disciplinas DP:</Text>
+                                    <Text small style={styles.textDataPayments}>{classesDisciplinesDpSelected?.length || 0}</Text>
+                                </Box>}
                                 <Box sx={styles.containerValues}>
                                     <Text small bold style={styles.textDataPayments}>Disciplinas dispensadas:</Text>
                                     <Text small style={styles.textDataPayments}>{valuesContract?.qntDispensadas}</Text>
@@ -2990,9 +3202,9 @@ export const ContractStudent = (props) => {
             <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start' }}>
                 <Button text="efetivar matrícula" onClick={() => handleSubmitEnrollment(paymentData, valuesContract)} style={{ width: '200px', height: '35px' }} />
             </Box>
-            <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            {!isDp && <Box sx={{ display: 'flex', gap: 2, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Button secondary text="Voltar" onClick={() => pushRouteScreen(1, 'interesse > Pagamento')} style={{ width: 120 }} />
-            </Box>
+            </Box>}
         </>
     )
 

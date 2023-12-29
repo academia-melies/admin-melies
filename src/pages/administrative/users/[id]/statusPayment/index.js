@@ -312,7 +312,7 @@ export default function StuatusPayment() {
                                             <th style={{ padding: '8px 2px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Valor</th>
                                             <th style={{ padding: '8px 2px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Obs</th>
                                             <th style={{ padding: '8px 2px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Status parcela</th>
-                                            <th style={{ padding: '8px 2px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '180px' }}>Protestada?</th>
+                                            <th style={{ padding: '8px 2px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Protestada?</th>
                                             <th style={{ padding: '8px 8px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>PDF</th>
                                         </tr>
                                     </thead>
