@@ -99,12 +99,15 @@ export default function EditFrequency(props) {
             const students = await handleStudentsDiscipline(disciplina_id)
             if (!students.length > 0) {
                 alert.error('A turma não possui estudantes cadastrados para esse módulo.')
+                setStudentData([])
                 return
             }
 
             const classesDays = await listClassDay(disciplina_id)
+            console.log(classesDays)
             if (!classesDays.length > 0) {
-                alert.info('Não existe cronograma/ aulas agendadas para essa disciplina.')
+                alert.info('A turma ainda não iniciou as aulas ou não existe cronograma/ aulas agendadas para essa disciplina.')
+                setStudentData([])
                 return
             }
 
@@ -255,6 +258,7 @@ export default function EditFrequency(props) {
             const { data } = response
             if (data.length > 0) {
                 const updatedStudentData = [...dataFrequency];
+                console.log(dataFrequency)
 
                 data.forEach(newClassDayData => {
                     const existingClassDayDataIndex = updatedStudentData.findIndex(existingClassDayData =>
@@ -359,6 +363,7 @@ export default function EditFrequency(props) {
                 return data
             } else {
                 setHasStudents(false)
+                setStudentsList([])
                 alert.error('A turma não possui estudantes cadastrados para esse módulo.')
                 return false
             }
@@ -373,6 +378,7 @@ export default function EditFrequency(props) {
         try {
             const response = await api.get(`/classDay/discipline/${id}/${disciplineId}`)
             const { data } = response
+
             if (data.length > 0) {
                 const groupClassDay = data.map(day => {
                     const dateObject = new Date(day?.dt_aula);
@@ -383,11 +389,13 @@ export default function EditFrequency(props) {
                         dateObject: adjustedDate,
                     };
                 });
-
                 groupClassDay.sort((a, b) => a.dateObject - b.dateObject);
                 const sortedClassDays = groupClassDay.map(({ dateObject, ...rest }) => rest);
                 setClassDays(sortedClassDays);
                 return sortedClassDays
+            }
+            else {
+                return false
             }
 
         } catch (error) {

@@ -161,7 +161,7 @@ export default function EditStudentGrade(props) {
         if (checkSearch(studentGradeData)) {
             setLoading(true)
             try {
-                const response = await api.get(`/studentGrade/module/${studentGradeData?.modulo_nota}/${studentGradeData?.disciplina_id}`)
+                const response = await api.get(`/studentGrade/module/${studentGradeData?.modulo_nota}/${studentGradeData?.disciplina_id}/${id}`)
                 const { data } = response
                 if (data.length > 0) {
                     const groupStudents = data.map(student => ({
