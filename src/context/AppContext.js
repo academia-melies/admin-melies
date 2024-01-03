@@ -8,8 +8,9 @@ import { Alert, Colors } from "../organisms";
 import { api } from "../api/api";
 import { LoadingIcon } from "../organisms/loading/Loading";
 import { versions } from "../config/config";
+import { icons } from "../organisms/layout/Colors";
 
-const MAX_CONFIRMATION_DIALOG_WITH = 220;
+const MAX_CONFIRMATION_DIALOG_WITH = 360;
 
 export const AppContext = createContext({});
 
@@ -191,7 +192,7 @@ export const ConfirmationModal = (props) => {
         const calculatePosition = () => {
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            const modalWidth = 300; 
+            const modalWidth = 300;
             const modalHeight = 150;
             const left = (screenWidth - modalWidth) / 2;
             const top = (screenHeight - modalHeight) / 2;
@@ -206,29 +207,36 @@ export const ConfirmationModal = (props) => {
 
 
     return (
-        <>
-            {active && (
-                <Box sx={{ ...styles.confirmationContainer, ...position, zIndex: 999999 }}>
-                    <Box>
-                        <Text bold='true'>{title}</Text>
-                    </Box>
-                    <Divider distance={0} />
-                    {message && (
-                        <Box>
-                            <Text>{message}</Text>
-                        </Box>
-                    )}
-                    <Divider distance={0} />
-                    <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'center' }}>
-                        <Button small='true' text='Sim' style={{ height: 30, width: '100%' }} onClick={() => {
-                            closeDialog();
-                            acceptAction();
-                        }} />
-                        <Button small='true' secondary='true' style={{ height: 30, width: '100%' }} text='Não' onClick={closeDialog} />
-                    </Box>
+        <Backdrop open={active} sx={{ zIndex: 99999 }}>
+            <Box sx={{ ...styles.confirmationContainer, ...position, zIndex: 999999 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text large style={{ color: 'black' }} bold='true'>{title}</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_close})`,
+                        transition: '.3s',
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={closeDialog} />
                 </Box>
-            )}
-        </>
+                <Divider distance={0} />
+                {message && (
+                    <Box>
+                        <Text style={{ color: 'black' }}>{message}</Text>
+                    </Box>
+                )}
+                <Divider distance={0} />
+                <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'center' }}>
+                    <Button small='true' text='Prosseguir' style={{ height: 30, width: '100%' }} onClick={() => {
+                        closeDialog();
+                        acceptAction();
+                    }} />
+                    <Button small='true' secondary='true' style={{ height: 30, width: '100%' }} text='Cancelar' onClick={closeDialog} />
+                </Box>
+            </Box>
+        </Backdrop>
     );
 }
 
@@ -273,12 +281,19 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         borderRadius: `12px`,
-        padding: 2,
+        padding: `25px`,
         gap: 2,
         backgroundColor: '#fff',
         boxShadow: `rgba(149, 157, 165, 0.27) 0px 6px 24px`,
         maxWidth: MAX_CONFIRMATION_DIALOG_WITH,
-    }
+    },
+    menuIcon: {
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 14,
+        height: 14,
+    },
 }
 
 export const useAppContext = () => useContext(AppContext)
