@@ -221,14 +221,9 @@ export default function EditUser() {
             const response = await api.get(`/enrollment/${id}`)
             const { data } = response
             if (data?.length > 0) {
-                const completedEnrollments = data.filter(
-                    (item) => item?.status === "Concluído"
-                );
-                if (completedEnrollments.length > 0) {
-                    completedEnrollments.sort((a, b) => a.modulo - b.modulo);
-                    const highestModule = completedEnrollments[completedEnrollments.length - 1].modulo;
-                    setHighestModule(highestModule);
-                }
+                data.sort((a, b) => a.modulo - b.modulo);
+                const highestModule = data[data.length - 1].modulo;
+                setHighestModule(highestModule);
             }
             setEnrollmentData(data)
         } catch (error) {
@@ -263,28 +258,22 @@ export default function EditUser() {
     }
 
     const getHistoric = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/user/historical/${id}`)
             const { data } = response
             setArrayHistoric(data)
         } catch (error) {
             console.log(error)
-        } finally {
-            setLoading(false)
         }
     }
 
     const getPhoto = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/photo/${id}`)
             const { data } = response
             setBgPhoto(data)
         } catch (error) {
             console.log(error)
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -303,21 +292,17 @@ export default function EditUser() {
     }
 
     const getFileUser = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/files/${id}`)
             const { data } = response
             setFilesUser(data)
         } catch (error) {
             console.log(error)
-        } finally {
-            setLoading(false)
         }
     }
 
 
     const getContractStudent = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/student/enrollment/contracts/${id}`)
             const { data } = response
@@ -326,13 +311,10 @@ export default function EditUser() {
             }
         } catch (error) {
             console.log(error)
-        } finally {
-            setLoading(false)
         }
     }
 
     const getOfficeHours = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/officeHours/${id}`)
             const { data = [] } = response
@@ -343,13 +325,10 @@ export default function EditUser() {
         } catch (error) {
             console.log(error)
             return error
-        } finally {
-            setLoading(false)
         }
     }
 
     const getPermissionUser = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/permissionPerfil/${id}`)
             const { data } = response
@@ -361,8 +340,6 @@ export default function EditUser() {
         } catch (error) {
             console.log(error)
             return error
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -535,7 +512,6 @@ export default function EditUser() {
     };
 
     const handleEnrollments = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/enrollments/user/reenrollment/${id}`)
             const { data } = response
@@ -550,8 +526,6 @@ export default function EditUser() {
         } catch (error) {
             console.log(error)
             return error
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -560,16 +534,16 @@ export default function EditUser() {
         try {
             await getUserData()
             await getEnrollment()
-            getContract()
-            getInterest()
-            getHistoric()
-            getPhoto()
-            getFileUser()
-            getContractStudent()
-            getOfficeHours()
-            getPermissionUser()
-            getDependent()
-            getDisciplineProfessor()
+            await getContract()
+            await getInterest()
+            await getHistoric()
+            await getPhoto()
+            await getFileUser()
+            await getContractStudent()
+            await getOfficeHours()
+            await getPermissionUser()
+            await getDependent()
+            await getDisciplineProfessor()
             await listClass()
             await handleEnrollments()
         } catch (error) {
@@ -1487,7 +1461,13 @@ export default function EditUser() {
                 saveButton
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteUser })}
+                deleteButtonAction={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDeleteUser,
+                    title: 'Excluir usuário',
+                    message: 'Tem certeza que deseja prosseguir com a exclusão do usuário? Todos os dados vinculados a esse usuário serão excluídos, sem opção de recuperação.',
+                })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
@@ -2238,8 +2218,7 @@ export default function EditUser() {
                             {enrollmentData.length > 0 ?
                                 enrollmentData?.map((item, index) => {
                                     const isReenrollment = item.status === "Concluído" &&
-                                    item.modulo === highestModule && 
-                                    item.modulo !== currentModule;
+                                        item.modulo === highestModule;
                                     const isDp = item.cursando_dp === 1;
                                     const className = item?.nome_turma;
                                     const courseName = item?.nome_curso;

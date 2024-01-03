@@ -104,7 +104,6 @@ export default function EditFrequency(props) {
             }
 
             const classesDays = await listClassDay(disciplina_id)
-            console.log(classesDays)
             if (!classesDays.length > 0) {
                 alert.info('A turma ainda não iniciou as aulas ou não existe cronograma/ aulas agendadas para essa disciplina.')
                 setStudentData([])
@@ -258,8 +257,6 @@ export default function EditFrequency(props) {
             const { data } = response
             if (data.length > 0) {
                 const updatedStudentData = [...dataFrequency];
-                console.log(dataFrequency)
-
                 data.forEach(newClassDayData => {
                     const existingClassDayDataIndex = updatedStudentData.findIndex(existingClassDayData =>
                         existingClassDayData.aula_id === newClassDayData.aula_id

@@ -15,7 +15,7 @@ export default function StudentData(props) {
     const { id, slug } = router.query;
     const [studentData, setStudentData] = useState({})
     const [showEnrollTable, setShowEnrollTable] = useState({})
-    const [showClass, setShowClass] = useState({ turma_id: null, nome_turma: null })
+    const [showClass, setShowClass] = useState({ turma_id: null, nome_turma: null, modulo_turma: 1 })
     const [frequencyData, setFrequency] = useState([])
     const [gradesData, setGrades] = useState([])
     const [disciplines, setDisciplines] = useState([])
@@ -135,16 +135,17 @@ export default function StudentData(props) {
 
     useEffect(() => {
         const previousTurmaId = showClass?.turma_id;
+        const previousModule = moduleStudent;
 
         handleItems();
 
         return () => {
             // Evitar chamada desnecessária se o valor não mudou
-            if (previousTurmaId !== showClass?.turma_id) {
+            if (previousTurmaId !== showClass?.turma_id || previousModule !== moduleStudent) {
                 handleItems();
             }
         };
-    }, [showClass?.turma_id]);
+    }, [showClass?.turma_id, moduleStudent]);
 
 
     // useEffect(() => {
@@ -291,14 +292,36 @@ export default function StudentData(props) {
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Acadêmico Aluno</Text>
                     <Box sx={{ display: 'flex' }}>
                         {enrollmentData?.length > 0 &&
-                            enrollmentData?.map((item, index) => (
-                                <Box sx={{ display: 'flex' }} key={index}>
-                                    <Button small secondary={item?.turma_id === showClass?.turma_id ? false : true} text={item?.nome_turma} onClick={() => setShowClass({
-                                        turma_id: item?.turma_id,
-                                        nome_turma: item?.nome_turma
-                                    })} style={{ width: '90px', height: '30px', borderRadius: 0 }} />
-                                </Box>
-                            ))}
+                            enrollmentData?.map((item, index) => {
+                                const titleButton = `${item?.nome_turma}_${item?.modulo}`;
+                                const isDpEnrolled = item?.cursando_dp > 0;
+                                return (
+                                    <Box sx={{ display: 'flex', position: 'relative' }} key={index}>
+                                        <Button small secondary={(item?.turma_id === showClass?.turma_id && item?.modulo === moduleStudent) ? false : true} text={titleButton} onClick={() => {
+                                            setShowClass({
+                                                turma_id: item?.turma_id,
+                                                nome_turma: item?.nome_turma,
+                                                modulo_turma: item?.modulo
+                                            })
+                                            setModuleStudent(item?.modulo)
+                                        }} style={{ width: '90px', height: '30px', borderRadius: 0 }} />
+                                        {isDpEnrolled && <Box sx={{
+                                            backgroundColor: 'red',
+                                            width: 16,
+                                            height: 16,
+                                            borderRadius: 16,
+                                            padding: '1px',
+                                            display: 'flex',
+                                            position: 'absolute',
+                                            top: 2,
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <Text bold xsmall style={{ color: '#fff', textAlign: 'center', fontSize: 8 }}>DP</Text>
+                                        </Box>}
+                                    </Box>
+                                )
+                            })}
                     </Box>
                 </Box>
 
@@ -320,17 +343,17 @@ export default function StudentData(props) {
                         <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Cursando: </Text>
-                            <Text>{enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.modulo) || '1'}º Modulo/Semestre</Text>
+                            <Text>{enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id && item.modulo === moduleStudent)?.map(item => item?.modulo) || '1'}º Modulo/Semestre</Text>
                         </Box>
                         <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'start' }}>
                             <Text bold>Inicio Matricula: </Text>
-                            <Text>{formatTimeStamp(enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.dt_inicio_cronograma || item?.dt_inicio) || '')}</Text>
+                            <Text>{formatTimeStamp(enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id && item.modulo === moduleStudent)?.map(item => item?.dt_inicio_cronograma || item?.dt_inicio) || '')}</Text>
                         </Box>
                         <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Status: </Text>
-                            <Text>{enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id)?.map(item => item?.status)}</Text>
+                            <Text>{enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id && item.modulo === moduleStudent)?.map(item => item?.status)}</Text>
                         </Box>
                     </Box>
                     <Box sx={{ display: 'flex', padding: 5, width: 260 }}>

@@ -180,7 +180,9 @@ export const DialogNotifications = ({ notification, handleNotification = () => {
                                 router.push(notificationData?.path)
                                 handleNotification(false)
                             }} />}
-                            <Button secondary small text="Excluir" style={{ height: 30, width: 80 }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteNotification })}/>
+                            <Button secondary small text="Excluir" style={{ height: 30, width: 80 }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteNotification,
+                            title: 'Excluir notificação',
+                            message: 'Tem certeza que deseja prosseguir com a exclusão da notificação?' })}/>
                         </Box>
                     </Box>
                 </>

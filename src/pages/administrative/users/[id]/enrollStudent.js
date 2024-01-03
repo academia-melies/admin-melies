@@ -668,7 +668,7 @@ export default function InterestEnroll() {
             vl_disci_dp: 0,
             qnt_disci_dp: 0,
             rematricula: isReenrollment ? 1 : 0,
-            modulo: !isReenrollment ? 1 : (currentModule ? currentModule : 1),
+            modulo: isReenrollment ? currentModule : 1,
             cursando_dp: 0
         }
 
@@ -720,7 +720,7 @@ export default function InterestEnroll() {
         setLoadingEnrollment(true);
 
         try {
-            const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData });
+            const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData, currentModule });
             const { data } = response
             if (response?.status === 201) {
                 setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
@@ -1275,8 +1275,6 @@ export const EnrollStudentDetails = (props) => {
             </>
         )
     ]
-
-    console.log(indiceScreenDp)
 
     return (
         <>
@@ -2803,6 +2801,13 @@ export const ContractStudent = (props) => {
     if (courseName) nameContract += `${courseName}_`;
     if (modalityCourse) nameContract += `${modalityCourse}`;
 
+    if (isDp) {
+        for (let dpData of reenrollmentDp) {
+            nameContract = `contrato_DP_${userData?.nome}_${dpData?.nome_turma}-${dpData?.modulo}SEM_`;
+            if (courseName) nameContract += `${courseName}_EAD`;
+        }
+    }
+
 
     const handleSubmitEnrollment = async () => {
         setLoading(true);
@@ -2826,15 +2831,10 @@ export const ContractStudent = (props) => {
                 deletado: 0,
                 dt_deletado: null
             }
-            console.log(isDp)
-
 
             if (isDp) {
-                console.log('entrou dp')
                 handleCreateReEnrollStudentDp(paymentData, paymentsInfoData, urlDoc, contractData)
             } else {
-                console.log('entrou aqui')
-                console.log(isDp)
                 handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData, urlDoc, contractData);
             }
 
