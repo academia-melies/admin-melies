@@ -115,6 +115,7 @@ export default function CalendarComponent(props) {
         const anoAtual = dataAtual.getFullYear();
         const mesAtual = dataAtual.getMonth();
         setYear(anoAtual)
+        setYearSelect(anoAtual)
         if (mesAtual > 5) {
             setSemester('2º Semestre')
             setSemesterSelect('2º Semestre')
