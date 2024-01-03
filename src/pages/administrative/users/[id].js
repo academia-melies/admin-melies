@@ -153,6 +153,8 @@ export default function EditUser() {
     const [enrollmentStudentEditId, setEnrollmentStudentEditId] = useState()
     const [enrollmentStudentEditData, setEnrollmentStudentEditData] = useState({})
     const [disciplines, setDisciplines] = useState([])
+    const [currentModule, setCurrentModule] = useState(1)
+    const [highestModule, setHighestModule] = useState(null)
     const [showEditPhoto, setShowEditPhoto] = useState(false)
 
 
@@ -218,6 +220,16 @@ export default function EditUser() {
         try {
             const response = await api.get(`/enrollment/${id}`)
             const { data } = response
+            if (data?.length > 0) {
+                const completedEnrollments = data.filter(
+                    (item) => item?.status === "Concluído"
+                );
+                if (completedEnrollments.length > 0) {
+                    completedEnrollments.sort((a, b) => a.modulo - b.modulo);
+                    const highestModule = completedEnrollments[completedEnrollments.length - 1].modulo;
+                    setHighestModule(highestModule);
+                }
+            }
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)
@@ -522,6 +534,27 @@ export default function EditUser() {
         findCEP(value);
     };
 
+    const handleEnrollments = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/enrollments/user/reenrollment/${id}`)
+            const { data } = response
+            if (data?.length > 0) {
+                const lastModule = data?.map(item => item.modulo)
+                lastModule.sort((a, b) => a - b)
+                const highestModule = Math.max(...lastModule);
+                setCurrentModule(highestModule + 1)
+                return highestModule + 1
+            }
+            return false
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleItems = async () => {
         setLoading(true)
         try {
@@ -538,6 +571,7 @@ export default function EditUser() {
             getDependent()
             getDisciplineProfessor()
             await listClass()
+            await handleEnrollments()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -1974,7 +2008,7 @@ export default function EditUser() {
                             <RadioItem valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => {
                                 if (value !== 'Ensino médio') {
                                     setUserData({ ...userData, escolaridade: value, tipo_origem_ensi_med: '' })
-                                }else{
+                                } else {
                                     setUserData({ ...userData, escolaridade: value })
                                 }
                             }
@@ -2203,8 +2237,10 @@ export default function EditUser() {
 
                             {enrollmentData.length > 0 ?
                                 enrollmentData?.map((item, index) => {
-                                    const isReenrollment = item.status === 'Concluído' && true;
-
+                                    const isReenrollment = item.status === "Concluído" &&
+                                    item.modulo === highestModule && 
+                                    item.modulo !== currentModule;
+                                    const isDp = item.cursando_dp === 1;
                                     const className = item?.nome_turma;
                                     const courseName = item?.nome_curso;
                                     const period = item?.periodo;
@@ -2249,6 +2285,9 @@ export default function EditUser() {
                                                 <Text bold style={{ color: colorPalette.buttonColor }}>{title}</Text>
                                                 {isReenrollment && <Box sx={{ padding: '5px 15px', backgroundColor: colorPalette.buttonColor, borderRadius: 2 }}>
                                                     <Text bold small style={{ color: '#fff' }}>Pendente de Rematrícula - {item?.modulo + 1} Semetre/Módulo</Text>
+                                                </Box>}
+                                                {isDp && <Box sx={{ padding: '5px 15px', backgroundColor: 'red', borderRadius: 2 }}>
+                                                    <Text bold small style={{ color: '#fff' }}>Cursando DP</Text>
                                                 </Box>}
                                             </Box>
                                             {showEnrollTable[index] && (

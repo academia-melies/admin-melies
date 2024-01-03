@@ -139,6 +139,7 @@ export default function Home() {
                />
             </Box>
             <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none', }}>
+               <Divider />
                <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>
                   Menu de fácil acesso..</Text>
                {isProfessor ?
@@ -194,7 +195,7 @@ export default function Home() {
                   )
                }
             </ContentContainer>
-
+            <Divider />
             <ContentContainer row style={{ display: 'flex', marginTop: 5, backgroundColor: 'none', boxShadow: 'none', position: 'relative', alignItems: 'start', justifyContent: 'start' }}>
 
                <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 1, maxHeight: 350, overflowY: 'auto' }}>
@@ -351,7 +352,7 @@ const BirthDateDiaog = ({ idSelected, setShowMessageBirthDay, userBirthDay }) =>
                }
             }} onClick={() => setShowMessageBirthDay(false)} />
          </Box>
-         
+
          <Box sx={{ width: '100%', height: '1px', backgroundColor: '#eaeaea', margin: '0px 0px 20px 0px' }} />
 
          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'start', flex: 1 }}>
@@ -372,7 +373,7 @@ const BirthDateDiaog = ({ idSelected, setShowMessageBirthDay, userBirthDay }) =>
             />
          </Box>
 
-         <Box sx={{display: 'flex', flexDirection: 'column', gap: 0.5}}>
+         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             <Text bold xsmall>Mensagens pré-montadas:</Text>
             <Box sx={{
                display: 'flex', padding: '5px 15px', backgroundColor: colorPalette?.buttonColor, alignItems: 'center', justifyContent: 'center', borderRadius: 8,

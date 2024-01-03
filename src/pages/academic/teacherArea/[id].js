@@ -21,6 +21,7 @@ export default function StudentData(props) {
     const [disciplines, setDisciplines] = useState([])
     const [enrollmentData, setEnrollment] = useState([])
     const [moduleStudent, setModuleStudent] = useState(1)
+    const [isDp, setIsDp] = useState(false)
     const [bgPhoto, setBgPhoto] = useState({})
     const [statusGradeFinally, setStatusGradeFinally] = useState('Pendente')
     const [showBox, setShowBox] = useState({
@@ -60,22 +61,38 @@ export default function StudentData(props) {
         }
     }
 
-    const getEnrollment = async () => {
+    const getEnrollment = async (turma_id) => {
         try {
-            const response = await api.get(`/enrollment/${id}`)
-            const { data } = response
-            setEnrollment(data)
-            let [enrollment] = data
+            const response = await api.get(`/enrollment/${id}`);
+            const { data } = response;
+            setEnrollment(data);
+            let [enrollment] = data;
+            if (turma_id) {
+                enrollment = data?.filter(item => item.turma_id === turma_id);
+            }
+
+            if (enrollment[0]?.cursando_dp === 1) {
+                setIsDp(true)
+            } else {
+                setIsDp(false)
+            }
+
+            if (turma_id && turma_id === showClass?.turma_id) {
+                return data;
+            }
+
             setShowClass({
                 turma_id: enrollment?.turma_id,
                 nome_turma: enrollment?.nome_turma
-            })
-            return enrollment
+            });
+
+            return enrollment;
         } catch (error) {
-            console.log(error)
-            return error
+            console.log(error);
+            return error;
         }
-    }
+    };
+
 
     const getFrequency = async (turma_id) => {
         try {
@@ -117,8 +134,18 @@ export default function StudentData(props) {
 
 
     useEffect(() => {
+        const previousTurmaId = showClass?.turma_id;
+
         handleItems();
-    }, [showClass?.turma_id])
+
+        return () => {
+            // Evitar chamada desnecessária se o valor não mudou
+            if (previousTurmaId !== showClass?.turma_id) {
+                handleItems();
+            }
+        };
+    }, [showClass?.turma_id]);
+
 
     // useEffect(() => {
     //     if (showClass?.turma_id) {
@@ -144,14 +171,13 @@ export default function StudentData(props) {
     const handleItems = async () => {
         setLoading(true)
         try {
+            let enrollmentData = showClass?.turma_id;
             await getStudent()
             await getPhoto()
-            const enrollment = await getEnrollment()
-            if (enrollment) {
-                await handleSelectModule(enrollment?.turma_id, moduleStudent)
-                await getFrequency(enrollment?.turma_id)
-                await getGrades(moduleStudent, enrollment?.turma_id)
-            }
+            const enrollment = await getEnrollment(enrollmentData)
+            await handleSelectModule(showClass?.turma_id, moduleStudent)
+            await getFrequency(showClass?.turma_id)
+            await getGrades(moduleStudent, showClass?.turma_id)
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
             console.log(error)
@@ -264,7 +290,7 @@ export default function StudentData(props) {
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Acadêmico Aluno</Text>
                     <Box sx={{ display: 'flex' }}>
-                        {enrollmentData.length > 0 &&
+                        {enrollmentData?.length > 0 &&
                             enrollmentData?.map((item, index) => (
                                 <Box sx={{ display: 'flex' }} key={index}>
                                     <Button small secondary={item?.turma_id === showClass?.turma_id ? false : true} text={item?.nome_turma} onClick={() => setShowClass({
@@ -275,8 +301,13 @@ export default function StudentData(props) {
                             ))}
                     </Box>
                 </Box>
+
                 <Box sx={{ display: 'flex', flexDirection: 'space-between' }}>
                     <Box sx={{ display: 'flex', gap: 2.5, flexDirection: 'column', flex: 1, marginTop: 2 }}>
+                        {isDp && <Box sx={{ padding: '5px 15px', backgroundColor: 'red', borderRadius: 2, width: 110 }}>
+                            <Text bold small style={{ color: '#fff' }}>Cursando DP</Text>
+                        </Box>}
+                        <Divider distance={0} />
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Nome: </Text>
                             <Text>{studentData?.nome}</Text>
