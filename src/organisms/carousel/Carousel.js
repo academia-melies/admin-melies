@@ -18,7 +18,7 @@ export const Carousel = (props) => {
             slidesPerView={1}
             navigation
             pagination={{ clickable: true }}
-            autoplay={{ delay: 3000, disableOnInteraction: false }}
+            autoplay={{ delay: 8000, disableOnInteraction: false }}
         >
             {data?.map((item, index) => (
                 <SwiperSlide key={`${item}-${index}`} style={{ ...style}}>

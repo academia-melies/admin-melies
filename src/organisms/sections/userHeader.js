@@ -9,6 +9,7 @@ import { formatTimeAgo, formatTimeStamp } from "../../helpers";
 import { api } from "../../api/api";
 import { useRef } from "react";
 import { Notifications } from "../notification/notifications";
+import Link from "next/link";
 
 export const UserHeader = (props) => {
     const {
@@ -70,6 +71,20 @@ export const UserHeader = (props) => {
                         <Text small sx={{}}>Voltar</Text>
                     </Box>
                 </Box>
+                <Link style={{ display: 'flex' }} target="_blank" href={'https://www.figma.com/file/HPpREYZoNogzU0laydrXL4/Fluxograma---Adm-Telas?type=design&node-id=0%3A1&mode=design&t=0G7h5zNFmYW6q7PS-1'}>
+                    <Box sx={{ gap: 1, display: 'flex', alignItems: 'center', transition: '.3s', backgroundColor: colorPalette.primary, padding: '5px 8px', borderRadius: 2, cursor: 'pointer', "&:hover": { opacity: 0.6 } }} onClick={() => router.push('/ourTeam')}>
+
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url('/icons/manual_icon.png')`,
+                            // width: 15,
+                            // height: 15,
+                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                            transition: 'background-color 1s'
+                        }} />
+                        <Text bold small style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>Fluxograma do Sistema</Text>
+                    </Box>
+                </Link>
                 <Box sx={{ gap: 1, display: 'flex', alignItems: 'center', transition: '.3s', backgroundColor: colorPalette.primary, padding: '5px 8px', borderRadius: 2, cursor: 'pointer', "&:hover": { opacity: 0.6 } }} onClick={() => router.push('/ourTeam')}>
                     <Box sx={{
                         ...styles.menuIcon,
