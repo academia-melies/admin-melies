@@ -1,8 +1,10 @@
+import { useAppContext } from "../context/AppContext";
 import { Box } from "./Box"
 
 export const Divider = (props) => {
 
    const { distance = 1, color = '', size = '1px' } = props;
+   const { theme } = useAppContext()
 
    return (
       <Box sx={{
@@ -12,7 +14,7 @@ export const Divider = (props) => {
          <Box sx={{
             width: '100%',
             height: size,
-            backgroundColor: color ? color : '#eaeaea'
+            backgroundColor: color ? color :( theme ? '#eaeaea' : '#404040')
          }} />
       </Box>
    )

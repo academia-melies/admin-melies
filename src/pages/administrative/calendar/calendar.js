@@ -113,9 +113,16 @@ export default function CalendarComponent(props) {
         setLoading(true);
         const dataAtual = new Date();
         const anoAtual = dataAtual.getFullYear();
+        const mesAtual = dataAtual.getMonth();
         setYear(anoAtual)
-        setSemester('2º Semestre')
-        setSemesterSelect('2º Semestre')
+        if (mesAtual > 5) {
+            setSemester('2º Semestre')
+            setSemesterSelect('2º Semestre')
+        } else {
+            setSemester('1º Semestre')
+            setSemesterSelect('1º Semestre')
+        }
+
         await handleEvents()
         setLoading(false);
     }
@@ -471,7 +478,7 @@ export default function CalendarComponent(props) {
                                     });
                                 }} />
                             </Box>
-                            <Divider/>
+                            <Divider />
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <SelectList
                                     fullWidth

@@ -12,7 +12,7 @@ Default props:
 
 export const ContentContainer = (props) => {
 
-   const { colorPalette } = useAppContext()
+   const { colorPalette, theme } = useAppContext()
 
    const {
       children,
@@ -31,6 +31,7 @@ export const ContentContainer = (props) => {
    return (
       <Box sx={{
          ...styles.contentContainer,
+         boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
          overflow,
          gap,
          backgroundColor: colorPalette.secondary,

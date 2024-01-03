@@ -68,9 +68,8 @@ export default function Home() {
       setLoading(true)
       try {
          const response = await api.get(`/user/list/birthdates`)
-         if (response.status === 200) {
-            setListBirthDay(response?.data)
-         }
+         console.log(response)
+         setListBirthDay(response?.data)
       } catch (error) {
          return error
       } finally {
