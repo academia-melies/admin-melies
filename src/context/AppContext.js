@@ -171,6 +171,8 @@ export const AppProvider = ({ children }) => {
                 message={showConfirmationDialog.message}
                 acceptAction={showConfirmationDialog.acceptAction}
                 closeDialog={() => setShowConfirmationDialog({ active: false })}
+                colorPalette={colorPalette}
+                theme={theme}
             />
         </AppContext.Provider>
     )
@@ -183,7 +185,9 @@ export const ConfirmationModal = (props) => {
         title = 'Deseja prosseguir?',
         message,
         acceptAction,
-        closeDialog
+        closeDialog,
+        colorPalette,
+        theme
     } = props;
 
     const [position, setPosition] = useState({});
@@ -208,9 +212,13 @@ export const ConfirmationModal = (props) => {
 
     return (
         <Backdrop open={active} sx={{ zIndex: 99999 }}>
-            <Box sx={{ ...styles.confirmationContainer, ...position, zIndex: 999999 }}>
+            <Box sx={{
+                ...styles.confirmationContainer,
+                boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
+                backgroundColor: colorPalette?.secondary, border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, ...position, zIndex: 999999
+            }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text large style={{ color: 'black' }} bold='true'>{title}</Text>
+                    <Text large bold='true'>{title}</Text>
                     <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: `url(${icons.gray_close})`,
@@ -224,7 +232,7 @@ export const ConfirmationModal = (props) => {
                 <Divider distance={0} />
                 {message && (
                     <Box>
-                        <Text style={{ color: 'black' }}>{message}</Text>
+                        <Text>{message}</Text>
                     </Box>
                 )}
                 <Divider distance={0} />
@@ -283,8 +291,6 @@ const styles = {
         borderRadius: `12px`,
         padding: `25px`,
         gap: 2,
-        backgroundColor: '#fff',
-        boxShadow: `rgba(149, 157, 165, 0.27) 0px 6px 24px`,
         maxWidth: MAX_CONFIRMATION_DIALOG_WITH,
     },
     menuIcon: {

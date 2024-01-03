@@ -96,7 +96,7 @@ export const LeftMenu = ({ }) => {
    return (
       <>
          <Box sx={{
-            ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }),
+            ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }),
             width: { xs: '214px', sm: '214px', md: '180px', lg: '180px', xl: '214px' },
          }}>
             <Box sx={{ position: 'fixed', height: '100%', width: { xs: '214px', sm: '214px', md: '180px', lg: '180px', xl: '214px' }, padding: { xs: '10px 15px', sm: '10px 15px', md: '8px 10px', lg: '8px 10px', xl: '10px 15px' } }}>
@@ -251,12 +251,16 @@ export const LeftMenu = ({ }) => {
                                     }
                                  }} />
                               </Box>
-                              {!showMenuMobile ?
+                              {(!showMenuMobile && groupStates[index]) ?
                                  <Box sx={{
                                     display: 'flex', flexDirection: 'column', position: 'absolute',
                                     marginLeft: { md: 16, lg: 16, xl: 20 }, padding: '8px'
                                  }}>
-                                    <Box sx={{ marginLeft: 4, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, backgroundColor: colorPalette.secondary }}>
+                                    <Box sx={{
+                                       marginLeft: 4,
+                                       boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`
+                                       , border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, backgroundColor: colorPalette.secondary
+                                    }}>
                                        {groupStates[index] && (
                                           group.items.filter(item =>
                                              item.permissoes.some(permission => userPermissions.some(userPerm => userPerm.id_grupo_perm === permission.grupo_perm_id)))
@@ -374,7 +378,7 @@ const MenuItem = (props) => {
          <Link
             href={to || '/#'}
             onClick={onClick}
-            style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`, minWidth: 110}}
+            style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`, minWidth: 110 }}
             onMouseEnter={() => setShowSubItems(true)}
             onMouseLeave={() => setShowSubItems(false)}
          >
