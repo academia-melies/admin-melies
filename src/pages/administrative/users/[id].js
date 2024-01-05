@@ -39,6 +39,7 @@ export default function EditUser() {
         doc_estrangeiro: null,
         pais_origem: 'Brasil',
         telefone_emergencia: null,
+        telefone: null,
         professor: 0,
         rg: null,
         expedicao: '2001-01-01',
