@@ -19,14 +19,14 @@ const localizer = momentLocalizer(moment);
 const listEvents = [
     {
         id: '01',
-        title: "Feriádo",
+        title: "Feriado",
         description: "Escola fechada para todos, não tem aula nem funciona o adm",
         location: "",
         color: "#FF0000",
     },
     {
         id: '02',
-        title: "Emenda de feriádo",
+        title: "Emenda de feriado",
         description: "Não tem aula, adm funciona normalmente",
         location: "",
         color: "#FF8C00",
@@ -34,7 +34,7 @@ const listEvents = [
     {
         id: '03',
         title: "Férias/recesso de professores e alunos",
-        description: "Em Julho adm funciona das 9h ás 18h",
+        description: "Adm funciona das 9h ás 18h",
         location: "",
         color: "#FFD700",
     },
@@ -54,7 +54,7 @@ const listEvents = [
     },
     {
         id: '06',
-        title: "Avalicação",
+        title: "Avaliação",
         description: "",
         location: "",
         color: "#87CEFA",
@@ -372,8 +372,8 @@ export default function CalendarComponent(props) {
     ]
 
     const groupPerfil = [
-        { label: 'Administrativo', value: 'Administrativo' },
-        { label: 'Aluno', value: 'Aluno' }
+        { label: 'Funcionários', value: 'Funcionários' },
+        { label: 'Alunos', value: 'Alunos' }
     ]
 
     return (
