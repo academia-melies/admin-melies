@@ -88,8 +88,8 @@ export default function CalendarComponent(props) {
     const [showEventForm, setShowEventForm] = useState(false);
     const [semester, setSemester] = useState()
     const [semesterSelect, setSemesterSelect] = useState()
-    const [year, setYear] = useState(2023)
-    const [yearSelect, setYearSelect] = useState(2023)
+    const [year, setYear] = useState(2024)
+    const [yearSelect, setYearSelect] = useState(2024)
     const [defaultRangeDate, setDefaultRangeDate] = useState([])
     const [defaultEvents, setDefaultEvents] = useState([])
     const [filteredEvents, setFilteredEvents] = useState([]);
