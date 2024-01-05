@@ -375,7 +375,6 @@ export default function ListInvoices(props) {
                                                     alignItems: 'center',
                                                     borderRadius: 2,
                                                     justifyContent: 'start',
-
                                                 }}
                                             >
                                                 <Box sx={{ display: 'flex', backgroundColor: priorityColor(item?.status_nfse || 'Não emitida'), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />

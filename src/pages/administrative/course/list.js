@@ -101,10 +101,11 @@ export default function ListCourse(props) {
 
     const column = [
         { key: 'id_curso', label: 'ID' },
-        { key: 'nome_curso', label: 'Nome', },
+        { key: 'sigla', label: 'Sigla'},
+        { key: 'nome_curso', label: 'Nome' },
         { key: 'modalidade_curso', label: 'Modalidade' },
         { key: 'nivel_curso', label: 'Nível Curso' },
-        { key: 'dt_criacao', label: 'Criado em', date: true },
+        // { key: 'dt_criacao', label: 'Criado em', date: true },
     ];
 
     const listAtivo = [
