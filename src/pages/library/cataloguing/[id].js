@@ -187,7 +187,7 @@ export default function EditCatalogMaterial(props) {
             const response = await api.get(`/courses`)
             const { data } = response
             const groupCourses = data.map(course => ({
-                label: course.nome_curso,
+                label: `${course.nome_curso}_${course?.modalidade_curso}`,
                 value: course?.id_curso,
                 duration: course?.duracao
             }));

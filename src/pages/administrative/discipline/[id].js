@@ -158,7 +158,7 @@ export default function EditDiscipline(props) {
         setLoading(true)
         try {
             const response = await deleteDiscipline(id)
-            if (response?.status == 201) {
+            if (response?.status === 200) {
                 alert.success('Disciplina excluída com sucesso.');
                 router.push(`/administrative/discipline/list`)
             }
@@ -241,7 +241,11 @@ export default function EditDiscipline(props) {
                 saveButton
                 saveButtonAction={newDiscipline ? handleCreate : handleEdit}
                 deleteButton={!newDiscipline}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true,
+                     event,
+                      acceptAction: handleDelete,
+                    title: 'Excluír Disciplina',
+                message: 'Tem certeza que deseja excluír a disciplina? Uma vez excluído, não será possível reverter.' })}
             />
 
             {/* usuario */}

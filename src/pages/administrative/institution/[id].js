@@ -272,6 +272,7 @@ export default function EditInstitution(props) {
         currency: 'BRL'
     });
 
+
     return (
         <>
             <SectionHeader
@@ -308,7 +309,7 @@ export default function EditInstitution(props) {
                     {arrayRecognitionP.map((rec, index) => (
                         <>
                             <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                <TextInput label="Renovação do Reconhecimento" placeholder='Renovação do Reconhecimento' name={`ren_reconhecimento_p-${index}`} onChange={handleChangeRecognitionP} value={rec.ren_reconhecimento_p} sx={{ flex: 1 }} />
+                                <TextInput label="Portaria de Renovação do Recredenciamento" placeholder='Portaria de Renovação do Recredenciamento' name={`ren_reconhecimento_p-${index}`} onChange={handleChangeRecognitionP} value={rec.ren_reconhecimento_p} sx={{ flex: 1 }} />
                                 <TextInput label="Data" placeholder='Data' name={`dt_renovacao_rec_p-${index}`} onChange={handleChangeRecognitionP} value={(rec?.dt_renovacao_rec_p)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                                 <Box sx={{
                                     backgroundSize: 'cover',
@@ -329,7 +330,7 @@ export default function EditInstitution(props) {
                         </>
                     ))}
                     <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                        <TextInput label="Renovação do Reconhecimento" placeholder='Renovação do Reconhecimento' name={`ren_reconhecimento_p`} onChange={handleChangeRecognitionP} value={recognitionP.ren_reconhecimento_p} sx={{ flex: 1 }} />
+                        <TextInput label="Portaria de Renovação do Recredenciamento" placeholder='Portaria de Renovação do Recredenciamento' name={`ren_reconhecimento_p`} onChange={handleChangeRecognitionP} value={recognitionP.ren_reconhecimento_p} sx={{ flex: 1 }} />
                         <TextInput label="Data" placeholder='Data' name='dt_renovacao_rec_p' onChange={handleChangeRecognitionP} value={(recognitionP?.dt_renovacao_rec_p)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                         <Box sx={{
                             backgroundSize: 'cover',
@@ -360,7 +361,7 @@ export default function EditInstitution(props) {
                     {arrayRecognitionEad.map((rec, index) => (
                         <>
                             <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                <TextInput label="Renovação do Reconhecimento" placeholder='Renovação do Reconhecimento' name={`ren_reconhecimento_ead-${index}`} onChange={handleChangeRecognitionEad} value={rec.ren_reconhecimento_ead} sx={{ flex: 1 }} />
+                                <TextInput label="Portaria de Renovação do Recredenciamento" placeholder='Portaria de Renovação do Recredenciamento' name={`ren_reconhecimento_ead-${index}`} onChange={handleChangeRecognitionEad} value={rec.ren_reconhecimento_ead} sx={{ flex: 1 }} />
                                 <TextInput label="Data" placeholder='Data' name={`dt_renovacao_rec_ead-${index}`} onChange={handleChangeRecognitionEad} value={(rec?.dt_renovacao_rec_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                                 <Box sx={{
                                     backgroundSize: 'cover',
@@ -381,7 +382,7 @@ export default function EditInstitution(props) {
                         </>
                     ))}
                     <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                        <TextInput label="Renovação do Reconhecimento" placeholder='Renovação do Reconhecimento' name={`ren_reconhecimento_ead`} onChange={handleChangeRecognitionEad} value={recognitionEad.ren_reconhecimento_ead} sx={{ flex: 1 }} />
+                        <TextInput label="Portaria de Renovação do Recredenciamento" placeholder='Portaria de Renovação do Recredenciamento' name={`ren_reconhecimento_ead`} onChange={handleChangeRecognitionEad} value={recognitionEad.ren_reconhecimento_ead} sx={{ flex: 1 }} />
                         <TextInput label="Data" placeholder='Data' name='dt_renovacao_rec_ead' onChange={handleChangeRecognitionEad} value={(recognitionEad?.dt_renovacao_rec_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                         <Box sx={{
                             backgroundSize: 'cover',

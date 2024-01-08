@@ -47,8 +47,9 @@ export default function ListPriceCourses(props) {
 
     const column = [
         { key: 'id_valor_curso', label: 'ID' },
-        { key: 'nivel_curso', label: '' },
+        { key: 'nivel_curso', label: 'Nível' },
         { key: 'curso', label: 'Curso' },
+        { key: 'modalidade_curso', label: '-' },
         { key: 'valor_total_curso', label: 'Valor Total' },
         { key: 'n_parcelas', label: 'Parcelas' },
         { key: 'valor_parcelado_curso', label: 'Valor parcelado' },
