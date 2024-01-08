@@ -370,7 +370,7 @@ export default function EditPricesCourse(props) {
             const response = await api.get(`/courses`)
             const { data } = response
             const groupCourses = data.map(course => ({
-                label: course.nome_curso,
+                label: `${course.nome_curso}_${course?.modalidade_curso}`,
                 value: course?.id_curso,
                 modal: course.modalidade_curso,
                 nivel: course.nivel_curso
