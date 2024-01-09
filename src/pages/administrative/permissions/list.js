@@ -4,11 +4,12 @@ import { Box, Text } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function GroupPermissions(props) {
     const [groupPermissionsList, setGroupPermissionsList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const [firstRender, setFirstRender] = useState(true)
@@ -16,7 +17,21 @@ export default function GroupPermissions(props) {
         filterName: 'permissao',
         filterOrder: 'asc'
     })
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+
+
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
     useEffect(() => {
+        fetchPermissions()
         gerPermissions();
         if (window.localStorage.getItem('list-permissions-filters')) {
             const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-permissions-filters') || null);
@@ -35,8 +50,8 @@ export default function GroupPermissions(props) {
             setGroupPermissionsList(data)
         } catch (error) {
             console.log(error)
-        } finally{
-        setLoading(false)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -48,7 +63,7 @@ export default function GroupPermissions(props) {
 
     const sortPermissions = () => {
         const { filterName, filterOrder } = filters;
-    
+
         const sortedPermissions = [...groupPermissionsList].sort((a, b) => {
             const valueA = filterName === 'id_grupo_perm' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
             const valueB = filterName === 'id_grupo_perm' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
@@ -56,10 +71,10 @@ export default function GroupPermissions(props) {
             if (filterName === 'id_grupo_perm') {
                 return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
             }
-    
+
             return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
         });
-    
+
         return sortedPermissions;
     }
 
@@ -80,7 +95,7 @@ export default function GroupPermissions(props) {
         <>
             <SectionHeader
                 title={`Permissões (${groupPermissionsList?.length || '0'})`}
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             <Text bold>Buscar por: </Text>
@@ -89,7 +104,7 @@ export default function GroupPermissions(props) {
             </Box>
 
             {groupPermissionsList.length > 0 ?
-                <Table_V1 data={sortPermissions()} columns={column} columnId={'id_grupo_perm'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
+                <Table_V1 data={sortPermissions()} columns={column} columnId={'id_grupo_perm'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não foi encontrado permissões.</Text>

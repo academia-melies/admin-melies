@@ -7,6 +7,7 @@ import { Colors, icons } from "../../../organisms/layout/Colors";
 import { api } from "../../../api/api";
 import { Backdrop, useMediaQuery, useTheme } from "@mui/material";
 import { formatDate, formatTimeStamp } from "../../../helpers";
+import { checkUserPermissions } from "../../../validators/checkPermissionUser";
 
 
 export default function ClassSheduleList(props) {
@@ -17,12 +18,22 @@ export default function ClassSheduleList(props) {
     const [classScheduleId, setClassScheduleId] = useState();
     const [disciplines, setDisciplines] = useState([])
     const [professors, setProfessors] = useState([])
-    const { setLoading, colorPalette, matches, alert } = useAppContext()
+    const { setLoading, colorPalette, matches, alert, userPermissions, menuItemsList } = useAppContext()
     const [showClassSchedulesTable, setShowClassSchedulesTable] = useState({});
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
     const toggleClassTable = (index) => {
         setShowClassSchedulesTable(prevState => ({
@@ -91,6 +102,7 @@ export default function ClassSheduleList(props) {
 
 
     useEffect(() => {
+        fetchPermissions()
         handleScheduleClass()
     }, [])
 
@@ -160,7 +172,7 @@ export default function ClassSheduleList(props) {
         <>
             <SectionHeader
                 title="Cronograma de aulas"
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             {dateClass?.length > 0 ? (
@@ -206,7 +218,7 @@ export default function ClassSheduleList(props) {
                                     />
                                 </Box>
                                 <Box sx={{ display: 'flex', justifyContent: 'end', gap: 1, alignItems: 'center' }}>
-                                    <Button small text='Editar' style={{ padding: '5px 6px 5px 6px', width: 80 }} onClick={() => router.push(`/administrative/classSchedule/${idCronograma}`)} />
+                                    <Button disabled={!isPermissionEdit && true} small text='Editar' style={{ padding: '5px 6px 5px 6px', width: 80 }} onClick={() => router.push(`/administrative/classSchedule/${idCronograma}`)} />
                                 </Box>
                             </Box>
                             {showClassSchedulesTable[index] && (
@@ -329,7 +341,7 @@ export default function ClassSheduleList(props) {
                                 </Box>
                             </ContentContainer>
                             <Box>
-                            <Divider />
+                                <Divider />
                                 <Box sx={{ display: 'flex', justifyContent: 'end', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                     <Button text='atualizar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => handleEditClassDay()} />
                                 </Box>

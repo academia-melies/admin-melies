@@ -11,6 +11,8 @@ import { useAppContext } from "../../../context/AppContext";
 import { Backdrop } from "@mui/material";
 import { icons } from "../../../organisms/layout/Colors";
 import { api } from "../../../api/api";
+import { useRouter } from "next/router";
+import { checkUserPermissions } from "../../../validators/checkPermissionUser";
 
 
 moment.locale("pt-br");
@@ -99,7 +101,20 @@ export default function CalendarComponent(props) {
         location: "",
         color: "#007BFF",
     });
-    const { setLoading, alert, colorPalette, matches, user } = useAppContext()
+    const router = useRouter()
+    const { setLoading, alert, colorPalette, matches, user, userPermissions, menuItemsList } = useAppContext()
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+
+
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     let date = new Date(year, 6, 1);
     const filter = (item) => {
         return semester === '1º Semestre' ? (item && item.start < date) : (item && item.start >= date);
@@ -107,6 +122,7 @@ export default function CalendarComponent(props) {
 
     useEffect(() => {
         handleItems()
+        fetchPermissions()
     }, [])
 
     const handleItems = async () => {
@@ -482,6 +498,7 @@ export default function CalendarComponent(props) {
                             <Divider />
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <SelectList
+                                    disabled={!isPermissionEdit && true}
                                     fullWidth
                                     data={defaultEvents}
                                     valueSelection={eventData?.title}
@@ -492,6 +509,7 @@ export default function CalendarComponent(props) {
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
                                 <TextInput
+                                    disabled={!isPermissionEdit && true}
                                     name="description"
                                     value={eventData.description || ''}
                                     label='Descrição do evento'
@@ -501,20 +519,21 @@ export default function CalendarComponent(props) {
                                     maxRows={8}
                                     rows={4}
                                 />
-                                <TextInput
+                                <TextInput disabled={!isPermissionEdit && true}
                                     name="location"
                                     value={eventData.location || ''}
                                     label='Localização do evento'
                                     onChange={handleEventFormChange}
                                     sx={{ flex: 1 }}
                                 />
-                                <TextInput
+                                <TextInput disabled={!isPermissionEdit && true}
                                     type="color"
                                     name="color"
                                     value={eventData.color}
                                     onChange={handleEventFormChange}
                                 />
                                 <CheckBoxComponent
+                                    disabled={!isPermissionEdit && true}
                                     valueChecked={eventData?.perfil_evento}
                                     boxGroup={groupPerfil}
                                     title="Mostrar para:"
@@ -528,6 +547,7 @@ export default function CalendarComponent(props) {
                                 <Divider />
                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                     <Button
+                                        disabled={!isPermissionEdit && true}
                                         small
                                         type="submit"
                                         text={selectedEvent ? "Atualizar" : "Adicionar"}
@@ -536,6 +556,7 @@ export default function CalendarComponent(props) {
                                     />
                                     {selectedEvent &&
                                         <Button
+                                            disabled={!isPermissionEdit && true}
                                             secondary
                                             small
                                             text='Deletar'

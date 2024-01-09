@@ -15,7 +15,8 @@ export const SelectList = (props) => {
         inputStyle,
         fullWidth = false,
         clean = true,
-        minWidth = 120
+        minWidth = 120,
+        disabled = false
     } = props;
 
     const { colorPalette } = useAppContext()
@@ -29,6 +30,7 @@ export const SelectList = (props) => {
                     InputLabelProps={{ sx: { fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } } }}
                     sx={{ ...inputStyle, fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } }}>{title}</InputLabel>
                 <Select
+                    disabled={disabled}
                     sx={{
                         borderRadius: "8px", backgroundColor: colorPalette.inputColor, height: 45, color: colorPalette.textColor, ...sx, maxHeight: 45, transition: 'background-color 1s',
                         fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' }
@@ -38,7 +40,7 @@ export const SelectList = (props) => {
                     onChange={(event) => onSelect(event.target.value)}
                     endAdornment={clean ?
                         <InputAdornment position="end">
-                            {valueSelection && (
+                            {(valueSelection && !disabled) && (
                                 <Box
                                     sx={{
                                         backgroundSize: "cover",

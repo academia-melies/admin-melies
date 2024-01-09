@@ -6,12 +6,13 @@ import { getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { TablePagination } from "@mui/material"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListUsers(props) {
     const [usersList, setUsers] = useState([])
     const [filterData, setFilterData] = useState('')
     const [perfil, setPerfil] = useState('todos')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, menuItemsList, userPermissions } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [filterEnrollStatus, setFilterEnrollStatus] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
@@ -22,6 +23,19 @@ export default function ListUsers(props) {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+
+
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         const normalizeString = (str) => {
@@ -45,6 +59,7 @@ export default function ListUsers(props) {
     useEffect(() => {
         if (perfil) {
             getUsers();
+            fetchPermissions()
         }
         if (window.localStorage.getItem('list-users-filters')) {
             const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-users-filters') || null);
@@ -140,7 +155,7 @@ export default function ListUsers(props) {
         <>
             <SectionHeader
                 title={`${perfil === 'todos' ? 'Usuários' : (perfil.charAt(0).toUpperCase() + perfil.slice(1))} (${usersList.filter(filter)?.length})`}
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             {/* <Text bold>Buscar por: </Text> */}

@@ -10,11 +10,12 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
 import { TablePagination } from "@mui/material"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListClasses(props) {
     const [classesList, setClasses] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [page, setPage] = useState(0);
@@ -24,6 +25,16 @@ export default function ListClasses(props) {
         filterOrder: 'asc'
     })
     const router = useRouter()
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
@@ -47,6 +58,7 @@ export default function ListClasses(props) {
     const endIndex = startIndex + rowsPerPage;
 
     useEffect(() => {
+        fetchPermissions()
         getClasses();
         if (window.localStorage.getItem('list-classes-filters')) {
             const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-classes-filters') || null);
@@ -65,7 +77,7 @@ export default function ListClasses(props) {
 
     const sortClasses = () => {
         const { filterName, filterOrder } = filters;
-    
+
         const sortedClasses = [...classesList].sort((a, b) => {
             const valueA = filterName === 'id_turma' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
             const valueB = filterName === 'id_turma' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
@@ -73,10 +85,10 @@ export default function ListClasses(props) {
             if (filterName === 'id_turma') {
                 return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
             }
-    
+
             return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
         });
-    
+
         return sortedClasses;
     }
 
@@ -96,7 +108,7 @@ export default function ListClasses(props) {
 
     const column = [
         { key: 'id_turma', label: 'ID' },
-        { key: 'nome_turma', label: 'Nome'},
+        { key: 'nome_turma', label: 'Nome' },
         { key: 'inicio', label: 'Inicio', date: true },
         { key: 'fim', label: 'Fim', date: true },
         { key: 'dt_criacao', label: 'Criado em', date: true },
@@ -119,7 +131,7 @@ export default function ListClasses(props) {
         <>
             <SectionHeader
                 title={`Turmas (${classesList.filter(filter)?.length || '0'})`}
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             <ContentContainer>
@@ -134,7 +146,7 @@ export default function ListClasses(props) {
                     </Box>
                 </Box>
                 <TextInput placeholder="Buscar pelo nome da turma.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
-                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center',  }}>
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
                             data={listAtivo}
@@ -167,7 +179,7 @@ export default function ListClasses(props) {
                 </Box>
             </ContentContainer>
             {classesList.length > 0 ?
-                <Table_V1 data={sortClasses()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_turma'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>
+                <Table_V1 data={sortClasses()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_turma'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar Turmas cadastradas</Text>

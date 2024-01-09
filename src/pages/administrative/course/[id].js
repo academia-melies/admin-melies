@@ -8,9 +8,10 @@ import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createCourse, deleteCourse, editCourse } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditCourse(props) {
-    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -30,6 +31,18 @@ export default function EditCourse(props) {
     })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+
+
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
     const getCourse = async () => {
         try {
@@ -44,6 +57,7 @@ export default function EditCourse(props) {
     useEffect(() => {
         (async () => {
             if (newCourse) {
+                fetchPermissions()
                 return
             }
             await handleItems();
@@ -54,6 +68,7 @@ export default function EditCourse(props) {
     const handleItems = async () => {
         setLoading(true)
         try {
+            await fetchPermissions()
             await getCourse()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Curso')
@@ -196,10 +211,16 @@ export default function EditCourse(props) {
             <SectionHeader
                 perfil={courseData?.modalidade_curso}
                 title={courseData?.nome_curso || `Novo Curso`}
-                saveButton
+                saveButton={isPermissionEdit}
                 saveButtonAction={newCourse ? handleCreateCourse : handleEditCourse}
-                deleteButton={!newCourse}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteCourse })}
+                deleteButton={!newCourse && isPermissionEdit}
+                deleteButtonAction={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDeleteCourse,
+                    title: 'Excluír Curso',
+                    message: 'Tem certeza que deseja excluír o Curso? Uma vez excluído, não será possível recupera-lo.'
+                })}
             />
 
             {/* usuario */}
@@ -208,23 +229,23 @@ export default function EditCourse(props) {
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Curso</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Nome' name='nome_curso' onChange={handleChange} value={courseData?.nome_curso || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput placeholder='TPA ...' name='sigla' onChange={handleChange} value={courseData?.sigla || ''} label='Sigla' sx={{ flex: 1, }} />
-                    <SelectList fullWidth data={groupDuration} valueSelection={courseData?.duracao} onSelect={(value) => setCourseData({ ...courseData, duracao: value })}
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_curso' onChange={handleChange} value={courseData?.nome_curso || ''} label='Nome' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='TPA ...' name='sigla' onChange={handleChange} value={courseData?.sigla || ''} label='Sigla' sx={{ flex: 1, }} />
+                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupDuration} valueSelection={courseData?.duracao} onSelect={(value) => setCourseData({ ...courseData, duracao: value })}
                         title="Duração" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
-                <RadioItem valueRadio={courseData?.modalidade_curso} group={groupModal} title="Modalidade" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, modalidade_curso: value })} sx={{ flex: 1, }} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={courseData?.modalidade_curso} group={groupModal} title="Modalidade" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, modalidade_curso: value })} sx={{ flex: 1, }} />
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Portaria MEC/Autorização' name='pt_autorizacao' onChange={handleChange} value={courseData?.pt_autorizacao || ''} label='Portaria MEC/Autorização' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Data' name='dt_autorizacao' onChange={handleChange} value={(courseData?.dt_autorizacao)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                    <TextInput placeholder='Portaria MEC/Reconhecimento' name='pt_reconhecimento' onChange={handleChange} value={courseData?.pt_reconhecimento || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria MEC/Autorização' name='pt_autorizacao' onChange={handleChange} value={courseData?.pt_autorizacao || ''} label='Portaria MEC/Autorização' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data' name='dt_autorizacao' onChange={handleChange} value={(courseData?.dt_autorizacao)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria MEC/Reconhecimento' name='pt_reconhecimento' onChange={handleChange} value={courseData?.pt_reconhecimento || ''} label='Portaria MEC/Reconhecimento' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data' name='dt_reconhecimento' onChange={handleChange} value={(courseData?.dt_reconhecimento)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
-                <TextInput placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={courseData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
-                <RadioItem valueRadio={courseData?.nivel_curso} group={groupNivel} title="Nível do curso" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, nivel_curso: value })} sx={{ flex: 1, }} />
-                <RadioItem valueRadio={courseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, ativo: parseInt(value) })} />
+                <TextInput disabled={!isPermissionEdit && true} placeholder='Carga horária' name='carga_hr_curso' onChange={handleChange} value={courseData?.carga_hr_curso || ''} label='Carga horária' sx={{ flex: 1, }} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={courseData?.nivel_curso} group={groupNivel} title="Nível do curso" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, nivel_curso: value })} sx={{ flex: 1, }} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={courseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCourseData({ ...courseData, ativo: parseInt(value) })} />
 
             </ContentContainer>
         </>

@@ -3,7 +3,7 @@ import { Box, Text } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
 
 export const RadioItem = (props) => {
-    const { title = '', style = {}, onSelect = (value) => { }, sx = {}, group = [], horizontal = false, valueRadio = '' } = props;
+    const { title = '', style = {}, onSelect = (value) => { }, sx = {}, group = [], horizontal = false, valueRadio = '', disabled = false } = props;
     const { colorPalette, theme } = useAppContext()
 
     const getChecked = (optionValue) => {
@@ -37,12 +37,15 @@ export const RadioItem = (props) => {
                                     fontSize: '9px'
                                 }
                             }} onChange={(event) => onSelect(event.target.value)}
-                                checked={getChecked(item.value)} />
-                        } label={item?.label} sx={{ '& .MuiTypography-root': {
-                            fontFamily: 'MetropolisRegular',
-                            color: colorPalette.textColor,
-                            fontSize: '12px'
-                        } }} />
+                                checked={getChecked(item.value)}
+                                disabled={disabled} />
+                        } label={item?.label} sx={{
+                            '& .MuiTypography-root': {
+                                fontFamily: 'MetropolisRegular',
+                                color: colorPalette.textColor,
+                                fontSize: '12px'
+                            }
+                        }} />
                 ))
                 }
             </RadioGroup>

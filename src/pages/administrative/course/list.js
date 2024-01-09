@@ -9,12 +9,13 @@ import { getCourses, getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { TablePagination } from "@mui/material"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListCourse(props) {
     const [courseList, setCourseList] = useState([])
     const [filterData, setFilterData] = useState('')
     const [perfil, setPerfil] = useState('aluno')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [filters, setFilters] = useState({
@@ -24,6 +25,19 @@ export default function ListCourse(props) {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+
+
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         const normalizeString = (str) => {
@@ -40,6 +54,7 @@ export default function ListCourse(props) {
     };
 
     useEffect(() => {
+        fetchPermissions()
         getCourse();
         if (window.localStorage.getItem('list-courses-filters')) {
             const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-courses-filters') || null);
@@ -101,7 +116,7 @@ export default function ListCourse(props) {
 
     const column = [
         { key: 'id_curso', label: 'ID' },
-        { key: 'sigla', label: 'Sigla'},
+        { key: 'sigla', label: 'Sigla' },
         { key: 'nome_curso', label: 'Nome' },
         { key: 'modalidade_curso', label: 'Modalidade' },
         { key: 'nivel_curso', label: 'Nível Curso' },
@@ -118,7 +133,7 @@ export default function ListCourse(props) {
         <>
             <SectionHeader
                 title={`Cursos (${courseList.filter(filter)?.length || '0'})`}
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             <ContentContainer>

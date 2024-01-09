@@ -6,9 +6,10 @@ import { Box, ContentContainer, TextInput, Text, Button, } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader, SelectList } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createGrid, deleteGrid, editGrid } from "../../../validators/api-requests"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditGrid(props) {
-    const { setLoading, alert, colorPalette, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, colorPalette, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     const router = useRouter()
     const { id, slug } = router.query;
     const newGrid = id === 'new';
@@ -23,7 +24,20 @@ export default function EditGrid(props) {
     const [copyGridId, setCopyGridId] = useState()
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
+    useEffect(() => {
+        fetchPermissions()
+    }, [])
 
     const fetchData = async () => {
         try {
@@ -100,6 +114,7 @@ export default function EditGrid(props) {
             updatePlanGrid()
         }
     }, [disciplineModuleChange])
+
 
 
     const getGrid = async () => {
@@ -281,9 +296,9 @@ export default function EditGrid(props) {
         <>
             <SectionHeader
                 title={gridData?.nome_grade || `Nova grade`}
-                saveButton
+                saveButton={isPermissionEdit}
                 saveButtonAction={newGrid ? handleCreateGrid : handleEditGrid}
-                deleteButton={!newGrid}
+                deleteButton={!newGrid && isPermissionEdit}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteGrid })}
             />
             {/* usuario */}
@@ -291,15 +306,15 @@ export default function EditGrid(props) {
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Grade</Text>
                 </Box>
-                <SelectList fullWidth data={courses} valueSelection={gridData?.curso_id} onSelect={(value) => handleChangeCourse(value)}
+                <SelectList disabled={!isPermissionEdit && true} fullWidth data={courses} valueSelection={gridData?.curso_id} onSelect={(value) => handleChangeCourse(value)}
                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
                 < Box sx={{ ...styles.inputSection }}>
-                    <TextInput placeholder='Nome' name='nome_grade' onChange={handleChange} value={gridData?.nome_grade || ''} label='Nome da grade' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Módulos' name='semestres' onChange={handleChange} value={gridData?.modulos || ''} label='Módulos' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_grade' onChange={handleChange} value={gridData?.nome_grade || ''} label='Nome da grade' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Módulos' name='semestres' onChange={handleChange} value={gridData?.modulos || ''} label='Módulos' sx={{ flex: 1, }} />
                 </Box>
-                <RadioItem
+                <RadioItem disabled={!isPermissionEdit && true}
                     valueRadio={copyGrid}
                     group={groupCopy}
                     title="Copiar grade"
@@ -308,16 +323,17 @@ export default function EditGrid(props) {
                 />
 
                 {copyGrid === 1 &&
-                    <SelectList fullWidth data={gridList} valueSelection={copyGridId} onSelect={(value) => setCopyGridId(value)}
+                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={gridList} valueSelection={copyGridId} onSelect={(value) => setCopyGridId(value)}
                         title="Grades" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 }
 
-                <RadioItem valueRadio={gridData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, ativo: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={gridData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setGridData({ ...gridData, ativo: parseInt(value) })} />
                 {!newGrid &&
                     Array.from({ length: gridData?.modulos }).map((_, index) => (
                         <SemesterFields
+                            isPermissionEdit={isPermissionEdit}
                             key={index}
                             semesterNumber={index + 1}
                             planGridData={planGridData}
@@ -368,7 +384,8 @@ export const SemesterFields = (props) => {
         colorPalette,
         moduleData,
         setModuleData,
-        setDisciplineModuleChange
+        setDisciplineModuleChange,
+        isPermissionEdit
     } = props
 
     const filteredPlanGridData = planGridData.filter(planGrid => planGrid.modulo_grade === semesterNumber);
@@ -394,7 +411,7 @@ export const SemesterFields = (props) => {
             {filteredPlanGridData?.map((planGrid, index) => {
                 return (
                     <Box sx={{ ...styles.inputSection, alignItems: "center" }} key={planGrid.modulo_grade}>
-                        <SelectList
+                        <SelectList disabled={!isPermissionEdit && true}
                             clean={false}
                             fullWidth={true}
                             data={disciplines}
@@ -409,7 +426,7 @@ export const SemesterFields = (props) => {
                                 fontFamily: "MetropolisBold",
                             }}
                         />
-                        <Box
+                        {isPermissionEdit && <Box
                             sx={{
                                 backgroundSize: "cover",
                                 backgroundRepeat: "no-repeat",
@@ -424,12 +441,12 @@ export const SemesterFields = (props) => {
                                 },
                             }}
                             onClick={() => deletePlanGrid(planGrid?.id_plano_grade)}
-                        />
+                        />}
                     </Box>
                 )
             })}
             <Box sx={{ ...styles.inputSection, alignItems: "center" }}>
-                <SelectList
+                <SelectList disabled={!isPermissionEdit && true}
                     fullWidth
                     data={disciplines}
                     valueSelection={moduleData[`disciplina_id-${semesterNumber}`] || ''}
