@@ -27,6 +27,7 @@ export const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [notificationUser, setNotificationUser] = useState([])
+    const [menuItemsList, setMenuItemsList] = useState([])
     const [dataBox, setDataBox] = useState(false)
     const [userPermissions, setUserPermissions] = useState()
     const matches = useMediaQuery('(min-width: 1080px) and (max-width: 1320px)');
@@ -133,6 +134,22 @@ export const AppProvider = ({ children }) => {
         colorsThem();
     }, [theme])
 
+    useEffect(() => {
+        const handleMenuItems = async () => {
+           try {
+              const response = await api.get(`/menuItems`)
+              const { data } = response
+              if (response.status === 200) {
+                setMenuItemsList(data)
+              }
+           } catch (error) {
+              console.log(error)
+              return error
+           }
+        }
+        handleMenuItems()
+     }, [])
+
     return (
         <AppContext.Provider
             value={{
@@ -155,7 +172,8 @@ export const AppProvider = ({ children }) => {
                 matches,
                 userPermissions,
                 notificationUser, setNotificationUser,
-                latestVersionNumber
+                latestVersionNumber,
+                menuItemsList
             }}
         >
             {children}

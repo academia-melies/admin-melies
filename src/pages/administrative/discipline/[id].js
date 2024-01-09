@@ -7,9 +7,10 @@ import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditDiscipline(props) {
-    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -32,7 +33,18 @@ export default function EditDiscipline(props) {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [skills, setSkills] = useState({});
     const [arraySkills, setArraySkills] = useState([])
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
 
+
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
 
     const getDiscipline = async () => {
@@ -67,6 +79,7 @@ export default function EditDiscipline(props) {
     }, [id])
 
     useEffect(() => {
+        fetchPermissions()
         listDisciplines()
     }, [])
 
@@ -238,14 +251,16 @@ export default function EditDiscipline(props) {
         <>
             <SectionHeader
                 title={disciplineData?.nome_disciplina || `Nova Disciplina`}
-                saveButton
+                saveButton={isPermissionEdit}
                 saveButtonAction={newDiscipline ? handleCreate : handleEdit}
-                deleteButton={!newDiscipline}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true,
-                     event,
-                      acceptAction: handleDelete,
+                deleteButton={!newDiscipline && isPermissionEdit}
+                deleteButtonAction={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDelete,
                     title: 'Excluír Disciplina',
-                message: 'Tem certeza que deseja excluír a disciplina? Uma vez excluído, não será possível reverter.' })}
+                    message: 'Tem certeza que deseja excluír a disciplina? Uma vez excluído, não será possível reverter.'
+                })}
             />
 
             {/* usuario */}
@@ -254,26 +269,26 @@ export default function EditDiscipline(props) {
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Disciplina</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Nome' name='nome_disciplina' onChange={handleChange} value={disciplineData?.nome_disciplina || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Data da Criação' name='dt_criacao' onChange={handleChange} value={(disciplineData?.dt_criacao)?.split('T')[0] || ''} type="date" label='Data da Criação' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_disciplina' onChange={handleChange} value={disciplineData?.nome_disciplina || ''} label='Nome' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data da Criação' name='dt_criacao' onChange={handleChange} value={(disciplineData?.dt_criacao)?.split('T')[0] || ''} type="date" label='Data da Criação' sx={{ flex: 1, }} />
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Carga Horária' name='carga_hr_dp' onChange={handleChange} value={disciplineData?.carga_hr_dp || ''} label='Carga Horária' sx={{}} />
-                    <SelectList fullWidth data={disciplines} valueSelection={disciplineData?.pre_req} onSelect={(value) => setDisciplineData({ ...disciplineData, pre_req: value })}
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Carga Horária' name='carga_hr_dp' onChange={handleChange} value={disciplineData?.carga_hr_dp || ''} label='Carga Horária' sx={{}} />
+                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines} valueSelection={disciplineData?.pre_req} onSelect={(value) => setDisciplineData({ ...disciplineData, pre_req: value })}
                         title="Pré-requisitos" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
 
 
-                <RadioItem valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value) })} />
             </ContentContainer>
             <ContentContainer>
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Plano de ensino</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput
+                    <TextInput disabled={!isPermissionEdit && true}
                         placeholder='Ementa'
                         name='ementa'
                         onChange={handleChange} value={disciplineData?.ementa || ''}
@@ -282,7 +297,7 @@ export default function EditDiscipline(props) {
                         maxRows={8}
                         rows={4}
                     />
-                    <TextInput
+                    <TextInput disabled={!isPermissionEdit && true}
                         placeholder='Objetivo'
                         name='objetivo_dp'
                         onChange={handleChange}
@@ -295,7 +310,7 @@ export default function EditDiscipline(props) {
                     />
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput
+                    <TextInput disabled={!isPermissionEdit && true}
                         placeholder='Metodologia'
                         name='metodologia'
                         onChange={handleChange}
@@ -306,7 +321,7 @@ export default function EditDiscipline(props) {
                         rows={3}
                         sx={{ flex: 1, }}
                     />
-                    <TextInput
+                    <TextInput disabled={!isPermissionEdit && true}
                         placeholder='Recurso de apoio'
                         name='recurso_apoio'
                         onChange={handleChange}
@@ -319,7 +334,7 @@ export default function EditDiscipline(props) {
                     />
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput
+                    <TextInput disabled={!isPermissionEdit && true}
                         placeholder='Bibliografia Básica'
                         name='bibl_basica'
                         onChange={handleChange}
@@ -330,7 +345,7 @@ export default function EditDiscipline(props) {
                         rows={3}
                         sx={{ flex: 1, }}
                     />
-                    <TextInput
+                    <TextInput disabled={!isPermissionEdit && true}
                         placeholder='Bibliografia Complementar'
                         name='bibl_compl'
                         onChange={handleChange}
@@ -354,11 +369,11 @@ export default function EditDiscipline(props) {
                     <>
 
                         <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                            <TextInput placeholder='Conteúdo' name={`conteudo-${index}`} onChange={handleChangeSkills} value={skill.conteudo} sx={{ flex: 1 }} />
-                            <TextInput placeholder='Habilidade' name={`habilidade-${index}`} onChange={handleChangeSkills} value={skill.habilidade} sx={{ flex: 1 }} />
-                            <TextInput placeholder='Avaliação' name={`avaliacao-${index}`} onChange={handleChangeSkills} value={skill.avaliacao} sx={{ flex: 1 }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Conteúdo' name={`conteudo-${index}`} onChange={handleChangeSkills} value={skill.conteudo} sx={{ flex: 1 }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Habilidade' name={`habilidade-${index}`} onChange={handleChangeSkills} value={skill.habilidade} sx={{ flex: 1 }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Avaliação' name={`avaliacao-${index}`} onChange={handleChangeSkills} value={skill.avaliacao} sx={{ flex: 1 }} />
 
-                            <Box sx={{
+                            {isPermissionEdit && <Box sx={{
                                 backgroundSize: 'cover',
                                 backgroundRepeat: 'no-repeat',
                                 backgroundPosition: 'center',
@@ -372,15 +387,15 @@ export default function EditDiscipline(props) {
                                 }
                             }} onClick={() => {
                                 newDiscipline ? deleteSkill(index) : deleteSkillDiscipline(skill?.id_habilidade_dp)
-                            }} />
+                            }} />}
                         </Box>
                     </>
                 ))}
                 <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                    <TextInput placeholder='Conteúdo' name='conteudo' onChange={handleChangeSkills} value={skills?.conteudo || ''} sx={{ flex: 1 }} />
-                    <TextInput placeholder='Habilidade' name='habilidade' onChange={handleChangeSkills} value={skills?.habilidade || ''} sx={{ flex: 1 }} />
-                    <TextInput placeholder='Avaliação' name='avaliacao' onChange={handleChangeSkills} value={skills?.avaliacao || ''} sx={{ flex: 1 }} />
-                    <Box sx={{
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Conteúdo' name='conteudo' onChange={handleChangeSkills} value={skills?.conteudo || ''} sx={{ flex: 1 }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Habilidade' name='habilidade' onChange={handleChangeSkills} value={skills?.habilidade || ''} sx={{ flex: 1 }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Avaliação' name='avaliacao' onChange={handleChangeSkills} value={skills?.avaliacao || ''} sx={{ flex: 1 }} />
+                    {isPermissionEdit && <Box sx={{
                         backgroundSize: 'cover',
                         backgroundRepeat: 'no-repeat',
                         backgroundPosition: 'center',
@@ -395,7 +410,7 @@ export default function EditDiscipline(props) {
                         }
                     }} onClick={() => {
                         newDiscipline ? addSkills() : addSkillDiscipline()
-                    }} />
+                    }} />}
                 </Box>
             </ContentContainer>
         </>

@@ -94,7 +94,7 @@ export const Table_V1 = (props) => {
                                     </TableCell>
                                 ))}
                                 {columnActive &&
-                                    <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>Ativo</TableCell>
+                                    <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>Status</TableCell>
                                 }
                                 {onDelete &&
                                     <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}></TableCell>

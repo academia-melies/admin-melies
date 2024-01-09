@@ -10,11 +10,12 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
 import TablePagination from '@mui/material/TablePagination'
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListDiscipline(props) {
     const [disciplineList, setDiscipline] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [filters, setFilters] = useState({
@@ -25,6 +26,16 @@ export default function ListDiscipline(props) {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     const filter = (item) => {
         const normalizeString = (str) => {
             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -53,6 +64,7 @@ export default function ListDiscipline(props) {
 
 
     useEffect(() => {
+        fetchPermissions()
         getDiscipline();
         if (window.localStorage.getItem('list-discipline-filters')) {
             const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-discipline-filters') || null);
@@ -126,7 +138,7 @@ export default function ListDiscipline(props) {
         <>
             <SectionHeader
                 title={`Disciplinas (${disciplineList.filter(filter)?.length || '0'})`}
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             <ContentContainer>
@@ -141,7 +153,7 @@ export default function ListDiscipline(props) {
                     </Box>
                 </Box>
                 <TextInput placeholder="Buscar por disciplina.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
-                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center',  }}>
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
                             data={listAtivo}

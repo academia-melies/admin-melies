@@ -1,3 +1,4 @@
+
 import { Box, Text } from "../atoms";
 import { useAppContext } from "../context/AppContext";
 import { Colors } from "../organisms";
@@ -16,6 +17,7 @@ export const Button = (props) => {
       text = '',
       style = {},
       closeButton = false,
+      disabled = false
    } = props;
 
    if (closeButton) {
@@ -40,7 +42,7 @@ export const Button = (props) => {
             transition: 'background-color 1s',
             "&:hover": {
                backgroundColor: colorPalette.buttonColor + 'dd',
-               cursor: 'pointer'
+               cursor: !disabled && 'pointer'
             },
             ...(secondary && {
                backgroundColor: 'transparent',
@@ -50,7 +52,7 @@ export const Button = (props) => {
                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                "&:hover": {
                   backgroundColor: colorPalette.buttonColor + '33',
-                  cursor: 'pointer'
+                  cursor: !disabled && 'pointer'
                }
             }),
             ...(tertiary && {
@@ -59,14 +61,15 @@ export const Button = (props) => {
                border: `1px solid #d1d9dd`,
                "&:hover": {
                   backgroundColor: '#e0e5e7',
-                  cursor: 'pointer'
+                  cursor: !disabled && 'pointer'
                }
             }),
             // ...(small && { width: '100%', maxWidth: 130 }),
             ...(large && { width: '100%', maxWidth: 230 }),
             ...style,
+            ...disabled && { opacity: 0.3 }
          }}
-         onClick={onClick}
+         onClick={!disabled ? onClick : () => { }}
       >
          <Text small={small} bold style={{ color: 'inherit' }}>{text}</Text>
       </Box>

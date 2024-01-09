@@ -7,16 +7,27 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
 import { api } from "../../../api/api"
 import { TablePagination } from "@mui/material"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListGrid(props) {
     const [gridList, setGrid] = useState([])
     const [filterData, setFilterData] = useState('')
     const [showGridTable, setShowGridTable] = useState({});
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
@@ -45,7 +56,9 @@ export default function ListGrid(props) {
         }));
     };
 
+
     useEffect(() => {
+        fetchPermissions()
         getGrid();
     }, []);
 
@@ -80,7 +93,7 @@ export default function ListGrid(props) {
         <>
             <SectionHeader
                 title={`Grades (${gridList.length || '0'})`}
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             <ContentContainer>

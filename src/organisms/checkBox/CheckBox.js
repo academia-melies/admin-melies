@@ -13,7 +13,8 @@ export const CheckBoxComponent = (props) => {
         boxGroup = [],
         valueChecked = '',
         padding = true,
-        gap = true
+        gap = true,
+        disabled = false
     } = props;
 
     const { colorPalette, theme } = useAppContext()
@@ -62,6 +63,7 @@ export const CheckBoxComponent = (props) => {
                                 sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}
                                 onChange={() => handleCheckboxChange(item.value)}
                                 checked={getChecked(item.value)}
+                                disabled={disabled}
                             />
                         }
                         label={item?.label}

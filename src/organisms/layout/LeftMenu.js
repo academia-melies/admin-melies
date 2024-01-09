@@ -440,15 +440,14 @@ const MenuItem = (props) => {
                </Box>
                <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 10, xl: 11.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
                   {showSubItems &&
-                     subitem?.map((item, index) => {
+                     [...new Set(subitem.map(item => item.to))].map((to, index) => {
+                        const item = subitem.find(item => item.to === to);
                         const currentPage = item.to === pathname;
-                        const key = `${index}_${item.id_subitem}`
-                        const to = item.to;
-                        const text = item.text;
+                        const key = `${index}_${item.id_subitem}`;
 
                         return (
                            <Link key={key}
-                              href={to || '/#'}
+                              href={item.to || '/#'}
                               style={{ display: 'flex', width: '100%', backgroundColor: colorPalette.secondary, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}
                            >
                               <Box sx={{
@@ -458,7 +457,7 @@ const MenuItem = (props) => {
                                  borderRadius: 2,
                                  color: 'inherit',
                                  transition: '.2s',
-                                 ...(currentPage && to != null ?
+                                 ...(currentPage && item.to != null ?
                                     { color: colorPalette.buttonColor } : {}),
                               }}>
                                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
@@ -470,18 +469,18 @@ const MenuItem = (props) => {
                                           "&:hover": {
                                              color: colorPalette.buttonColor,
                                           },
-                                          ...(currentPage && to != null && { color: colorPalette.buttonColor }
+                                          ...(currentPage && item.to != null && { color: colorPalette.buttonColor }
                                           ),
                                        }}>
-                                       {text}
+                                       {item.text}
                                     </Text>
                                  </Box>
                               </Box>
                            </Link>
-                        )
-                     })
-                  }
+                        );
+                     })}
                </Box>
+
             </Box>
          </Link>
       </>

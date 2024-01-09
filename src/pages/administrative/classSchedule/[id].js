@@ -6,9 +6,10 @@ import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditClassSchedule(props) {
-    const { setLoading, alert, colorPalette, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, colorPalette, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     const router = useRouter()
     const { id } = router.query;
     const newClassSchedule = id === 'new';
@@ -30,6 +31,16 @@ export default function EditClassSchedule(props) {
     const [titleSchedule, setTitleSchedule] = useState('')
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
     const gerClassSchedule = async () => {
         try {
@@ -163,6 +174,7 @@ export default function EditClassSchedule(props) {
     }, [id])
 
     useEffect(() => {
+        fetchPermissions()
         listClasses()
     }, [])
 
@@ -328,16 +340,16 @@ export default function EditClassSchedule(props) {
             <SectionHeader
                 perfil={classScheduleData?.modulo_cronograma > 0 ? `${classScheduleData?.modulo_cronograma}º módulo` : ''}
                 title={classScheduleData?.turma_id ? titleSchedule : 'Novo Cronograma'}
-                saveButton
+                saveButton={isPermissionEdit}
                 saveButtonAction={newClassSchedule ? handleCreate : handleEdit}
-                deleteButton={!newClassSchedule}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ 
+                deleteButton={!newClassSchedule && isPermissionEdit}
+                deleteButtonAction={(event) => setShowConfirmationDialog({
                     active: true,
-                     event,
-                      acceptAction: handleDelete,
-                       title: 'Realmente deseja prosseguir?',
-                        message: 'Afeterá as aulas, notas e chamada vinculádas a esse semestre.'
-                     })}
+                    event,
+                    acceptAction: handleDelete,
+                    title: 'Realmente deseja prosseguir?',
+                    message: 'Afeterá as aulas, notas e chamada vinculádas a esse semestre.'
+                })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
@@ -345,12 +357,12 @@ export default function EditClassSchedule(props) {
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Cronograma</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <SelectList fullWidth data={classes} valueSelection={classScheduleData?.turma_id} onSelect={(value) => handleClassData(value)}
+                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={classScheduleData?.turma_id} onSelect={(value) => handleClassData(value)}
                         title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                     < Box sx={{ ...styles.inputSection }}>
-                        <SelectList fullWidth data={modules} valueSelection={classScheduleData?.modulo_cronograma} onSelect={(value) => { handleSelectModule(value) }}
+                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={modules} valueSelection={classScheduleData?.modulo_cronograma} onSelect={(value) => { handleSelectModule(value) }}
                             title="Mòdulo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
@@ -358,6 +370,7 @@ export default function EditClassSchedule(props) {
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput
+                        disabled={!isPermissionEdit && true}
                         fullWidth
                         name='dt_inicio_cronograma'
                         onChange={handleChange}
@@ -366,6 +379,7 @@ export default function EditClassSchedule(props) {
                         type="date"
                     />
                     <TextInput
+                        disabled={!isPermissionEdit && true}
                         fullWidth
                         placeholder='Fim'
                         name='dt_fim_cronograma'
@@ -374,13 +388,14 @@ export default function EditClassSchedule(props) {
                         type="date"
                         label='Fim' />
                 </Box>
-                <RadioItem valueRadio={classScheduleData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setClassScheduleData({ ...classScheduleData, ativo: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={classScheduleData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setClassScheduleData({ ...classScheduleData, ativo: parseInt(value) })} />
             </ContentContainer>
 
             {newClassSchedule &&
                 <ContentContainer sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, backgroundColor: 'none', boxShadow: 'none' }}>
                     <Box>
                         <CheckBoxComponent
+                            disabled={!isPermissionEdit && true}
                             valueChecked={daysWeekSelected}
                             boxGroup={groupDays}
                             title="Selecione os dias de aula *"
@@ -400,19 +415,19 @@ export default function EditClassSchedule(props) {
                                     <ContentContainer style={{ flex: 1 }} key={dayWeek}>
                                         <Text bold title={true} style={{ color: colorPalette.buttonColor }}>{dayWeek}</Text>
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                            <SelectList fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.disciplina_id} onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value)}
+                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.disciplina_id} onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value)}
                                                 title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
-                                            <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
+                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
                                                 title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
-                                            <SelectList fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
+                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
                                                 title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
-                                            <SelectList fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia || 7} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
+                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia || 7} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
                                                 title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
@@ -425,19 +440,19 @@ export default function EditClassSchedule(props) {
                                                 <Text bold small style={{ padding: '0px 0px 5px 0px' }}>aula alternada</Text>
                                             </Text>
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                <SelectList fullWidth data={disciplines}
+                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines}
                                                     valueSelection={classDaysAlternate[dayWeek]?.disciplina_id}
                                                     onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value, true)}
                                                     title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 />
-                                                <SelectList fullWidth data={professors}
+                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors}
                                                     valueSelection={classDaysAlternate[dayWeek]?.professor1_id}
                                                     onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value, true)}
                                                     title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 />
-                                                <SelectList fullWidth data={professors} valueSelection={classDaysAlternate[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, true)}
+                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDaysAlternate[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, true)}
                                                     title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 />

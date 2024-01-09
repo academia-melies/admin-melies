@@ -8,9 +8,10 @@ import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditClass(props) {
-    const { setLoading, alert, colorPalette, setShowConfirmationDialog, theme } = useAppContext()
+    const { setLoading, alert, colorPalette, setShowConfirmationDialog, theme, userPermissions, menuItemsList } = useAppContext()
     const router = useRouter()
     const { id } = router.query;
     const newClass = id === 'new';
@@ -28,7 +29,16 @@ export default function EditClass(props) {
     const [grids, setGrids] = useState([])
     const [numberRegistrations, setNumberRegistrations] = useState(0)
     const [enrolledStudents, setEnrolledStudents] = useState([])
-
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
     const getClass = async () => {
         try {
@@ -43,6 +53,7 @@ export default function EditClass(props) {
     }
 
     useEffect(() => {
+        fetchPermissions()
         listCourses()
         listGrids()
     }, [id])
@@ -224,9 +235,9 @@ export default function EditClass(props) {
             <SectionHeader
                 perfil={'turma'}
                 title={classData?.nome_turma || `Nova Turma`}
-                saveButton
+                saveButton={isPermissionEdit}
                 saveButtonAction={newClass ? handleCreateClass : handleEditClass}
-                deleteButton={!newClass}
+                deleteButton={!newClass && isPermissionEdit}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteClass })}
             />
 
@@ -235,26 +246,26 @@ export default function EditClass(props) {
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Turma</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Nome' name='nome_turma' onChange={handleChange} value={classData?.nome_turma || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Inicio' name='inicio' onChange={handleChange} value={(classData?.inicio)?.split('T')[0] || ''} type="date" label='Inicio' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Fim' name='fim' onChange={handleChange} value={(classData?.fim)?.split('T')[0] || ''} label='Fim' type="date" sx={{ flex: 1, }} />
-                    <SelectList data={grouperiod} valueSelection={classData?.periodo} onSelect={(value) => setClassData({ ...classData, periodo: value })}
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_turma' onChange={handleChange} value={classData?.nome_turma || ''} label='Nome' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Inicio' name='inicio' onChange={handleChange} value={(classData?.inicio)?.split('T')[0] || ''} type="date" label='Inicio' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Fim' name='fim' onChange={handleChange} value={(classData?.fim)?.split('T')[0] || ''} label='Fim' type="date" sx={{ flex: 1, }} />
+                    <SelectList disabled={!isPermissionEdit && true} data={grouperiod} valueSelection={classData?.periodo} onSelect={(value) => setClassData({ ...classData, periodo: value })}
                         title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <SelectList fullWidth data={courses} valueSelection={classData?.curso_id} onSelect={(value) => setClassData({ ...classData, curso_id: value })}
+                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={courses} valueSelection={classData?.curso_id} onSelect={(value) => setClassData({ ...classData, curso_id: value })}
                         title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
-                    <SelectList fullWidth data={grids} valueSelection={classData?.grade_id} onSelect={(value) => setClassData({ ...classData, grade_id: value })}
+                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={grids} valueSelection={classData?.grade_id} onSelect={(value) => setClassData({ ...classData, grade_id: value })}
                         title="Grade" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
-                    <TextInput placeholder='Quantidade de alunos' name='qnt_alunos' onChange={handleChange} type="number" value={classData?.qnt_alunos || ''} label='Quantidade de alunos' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Quantidade de alunos' name='qnt_alunos' onChange={handleChange} type="number" value={classData?.qnt_alunos || ''} label='Quantidade de alunos' sx={{ flex: 1, }} />
                 </Box>
-                <RadioItem valueRadio={classData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setClassData({ ...classData, ativo: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={classData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setClassData({ ...classData, ativo: parseInt(value) })} />
                 {!newClass &&
                     <Box sx={{
                         padding: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', borderRadius: `12px`,
@@ -272,47 +283,47 @@ export default function EditClass(props) {
                     <Box>
                         <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Lista de alunos mátriculados ({enrolledStudents?.length})</Text>
                     </Box>
-                    {enrolledStudents?.length > 0 ? 
-                    <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px' }}>
-                        <table style={{ borderCollapse: 'collapse', width: '100%', borderRadius: '8px', }}>
-                            <thead>
-                                <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
-                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Area acadêmica</th>
-                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
-                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    enrolledStudents?.map((item, index) => {
-                                        const studentAcademic = `/academic/teacherArea/${item?.usuario_id}`
-                                        return (
-                                            <tr key={`${item}-${index}`}>
-                                                <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                    {item?.nome}
-                                                </td>
-                                                <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                    <Link href={studentAcademic} target="_blank" style={{ color: theme ? 'blue' : 'red', }}>
-                                                        link das notas
-                                                    </Link>
-                                                </td>
-                                                <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                    -
-                                                </td>
-                                                <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                    -
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
+                    {enrolledStudents?.length > 0 ?
+                        <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px' }}>
+                            <table style={{ borderCollapse: 'collapse', width: '100%', borderRadius: '8px', }}>
+                                <thead>
+                                    <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Area acadêmica</th>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        enrolledStudents?.map((item, index) => {
+                                            const studentAcademic = `/academic/teacherArea/${item?.usuario_id}`
+                                            return (
+                                                <tr key={`${item}-${index}`}>
+                                                    <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                        {item?.nome}
+                                                    </td>
+                                                    <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                        <Link href={studentAcademic} target="_blank" style={{ color: theme ? 'blue' : 'red', }}>
+                                                            link das notas
+                                                        </Link>
+                                                    </td>
+                                                    <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                        -
+                                                    </td>
+                                                    <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                        -
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
 
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    : 
-                    <Text light>Não existem alunos matrículados nessa turma</Text>}
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        :
+                        <Text light>Não existem alunos matrículados nessa turma</Text>}
                 </ContentContainer >
             }
         </>

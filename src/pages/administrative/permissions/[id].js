@@ -6,9 +6,10 @@ import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditPermissions(props) {
-    const { setLoading, alert, colorPalette, theme, user, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, colorPalette, theme, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
@@ -20,6 +21,18 @@ export default function EditPermissions(props) {
     const [menuItems, setMenuItems] = useState([]);
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+
+
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
     useEffect(() => {
         const handleMenuItems = async () => {
@@ -45,6 +58,10 @@ export default function EditPermissions(props) {
             await handleItems();
         })();
     }, [id])
+
+    useEffect(() => {
+        fetchPermissions()
+    }, [])
 
     const getGroupPermission = async () => {
         setLoading(true)
@@ -95,18 +112,18 @@ export default function EditPermissions(props) {
                 }
                 return permission;
             });
-    
+
             if (!updatedPermissions.some(permission => permission.item === screen)) {
                 updatedPermissions.push({ item: screen, acao: value !== null ? value : null, item_id: item });
             }
-    
+
             return {
                 ...prevPermissionGroup,
                 permissoes: updatedPermissions,
             };
         });
     };
-    
+
 
     const selectAllSubmenuPermissions = (subMenus) => {
 
@@ -188,9 +205,9 @@ export default function EditPermissions(props) {
         <>
             <SectionHeader
                 title={permissionGroup?.permissao || `Nova Permissão`}
-                saveButton
+                saveButton={isPermissionEdit}
                 saveButtonAction={newPermissions ? handleCreate : handleEdit}
-                deleteButton={!newPermissions}
+                deleteButton={!newPermissions && isPermissionEdit}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })}
             />
 
@@ -198,9 +215,9 @@ export default function EditPermissions(props) {
                 <Box>
                     <Text title style={{ padding: '0px 0px 20px 0px' }}>Lista de permissões</Text>
                 </Box>
-                <TextInput placeholder='ex: Master' name='permissao' onChange={handleChange} value={permissionGroup.permissao || ''} label='Permissão *' sx={{ flex: 1, }} />
+                <TextInput disabled={!isPermissionEdit && true} placeholder='ex: Master' name='permissao' onChange={handleChange} value={permissionGroup.permissao || ''} label='Permissão *' sx={{ flex: 1, }} />
 
-                <RadioItem valueRadio={permissionGroup?.ativo} group={groupStatus} title="Status *" horizontal={mobile ? false : true} onSelect={(value) => setPermissionGroup({ ...permissionGroup, ativo: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={permissionGroup?.ativo} group={groupStatus} title="Status *" horizontal={mobile ? false : true} onSelect={(value) => setPermissionGroup({ ...permissionGroup, ativo: parseInt(value) })} />
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {menuItems?.map((item, index) => {
@@ -233,7 +250,7 @@ export default function EditPermissions(props) {
                                                 {menu}
                                             </Text>
                                         </Box>
-                                        <Button small text="selecionar tudo" sx={{ zIndex: 9999 }} onClick={(event) => {
+                                        <Button disabled={!isPermissionEdit && true} small text="selecionar tudo" sx={{ zIndex: 9999 }} onClick={(event) => {
                                             event.preventDefault();
                                             event.stopPropagation();
                                             selectAllSubmenuPermissions(subMenus)
@@ -277,6 +294,7 @@ export default function EditPermissions(props) {
                                                 key={`${item}-${index}`}>
                                                 <Text bold style={{ color: colorPalette.buttonColor }}>{menu.text}</Text>
                                                 <CheckBoxComponent
+                                                    disabled={!isPermissionEdit && true}
                                                     valueChecked={valueCheckedItem}
                                                     boxGroup={groupPerfil}
                                                     horizontal={mobile ? false : true}
