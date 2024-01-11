@@ -5,24 +5,13 @@ import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListPriceCourses(props) {
     const [pricesCourseList, setPricesCourseList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
@@ -33,7 +22,6 @@ export default function ListPriceCourses(props) {
     };
 
     useEffect(() => {
-        fetchPermissions()
         getPricesCourse();
     }, []);
 
@@ -83,7 +71,7 @@ export default function ListPriceCourses(props) {
         <>
             <SectionHeader
                 title={`Valores dos Cursos (${pricesCourseList.filter(filter)?.length || '0'})`}
-                newButton={isPermissionEdit}
+                newButton
                 newButtonAction={() => router.push(`/financial/${pathname}/new`)}
             />
             <Text bold>Buscar por: </Text>

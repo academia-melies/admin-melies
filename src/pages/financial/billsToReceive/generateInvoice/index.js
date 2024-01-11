@@ -8,12 +8,11 @@ import { SelectList } from "../../../../organisms/select/SelectList"
 import { formatTimeStamp } from "../../../../helpers"
 import { TablePagination } from "@mui/material"
 import Link from "next/link"
-import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 
 export default function ListInvoices(props) {
     const [invoicesList, setInvoicesList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, user, setShowConfirmationDialog, alert, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette, user, setShowConfirmationDialog, alert } = useAppContext()
     const [filters, setFilters] = useState({
         parcel: 'todos',
         nfse: 'todos',
@@ -28,16 +27,7 @@ export default function ListInvoices(props) {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
+
 
     const filterFunctions = {
         parcel: (item) => filters.parcel === 'todos' || item.status_parcela === filters.parcel,
@@ -67,7 +57,6 @@ export default function ListInvoices(props) {
     };;
 
     useEffect(() => {
-        fetchPermissions()
         getInstallments();
     }, []);
 
@@ -291,7 +280,6 @@ export default function ListInvoices(props) {
                                 <th style={{ padding: '4px 0px', display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
                                     Selecionar
                                     <CheckBoxComponent
-                                        disabled={!isPermissionEdit && true}
                                         boxGroup={[{ value: 'allSelect' }]}
                                         valueChecked={'select'}
                                         horizontal={true}
@@ -329,7 +317,6 @@ export default function ListInvoices(props) {
                                     <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary }}>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             <CheckBoxComponent
-                                            disabled={!isPermissionEdit && true}
                                                 boxGroup={groupSelect(item?.id_parcela_matr)}
                                                 valueChecked={invoicesSelected}
                                                 horizontal={true}
@@ -353,7 +340,7 @@ export default function ListInvoices(props) {
                                             {formatter.format(item?.valor_parcela)}
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                            <TextInput disabled={!isPermissionEdit && true} fullWidth name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ flex: 1 }} />
+                                            <TextInput fullWidth name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ flex: 1 }} />
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             {item?.n_parcela || '-'}

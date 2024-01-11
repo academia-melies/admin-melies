@@ -2,23 +2,21 @@ import { useEffect, useState } from "react"
 import { useAppContext } from "../context/AppContext"
 import { emailValidator } from "../helpers"
 import { Colors, IconTheme } from "../organisms"
-import { Box, ContentContainer, TextInput, Text, Divider } from "../atoms"
+import { Box, ContentContainer, TextInput, Text } from "../atoms"
 import Button from '@mui/material/Button';
 import Head from "next/head"
 import { getImageByScreen } from "../validators/api-requests"
 import { icons } from "../organisms/layout/Colors"
 import Link from "next/link"
 import { api } from "../api/api"
-import { Backdrop } from "@mui/material"
 
 export default function Login() {
 
-    const { login, alert, theme, colorPalette, setLoading, setShowConfirmationDialog } = useAppContext()
+    const { login, alert, theme, colorPalette, setLoading } = useAppContext()
     const [userData, setUserData] = useState([])
     const [themeName, setThemeName] = useState('')
     const [imagesList, setImagesList] = useState([])
     const [showMenu, setShowMenu] = useState(false)
-    const [showRedefinitionPass, setShowRedefinitionPass] = useState(false)
     const [windowWidth, setWindowWidth] = useState(0)
     const smallWidthDevice = windowWidth < 1000
     const notebookWidth = windowWidth > 1100 && windowWidth < 1500
@@ -85,12 +83,12 @@ export default function Login() {
 
         if (!email) {
             alert.error("Preencha o e-mail que será enviada a nova senha")
-            return false
+            return false 
         }
         if (email.includes('@')) {
             if (!emailValidator(email)) {
                 alert.error("O email está inválido!")
-                return false
+                return false 
             }
         }
         return true
@@ -99,6 +97,7 @@ export default function Login() {
     const resetPassword = async () => {
         const { email } = userData
         if (checkedReset(email)) {
+            setLoading(true)
             try {
                 const { email } = userData
                 const response = await api.patch(`/users/reset/password`, { email })
@@ -110,13 +109,15 @@ export default function Login() {
 
                 if (response.status === 200) {
                     alert.success("Nova senha enviada por e-mail.")
-                    setShowRedefinitionPass(true)
+                    return true
                 }
 
             } catch (error) {
                 alert.error("Houve um erro ao resetar senha.")
                 console.log(error)
                 return error
+            } finally {
+                setLoading(false)
             }
         }
 
@@ -288,17 +289,8 @@ export default function Login() {
                                         borderRadius: '100px',
                                     }}
                                     text='Entrar'
-                                    onClick={(event) => {
-                                        if (checkedReset(userData?.email)) {
-                                            setShowConfirmationDialog({
-                                                active: true,
-                                                event,
-                                                acceptAction: resetPassword,
-                                                title: 'Resetar Senha',
-                                                message: 'Uma nova senha será enviada para seu e-mail.',
-                                            })
-                                        }
-                                    }}
+                                    onClick={() => resetPassword()}
+                                    type="submit"
                                 >
                                     <Text small bold style={{ color: colorPalette.buttonColor }}>Redefinir</Text>
                                 </Button>
@@ -346,144 +338,6 @@ export default function Login() {
                     </Link>
                 </Box>
             </Box>
-
-            <Backdrop open={showRedefinitionPass} sx={{ zIndex: 99999, }}>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-
-                    <ContentContainer>
-                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
-                            <Text bold>Refenifição de Senha</Text>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                backgroundImage: `url(${icons.gray_close})`,
-                                transition: '.3s',
-                                zIndex: 999999999,
-                                "&:hover": {
-                                    opacity: 0.8,
-                                    cursor: 'pointer'
-                                }
-                            }} onClick={() => showRedefinitionPass(false)} />
-                        </Box>
-                        <Box>
-                            <Text>Insira a nova senha que recebeu por e-mail, para prosseguir. Lembre-se de alterar sua senha quando fizer o login.</Text>
-                        </Box>
-                        <Divider padding={0} />
-                        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
-                                <Box sx={{
-                                    display: 'flex', flexDirection: 'column', gap: 2, width: { xs: `80%`, xm: `80%`, md: '62.5%', lg: '62.5%' }, justifyContent: 'center',
-                                    // alignItems: 'center',
-                                }}>
-                                    <TextInput
-                                        label='e-mail'
-                                        placeholder='email@outlook.com.br'
-                                        value={userData?.email || ''}
-                                        onChange={handleChange}
-                                        name='email'
-                                        margin='none'
-                                        type="email"
-                                        InputProps={{
-                                            style: {
-                                                backgroundColor: !theme ? '#1B1829' : Colors.background,
-                                                transition: 'background-color 1s',
-                                                border: "none",
-                                                color: !theme ? '#fff' : Colors.backgroundPrimary,
-                                                outline: 'none',
-                                                borderRadius: '16px',
-                                                // // width: '280px',
-                                            }
-                                        }}
-                                        InputLabelProps={{
-                                            style: {
-                                                color: !theme ? '#fff' : Colors.backgroundPrimary,
-                                                transition: 'background-color 1s',
-                                                // width: '280px',
-                                            }
-                                        }}
-                                    />
-                                    <TextInput
-                                        placeholder='******'
-                                        label='senha'
-                                        colorLabel={'#fff'}
-                                        value={userData.senha || ''}
-                                        onChange={handleChange}
-                                        name='senha'
-                                        type="password"
-                                        margin='none'
-                                        InputProps={{
-                                            style: {
-                                                backgroundColor: !theme ? '#1B1829' : Colors.background,
-                                                transition: 'background-color 1s',
-                                                color: !theme ? '#ffffffbb' : Colors.backgroundPrimary,
-                                                outline: 'none',
-                                                borderRadius: '16px',
-                                                // width: '280px',
-                                            }
-                                        }}
-                                        InputLabelProps={{
-                                            style: {
-                                                color: !theme ? '#fff' : Colors.backgroundPrimary,
-                                                transition: 'background-color 1s',
-                                            }
-                                        }}
-                                    />
-                                </Box>
-                                <Button
-                                    style={{
-                                        width: { xs: `80%`, xm: `80%`, md: '60%', lg: '60%' },
-                                        padding: '12px 80px',
-                                        marginBottom: 5,
-                                        borderRadius: '100px',
-                                        backgroundColor: colorPalette.buttonColor,
-                                        transition: 'background-color 1s',
-                                        "&:hover": {
-                                            backgroundColor: colorPalette.buttonColor + 'dd',
-                                            cursor: 'pointer'
-                                        },
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        color: '#f0f0f0',
-                                        // padding: { xs: `6px 10px`, xm: `8px 16px`, md: `8px 16px`, lg: `8px 16px` },
-                                        borderRadius: '100px',
-                                    }}
-                                    text='Entrar'
-                                    onClick={handleLogin}
-                                    type="submit"
-                                >
-                                    <Text small bold style={{ color: 'inherit' }}>Entrar</Text>
-                                </Button>
-                            </Box>
-                            <Text light small style={{ marginTop: 5 }}>Enviar senha novamente.</Text>
-                            <Button
-                                style={{
-                                    width: '205px',
-                                    padding: '10px 30px',
-                                    marginBottom: 5,
-                                    borderRadius: '100px',
-                                    border: `1px solid ${colorPalette.buttonColor}`,
-                                    transition: 'background-color 1s',
-                                    "&:hover": {
-                                        backgroundColor: colorPalette.buttonColor + '22',
-                                        cursor: 'pointer'
-                                    },
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    color: '#f0f0f0',
-                                    // padding: { xs: `6px 10px`, xm: `8px 16px`, md: `8px 16px`, lg: `8px 16px` },
-                                    borderRadius: '100px',
-                                }}
-                                text='Entrar'
-                                onClick={() => resetPassword()}
-                            >
-                                <Text small bold style={{ color: colorPalette.buttonColor }}>Redefinir</Text>
-                            </Button>
-                        </form>
-                    </ContentContainer>
-                </Box>
-            </Backdrop>
         </>
     )
 }

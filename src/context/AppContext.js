@@ -60,22 +60,6 @@ export const AppProvider = ({ children }) => {
     const latestVersionBuildDate = latestVersion.build;
 
     useEffect(() => {
-        const handleMenuItems = async () => {
-            try {
-                const response = await api.get(`/menuItems`)
-                const { data } = response
-                if (response.status === 200) {
-                    setMenuItemsList(data)
-                }
-            } catch (error) {
-                console.log(error)
-                return error
-            }
-        }
-        handleMenuItems()
-    }, [])
-
-    useEffect(() => {
         async function loadUserFromCookies() {
             setLoading(true)
             const token = localStorage.getItem('token')
@@ -149,6 +133,22 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         colorsThem();
     }, [theme])
+
+    useEffect(() => {
+        const handleMenuItems = async () => {
+           try {
+              const response = await api.get(`/menuItems`)
+              const { data } = response
+              if (response.status === 200) {
+                setMenuItemsList(data)
+              }
+           } catch (error) {
+              console.log(error)
+              return error
+           }
+        }
+        handleMenuItems()
+     }, [])
 
     return (
         <AppContext.Provider

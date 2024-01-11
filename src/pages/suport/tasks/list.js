@@ -6,7 +6,6 @@ import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { TablePagination } from "@mui/material"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListTasks(props) {
     const [tasksList, setTasksList] = useState([])
@@ -20,7 +19,7 @@ export default function ListTasks(props) {
         actor: 'todos',
         type: 'todos'
     })
-    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [filtersOrders, setFiltersOrders] = useState({
@@ -38,16 +37,6 @@ export default function ListTasks(props) {
         actor: (item) => filters.actor === 'todos' || item.autor === filters.actor,
         type: (item) => filters.type === 'todos' || item.tipo_chamado === filters.type
     };
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
 
     const filter = (item) => {
         return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
@@ -55,7 +44,6 @@ export default function ListTasks(props) {
 
 
     useEffect(() => {
-        fetchPermissions()
         getTasks();
         listUsers()
         if (window.localStorage.getItem('list-tasks-filters')) {
@@ -87,7 +75,7 @@ export default function ListTasks(props) {
 
     const sortTasks = () => {
         const { filterName, filterOrder } = filtersOrders;
-
+    
         const sortedTasks = [...tasksList].sort((a, b) => {
             const valueA = filterName === 'id_chamado' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
             const valueB = filterName === 'id_chamado' ? Number(b[filterName]) : (b[filterName] || '').toLowerCase();
@@ -95,10 +83,10 @@ export default function ListTasks(props) {
             if (filterName === 'id_chamado') {
                 return filterOrder === 'asc' ? valueA - valueB : valueB - valueA;
             }
-
+    
             return filterOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
         });
-
+    
         return sortedTasks;
     }
 
@@ -197,7 +185,7 @@ export default function ListTasks(props) {
                     </Box>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <TextInput placeholder="Buscar pelo nome ou numero do chamado" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <TextInput placeholder="Buscar pelo nome ou numero do chamado" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                     <SelectList

@@ -8,10 +8,9 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { formatDate, formatTimeStamp, formattedStringInDate } from "../../../helpers"
 import { icons } from "../../../organisms/layout/Colors"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditFrequency(props) {
-    const { setLoading, alert, colorPalette, user, theme, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, alert, colorPalette, user, theme } = useAppContext()
     let idUser = user?.id;
     const router = useRouter()
     const query = router.query
@@ -34,18 +33,6 @@ export default function EditFrequency(props) {
     const [hasStudents, setHasStudents] = useState(false)
     const [studentsList, setStudentsList] = useState([])
     const [showClassTable, setShowClassTable] = useState({});
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-
-
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
     const date = new Date()
     const today = formatDate(date)
 
@@ -71,7 +58,6 @@ export default function EditFrequency(props) {
 
 
     useEffect(() => {
-        fetchPermissions()
         if (classday) {
             handleClassDayDatas()
         }
@@ -447,7 +433,7 @@ export default function EditFrequency(props) {
             <SectionHeader
                 perfil={classData?.nome_turma}
                 title={'Lista de Chamada'}
-                saveButton={(studentData.length > 0 && isPermissionEdit) ? true : false}
+                saveButton={studentData.length > 0 ? true : false}
                 saveButtonAction={handleCreateFrequency}
             />
             <ContentContainer row style={{ display: 'flex', justifyContent: 'space-between', gap: 1.8, padding: 5, alignItems: 'center' }}>
@@ -548,7 +534,6 @@ export default function EditFrequency(props) {
                                                                             </td>
                                                                             <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
                                                                                 <RadioItem
-                                                                                    disabled={!isPermissionEdit && true}
                                                                                     valueRadio={item?.periodo_1}
                                                                                     group={groupFrequency}
                                                                                     horizontal={true}
@@ -557,7 +542,6 @@ export default function EditFrequency(props) {
                                                                             </td>
                                                                             <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
                                                                                 <RadioItem
-                                                                                    disabled={!isPermissionEdit && true}
                                                                                     valueRadio={item?.periodo_2}
                                                                                     group={groupFrequency}
                                                                                     horizontal={true}
@@ -565,8 +549,7 @@ export default function EditFrequency(props) {
                                                                                 />
                                                                             </td>
                                                                             <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                                <TextInput disabled={!isPermissionEdit && true}
-                                                                                    fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
+                                                                                <TextInput fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
                                                                             </td>
                                                                         </tr>
                                                                     );

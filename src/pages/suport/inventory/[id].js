@@ -7,10 +7,9 @@ import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createCourse, deleteCourse, editCourse } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditInventory(props) {
-    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
     const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -29,16 +28,7 @@ export default function EditInventory(props) {
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [rooms, setRooms] = useState([])
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
+
     const getInventoryItem = async () => {
         try {
             const response = await api.get(`/inventory/${id}`)
@@ -59,7 +49,6 @@ export default function EditInventory(props) {
     }, [id])
 
     useEffect(() => {
-        fetchPermissions()
         listSchoolRooms()
     }, [])
 
@@ -171,9 +160,9 @@ export default function EditInventory(props) {
             <SectionHeader
                 perfil={inventoryData?.sala_id ? (rooms?.filter(item => item.value === inventoryData?.sala_id).map(room => room.label)) : ''}
                 title={inventoryData?.tipo_ativo || `Novo Ativo`}
-                saveButton={isPermissionEdit}
+                saveButton
                 saveButtonAction={newInventoryItem ? handleCreateItem : handleEditInventory}
-                deleteButton={!newInventoryItem && isPermissionEdit}
+                deleteButton={!newInventoryItem}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteInventory })}
             />
 
@@ -182,27 +171,27 @@ export default function EditInventory(props) {
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Ativo/Item</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupAtivo} valueSelection={inventoryData?.tipo_ativo} onSelect={(value) => setInventoryData({ ...inventoryData, tipo_ativo: value })}
+                    <SelectList fullWidth data={groupAtivo} valueSelection={inventoryData?.tipo_ativo} onSelect={(value) => setInventoryData({ ...inventoryData, tipo_ativo: value })}
                         title="Tipo de ativo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='DELL OPITIPLEX 780..' name='nome_ativo' onChange={handleChange} value={inventoryData?.nome_ativo || ''} label='Nome/Equipamento' sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Patrimônio' name='patrimonio' onChange={handleChange} value={inventoryData?.patrimonio || ''} label='Patrimônio' sx={{ flex: 1, }} />
-                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={rooms} valueSelection={inventoryData?.sala_id} onSelect={(value) => setInventoryData({ ...inventoryData, sala_id: value })}
+                    <TextInput placeholder='DELL OPITIPLEX 780..' name='nome_ativo' onChange={handleChange} value={inventoryData?.nome_ativo || ''} label='Nome/Equipamento' sx={{ flex: 1, }} />
+                    <TextInput placeholder='Patrimônio' name='patrimonio' onChange={handleChange} value={inventoryData?.patrimonio || ''} label='Patrimônio' sx={{ flex: 1, }} />
+                    <SelectList fullWidth data={rooms} valueSelection={inventoryData?.sala_id} onSelect={(value) => setInventoryData({ ...inventoryData, sala_id: value })}
                         title="Sala de aula" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
                 {inventoryData?.tipo_ativo?.includes('Computador') &&
                     <Box sx={styles.inputSection}>
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='HD' name='hd' onChange={handleChange} value={inventoryData?.hd || ''} label='HD' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Memória' name='memoria' onChange={handleChange} value={inventoryData?.memoria || ''} label='Memória' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Placa de video' name='placa_video' onChange={handleChange} value={inventoryData?.placa_video || ''} label='Placa de video' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Processador' name='processador' onChange={handleChange} value={inventoryData?.processador || ''} label='Processador' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Fonte' name='fonte' onChange={handleChange} value={inventoryData?.fonte || ''} label='Fonte' sx={{ flex: 1, }} />
+                        <TextInput placeholder='HD' name='hd' onChange={handleChange} value={inventoryData?.hd || ''} label='HD' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Memória' name='memoria' onChange={handleChange} value={inventoryData?.memoria || ''} label='Memória' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Placa de video' name='placa_video' onChange={handleChange} value={inventoryData?.placa_video || ''} label='Placa de video' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Processador' name='processador' onChange={handleChange} value={inventoryData?.processador || ''} label='Processador' sx={{ flex: 1, }} />
+                        <TextInput placeholder='Fonte' name='fonte' onChange={handleChange} value={inventoryData?.fonte || ''} label='Fonte' sx={{ flex: 1, }} />
                     </Box>
                 }
-                <TextInput disabled={!isPermissionEdit && true}
+                <TextInput
                     placeholder='Observações'
                     name='observacoes_ativo'
                     onChange={handleChange}
@@ -213,7 +202,7 @@ export default function EditInventory(props) {
                     rows={3}
                     sx={{ flex: 1, }}
                 />
-                <RadioItem disabled={!isPermissionEdit && true} valueRadio={inventoryData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setInventoryData({ ...inventoryData, ativo: parseInt(value) })} />
+                <RadioItem valueRadio={inventoryData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setInventoryData({ ...inventoryData, ativo: parseInt(value) })} />
             </ContentContainer>
         </>
     )

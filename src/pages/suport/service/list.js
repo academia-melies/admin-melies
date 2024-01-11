@@ -5,25 +5,14 @@ import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListServices(props) {
     const [servicesList, setServicesList] = useState([])
     const [filterData, setFilterData] = useState('')
     const [filterService, setFilterService] = useState('todos')
-    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if(filterService === 'todos'){
@@ -37,7 +26,6 @@ export default function ListServices(props) {
     };
 
     useEffect(() => {
-        fetchPermissions()
         getServices();
     }, []);
 
@@ -80,7 +68,7 @@ export default function ListServices(props) {
         <>
             <SectionHeader
                 title={`Serviços (${servicesList.filter(filter)?.length || '0'})`}
-                newButton={isPermissionEdit}
+                newButton
                 newButtonAction={() => router.push(`/suport/${pathname}/new`)}
             />
             <Text bold>Buscar por: </Text>

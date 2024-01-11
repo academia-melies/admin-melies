@@ -314,21 +314,20 @@ export default function ClassSheduleList(props) {
                             <Divider />
                             <ContentContainer style={{ backgroundColor: 'none', boxShadow: 'none' }}>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines} valueSelection={classDaySelect?.disciplina_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, disciplina_id: value })}
+                                    <SelectList fullWidth data={disciplines} valueSelection={classDaySelect?.disciplina_id} onSelect={(value) => setClassDaySelect({ ...classDaySelect, disciplina_id: value })}
                                         title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: '160px' }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDaySelect?.professor1} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor1: value })}
+                                    <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor1} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor1: value })}
                                         title="Professor 1" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDaySelect?.professor2} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor2: value })}
+                                    <SelectList fullWidth data={professors} valueSelection={classDaySelect?.professor2} onSelect={(value) => setClassDaySelect({ ...classDaySelect, professor2: value })}
                                         title="Professor 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
 
                                     <TextInput
-                                        disabled={!isPermissionEdit && true}
                                         fullWidth
                                         placeholder='Observação'
                                         name='observacao_dia'
@@ -344,7 +343,7 @@ export default function ClassSheduleList(props) {
                             <Box>
                                 <Divider />
                                 <Box sx={{ display: 'flex', justifyContent: 'end', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                    <Button disabled={!isPermissionEdit && true} text='atualizar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => handleEditClassDay()} />
+                                    <Button text='atualizar' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => handleEditClassDay()} />
                                 </Box>
                             </Box>
                         </ContentContainer>

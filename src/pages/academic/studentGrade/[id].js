@@ -8,10 +8,9 @@ import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { formatDate } from "../../../helpers"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditStudentGrade(props) {
-    const { setLoading, alert, colorPalette, user, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, alert, colorPalette, user } = useAppContext()
     let idUser = user?.id;
     const router = useRouter()
     const query = router.query
@@ -27,18 +26,6 @@ export default function EditStudentGrade(props) {
     const [studentData, setStudentData] = useState([])
     const [moduleDiscipline, setModuleDiscipline] = useState()
     const [showStudents, setShowStudents] = useState(false)
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-
-
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
 
     const getClass = async () => {
         try {
@@ -63,7 +50,6 @@ export default function EditStudentGrade(props) {
     }
 
     useEffect(() => {
-        fetchPermissions()
         handleItems();
     }, [id])
 
@@ -321,7 +307,7 @@ export default function EditStudentGrade(props) {
             <SectionHeader
                 perfil={classData?.nome_turma}
                 title={teachingPlan?.nome_pl || 'Plano de avaliação'}
-                saveButton={isPermissionEdit}
+                saveButton
                 saveButtonAction={newGrade ? handleCreateStudentGrade : handleEditStudentGrade}
             />
 
@@ -384,7 +370,6 @@ export default function EditStudentGrade(props) {
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 <RadioItem
-                                                                    disabled={!isPermissionEdit && true}
                                                                     valueRadio={item?.avaliacao_status}
                                                                     group={groupAvaliationStatus}
                                                                     horizontal={true}
@@ -393,17 +378,17 @@ export default function EditStudentGrade(props) {
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {item?.avaliacao_status === 1 ?
-                                                                    <TextInput disabled={!isPermissionEdit && true} name='nt_avaliacao_sem' value={item?.nt_avaliacao_sem || ''} sx={{ width: '60px' }} onChange={(e) => handleChange(item.usuario_id, 'nt_avaliacao_sem', e.target.value)} />
+                                                                    <TextInput name='nt_avaliacao_sem' value={item?.nt_avaliacao_sem || ''} sx={{ width: '60px' }} onChange={(e) => handleChange(item.usuario_id, 'nt_avaliacao_sem', e.target.value)} />
                                                                     : "-"}
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {item?.avaliacao_status === 0 ?
-                                                                    <TextInput disabled={!isPermissionEdit && true} name='nt_substitutiva' value={item?.nt_substitutiva || ''} sx={{ width: '60px' }} onChange={(e) => handleChange(item.usuario_id, 'nt_substitutiva', e.target.value)} />
+                                                                    <TextInput name='nt_substitutiva' value={item?.nt_substitutiva || ''} sx={{ width: '60px' }} onChange={(e) => handleChange(item.usuario_id, 'nt_substitutiva', e.target.value)} />
                                                                     : "-"}
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {isExam ?
-                                                                    <TextInput disabled={!isPermissionEdit && true} name='nt_exame' value={item?.nt_exame || ''} sx={{ width: '60px' }} onChange={(e) => handleChange(item.usuario_id, 'nt_exame', e.target.value)} />
+                                                                    <TextInput name='nt_exame' value={item?.nt_exame || ''} sx={{ width: '60px' }} onChange={(e) => handleChange(item.usuario_id, 'nt_exame', e.target.value)} />
                                                                     : "-"}
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
@@ -415,7 +400,7 @@ export default function EditStudentGrade(props) {
                                                                 </Box>
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <TextInput disabled={!isPermissionEdit && true} fullWidth name='obs_nt' value={item?.obs_nt || ''} sx={{ flex: 1, }} onChange={(e) => handleChange(item.usuario_id, 'obs_nt', e.target.value)} />
+                                                                <TextInput fullWidth name='obs_nt' value={item?.obs_nt || ''} sx={{ flex: 1, }} onChange={(e) => handleChange(item.usuario_id, 'obs_nt', e.target.value)} />
                                                             </td>
                                                         </tr>
                                                     );

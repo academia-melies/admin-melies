@@ -10,12 +10,11 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
 import { TablePagination } from "@mui/material"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function CatalogList(props) {
     const [cataloguesList, setCataloguesList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const router = useRouter()
@@ -30,16 +29,6 @@ export default function CatalogList(props) {
         category: 'todos',
         status: 'todos',
     })
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         type: (item) => filters.type === 'todos' || item.tipo_material === filters.type,
@@ -68,7 +57,6 @@ export default function CatalogList(props) {
 
 
     useEffect(() => {
-        fetchPermissions()
         getCatalogues();
         if (window.localStorage.getItem('list-catalog-filters')) {
             const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-catalog-filters') || null);
@@ -195,7 +183,7 @@ export default function CatalogList(props) {
         <>
             <SectionHeader
                 title={`livros, DVDs e Periódicos (${cataloguesList?.filter(filter)?.length || '0'})`}
-                newButton={isPermissionEdit}
+                newButton
                 newButtonAction={() => router.push(`/library/${pathname}/new`)}
             />
             <ContentContainer>
@@ -245,11 +233,11 @@ export default function CatalogList(props) {
                     </Box>
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
                         <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
-                            setFilters({
-                                type: 'todos',
-                                category: 'todos',
-                                status: 'todos',
-                            })
+                           setFilters({
+                            type: 'todos',
+                            category: 'todos',
+                            status: 'todos',
+                        })
                             setFilterData('')
                         }} />
                     </Box>

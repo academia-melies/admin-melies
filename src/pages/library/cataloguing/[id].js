@@ -7,10 +7,9 @@ import { CustomDropzone, RadioItem, SectionHeader, SelectList } from "../../../o
 import { useAppContext } from "../../../context/AppContext"
 import Link from "next/link"
 import { icons } from "../../../organisms/layout/Colors"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditCatalogMaterial(props) {
-    const { setLoading, alert, user, setShowConfirmationDialog, colorPalette, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, alert, user, setShowConfirmationDialog, colorPalette } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
@@ -61,16 +60,7 @@ export default function EditCatalogMaterial(props) {
     })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
+
 
     const getMaterial = async () => {
         try {
@@ -94,9 +84,6 @@ export default function EditCatalogMaterial(props) {
             return error
         }
     }
-    useEffect(() => {
-        fetchPermissions()
-    }, [])
 
     useEffect(() => {
         (async () => {
@@ -299,9 +286,9 @@ export default function EditCatalogMaterial(props) {
             <SectionHeader
                 perfil={materialData?.tipo_material}
                 title={materialData?.titulo || materialData?.nome_periodico || `Novo Material`}
-                saveButton={isPermissionEdit}
+                saveButton
                 saveButtonAction={newMaterial ? handleCreate : handleEdit}
-                deleteButton={!newMaterial && isPermissionEdit}
+                deleteButton={!newMaterial}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })}
             />
 
@@ -333,7 +320,7 @@ export default function EditCatalogMaterial(props) {
                                                     aspectRatio: '1/1',
                                                 }}>
                                             </Box>
-                                            {isPermissionEdit && <Box sx={{
+                                            <Box sx={{
                                                 backgroundSize: "cover",
                                                 backgroundRepeat: "no-repeat",
                                                 backgroundPosition: "center",
@@ -352,7 +339,7 @@ export default function EditCatalogMaterial(props) {
                                             }} onClick={(event) => {
                                                 event.preventDefault()
                                                 handleDeleteFile(file)
-                                            }} />}
+                                            }} />
                                         </Link>
                                         {file?.name_file && <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                             {decodeURIComponent(file?.name_file)}
@@ -364,7 +351,7 @@ export default function EditCatalogMaterial(props) {
                         :
                         <Text small light>Esse Material não possuí arquivos anexados. Clique no botão abaixo para adicionar arquivo.</Text>
                     }
-                    <Button disabled={!isPermissionEdit && true} secondary small text="Escolher Arquivo" style={{ maxWidth: 150, height: 30 }} onClick={() => setShowDropzone(true)} />
+                    <Button secondary small text="Escolher Arquivo" style={{ maxWidth: 150, height: 30 }} onClick={() => setShowDropzone(true)} />
                     <Divider />
 
                     <Backdrop open={showDropzone} sx={{ zIndex: 99999 }}>
@@ -388,7 +375,7 @@ export default function EditCatalogMaterial(props) {
                             </Box>
                             <Divider />
 
-                            {isPermissionEdit && <CustomDropzone
+                            <CustomDropzone
                                 txt={'Clique ou arraste para subir uma imagem de capa.'}
                                 callback={async (file) => {
                                     if (file.status === 201) {
@@ -412,110 +399,110 @@ export default function EditCatalogMaterial(props) {
                                         padding: '50px 280px'
                                     }
                                 }}
-                            />}
+                            />
                         </ContentContainer>
                     </Backdrop>
 
                 </Box>
-                <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupMaterials} valueSelection={materialData?.tipo_material || ''} onSelect={(value) => setMaterialData({ ...materialData, tipo_material: value })}
+                <SelectList fullWidth data={groupMaterials} valueSelection={materialData?.tipo_material || ''} onSelect={(value) => setMaterialData({ ...materialData, tipo_material: value })}
                     title="Tipo de material:" filterOpition="value" sx={{ color: colorPalette.textColor, maxWidth: 450 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
                 <Box sx={styles.inputSection}>
-                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupCategory(materialData?.tipo_material)} valueSelection={materialData?.categoria} onSelect={(value) => setMaterialData({ ...materialData, categoria: value })}
+                    <SelectList fullWidth data={groupCategory(materialData?.tipo_material)} valueSelection={materialData?.categoria} onSelect={(value) => setMaterialData({ ...materialData, categoria: value })}
                         title="Categoria:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
                 <>
                     <Box sx={styles.inputSection}>
-                        {materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)' && <TextInput disabled={!isPermissionEdit && true} name='issn' onChange={handleChange} value={materialData?.issn || ''} label='ISSN' sx={{ flex: 1, }} />}
-                        {materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)' && <TextInput disabled={!isPermissionEdit && true} name='nome_periodico' onChange={handleChange} value={materialData?.nome_periodico || ''} label='Nome do periódico' sx={{ flex: 1, }} />}
+                        {materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)' && <TextInput name='issn' onChange={handleChange} value={materialData?.issn || ''} label='ISSN' sx={{ flex: 1, }} />}
+                        {materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)' && <TextInput name='nome_periodico' onChange={handleChange} value={materialData?.nome_periodico || ''} label='Nome do periódico' sx={{ flex: 1, }} />}
                     </Box>
                     <Box sx={styles.inputSection}>
-                        {materialData?.tipo_material === 'Livros | Obra de Referência' && <TextInput disabled={!isPermissionEdit && true} name='isbn' onChange={handleChange} value={materialData?.isbn || ''} label='ISBN' sx={{ flex: 1, }} />}
+                        {materialData?.tipo_material === 'Livros | Obra de Referência' && <TextInput name='isbn' onChange={handleChange} value={materialData?.isbn || ''} label='ISBN' sx={{ flex: 1, }} />}
                         {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') &&
-                            <TextInput disabled={!isPermissionEdit && true} name='n_classificacao' onChange={handleChange} value={materialData?.n_classificacao || ''} label='N° de classificação/CDD:' sx={{ flex: 1, }} />}
-                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='cutter' onChange={handleChange} value={materialData?.cutter || ''} label='Cutter' sx={{ flex: 1, }} />}
+                            <TextInput name='n_classificacao' onChange={handleChange} value={materialData?.n_classificacao || ''} label='N° de classificação/CDD:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='cutter' onChange={handleChange} value={materialData?.cutter || ''} label='Cutter' sx={{ flex: 1, }} />}
                     </Box>
-                    {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='ator_cant_autor' onChange={handleChange} value={materialData?.ator_cant_autor || ''} label='Ator(es): Cantor(es): Autor(es):' sx={{ flex: 1, }} multiline
+                    {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='ator_cant_autor' onChange={handleChange} value={materialData?.ator_cant_autor || ''} label='Ator(es): Cantor(es): Autor(es):' sx={{ flex: 1, }} multiline
                         maxRows={4}
                         rows={3} />}
-                    {materialData?.tipo_material === 'Livros | Obra de Referência' && <TextInput disabled={!isPermissionEdit && true} name='autor_sec' onChange={handleChange} value={materialData?.autor_sec || ''} label='Autor secundário:' sx={{ flex: 1, }} />}
-                    {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='titulo' onChange={handleChange} value={materialData?.titulo || ''} label='Título ' sx={{ flex: 1, }} />}
+                    {materialData?.tipo_material === 'Livros | Obra de Referência' && <TextInput name='autor_sec' onChange={handleChange} value={materialData?.autor_sec || ''} label='Autor secundário:' sx={{ flex: 1, }} />}
+                    {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='titulo' onChange={handleChange} value={materialData?.titulo || ''} label='Título ' sx={{ flex: 1, }} />}
                     <Box sx={styles.inputSection}>
                         {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM' || materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)')
-                            && <TextInput disabled={!isPermissionEdit && true} name='indicacao_resp' onChange={handleChange} value={materialData?.indicacao_resp || ''} label='Indicações de responsabilidade:' sx={{ flex: 1, }} />}
-                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='creditos' onChange={handleChange} value={materialData?.creditos || ''} label='Créditos:' sx={{ flex: 1, }} />}
-                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='produtor' onChange={handleChange} value={materialData?.produtor || ''} label='Produtor:' sx={{ flex: 1, }} />}
+                            && <TextInput name='indicacao_resp' onChange={handleChange} value={materialData?.indicacao_resp || ''} label='Indicações de responsabilidade:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='creditos' onChange={handleChange} value={materialData?.creditos || ''} label='Créditos:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='produtor' onChange={handleChange} value={materialData?.produtor || ''} label='Produtor:' sx={{ flex: 1, }} />}
                     </Box>
                     <Box sx={styles.inputSection}>
-                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='distribuidor' onChange={handleChange} value={materialData?.distribuidor || ''} label='Distribuidor:' sx={{ flex: 1, }} />}
-                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='legenda' onChange={handleChange} value={materialData?.legenda || ''} label='Legenda:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='distribuidor' onChange={handleChange} value={materialData?.distribuidor || ''} label='Distribuidor:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='legenda' onChange={handleChange} value={materialData?.legenda || ''} label='Legenda:' sx={{ flex: 1, }} />}
 
                     </Box>
                     <Box sx={styles.inputSection}>
-                        <TextInput disabled={!isPermissionEdit && true} name='idioma' onChange={handleChange} value={materialData?.idioma || ''} label='Idioma' sx={{ flex: 1, }} />
-                        {materialData?.tipo_material === 'Livros | Obra de Referência' && <TextInput disabled={!isPermissionEdit && true} name='subtitulo' onChange={handleChange} value={materialData?.subtitulo || ''} label='Título/Subtítulo:' sx={{ flex: 1, }} />}
-                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='edicao' onChange={handleChange} value={materialData?.edicao || ''} label='Edição ' sx={{ flex: 1, }} />}
+                        <TextInput name='idioma' onChange={handleChange} value={materialData?.idioma || ''} label='Idioma' sx={{ flex: 1, }} />
+                        {materialData?.tipo_material === 'Livros | Obra de Referência' && <TextInput name='subtitulo' onChange={handleChange} value={materialData?.subtitulo || ''} label='Título/Subtítulo:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='edicao' onChange={handleChange} value={materialData?.edicao || ''} label='Edição ' sx={{ flex: 1, }} />}
                     </Box>
                     <Box sx={styles.inputSection}>
-                        <TextInput disabled={!isPermissionEdit && true} name='local_publ' onChange={handleChange} value={materialData?.local_publ || ''} label='Lugar de publicação:' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} name='dt_publicacao' onChange={handleChange} type="date" value={(materialData?.dt_publicacao)?.split('T')[0] || ''} label='Data da publicação:' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} name='editora' onChange={handleChange} value={materialData?.editora || ''} label='Editora:' sx={{ flex: 1, }} />
+                        <TextInput name='local_publ' onChange={handleChange} value={materialData?.local_publ || ''} label='Lugar de publicação:' sx={{ flex: 1, }} />
+                        <TextInput name='dt_publicacao' onChange={handleChange} type="date" value={(materialData?.dt_publicacao)?.split('T')[0] || ''} label='Data da publicação:' sx={{ flex: 1, }} />
+                        <TextInput name='editora' onChange={handleChange} value={materialData?.editora || ''} label='Editora:' sx={{ flex: 1, }} />
                     </Box>
-                    <TextInput disabled={!isPermissionEdit && true} name='detalhes_fisicos' onChange={handleChange} value={materialData?.detalhes_fisicos || ''} label='Detalhes físicos:' sx={{ flex: 1, }}
+                    <TextInput name='detalhes_fisicos' onChange={handleChange} value={materialData?.detalhes_fisicos || ''} label='Detalhes físicos:' sx={{ flex: 1, }}
                         multiline
                         maxRows={8}
                         rows={3}
                     />
                     <Box sx={styles.inputSection}>
-                        <TextInput disabled={!isPermissionEdit && true} name='dimensoes' onChange={handleChange} value={materialData?.dimensoes || ''} label='Dimensões:' sx={{ flex: 1, }} />
-                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='serie_col' onChange={handleChange} value={materialData?.serie_col || ''} label='Série/Coleção:' sx={{ flex: 1, }} />}
-                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='volume' onChange={handleChange} value={materialData?.volume || ''} label='Volume:' sx={{ flex: 1, }} />}
-                        {materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)' && <TextInput disabled={!isPermissionEdit && true} name='periodicidade' onChange={handleChange} value={materialData?.periodicidade || ''} label='Periodicidade' sx={{ flex: 1, }} />}
+                        <TextInput name='dimensoes' onChange={handleChange} value={materialData?.dimensoes || ''} label='Dimensões:' sx={{ flex: 1, }} />
+                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='serie_col' onChange={handleChange} value={materialData?.serie_col || ''} label='Série/Coleção:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='volume' onChange={handleChange} value={materialData?.volume || ''} label='Volume:' sx={{ flex: 1, }} />}
+                        {materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)' && <TextInput name='periodicidade' onChange={handleChange} value={materialData?.periodicidade || ''} label='Periodicidade' sx={{ flex: 1, }} />}
                     </Box>
-                    <TextInput disabled={!isPermissionEdit && true} name='nota_conteudo' onChange={handleChange} value={materialData?.nota_conteudo || ''} label='Nota de conteudo:' sx={{ flex: 1, }}
+                    <TextInput name='nota_conteudo' onChange={handleChange} value={materialData?.nota_conteudo || ''} label='Nota de conteudo:' sx={{ flex: 1, }}
                         multiline
                         maxRows={8}
                         rows={3}
                     />
-                    <TextInput disabled={!isPermissionEdit && true} name='nota_gerais' onChange={handleChange} value={materialData?.nota_gerais || ''} label='Notas gerais:' sx={{ flex: 1, }}
+                    <TextInput name='nota_gerais' onChange={handleChange} value={materialData?.nota_gerais || ''} label='Notas gerais:' sx={{ flex: 1, }}
                         multiline
                         maxRows={8}
                         rows={3}
                     />
-                    <TextInput disabled={!isPermissionEdit && true} name='assunto' onChange={handleChange} value={materialData?.assunto || ''} label='Assunto:' sx={{ flex: 1, }}
+                    <TextInput name='assunto' onChange={handleChange} value={materialData?.assunto || ''} label='Assunto:' sx={{ flex: 1, }}
                         multiline
                         maxRows={8}
                         rows={3}
                     />
-                    <TextInput disabled={!isPermissionEdit && true} name='resumo' onChange={handleChange} value={materialData?.resumo || ''} label='Resumo:' sx={{ flex: 1, }}
+                    <TextInput name='resumo' onChange={handleChange} value={materialData?.resumo || ''} label='Resumo:' sx={{ flex: 1, }}
                         multiline
                         maxRows={8}
                         rows={5}
                     />
                     <Box sx={styles.inputSection}>
-                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='duracao' onChange={handleChange} value={materialData?.duracao || ''} label='Duração:' sx={{ flex: 1, }} />}
-                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='genero' onChange={handleChange} value={materialData?.genero || ''} label='Gênero:' sx={{ flex: 1, }} />}
-                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='publico' onChange={handleChange} value={materialData?.publico || ''} label='Público:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='duracao' onChange={handleChange} value={materialData?.duracao || ''} label='Duração:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='genero' onChange={handleChange} value={materialData?.genero || ''} label='Gênero:' sx={{ flex: 1, }} />}
+                        {(materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput name='publico' onChange={handleChange} value={materialData?.publico || ''} label='Público:' sx={{ flex: 1, }} />}
                     </Box>
                     <Box sx={styles.inputSection}>
-                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)') && <TextInput disabled={!isPermissionEdit && true} name='endereco_eletr' onChange={handleChange} value={materialData?.endereco_eletr || ''} label='Endereço eletrônico:' sx={{ flex: 1, }} />}
-                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupCNPQ} valueSelection={materialData?.area_cnpq} onSelect={(value) => setMaterialData({ ...materialData, area_cnpq: value })}
+                        {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)') && <TextInput name='endereco_eletr' onChange={handleChange} value={materialData?.endereco_eletr || ''} label='Endereço eletrônico:' sx={{ flex: 1, }} />}
+                        <SelectList fullWidth data={groupCNPQ} valueSelection={materialData?.area_cnpq} onSelect={(value) => setMaterialData({ ...materialData, area_cnpq: value })}
                             title="Área do Conhecimento/CNPq:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
                     </Box>
                     <Box sx={styles.inputSection}>
-                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={courses} valueSelection={materialData?.curso_id} onSelect={(value) => setMaterialData({ ...materialData, curso_id: value })}
+                        <SelectList fullWidth data={courses} valueSelection={materialData?.curso_id} onSelect={(value) => setMaterialData({ ...materialData, curso_id: value })}
                             title="Curso:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold', flex: 1 }}
                         />
-                        <TextInput disabled={!isPermissionEdit && true} name='qnt_exempl' onChange={handleChange} type="number" value={materialData?.qnt_exempl || ''} label='Quantidade de exemplares: ' sx={{ minWidth: 300 }} />
+                        <TextInput name='qnt_exempl' onChange={handleChange} type="number" value={materialData?.qnt_exempl || ''} label='Quantidade de exemplares: ' sx={{ minWidth: 300 }} />
                     </Box>
                 </>
-                <RadioItem disabled={!isPermissionEdit && true} valueRadio={materialData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setMaterialData({ ...materialData, ativo: parseInt(value) })} />
+                <RadioItem valueRadio={materialData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setMaterialData({ ...materialData, ativo: parseInt(value) })} />
             </ContentContainer>
         </>
     )

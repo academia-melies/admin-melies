@@ -6,24 +6,13 @@ import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { useReactToPrint } from "react-to-print"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListAdministrativeFeesEdit(props) {
     const [ratesList, setRatesList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, alert, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette, alert } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
@@ -40,7 +29,6 @@ export default function ListAdministrativeFeesEdit(props) {
     // }
 
     useEffect(() => {
-        fetchPermissions()
         getFees();
     }, []);
 
@@ -81,7 +69,7 @@ export default function ListAdministrativeFeesEdit(props) {
         <>
             <SectionHeader
                 title={`Taxas Administrativa (${ratesList.filter(filter)?.length || '0'})`}
-                newButton={isPermissionEdit}
+                newButton
                 newButtonAction={() => router.push(`/financial/${pathname}/new`)}
             />
             <Text bold>Buscar por: </Text>
@@ -107,7 +95,7 @@ export default function ListAdministrativeFeesEdit(props) {
                     <Text bold>Não conseguimos encontrar Taxas Administrativas</Text>
                 </Box>
             }
-            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.8, flex: 1, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.8, flex: 1, alignItems: 'flex-end', justifyContent: 'flex-end'}}>
                 <Text bold>Exportar:</Text>
                 <Box sx={{
                     backgroundImage: `url('/icons/pdf_icon.png')`,
@@ -121,7 +109,7 @@ export default function ListAdministrativeFeesEdit(props) {
                         opacity: 0.8,
                         cursor: 'pointer'
                     }
-                }} onClick={handleGeneratePdf} />
+                }} onClick={handleGeneratePdf}/>
             </Box>
         </>
     )

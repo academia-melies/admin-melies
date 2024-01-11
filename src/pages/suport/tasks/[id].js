@@ -10,10 +10,9 @@ import { formatTimeStamp } from "../../../helpers"
 import { icons } from "../../../organisms/layout/Colors"
 import Link from "next/link"
 import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditTask(props) {
-    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
     const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -36,17 +35,6 @@ export default function EditTask(props) {
     const [interationsTask, setInterationsTask] = useState([])
     const [participantsTask, setParticipantsTask] = useState([])
     const themeApp = useTheme()
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const fetchPermissions = async () => {
-        try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            console.log(actions)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const priorityColor = (data) => ((data === 'Alta' && 'yellow') ||
         (data === 'Urgente' && 'red') ||
@@ -132,7 +120,6 @@ export default function EditTask(props) {
     }, [id]);
 
     useEffect(() => {
-        fetchPermissions()
         listUsers()
     }, [])
 
@@ -513,7 +500,7 @@ export default function EditTask(props) {
                                             return (
                                                 <Box key={index} sx={{ display: 'flex', gap: 1, maxWidth: 180, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
                                                     <Text small>{item?.nome}</Text>
-                                                    {isPermissionEdit && <Box sx={{
+                                                    <Box sx={{
                                                         ...styles.menuIcon,
                                                         width: 12,
                                                         height: 12,
@@ -525,10 +512,10 @@ export default function EditTask(props) {
                                                             opacity: 0.8,
                                                             cursor: 'pointer'
                                                         }
-                                                    }} onClick={() => handleDeleteParticipant(item?.id_participante_ch, item?.nome)} />}
-
+                                                    }} onClick={() => handleDeleteParticipant(item?.id_participante_ch, item?.nome)} />
+                                                    
                                                 </Box>
-
+                                                
                                             )
                                         })}
                                         <Text>{''}</Text>
@@ -604,10 +591,10 @@ export default function EditTask(props) {
                                         setStatusAlteration({ finalizado: false, reaberto: true })
                                         setAlterationTask(true)
                                     }} />}
-                                    <Button disabled={!isPermissionEdit && true} secondary text="Alterar Prioridade" small style={{ height: 35 }} onClick={() => setShowPriorityAltern(true)} />
-                                    <Button disabled={!isPermissionEdit && true} secondary text="Alterar Responsável" small style={{ height: 35 }} onClick={() => setShowAlternUsers({ participant: false, responsible: true })} />
-                                    <Button disabled={!isPermissionEdit && true} secondary text="Adicionar Participante" small style={{ height: 35 }} onClick={() => setShowAlternUsers({ responsible: false, participant: true })} />
-                                    <Button disabled={!isPermissionEdit && true} text="Excluir Tarefa" small style={{ height: 35 }}
+                                    <Button secondary text="Alterar Prioridade" small style={{ height: 35 }} onClick={() => setShowPriorityAltern(true)} />
+                                    <Button secondary text="Alterar Responsável" small style={{ height: 35 }} onClick={() => setShowAlternUsers({ participant: false, responsible: true })} />
+                                    <Button secondary text="Adicionar Participante" small style={{ height: 35 }} onClick={() => setShowAlternUsers({ responsible: false, participant: true })} />
+                                    <Button text="Excluir Tarefa" small style={{ height: 35 }}
                                         onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteTask })} />
 
                                 </ContentContainer>
@@ -677,7 +664,7 @@ export default function EditTask(props) {
                                 }} onClick={() => setShowAlternUsers({ responsible: false, participant: false })} />
                             </Box>
                             <Divider distance={0} />
-                            <Box sx={{ display: 'flex', marginTop: 2, flexDirection: 'column', alignItems: 'center', justifyContent: 'start', maxHeight: 280, overflow: 'auto', borderRadius: 2 }}>
+                            <Box sx={{ display: 'flex', marginTop: 2,  flexDirection: 'column', alignItems: 'center', justifyContent: 'start', maxHeight: 280, overflow: 'auto', borderRadius: 2 }}>
                                 {responsibles?.map((item, index) => {
                                     return (
                                         <Box key={index} sx={{

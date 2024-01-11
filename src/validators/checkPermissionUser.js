@@ -1,21 +1,18 @@
 import { api } from "../api/api";
 
-export const checkUserPermissions = async (router, userPermissions, menuItems) => {
+export const checkUserPermissions = async (router, userPermissions, menuItemsList) => {
+
 
     const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
     const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
-    let menuItemsList = menuItems;
     let permissionsItem;
     let itemMenuId;
 
-    if (menuItemsList?.length < 1) {
-        menuItemsList = await handleMenuItems()
-    }
-    const menuItem = menuItemsList?.find(item => item?.items.some(subitem => subitem?.to?.includes(`/${menu}/${subMenu}`)));
+    const menuItem = menuItemsList.find(item => item.items.some(subitem => subitem.to.includes(`/${menu}/${subMenu}`)));
 
     if (menuItem && menuItem.items) {
-        const subMenuItem = menuItem?.items?.find(subitem => subitem?.to?.includes(`/${menu}/${subMenu}`));
+        const subMenuItem = menuItem.items.find(subitem => subitem.to.includes(`/${menu}/${subMenu}`));
         itemMenuId = subMenuItem?.id_item;
         permissionsItem = subMenuItem.permissoes;
     }
@@ -29,15 +26,34 @@ export const checkUserPermissions = async (router, userPermissions, menuItems) =
     ) : false;
 
     return userHasEditPermission
+
+    // groupPermissionId = userHasPermissions ? userPermissions.find(item => permissionsItem.some(perm => perm.grupo_perm_id === item.id_grupo_perm)) : null;
+    // console.log(userPermissions)
+
+    // groupPermissionId = groupPermissionId?.id_grupo_perm;
+
+    // const actions = await handleActions(itemMenuId, groupPermissionId)
 }
 
-const handleMenuItems = async () => {
-    try {
-        const response = await api.get(`/menuItems`)
-        const { data } = response
-        return data
-    } catch (error) {
-        console.log(error)
-        return error
-    }
-}
+
+// const handleActions = async (itemMenuId, groupPermissionId) => {
+//     try {
+//         let isPermissionAction = {
+//             edit: false,
+//             read: false
+//         }
+
+//         console.log(itemMenuId, groupPermissionId)
+//         const response = await api.get(`/permission/screen/${groupPermissionId}/${itemMenuId}`)
+//         const { acao } = response?.data
+//         if (acao.includes(`edição`)) {
+//             isPermissionAction.edit = true;
+//         }
+//         if (acao.includes(`leitura`)) {
+//             isPermissionAction.read = true;
+//         }
+//         return isPermissionAction
+//     } catch (error) {
+//         return false
+//     }
+// }

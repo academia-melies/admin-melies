@@ -152,6 +152,8 @@ export default function ListStudents(props) {
         <>
             <SectionHeader
                 title={`Alunos (${usersList.filter(filter)?.length})`}
+                newButton
+                newButtonAction={() => router.push(`/academic/${pathname}/new`)}
             />
             <ContentContainer>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
