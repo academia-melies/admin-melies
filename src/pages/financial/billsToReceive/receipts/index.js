@@ -7,11 +7,12 @@ import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
 import { formatTimeStamp } from "../../../../helpers"
 import { TablePagination } from "@mui/material"
+import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 
 export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [filterPayment, setFilterPayment] = useState('todos')
     const [installmentsSelected, setInstallmentsSelected] = useState(null);
@@ -19,6 +20,16 @@ export default function ListReceipts(props) {
     const router = useRouter()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     const filter = (item) => {
         const normalizeString = (str) => {
             return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -45,6 +56,7 @@ export default function ListReceipts(props) {
 
 
     useEffect(() => {
+        fetchPermissions()
         getInstallments();
     }, []);
 
@@ -297,6 +309,7 @@ export default function ListReceipts(props) {
                                 <th style={{ padding: '8px 0px', display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
                                     Selecionar
                                     <CheckBoxComponent
+                                        disabled={!isPermissionEdit && true}
                                         boxGroup={[{ value: 'allSelect' }]}
                                         valueChecked={'select'}
                                         horizontal={true}
@@ -336,6 +349,7 @@ export default function ListReceipts(props) {
                                     <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary }}>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                             <CheckBoxComponent
+                                                disabled={!isPermissionEdit && true}
                                                 boxGroup={groupSelect(item?.id_parcela_matr)}
                                                 valueChecked={installmentsSelected}
                                                 horizontal={true}
@@ -356,10 +370,10 @@ export default function ListReceipts(props) {
                                             {item?.aluno || '-'}
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            <TextInput name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} />
+                                            <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} />
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            <TextInput name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} />
+                                            <TextInput disabled={!isPermissionEdit && true} name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} />
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                             {formatter.format(item?.valor_parcela)}
@@ -378,6 +392,7 @@ export default function ListReceipts(props) {
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                             <TextInput
+                                                disabled={!isPermissionEdit && true}
                                                 name='obs_pagamento'
                                                 onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)}
                                                 value={item?.obs_pagamento || ''}
@@ -407,7 +422,7 @@ export default function ListReceipts(props) {
                                             {item?.referenceId || '-'}
                                         </td>
                                         <td style={{ fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            <RadioItem valueRadio={item?.parc_protestada} group={groupProstated} horizontal={true} onSelect={(value) => handleChangeInstallmentDate(item?.id_parcela_matr, 'parc_protestada', parseInt(value))} />
+                                            <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.parc_protestada} group={groupProstated} horizontal={true} onSelect={(value) => handleChangeInstallmentDate(item?.id_parcela_matr, 'parc_protestada', parseInt(value))} />
                                         </td>
                                     </tr>
                                 );
@@ -422,7 +437,7 @@ export default function ListReceipts(props) {
                 </Box>
             }
 
-            {installmentsSelected && <>
+            {(installmentsSelected && isPermissionEdit) && <>
                 <Box sx={{ display: 'flex', position: 'fixed', left: 280, bottom: 20, display: 'flex', gap: 2 }}>
                     <Button text="Baixar" style={{ width: '120px', height: '40px' }} />
                     <Button secondary text="Restaurar parcelas" style={{ width: '200px', height: '40px', backgroundColor: colorPalette.primary }} />

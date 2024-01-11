@@ -6,6 +6,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
 import { api } from "../../../api/api"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListInventory(props) {
     const [inventoryList, setInventoryList] = useState([])
@@ -15,9 +16,19 @@ export default function ListInventory(props) {
     const [showResume, setShowResume] = useState(false);
     const [lengthData, setLengthData] = useState()
     const [rooms, setRooms] = useState([])
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
@@ -35,6 +46,7 @@ export default function ListInventory(props) {
     };
 
     useEffect(() => {
+        fetchPermissions()
         getInventory();
         listSchoolRooms()
     }, []);
@@ -88,7 +100,7 @@ export default function ListInventory(props) {
         <>
             <SectionHeader
                 title={`Inventário (${inventoryList?.filter(filter).reduce((total, item) => total + item.items_inventario.length, 0) || '0'})`}
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/suport/${pathname}/new`)}
             />
             <TableResume
@@ -200,7 +212,7 @@ export const TableResume = (props) => {
     } = props
 
     const { setLoading, colorPalette } = useAppContext()
-    
+
 
     return (
         <ContentContainer sx={{ display: 'flex', flexDirection: 'column', maxWidth: '400px', gap: 2.5 }}>
