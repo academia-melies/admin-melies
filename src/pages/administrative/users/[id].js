@@ -31,6 +31,7 @@ export default function EditUser() {
         estado_civil: null,
         conjuge: null,
         email_melies: null,
+        email_pessoal: null,
         nome_pai: null,
         nome_mae: null,
         escolaridade: null,
@@ -686,11 +687,38 @@ export default function EditUser() {
     };
 
     const handleChangeDependent = (value) => {
+
+        if (value.target.name?.includes('cpf_dependente')) {
+            let str = value.target.value;
+            value.target.value = formatCPF(str)
+        }
+
+
         setDependent((prevValues) => ({
             ...prevValues,
             [value.target.name]: value.target.value,
         }))
     };
+
+    const handleChangeDependentArray = (event, fieldName, id_dependente) => {
+
+        if (event.target.name?.includes('cpf_dependente')) {
+            let str = event.target.value;
+            event.target.value = formatCPF(str)
+        }
+
+        const newValue = event.target.value;
+
+        setArrayDependent((prevArray) => {
+            const newArray = prevArray.map((item) =>
+                item.id_dependente === id_dependente
+                    ? { ...item, [fieldName]: newValue }
+                    : item
+            );
+            return newArray;
+        });
+    };
+
 
     const handleChangeDisciplineProfessor = (value) => {
         setDisciplinesProfessor((prevValues) => ({
@@ -946,6 +974,9 @@ export default function EditUser() {
                 if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
                     await api.patch(`/officeHours/update`, { officeHours })
                 }
+                if (arrayDependent?.length > 0) {
+                    await api.patch(`/user/dependent/update`, { arrayDependent })
+                }
                 if (response?.status === 201) {
                     alert.success('Usuário atualizado com sucesso.');
                     handleItems()
@@ -1020,7 +1051,7 @@ export default function EditUser() {
 
     const addDependent = () => {
         setArrayDependent((prevArray) => [...prevArray, { nome_dependente: dependent.nome_dependente }])
-        setDependent({ nome_dependente: '' })
+        setDependent({ nome_dependente: '', cpf_dependente: '', dt_nasc_dependente: '' })
     }
 
     const deleteDependent = (index) => {
@@ -1059,22 +1090,6 @@ export default function EditUser() {
             }
         } catch (error) {
             alert.error('Ocorreu um erro ao remover a Habilidade selecionada.');
-            console.log(error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const handleEditDependent = async (id_dependente) => {
-        setLoading(true)
-        try {
-            const response = await api.patch(`/user/dependent/update/${id_dependente}`, { dependent })
-            if (response?.status === 201) {
-                alert.success('Dependente Atualizado')
-                setDependent({})
-                handleItems()
-            }
-        } catch (error) {
             console.log(error)
         } finally {
             setLoading(false)
@@ -1296,6 +1311,7 @@ export default function EditUser() {
         { label: 'Separado', value: 'Separado' },
         { label: 'Divorciado', value: 'Divorciado' },
         { label: 'Viúvo', value: 'Viúvo' },
+        { label: 'União estável', value: 'União estável' }
     ]
 
     const groupEscolaridade = [
@@ -1933,16 +1949,21 @@ export default function EditUser() {
                         }
 
                         <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.estado_civil} group={groupCivil} title="Estado Cívil *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, estado_civil: value })} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='E-mail Méliès' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail Méliès' />
-
+                        <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                            <TextInput fullWidth disabled={!isPermissionEdit && true} placeholder='E-mail Méliès' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail Méliès' />
+                            <TextInput fullWidth disabled={!isPermissionEdit && true} placeholder='E-mail Pessoal' name='email_pessoal' onChange={handleChange} value={userData?.email_pessoal || ''} label='E-mail Pessoal' />
+                        </Box>
                         <Box sx={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <Text bold style={{ padding: '0px 0px 0px 10px' }}>Dependentes</Text>
                             {arrayDependent.map((dep, index) => (
                                 <>
 
                                     <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente-${index}`} onChange={handleChangeDependent} value={dep.nome_dependente} sx={{ flex: 1 }} />
-
+                                        <FileInput left>
+                                            <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'nome_dependente', dep?.id_dependente)} value={dep.nome_dependente} sx={{ flex: 1 }} />
+                                            <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'cpf_dependente', dep?.id_dependente)} value={dep.cpf_dependente} sx={{ flex: 1 }} />
+                                            <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'dt_nasc_dependente', dep?.id_dependente)} type="date" value={(dep.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
+                                        </FileInput>
                                         {isPermissionEdit && <Box sx={{
                                             backgroundSize: 'cover',
                                             backgroundRepeat: 'no-repeat',
@@ -1958,11 +1979,14 @@ export default function EditUser() {
                                         }} onClick={() => {
                                             newUser ? deleteDependent(index) : handleDeleteDependent(dep?.id_dependente)
                                         }} />}
+
                                     </Box>
                                 </>
                             ))}
                             {isPermissionEdit && <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente`} onChange={handleChangeDependent} value={dependent.nome_dependente} sx={{ flex: 1 }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente`} onChange={handleChangeDependent} value={dependent?.nome_dependente} sx={{ flex: 1 }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente`} onChange={handleChangeDependent} value={dependent?.cpf_dependente} sx={{ flex: 1 }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente`} onChange={handleChangeDependent} type="date" value={(dependent?.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
                                 <Box sx={{
                                     backgroundSize: 'cover',
                                     backgroundRepeat: 'no-repeat',

@@ -263,7 +263,7 @@ export default function ListTasks(props) {
                     />
                 </Box>
             </ContentContainer >
-            <Table_V1 data={sortTasks().filter(filter)} columns={column} columnId={'id_chamado'} columnActive={false} filters={filtersOrders} onPress={(value) => setFiltersOrders(value)} onFilter />
+            <Table_V1 data={sortTasks().filter(filter)} columns={column} columnId={'id_chamado'} columnActive={false} filters={filtersOrders} onPress={(value) => setFiltersOrders(value)} onFilter targetBlank/>
         </>
     )
 }
