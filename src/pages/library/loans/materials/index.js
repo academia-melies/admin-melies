@@ -8,11 +8,12 @@ import { SelectList } from "../../../../organisms/select/SelectList"
 import { api } from "../../../../api/api"
 import { TablePagination } from "@mui/material"
 import { formatTimeStamp, getDialogPosition } from "../../../../helpers"
+import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 
 export default function ListMaterialsLoans(props) {
     const [loansData, setLoansData] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [page, setPage] = useState(0);
@@ -27,7 +28,16 @@ export default function ListMaterialsLoans(props) {
         search: '',
         status: 'todos'
     })
-
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     const reducer = (prev, next) => {
         let dialogPosition = null
         if (next.event) dialogPosition = getDialogPosition(next.event, 200);
@@ -58,6 +68,7 @@ export default function ListMaterialsLoans(props) {
     };
 
     useEffect(() => {
+        fetchPermissions()
         getLoans();
         if (window.localStorage.getItem('list-loans-filters')) {
             const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-loans-filters') || null);
@@ -277,7 +288,7 @@ export default function ListMaterialsLoans(props) {
             </ContentContainer>
 
             {loansData?.filter(filter)?.length > 0 ?
-                <TableLoans loansData={sortLoans()?.filter(filter).slice(startIndex, endIndex)} setFiltersField={setFiltersField} getLoans={getLoans}
+                <TableLoans isPermissionEdit={isPermissionEdit} loansData={sortLoans()?.filter(filter).slice(startIndex, endIndex)} setFiltersField={setFiltersField} getLoans={getLoans}
                     showConfirmationDialog={showConfirmationDialog} setShowConfirmationDialog={setShowConfirmationDialog} />
                 // <Table_V1 data={sortLoans()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_emprestimo'} filters={filters} onPress={(value) => setFilters(value)} onFilter route={`/library/loans/materials`} />
                 :
@@ -300,7 +311,7 @@ export default function ListMaterialsLoans(props) {
 }
 
 
-const TableLoans = ({ loansData = [], getLoans, setFiltersField, setShowConfirmationDialog, showConfirmationDialog }) => {
+const TableLoans = ({ isPermissionEdit, loansData = [], getLoans, setFiltersField, setShowConfirmationDialog, showConfirmationDialog }) => {
 
     const { setLoading, colorPalette, theme, alert } = useAppContext()
 
@@ -400,14 +411,14 @@ const TableLoans = ({ loansData = [], getLoans, setFiltersField, setShowConfirma
                                                 }}
                                             >
                                                 <Box sx={{ display: 'flex', backgroundColor: priorityColor(item?.status_emprestimo), padding: '5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                <Text small bold style={{textAlign: 'start'}}>{item?.status_emprestimo}</Text>
+                                                <Text small bold style={{ textAlign: 'start' }}>{item?.status_emprestimo}</Text>
                                             </Box>
                                         </td>
                                         <td style={{ padding: '8px 10px', backgroundColor: getRowBackground(index), textAlign: 'center' }}>
-                                            {item?.status_emprestimo === 'emprestado' ? <Button secondary small text="Renovar" style={{ height: 30, borderRadius: 2 }} /> : '-'}
+                                            {item?.status_emprestimo === 'emprestado' ? <Button disabled={!isPermissionEdit && true} secondary small text="Renovar" style={{ height: 30, borderRadius: 2 }} /> : '-'}
                                         </td>
                                         <td style={{ padding: '8px 10px', backgroundColor: getRowBackground(index), textAlign: 'center' }}>
-                                            {item?.status_emprestimo === 'emprestado' ? <Button small text="Devolver" style={{ height: 30, borderRadius: 2 }} onClick={(event) =>
+                                            {item?.status_emprestimo === 'emprestado' ? <Button disabled={!isPermissionEdit && true} small text="Devolver" style={{ height: 30, borderRadius: 2 }} onClick={(event) =>
                                                 setShowConfirmationDialog({
                                                     active: true,
                                                     event,

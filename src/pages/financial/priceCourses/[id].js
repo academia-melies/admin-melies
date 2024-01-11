@@ -10,9 +10,10 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
 import { formatTimeStamp, formatValueReal } from "../../../helpers"
 import { holidaysArray } from "../../../organisms/holidays/holidays"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditPricesCourse(props) {
-    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, theme } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, theme, userPermissions, menuItemsList } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
@@ -48,7 +49,16 @@ export default function EditPricesCourse(props) {
     const [menuSelected, setMenuSelected] = useState('Curso')
     const [showHistoricClassId, setShowHistoricClassId] = useState()
     const [arrayHistoricValuesClass, setArrayHistoricValuesClass] = useState([])
-
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
 
     const toggleClassTable = (index) => {
@@ -220,6 +230,7 @@ export default function EditPricesCourse(props) {
     }, [id])
 
     useEffect(() => {
+        fetchPermissions()
         listCourses()
     }, [])
 
@@ -834,9 +845,9 @@ export default function EditPricesCourse(props) {
             <SectionHeader
                 perfil={getPerfil}
                 title={(courses.filter(item => item.value === pricesCourseData?.curso_id).map(item => item.label)) || `Nova Taxa`}
-                saveButton={menuSelected === 'Curso' ? true : false}
+                saveButton={(menuSelected === 'Curso' && isPermissionEdit) ? true : false}
                 saveButtonAction={newPrice ? handleCreatePrices : handleEditPrices}
-                deleteButton={!newPrice && menuSelected === 'Curso'}
+                deleteButton={(!newPrice && menuSelected === 'Curso' && isPermissionEdit)}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeletePrices })}
             />
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
@@ -873,11 +884,11 @@ export default function EditPricesCourse(props) {
                             <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Valores do Curso</Text>
                         </Box>
                         <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                            <SelectList fullWidth data={courses} valueSelection={pricesCourseData?.curso_id} onSelect={(value) => setPricesCourseData({ ...pricesCourseData, curso_id: value })}
+                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={courses} valueSelection={pricesCourseData?.curso_id} onSelect={(value) => setPricesCourseData({ ...pricesCourseData, curso_id: value })}
                                 title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             />
-                            <TextInput
+                            <TextInput disabled={!isPermissionEdit && true}
                                 placeholder='0.00'
                                 name='valor_total_curso'
                                 type="coin"
@@ -886,11 +897,11 @@ export default function EditPricesCourse(props) {
                                 label='Valor Total' sx={{ flex: 1, }}
                             // onBlur={() => calculationValues(pricesCourseData)}
                             />
-                            <TextInput placeholder='Parcelas' name='n_parcelas' onChange={handleChange} value={pricesCourseData?.n_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
-                            <Button small text="calcular" onClick={() => calculationValues({ porcent: false, remove: false })} style={{ width: 80, height: 30 }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Parcelas' name='n_parcelas' onChange={handleChange} value={pricesCourseData?.n_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
+                            <Button disabled={!isPermissionEdit && true} small text="calcular" onClick={() => calculationValues({ porcent: false, remove: false })} style={{ width: 80, height: 30 }} />
                         </Box>
                         <Box sx={styles.inputSection}>
-                            <TextInput
+                            <TextInput disabled={!isPermissionEdit && true}
                                 placeholder='0.00'
                                 name='valor_parcelado_curso'
                                 type="coin"
@@ -898,7 +909,7 @@ export default function EditPricesCourse(props) {
                                 value={(pricesCourseData?.valor_parcelado_curso) || ''}
                                 label='Valor das parcelas' sx={{ flex: 1, }}
                             />
-                            <TextInput
+                            <TextInput disabled={!isPermissionEdit && true}
                                 placeholder='0.00'
                                 name='valor_avista_curso'
                                 type="coin"
@@ -911,11 +922,11 @@ export default function EditPricesCourse(props) {
                         {
                             !newPrice &&
                             <>
-                                {!showValueAdjustment && <Button secondary small text="reajuste" onClick={() => { setShowValueAdjustment(true) }} style={{ width: 80, height: 30 }} />}
+                                {!showValueAdjustment && <Button disabled={!isPermissionEdit && true} secondary small text="reajuste" onClick={() => { setShowValueAdjustment(true) }} style={{ width: 80, height: 30 }} />}
 
                                 {showValueAdjustment &&
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
-                                        <ContentContainer  style={{ maxWidth: 400 }}>
+                                        <ContentContainer style={{ maxWidth: 400 }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 99999 }}>
                                                 <Text bold large>Novo reajuste de valor</Text>
                                                 <Box sx={{
@@ -931,7 +942,7 @@ export default function EditPricesCourse(props) {
                                             </Box>
                                             <Divider distance={0} />
                                             <Box sx={{ ...styles.inputSection, alignItems: 'center', justifyContent: 'start' }}>
-                                                <TextInput
+                                                <TextInput disabled={!isPermissionEdit && true}
                                                     placeholder='0.00'
                                                     name='reajuste'
                                                     onChange={handleChangeReadjustment}
@@ -940,7 +951,7 @@ export default function EditPricesCourse(props) {
                                                 />
                                             </Box>
                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                <Button text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => calculationValues({ porcent: readjustmentValue?.reajuste, ajustmentAplicated: true })} />
+                                                <Button disabled={!isPermissionEdit && true} text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => calculationValues({ porcent: readjustmentValue?.reajuste, ajustmentAplicated: true })} />
                                             </Box>
 
                                         </ContentContainer>
@@ -949,7 +960,7 @@ export default function EditPricesCourse(props) {
                             </>
                         }
 
-                        <RadioItem valueRadio={pricesCourseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setPricesCourseData({ ...pricesCourseData, ativo: parseInt(value) })} />
+                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={pricesCourseData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setPricesCourseData({ ...pricesCourseData, ativo: parseInt(value) })} />
                     </ContentContainer>
 
                     <ContentContainer style={{ ...styles.containerRegister, padding: showHistoric ? '40px' : '25px' }}>
@@ -1025,7 +1036,7 @@ export default function EditPricesCourse(props) {
                                     <Text bold>Data do reajuste:</Text>
                                     <Text>{formatTimeStamp(historicEdit?.dt_reajuste)}</Text>
                                 </Box>
-                                <TextInput
+                                <TextInput disabled={!isPermissionEdit && true}
                                     placeholder='Observação'
                                     name='observacao_his_pr_cur'
                                     onChange={handleChangeHistoric} value={historicEdit?.observacao_his_pr_cur || ''}
@@ -1037,8 +1048,8 @@ export default function EditPricesCourse(props) {
                             </Box>
                             <Divider distance={0} />
                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center' }}>
-                                <Button text='salvar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleUpdateHistoricId()} />
-                                <Button text='excluir' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteHistoric })} />
+                                <Button disabled={!isPermissionEdit && true} text='salvar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleUpdateHistoricId()} />
+                                <Button disabled={!isPermissionEdit && true} text='excluir' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteHistoric })} />
                             </Box>
                         </ContentContainer>
                     </Backdrop>
@@ -1076,11 +1087,11 @@ export default function EditPricesCourse(props) {
                                     {showClassTable[index] &&
                                         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                                             <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                                <SelectList fullWidth data={courses} valueSelection={item?.curso_id} onSelect={(value) => handleChangeClasses(item?.id_turma, 'curso_id', parseInt(value))}
+                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={courses} valueSelection={item?.curso_id} onSelect={(value) => handleChangeClasses(item?.id_turma, 'curso_id', parseInt(value))}
                                                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 />
-                                                <TextInput
+                                                <TextInput disabled={!isPermissionEdit && true}
                                                     placeholder='0.00'
                                                     name='valor_total'
                                                     type="coin"
@@ -1088,11 +1099,11 @@ export default function EditPricesCourse(props) {
                                                     value={(item?.valor_total) || ''}
                                                     label='Valor Total' sx={{ flex: 1, }}
                                                 />
-                                                <TextInput placeholder='Parcelas' name='n_parcelas' onChange={(e) => handleChangeClasses(item?.id_turma, e.target.name, e.target.value)} value={item?.n_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
-                                                <Button small text="calcular" onClick={() => calculationValuesClass({ porcent: false, remove: false, classId: item?.id_turma })} style={{ width: 80, height: 30 }} />
+                                                <TextInput disabled={!isPermissionEdit && true} placeholder='Parcelas' name='n_parcelas' onChange={(e) => handleChangeClasses(item?.id_turma, e.target.name, e.target.value)} value={item?.n_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
+                                                <Button disabled={!isPermissionEdit && true} small text="calcular" onClick={() => calculationValuesClass({ porcent: false, remove: false, classId: item?.id_turma })} style={{ width: 80, height: 30 }} />
                                             </Box>
                                             <Box sx={styles.inputSection}>
-                                                <TextInput
+                                                <TextInput disabled={!isPermissionEdit && true}
                                                     placeholder='0.00'
                                                     name='valor_parcelado'
                                                     type="coin"
@@ -1100,7 +1111,7 @@ export default function EditPricesCourse(props) {
                                                     value={(item?.valor_parcelado) || ''}
                                                     label='Valor das parcelas' sx={{ flex: 1, }}
                                                 />
-                                                <TextInput
+                                                <TextInput disabled={!isPermissionEdit && true}
                                                     placeholder='0.00'
                                                     name='valor_avista'
                                                     type="coin"
@@ -1109,7 +1120,7 @@ export default function EditPricesCourse(props) {
                                                     label='Valor á vista' sx={{ flex: 1, }}
                                                 />
                                             </Box>
-                                            {item?.dt_prox_renovacao && <TextInput
+                                            {item?.dt_prox_renovacao && <TextInput disabled={!isPermissionEdit && true}
                                                 name='dt_prox_renovacao'
                                                 onChange={(e) => handleChangeClasses(item?.id_turma, e.target.name, e.target.value)}
                                                 value={(item?.dt_prox_renovacao)?.split('T')[0] || ''}
@@ -1120,7 +1131,7 @@ export default function EditPricesCourse(props) {
 
                                             {!newPrice && <> {!showValueAdjustmentClass[index] &&
                                                 <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                    {item?.id_valor_turma && <Button secondary small text="reajuste" onClick={() => { toggleClassAdjustment(index) }} style={{ width: 80, height: 30 }} />}
+                                                    {item?.id_valor_turma && <Button disabled={!isPermissionEdit && true} secondary small text="reajuste" onClick={() => { toggleClassAdjustment(index) }} style={{ width: 80, height: 30 }} />}
                                                     <Button text='Histórico' small style={{ width: 80, height: 30 }} onClick={(e) => {
                                                         e.preventDefault();  // Corrigido de prevDefault para preventDefault
                                                         e.stopPropagation();
@@ -1215,7 +1226,7 @@ export default function EditPricesCourse(props) {
                                                                 <Text bold>Data do reajuste:</Text>
                                                                 <Text>{formatTimeStamp(historicClassEdit?.dt_reajuste)}</Text>
                                                             </Box>
-                                                            <TextInput
+                                                            <TextInput disabled={!isPermissionEdit && true}
                                                                 placeholder='Observação'
                                                                 name='obs_hist_val_tur'
                                                                 onChange={handleChangeHistoricClass} value={historicClassEdit?.obs_hist_val_tur || ''}
@@ -1227,8 +1238,8 @@ export default function EditPricesCourse(props) {
                                                         </Box>
                                                         <Divider distance={0} />
                                                         <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center' }}>
-                                                            <Button text='salvar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleUpdateHistoricClassId()} />
-                                                            <Button text='excluir' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteHistoricClass })} />
+                                                            <Button disabled={!isPermissionEdit && true} text='salvar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => handleUpdateHistoricClassId()} />
+                                                            <Button disabled={!isPermissionEdit && true} text='excluir' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteHistoricClass })} />
                                                         </Box>
                                                     </ContentContainer>
                                                 </Backdrop>
@@ -1251,7 +1262,7 @@ export default function EditPricesCourse(props) {
                                                             </Box>
                                                             <Divider distance={0} />
                                                             <Box sx={{ ...styles.inputSection, alignItems: 'center', justifyContent: 'start' }}>
-                                                                <TextInput
+                                                                <TextInput disabled={!isPermissionEdit && true}
                                                                     placeholder='0.00'
                                                                     name='reajuste'
                                                                     onChange={(e) => handleChangeClasses(item?.id_turma, e.target.name, e.target.value)}
@@ -1260,7 +1271,7 @@ export default function EditPricesCourse(props) {
                                                                 />
                                                             </Box>
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                                <Button text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={async () => {
+                                                                <Button disabled={!isPermissionEdit && true} text='aplicar' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={async () => {
                                                                     await calculationValuesClass({
                                                                         porcent: item?.reajuste,
                                                                         ajustmentAplicated: true,
@@ -1278,13 +1289,13 @@ export default function EditPricesCourse(props) {
                                             </>
                                             }
 
-                                            <RadioItem valueRadio={item?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setPricesCourseData({ ...pricesCourseData, ativo: parseInt(value) })} />
+                                            <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setPricesCourseData({ ...pricesCourseData, ativo: parseInt(value) })} />
 
                                         </Box>
                                     }
 
                                     <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: showClassTable[index] ? 'flex-end' : 'flex-start', flex: 1 }}>
-                                        <Button secondary text='Salvar' small={showClassTable[index] ? false : true} style={{
+                                        <Button disabled={!isPermissionEdit && true} secondary text='Salvar' small={showClassTable[index] ? false : true} style={{
                                             width: showClassTable[index] ? '130px' : '80px',
                                             height: showClassTable[index] ? '40px' : '30px',
                                             borderRadius: '6px'

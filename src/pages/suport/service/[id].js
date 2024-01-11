@@ -9,9 +9,10 @@ import { createCourse, deleteCourse, editCourse } from "../../../validators/api-
 import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
 import { formatValueReal } from "../../../helpers"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditService(props) {
-    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     const userId = user?.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -40,7 +41,20 @@ export default function EditService(props) {
     })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
+    useEffect(() => {
+        fetchPermissions()
+    }, [])
     const getService = async () => {
         try {
             const response = await api.get(`/service/${id}`)
@@ -230,7 +244,7 @@ export default function EditService(props) {
 
 
     const handleChangeRenewal = (event) => {
-      
+
         if (event.target.name === 'reajuste') {
             const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
@@ -338,9 +352,9 @@ export default function EditService(props) {
             <SectionHeader
                 perfil={serviceData?.fornecedor}
                 title={serviceData?.nome_servico || `Novo Serviço`}
-                saveButton
+                saveButton={isPermissionEdit}
                 saveButtonAction={newService ? handleCreateService : handleEditService}
-                deleteButton={!newService}
+                deleteButton={!newService && isPermissionEdit}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteService })}
             />
 
@@ -348,15 +362,15 @@ export default function EditService(props) {
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Serviço</Text>
                 </Box>
-                <SelectList fullWidth data={groupServices} valueSelection={serviceData?.tipo_servico} onSelect={(value) => setServiceData({ ...serviceData, tipo_servico: value })}
+                <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupServices} valueSelection={serviceData?.tipo_servico} onSelect={(value) => setServiceData({ ...serviceData, tipo_servico: value })}
                     title="Tipo de Serviço" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='Nome' name='nome_servico' onChange={handleChange} value={serviceData?.nome_servico || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Vivo, Autodesk..' name='fornecedor' onChange={handleChange} value={serviceData?.fornecedor || ''} label='Fornecedor/Desenvolvedor/Provedor' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_servico' onChange={handleChange} value={serviceData?.nome_servico || ''} label='Nome' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Vivo, Autodesk..' name='fornecedor' onChange={handleChange} value={serviceData?.fornecedor || ''} label='Fornecedor/Desenvolvedor/Provedor' sx={{ flex: 1, }} />
                 </Box>
-                <TextInput
+                <TextInput disabled={!isPermissionEdit && true}
                     placeholder='Descrição'
                     name='descricao'
                     onChange={handleChange} value={serviceData?.descricao || ''}
@@ -367,19 +381,19 @@ export default function EditService(props) {
                 />
                 <Box sx={styles.inputSection}>
                     {serviceData?.tipo_servico === 'Software' &&
-                        <SelectList fullWidth data={groupTypeLicency} valueSelection={serviceData?.tipo_licenciamento} onSelect={(value) => setServiceData({ ...serviceData, tipo_licenciamento: value })}
+                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupTypeLicency} valueSelection={serviceData?.tipo_licenciamento} onSelect={(value) => setServiceData({ ...serviceData, tipo_licenciamento: value })}
                             title="Tipo de licenciamento" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />}
-                    <SelectList fullWidth data={groupContract} valueSelection={serviceData?.tipo_contrato} onSelect={(value) => setServiceData({ ...serviceData, tipo_contrato: value })}
+                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupContract} valueSelection={serviceData?.tipo_contrato} onSelect={(value) => setServiceData({ ...serviceData, tipo_contrato: value })}
                         title="Tipo de contrato" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
-                    <TextInput placeholder='Inicio' name='dt_inicio_contrato' onChange={handleChange} value={(serviceData?.dt_inicio_contrato)?.split('T')[0] || ''} type="date" label='Inicio do contrato' sx={{ flex: 1, }} />
-                    <TextInput placeholder='Fim' name='dt_fim_contrato' onChange={handleChange} value={(serviceData?.dt_fim_contrato)?.split('T')[0] || ''} label='Fim do contrato' type="date" sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Inicio' name='dt_inicio_contrato' onChange={handleChange} value={(serviceData?.dt_inicio_contrato)?.split('T')[0] || ''} type="date" label='Inicio do contrato' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Fim' name='dt_fim_contrato' onChange={handleChange} value={(serviceData?.dt_fim_contrato)?.split('T')[0] || ''} label='Fim do contrato' type="date" sx={{ flex: 1, }} />
                 </Box>
                 <Box sx={{ ...styles.inputSection, alignItems: 'start' }}>
-                    <TextInput
+                    <TextInput disabled={!isPermissionEdit && true}
                         placeholder='0.00'
                         name='valor'
                         type="coin"
@@ -388,10 +402,10 @@ export default function EditService(props) {
                         label='Valor' sx={{ flex: 1, }}
                     />
                     {serviceData?.tipo_servico === 'Software' &&
-                        <TextInput placeholder='Quantidade de Licenças' name='quantidade' onChange={handleChange} type="number" value={serviceData?.quantidade || ''} label='Quantidade de Licenças' sx={{ flex: 1, }} />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Quantidade de Licenças' name='quantidade' onChange={handleChange} type="number" value={serviceData?.quantidade || ''} label='Quantidade de Licenças' sx={{ flex: 1, }} />
                     }
                     {(serviceData?.tipo_servico === 'Servidor' || serviceData?.tipo_servico === 'Domínio') && (
-                        <TextInput
+                        <TextInput disabled={!isPermissionEdit && true}
                             placeholder='login'
                             name='login'
                             onChange={handleChange}
@@ -427,15 +441,15 @@ export default function EditService(props) {
                                         arrayRenewal.map((ren, index) => (
                                             <>
                                                 <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                                    <TextInput
+                                                    <TextInput disabled={!isPermissionEdit && true}
                                                         placeholder='0.00'
                                                         name={`reajuste-${index}`}
                                                         type="coin"
                                                         value={(ren?.reajuste) || ''}
                                                         label='Reajuste' sx={{ flex: 1, }}
                                                     />
-                                                    <TextInput label="Data da Renovação" placeholder='Data da Renovação' name={`dt_renovacao-${index}`} value={(ren?.dt_renovacao)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                                                    <TextInput label="Data da Expiração" placeholder='Data da Expiração' name={`dt_expiracao_r-${index}`} value={(ren?.dt_expiracao_r)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                                    <TextInput disabled={!isPermissionEdit && true} label="Data da Renovação" placeholder='Data da Renovação' name={`dt_renovacao-${index}`} value={(ren?.dt_renovacao)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                                                    <TextInput disabled={!isPermissionEdit && true} label="Data da Expiração" placeholder='Data da Expiração' name={`dt_expiracao_r-${index}`} value={(ren?.dt_expiracao_r)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                                                     <Box sx={{
                                                         backgroundSize: 'cover',
                                                         backgroundRepeat: 'no-repeat',
@@ -456,14 +470,14 @@ export default function EditService(props) {
                                         ))
                                         : <Text small>Este serviço não possui renovações ou reajustes.</Text>}
                                     <Box sx={{ display: 'flex', gap: 2 }}>
-                                        <Button text='Novo' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: true }) }} />
+                                        <Button disabled={!isPermissionEdit && true} text='Novo' small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: true }) }} />
                                         {showRenewel?.newRenewal &&
-                                            <Button text='Cancelar' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: false }) }} />
+                                            <Button disabled={!isPermissionEdit && true} text='Cancelar' secondary={true} small={true} style={{ width: '80px', padding: '5px 0px' }} onClick={() => { setShowRenewal({ ...showRenewel, newRenewal: false }) }} />
                                         }
                                     </Box>
                                     {showRenewel?.newRenewal &&
                                         <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                            <TextInput
+                                            <TextInput disabled={!isPermissionEdit && true}
                                                 placeholder='0.00'
                                                 name="reajuste"
                                                 type="coin"
@@ -471,8 +485,8 @@ export default function EditService(props) {
                                                 onChange={handleChangeRenewal}
                                                 label='Reajuste' sx={{ flex: 1, }}
                                             />
-                                            <TextInput label="Data da Renovação" placeholder='Data da Renovação' name="dt_renovacao" value={(renewalData?.dt_renovacao)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
-                                            <TextInput label="Data da Expiração" placeholder='Data da Expiração' name="dt_expiracao_r" value={(renewalData?.dt_expiracao_r)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
+                                            <TextInput disabled={!isPermissionEdit && true} label="Data da Renovação" placeholder='Data da Renovação' name="dt_renovacao" value={(renewalData?.dt_renovacao)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
+                                            <TextInput disabled={!isPermissionEdit && true} label="Data da Expiração" placeholder='Data da Expiração' name="dt_expiracao_r" value={(renewalData?.dt_expiracao_r)?.split('T')[0] || ''} onChange={handleChangeRenewal} type="date" sx={{ flex: 1, }} />
                                             <Box sx={{
                                                 backgroundSize: 'cover',
                                                 backgroundRepeat: 'no-repeat',
@@ -496,9 +510,9 @@ export default function EditService(props) {
                         }
                     </>
                 }
-                <RadioItem valueRadio={serviceData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setServiceData({ ...serviceData, ativo: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={serviceData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setServiceData({ ...serviceData, ativo: parseInt(value) })} />
             </ContentContainer >
-            {!newService &&
+            {(!newService && isPermissionEdit) &&
                 <ContainDropzone
                     title="Contrato"
                     data={contractData}

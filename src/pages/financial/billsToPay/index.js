@@ -8,6 +8,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import { formatDate, formatTimeStamp } from "../../../helpers"
 import { Avatar, TablePagination } from "@mui/material"
 import Link from "next/link"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 const monthFilter = [
     { month: 'Jan', value: 0 },
@@ -35,7 +36,7 @@ export default function ListBillsToPay(props) {
     const [expensesData, setExpensesData] = useState([])
     const [variableExpenses, setVariableExpenses] = useState([])
     const [personalExpenses, setPersonalExpenses] = useState([])
-    const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     const [filterYear, setFilterYear] = useState(2023)
     const [filterMonth, setFilterMonth] = useState(9)
     const [expensesSelected, setExpensesSelected] = useState(null);
@@ -46,6 +47,16 @@ export default function ListBillsToPay(props) {
     const [billstToReceive, setBillstToReceive] = useState([]);
     const [menuSelected, setMenuSelected] = useState('Despesas Fixas')
     const [columnTable, setColumnTable] = useState([])
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
     const filter = (item) => {
         let dateFilter = menuSelected === 'Folha de Pagamento' ? item?.dt_pagamento : item?.dt_vencimento;
@@ -55,6 +66,7 @@ export default function ListBillsToPay(props) {
     }
 
     useEffect(() => {
+        fetchPermissions()
         handleLoadData()
     }, [])
 
@@ -477,14 +489,15 @@ export default function ListBillsToPay(props) {
                 </Box>
                 <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, position: 'relative', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
                     <Box sx={{ display: 'flex', gap: 1, height: 30, position: 'absolute', top: 30, left: 40 }}>
-                        <Button small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => pusNewBill()} />
-                        <Button small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({ 
+                        <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => pusNewBill()} />
+                        <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
                             active: true,
-                             event,
-                              acceptAction: handleDelete,
-                              title: `Excluir ${menuSelected}`,
-                              message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.' })} />
-                       { menuSelected === 'Folha de Pagamento' && <Button small secondary text="aplicar reajuste para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }} />}
+                            event,
+                            acceptAction: handleDelete,
+                            title: `Excluir ${menuSelected}`,
+                            message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
+                        })} />
+                        {menuSelected === 'Folha de Pagamento' && <Button disabled={!isPermissionEdit && true} small secondary text="aplicar reajuste para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }} />}
                     </Box>
                     <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '50px', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
                         {expensesData?.filter(filter).length > 0 ?
@@ -493,6 +506,7 @@ export default function ListBillsToPay(props) {
                                     <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
                                         <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
                                             <CheckBoxComponent
+                                                disabled={!isPermissionEdit && true}
                                                 boxGroup={[{ value: 'allSelect' }]}
                                                 valueChecked={'select'}
                                                 horizontal={true}
@@ -526,6 +540,7 @@ export default function ListBillsToPay(props) {
                                             <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
                                                 <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                                     <CheckBoxComponent
+                                                        disabled={!isPermissionEdit && true}
                                                         boxGroup={
                                                             groupSelect(itemId)
                                                         }

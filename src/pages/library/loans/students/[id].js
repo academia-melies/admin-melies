@@ -8,9 +8,10 @@ import { icons } from "../../../../organisms/layout/Colors"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useAppContext } from "../../../../context/AppContext"
 import { formatTimeStamp } from "../../../../helpers"
+import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 
 export default function LoansStudentEdit(props) {
-    const { setLoading, alert, colorPalette, user } = useAppContext()
+    const { setLoading, alert, colorPalette, user, userPermissions, menuItemsList } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
@@ -30,6 +31,16 @@ export default function LoansStudentEdit(props) {
         category: 'todos',
         search: '',
     })
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const filterFunctions = {
@@ -92,6 +103,7 @@ export default function LoansStudentEdit(props) {
     }
 
     useEffect(() => {
+        fetchPermissions()
         handleItems();
     }, [id])
 
@@ -176,9 +188,9 @@ export default function LoansStudentEdit(props) {
                     return
                 }
 
-               
 
-                
+
+
             } catch (error) {
                 alert.error('Tivemos um problema ao realizar Empréstimos.');
             } finally {
@@ -251,7 +263,7 @@ export default function LoansStudentEdit(props) {
                 <Divider distance={0} />
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <Text bold>Selecionar Livros, DVDs ou Periódicos: </Text>
-                    <Button small text="pesquisar" style={{ height: 22, }} onClick={() => setShowSearchMaterial(true)} />
+                    <Button disabled={!isPermissionEdit && true} small text="pesquisar" style={{ height: 22, }} onClick={() => setShowSearchMaterial(true)} />
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: .5 }}>
                     <Text small>Selecionados:</Text>
@@ -259,7 +271,7 @@ export default function LoansStudentEdit(props) {
                         return (
                             <Box key={index} sx={{ display: 'flex', gap: 1, maxWidth: 300, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
                                 <Text small>{item?.titulo}</Text>
-                                <Box sx={{
+                                {isPermissionEdit && <Box sx={{
                                     ...styles.menuIcon,
                                     width: 12,
                                     height: 12,
@@ -271,7 +283,7 @@ export default function LoansStudentEdit(props) {
                                         opacity: 0.8,
                                         cursor: 'pointer'
                                     }
-                                }} onClick={() => handleDeleteMaterial(item?.id_material)} />
+                                }} onClick={() => handleDeleteMaterial(item?.id_material)} />}
 
                             </Box>
 
@@ -281,12 +293,12 @@ export default function LoansStudentEdit(props) {
                 </Box>
                 <Divider distance={0} />
 
-                <TextInput name='dt_prev_devolucao' onChange={(e) => setReturnDate(e.target.value)} type="date" value={(returnDate)?.split('T')[0] || ''} label='Previsão devolução:' sx={{ maxWidth: 280, }} />
+                <TextInput disabled={!isPermissionEdit && true} name='dt_prev_devolucao' onChange={(e) => setReturnDate(e.target.value)} type="date" value={(returnDate)?.split('T')[0] || ''} label='Previsão devolução:' sx={{ maxWidth: 280, }} />
                 <Divider distance={0} />
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button small text="emprestar" style={{ height: 30 }} onClick={() => handleCreate()} />
-                    <Button small secondary text="limpar" style={{ height: 30 }} onClick={() => {
+                    <Button disabled={!isPermissionEdit && true} small text="emprestar" style={{ height: 30 }} onClick={() => handleCreate()} />
+                    <Button disabled={!isPermissionEdit && true} small secondary text="limpar" style={{ height: 30 }} onClick={() => {
                         setMaterialsSelected([])
                         alert.success('Lista de emprestímos límpa.')
                     }} />
@@ -444,10 +456,10 @@ export default function LoansStudentEdit(props) {
                                                                 {item?.status_emprestimo || '-'}
                                                             </td>
                                                             {item?.status_emprestimo === 'emprestado' && <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <Button secondary small text="Renovar" style={{ height: 25, borderRadius: 2 }} />
+                                                                <Button disabled={!isPermissionEdit && true} secondary small text="Renovar" style={{ height: 25, borderRadius: 2 }} />
                                                             </td>}
                                                             {item?.status_emprestimo === 'emprestado' && <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <Button small text="Devolver" style={{ height: 25, borderRadius: 2 }} onClick={() => handleReturnLoan(item?.id_emprestimo)} />
+                                                                <Button disabled={!isPermissionEdit && true} small text="Devolver" style={{ height: 25, borderRadius: 2 }} onClick={() => handleReturnLoan(item?.id_emprestimo)} />
                                                             </td>}
                                                         </tr>
                                                     );
@@ -466,8 +478,8 @@ export default function LoansStudentEdit(props) {
                 </Box>
             </ContentContainer>
 
-            <Backdrop open={showMaterials} sx={{ zIndex: 999}}>
-                <ContentContainer sx={{ zIndex: 9999}}>
+            <Backdrop open={showMaterials} sx={{ zIndex: 999 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
                         <Text bold large>Selecione o material para emprestímo</Text>
                         <Box sx={{
@@ -486,6 +498,7 @@ export default function LoansStudentEdit(props) {
 
                         <TextInput placeholder="Buscar pelo titulo.." name='filters' type="search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} value={filters?.search} sx={{ flex: 1 }} />
                         <SelectList
+                            disabled={!isPermissionEdit && true}
                             data={groupMaterials}
                             valueSelection={filters?.type}
                             onSelect={(value) => setFilters({ ...filters, type: value })}

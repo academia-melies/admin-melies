@@ -9,6 +9,7 @@ import { icons } from "../layout/Colors";
 export const Table_V1 = (props) => {
 
     const {
+        isPermissionEdit,
         data = [],
         columns = [],
         avatar = false,

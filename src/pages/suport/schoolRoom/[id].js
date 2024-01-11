@@ -5,9 +5,10 @@ import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
 import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function EditSchoolRoom(props) {
-    const { setLoading, alert, user, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, alert, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
@@ -17,7 +18,20 @@ export default function EditSchoolRoom(props) {
     })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
+    useEffect(() => {
+        fetchPermissions()
+    }, [])
 
     const getRoom = async () => {
         try {
@@ -138,9 +152,9 @@ export default function EditSchoolRoom(props) {
             <SectionHeader
                 perfil={roomData?.andar_sala}
                 title={roomData?.sala || `Nova Sala`}
-                saveButton
+                saveButton={isPermissionEdit}
                 saveButtonAction={newSchoolRoom ? handleCreateRoom : handleEditRoom}
-                deleteButton={!newSchoolRoom}
+                deleteButton={!newSchoolRoom && isPermissionEdit}
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteRoom })}
             />
 
@@ -150,10 +164,10 @@ export default function EditSchoolRoom(props) {
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Sala</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput placeholder='sala' name='sala' onChange={handleChange} value={roomData?.sala || ''} label='Sala' sx={{ flex: 1, }} />
-                    <TextInput placeholder='1º andar' name='andar_sala' onChange={handleChange} value={roomData?.andar_sala || ''} label='º Andar' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='sala' name='sala' onChange={handleChange} value={roomData?.sala || ''} label='Sala' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='1º andar' name='andar_sala' onChange={handleChange} value={roomData?.andar_sala || ''} label='º Andar' sx={{ flex: 1, }} />
                 </Box>
-                <RadioItem valueRadio={roomData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setRoomData({ ...roomData, ativo: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={roomData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setRoomData({ ...roomData, ativo: parseInt(value) })} />
             </ContentContainer>
         </>
     )
