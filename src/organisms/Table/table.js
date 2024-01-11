@@ -26,7 +26,8 @@ export const Table_V1 = (props) => {
         onDelete = false,
         onPress = () => { },
         query = ``,
-        route = false
+        route = false,
+        targetBlank
     } = props;
 
 
@@ -36,9 +37,17 @@ export const Table_V1 = (props) => {
     const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
     const handleRowClick = (id) => {
-        if(route) {
+        if (route) {
+            if (targetBlank) {
+                window.open(`/${route}/${id}${query}`, '_blank');
+                return;
+            }
             router.push(`/${route}/${id}${query}`);
             return
+        }
+        if (targetBlank) {
+            window.open(`/${menu}/${subMenu}/${id}${query}`, '_blank');
+            return;
         }
         router.push(`/${menu}/${subMenu}/${id}${query}`);
     };
@@ -56,10 +65,10 @@ export const Table_V1 = (props) => {
         (data === 'Média' && 'green') ||
         (data === 'Baixa' && 'blue'))
 
-        const formatter = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        });
+    const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
 
     return (
         <>

@@ -6,11 +6,13 @@ export const FileInput = (props) => {
     const {
         children,
         onClick = () => { },
-        style = {}
+        style = {},
+        left = false
     } = props;
 
     return (
-        <Box sx={{ ...styles.inputSection, alignItems: 'start', gap: 0.5, ...style }}>
+        <Box sx={{ ...styles.inputSection, alignItems: 'start', gap: 0.5, flexDirection: left && 'row-reverse', ...style }}>
+
             {children}
             <Box sx={{
                 ...styles.menuIcon,
