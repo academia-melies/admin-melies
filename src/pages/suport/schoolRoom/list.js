@@ -9,13 +9,24 @@ import { getDisciplines, getdisciplines, getUsersPerfil } from "../../../validat
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import axios from "axios"
+import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListSchoolRoom(props) {
     const [schoolRoomList, setSchoolRoom] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const router = useRouter()
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const fetchPermissions = async () => {
+        try {
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
+            setIsPermissionEdit(actions)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filter = (item) => {
         if (filterAtive === 'todos') {
@@ -26,6 +37,7 @@ export default function ListSchoolRoom(props) {
     };
 
     useEffect(() => {
+        fetchPermissions()
         getRooms();
     }, []);
 
@@ -44,7 +56,7 @@ export default function ListSchoolRoom(props) {
 
     const column = [
         { key: 'id_sala', label: 'ID' },
-        { key: 'sala', label: 'Sala'},
+        { key: 'sala', label: 'Sala' },
         { key: 'andar_sala', label: 'Andar' },
     ];
 
@@ -58,7 +70,7 @@ export default function ListSchoolRoom(props) {
         <>
             <SectionHeader
                 title={`Salas de aula (${schoolRoomList?.filter(filter)?.length || '0'})`}
-                newButton
+                newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/suport/${pathname}/new`)}
             />
             <Text bold>Buscar por: </Text>
@@ -76,7 +88,7 @@ export default function ListSchoolRoom(props) {
                 />
             </Box>
             {schoolRoomList.length > 0 ?
-                <Table_V1 data={schoolRoomList?.filter(filter)} columns={column} columnId={'id_sala'}/>
+                <Table_V1 data={schoolRoomList?.filter(filter)} columns={column} columnId={'id_sala'} />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar Salas de aula cadastradas</Text>
