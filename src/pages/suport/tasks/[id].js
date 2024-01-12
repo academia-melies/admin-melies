@@ -520,7 +520,7 @@ export default function EditTask(props) {
                                                         aspectRatio: '1:1',
                                                         backgroundImage: `url(${icons.gray_close})`,
                                                         transition: '.3s',
-                                                        zIndex: 999999999,
+                                                        zIndex: 9999,
                                                         "&:hover": {
                                                             opacity: 0.8,
                                                             cursor: 'pointer'
@@ -586,7 +586,7 @@ export default function EditTask(props) {
                                                                 aspectRatio: '1:1',
                                                                 backgroundImage: `url(${icons.gray_close})`,
                                                                 transition: '.3s',
-                                                                zIndex: 999999999,
+                                                                zIndex: 9999,
                                                             }} />
                                                         </Box>
                                                     </Box>
@@ -707,7 +707,7 @@ export default function EditTask(props) {
 
                         </ContentContainer>
                     </Backdrop>
-                    <ContainDropzone
+                   {taskData?.status_chamado !== 'Finalizado' && <ContainDropzone
                         title="Arquivos"
                         text="Arraste e solte seus arquivos aqui ou clique para selecionar."
                         data={filesTask}
@@ -722,7 +722,7 @@ export default function EditTask(props) {
                         userId={user?.id}
                         taskId={id}
                         filesContainer={newTask ? true : false}
-                    />
+                    />}
                 </Box>
             </>}
         </>
