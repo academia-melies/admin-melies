@@ -85,8 +85,8 @@ export const formatDate = (date) => {
 
 export const formatRg = (rg) => {
 
-   const cleanedRG = rg.replace(/\D/g, '');
-   const rgRegex = /^(\d{2})(\d{3})(\d{3})(\d{1})$/;
+   const cleanedRG = rg.replace(/\W/g, '');
+   const rgRegex = /^([0-9a-zA-Z]{2})([0-9a-zA-Z]{3})([0-9a-zA-Z]{3})([0-9a-zA-Z]{1})$/;
    const formattedRG = cleanedRG.replace(rgRegex, '$1.$2.$3-$4');
 
    return formattedRG;

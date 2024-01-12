@@ -12,15 +12,15 @@ export default function ListTasks(props) {
     const [tasksList, setTasksList] = useState([])
     const [responsibles, setResponsibles] = useState([])
     const [filterData, setFilterData] = useState('')
+    const { setLoading, colorPalette, userPermissions, menuItemsList, user } = useAppContext()
     const [filters, setFilters] = useState({
         responsible: 'todos',
-        status: 'todos',
+        status: 'Em aberto',
         priority: 'todos',
         participant: 'todos',
         actor: 'todos',
         type: 'todos'
     })
-    const { setLoading, colorPalette, userPermissions, menuItemsList, user } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [filtersOrders, setFiltersOrders] = useState({
@@ -50,7 +50,18 @@ export default function ListTasks(props) {
     }
 
     const filter = (item) => {
-        return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
+        const normalizeString = (str) => {
+            return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        };
+
+        const normalizedFilterData = normalizeString(filterData);
+        const normalizedTituloChamado = normalizeString(item.titulo_chamado);
+        const normalizedIdChamado = item?.id_chamado?.toString();
+
+        return (
+            normalizedTituloChamado?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
+            normalizedIdChamado?.includes(filterData.toString()) 
+        ) && Object.values(filterFunctions).every(filterFunction => filterFunction(item));
     };
 
 
