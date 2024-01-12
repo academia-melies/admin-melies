@@ -607,6 +607,26 @@ export default function CalendarComponent(props) {
             font-size: 14px;
             padding: 5px;
           }
+
+          .rbc-off-range {
+            color: ${colorPalette.textColor}; /* Defina a cor do texto para dias fora do intervalo */
+            background-color: ${colorPalette.primary}; /* Defina a cor de fundo para dias fora do intervalo */
+          }
+
+          .rbc-off-range-bg {
+            background-color: ${colorPalette.primary}; /* Defina a cor de fundo para dias fora do intervalo */
+          }
+
+          .rbc-off {
+            color: ${colorPalette.textColor}; /* Defina a cor do texto para dias fora do intervalo */
+            background-color: ${colorPalette.primary}; /* Defina a cor de fundo para dias fora do intervalo */
+          }
+        
+          /* Adicione estilos para o dia atual */
+          .rbc-today {
+            color: ${colorPalette.textColor}; /* Defina a cor do texto para o dia atual */
+            background-color: ${colorPalette.primary}; /* Defina a cor de fundo para o dia atual */
+          }
       `}</style>
         </ >
     );

@@ -10,13 +10,26 @@ import { api } from "../../api/api";
 import { useRef } from "react";
 import { Notifications } from "../notification/notifications";
 import Link from "next/link";
+import { keyframes } from '@emotion/react';
+
+const blinkingText = keyframes`
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+`;
 
 export const UserHeader = (props) => {
     const {
         title = '',
     } = props;
 
-    const { colorPalette, theme, logout, notificationUser, setNotificationUser } = useAppContext()
+    const { colorPalette, theme, logout, notificationUser, setNotificationUser, user } = useAppContext()
     const router = useRouter()
     const routeParts = router.asPath.split('/');
     const lastPage = routeParts[routeParts.length - 1];
@@ -50,26 +63,56 @@ export const UserHeader = (props) => {
                             cursor: 'pointer'
                         }
                     }} onClick={() => router.push('/')} />
-                    <Box sx={{
-                        position: 'absolute',
-                        left: 290,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        "&:hover": {
-                            opacity: 0.8,
-                            cursor: 'pointer'
-                        }
-                    }} onClick={() => handleGoBack()}>
+                    {/* Usuário do VALDIR Com botao voltar gigante */}
+                    {user?.id === 71 ?
                         <Box sx={{
-                            ...styles.menuIcon,
-                            backgroundImage: `url(${icons.goback})`,
-                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                            transition: '.3s',
-                            aspectRatio: '1/1'
-                        }} />
-                        <Text small sx={{}}>Voltar</Text>
-                    </Box>
+                            position: 'absolute',
+                            left: 300,
+                            top: -10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => handleGoBack()}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.goback})`,
+                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                transition: '.3s',
+                                width: 50, height: 50,
+                                aspectRatio: '1/1'
+                            }} />
+                            <Text bold sx={{ fontSize: 45, color: 'red', animation: `${blinkingText} .8s infinite`  }}>V</Text>
+                            <Text bold sx={{ fontSize: 45, color: 'blue', animation: `${blinkingText} .8s infinite`  }}>o</Text>
+                            <Text bold sx={{ fontSize: 45, color: 'gray', animation: `${blinkingText} .8s infinite`  }}>l</Text>
+                            <Text bold sx={{ fontSize: 45, color: 'pink', animation: `${blinkingText} .8s infinite`  }}>t</Text>
+                            <Text bold sx={{ fontSize: 45, color: 'green', animation: `${blinkingText} .8s infinite`  }}>a</Text>
+                            <Text bold sx={{ fontSize: 45, color: 'black', animation: `${blinkingText} .8s infinite`  }}>r</Text>
+                        </Box>
+                        :
+                        <Box sx={{
+                            position: 'absolute',
+                            left: 290,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => handleGoBack()}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.goback})`,
+                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                transition: '.3s',
+                                aspectRatio: '1/1'
+                            }} />
+                            <Text small sx={{}}>Voltar</Text>
+                        </Box>}
                 </Box>
                 <Link style={{ display: 'flex' }} target="_blank" href={'https://www.figma.com/file/HPpREYZoNogzU0laydrXL4/Fluxograma---Adm-Telas?type=design&node-id=0%3A1&mode=design&t=0G7h5zNFmYW6q7PS-1'}>
                     <Box sx={{ gap: 1, display: 'flex', alignItems: 'center', transition: '.3s', backgroundColor: colorPalette.primary, padding: '5px 8px', borderRadius: 2, cursor: 'pointer', "&:hover": { opacity: 0.6 } }}>
@@ -213,5 +256,16 @@ const styles = {
         position: 'relative',
         borderRadius: 1.5,
         zIndex: 9999999
-    }
+    },
+    '@keyframes blinkingText': {
+        '0%': {
+            opacity: 1,
+        },
+        '50%': {
+            opacity: 0,
+        },
+        '100%': {
+            opacity: 1,
+        },
+    },
 }
