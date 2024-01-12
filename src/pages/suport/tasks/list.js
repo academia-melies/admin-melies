@@ -20,7 +20,7 @@ export default function ListTasks(props) {
         actor: 'todos',
         type: 'todos'
     })
-    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList, user } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [filtersOrders, setFiltersOrders] = useState({
@@ -102,10 +102,18 @@ export default function ListTasks(props) {
         return sortedTasks;
     }
 
+    console.log(user)
+
     const getTasks = async () => {
         setLoading(true)
         try {
-            const response = await api.get('/tasks')
+            let query;
+            if (user?.area === "TI - Suporte") {
+                query = '/tasks';
+            } else {
+                query = `/task/user/${user?.id}`;
+            }
+            const response = await api.get(query)
             const { data } = response;
             setTasksList(data)
         } catch (error) {
@@ -263,7 +271,7 @@ export default function ListTasks(props) {
                     />
                 </Box>
             </ContentContainer >
-            <Table_V1 data={sortTasks().filter(filter)} columns={column} columnId={'id_chamado'} columnActive={false} filters={filtersOrders} onPress={(value) => setFiltersOrders(value)} onFilter targetBlank/>
+            <Table_V1 data={sortTasks().filter(filter)} columns={column} columnId={'id_chamado'} columnActive={false} filters={filtersOrders} onPress={(value) => setFiltersOrders(value)} onFilter targetBlank />
         </>
     )
 }

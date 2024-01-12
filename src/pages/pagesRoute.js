@@ -11,6 +11,7 @@ import { api } from '../api/api'
 const PagesRoute = ({ Component, pageProps }) => {
 
     const { colorPalette } = useAppContext()
+    const removePadding = Component.noPadding;
 
     return (
         <>
@@ -25,7 +26,10 @@ const PagesRoute = ({ Component, pageProps }) => {
                 <Box sx={{ ...styles.bodyContainer, backgroundColor: colorPalette.primary }}>
                     <LeftMenu />
                     <UserHeader />
-                    <Box sx={{ ...styles.contentContainer, backgroundColor: colorPalette.primary, transition: 'background-color 1s' }}>
+                    <Box sx={{
+                        ...styles.contentContainer, backgroundColor: colorPalette.primary, transition: 'background-color 1s',
+                        padding: removePadding ? '0' : { xs: `30px 30px 85px 30px`, xm: `25px`, md: `120px 65px`, lg: `120px 65px` }
+                    }}>
                         <Component {...pageProps} />
                     </Box>
                 </Box>
@@ -47,7 +51,6 @@ const styles = {
         flexDirection: 'column',
         flex: 1,
         gap: `35px`,
-        padding: { xs: `30px 30px 85px 30px`, xm: `25px`, md: `120px 65px`, lg: `120px 65px` },
         paddingBottom: `60px`,
         overflowY: 'hidden',
         marginTop: { xs: `60px`, xm: `0px`, md: `0px`, lg: `0px` }

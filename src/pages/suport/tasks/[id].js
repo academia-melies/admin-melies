@@ -439,7 +439,7 @@ export default function EditTask(props) {
 
                                     <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                                         <Text bold>Descrição:</Text>
-                                        <Text>{taskData?.descricao_chamado}</Text>
+                                        <Text style={{ whiteSpace: 'pre-line' }}>{taskData?.descricao_chamado}</Text>
                                     </Box>
                                     <Divider distance={0} />
                                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', marginTop: 5 }}>
