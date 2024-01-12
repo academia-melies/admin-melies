@@ -132,12 +132,24 @@ export const CustomDropzone = (props) => {
                     )}
                 </Dropzone>
                 {filesDrop?.length > 0 &&
-                    <Backdrop open={filesDrop?.length > 0} sx={{zIndex: 99999}}>
+                    <Backdrop open={filesDrop?.length > 0} sx={{ zIndex: 99999 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'center', alignItems: 'center' }}>
 
                             <ContentContainer>
-                                <Text bold>Preview</Text>
-                                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                                    <Text bold>Preview</Text>
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        backgroundImage: `url(${icons.gray_close})`,
+                                        transition: '.3s',
+                                        zIndex: 999999999,
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => setFilesDrop([])} />
+                                </Box>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, maxWidth: 750, overflowX: 'auto', padding: '20px 20px' }}>
                                     {filesDrop?.map((file, index) => {
                                         const typePdf = file?.name?.includes('pdf') || null;
                                         return (
@@ -149,7 +161,7 @@ export const CustomDropzone = (props) => {
                                                         backgroundRepeat: 'no-repeat',
                                                         backgroundPosition: 'center center',
                                                         borderRadius: campo === 'foto_perfil' ? '50%' : '',
-                                                        width: { xs: '100%', sm: 150, md: 150, lg: 500, xl: 600 },
+                                                        width: { xs: '100%', sm: 150, md: 150, lg: 500, xl: 500 },
                                                         aspectRatio: '1/1',
                                                     }}>
                                                 </Box>

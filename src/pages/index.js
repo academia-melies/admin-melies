@@ -263,6 +263,8 @@ function Home() {
       },
    ]
 
+   const lengthNotifications = notificationUser?.filter(item => item?.vizualizado === 0)?.length;
+
    return (
       <>
          <Head>
@@ -468,6 +470,22 @@ function Home() {
                      size={20}
                      color={colorPalette.textColor}
                   />
+                  {(lengthNotifications > 0 && !showMenuHelp) &&
+                     <Box sx={{
+                        position: 'absolute',
+                        width: lengthNotifications > 20 ? 21 : 17,
+                        height: lengthNotifications > 20 ? 21 : 17,
+                        borderRadius: lengthNotifications > 20 ? 21 : 17,
+                        padding: lengthNotifications > 20 ? '3px 0px 2px 0px' : '2px',
+                        backgroundColor: 'red',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        top: lengthNotifications > 20 ? 1 : 3,
+                        left: lengthNotifications > 20 ? 1 : 5
+                     }}>
+                        <Text bold style={{ color: '#fff', fontSize: '10px', textAlign: 'center' }}>{lengthNotifications > 20 ? '+20' : lengthNotifications}</Text>
+                     </Box>
+                  }
                </Box>
                {showMenuHelp && <>
                   <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: 5 }}>
@@ -644,7 +662,7 @@ function Home() {
                                                          <Text style={{ color: '#606060', marginTop: 2 }} xsmall>vista</Text>
                                                       </>
                                                       :
-                                                      <Box sx={{ backgroundColor: colorPalette.buttonColor, borderRadius: 8 }}>
+                                                      <Box sx={{ backgroundColor: colorPalette.buttonColor, borderRadius: 8, padding: '1px 5px' }}>
                                                          <Text xsmall style={{ color: '#fff' }}>new</Text>
                                                       </Box>
                                                    }
@@ -725,7 +743,7 @@ function Home() {
                                              }}>{item?.descricao_chamado}</Text>
                                           </Box>
                                           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'space-between' }}>
-                                             <Text small style={{color: '#606060'}}>aberto em: {formatTimeStamp(item?.dt_criacao, true)}</Text>
+                                             <Text small style={{ color: '#606060' }}>aberto em: {formatTimeStamp(item?.dt_criacao, true)}</Text>
                                              <Button secondary text="visitar" small style={{ height: 20 }} onClick={() => router.push(`/suport/tasks/${item?.id_chamado}`)} />
                                           </Box>
                                        </Box>

@@ -129,7 +129,12 @@ export default function EditUser() {
         address: false,
         certificate: false,
         schoolRecord: false,
-        contractStudent: false
+        contractStudent: false,
+        cpf_dependente: false,
+        titleDoc: false,
+        ctps: false,
+        enem: false,
+        cert_nascimento: false
     })
     const [historicData, setHistoricData] = useState({
         responsavel: user?.nome
@@ -1635,7 +1640,34 @@ export default function EditUser() {
                             <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
                                 <Box sx={{ ...styles.inputSection }}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login *' sx={{ flex: 1, }} />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
+
+                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cert_nascimento: value })}>
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
+                                        <EditFile
+                                            isPermissionEdit={isPermissionEdit}
+                                            columnId="id_doc_usuario"
+                                            open={showEditFile.cert_nascimento}
+                                            newUser={newUser}
+                                            onSet={(set) => {
+                                                setShowEditFiles({ ...showEditFile, cert_nascimento: set })
+                                            }}
+                                            title='Certidão de Nascimento ou de Certidão de Casamento'
+                                            text='Faça o upload da sua certidão frente e verso, depois clique em salvar.'
+                                            textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                            fileData={filesUser?.filter((file) => file.campo === 'nascimento')}
+                                            usuarioId={id}
+                                            campo='nascimento'
+                                            tipo='documento usuario'
+                                            callback={(file) => {
+                                                if (file.status === 201 || file.status === 200) {
+                                                    if (!newUser) { handleItems() }
+                                                    else {
+                                                        handleChangeFilesUser('nascimento', file.fileId, file.filePreview)
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    </FileInput>
                                 </Box>
                             </Box>
                         </Box>
@@ -1959,11 +1991,36 @@ export default function EditUser() {
                                 <>
 
                                     <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <FileInput left>
+                                        <FileInput left onClick={() => setShowEditFiles({ ...showEditFile, cpf_dependente: true })}>
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'nome_dependente', dep?.id_dependente)} value={dep.nome_dependente} sx={{ flex: 1 }} />
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'cpf_dependente', dep?.id_dependente)} value={dep.cpf_dependente} sx={{ flex: 1 }} />
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'dt_nasc_dependente', dep?.id_dependente)} type="date" value={(dep.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
                                         </FileInput>
+                                        <EditFile
+                                            isPermissionEdit={isPermissionEdit}
+                                            columnId="id_doc_usuario"
+                                            open={showEditFile.cpf_dependente}
+                                            newUser={newUser}
+                                            onSet={(set) => {
+                                                setShowEditFiles({ ...showEditFile, cpf_dependente: set })
+                                            }}
+                                            title='CPF Dependente - Frente e verso'
+                                            text='Faça o upload do documento do Dependente frente e verso, depois clique em salvar.'
+                                            textDropzone='Arraste ou clique para selecionar a Foto ou Arquivo que deseja'
+                                            fileData={filesUser?.filter((file) => file.campo === 'cpf_dependente')}
+                                            usuarioId={id}
+                                            campo='cpf_dependente'
+                                            tipo='documento usuario'
+                                            callback={(file) => {
+                                                if (file.status === 201 || file.status === 200) {
+                                                    if (!newUser) { handleItems() }
+                                                    else {
+                                                        handleChangeFilesUser('cpf_dependente', file.fileId, file.filePreview)
+                                                    }
+                                                }
+                                            }}
+                                        />
+
                                         {isPermissionEdit && <Box sx={{
                                             backgroundSize: 'cover',
                                             backgroundRepeat: 'no-repeat',
@@ -2045,9 +2102,9 @@ export default function EditUser() {
                                 onSet={(set) => {
                                     setShowEditFiles({ ...showEditFile, schoolRecord: set })
                                 }}
-                                title='Historico Escolar/Diploma'
-                                text='Por favor, faça o upload do seu histórico escolar. Caso você tenha concluído um bacharelado,
-                                 por favor, também faça o upload do seu diploma.'
+                                title='Historico Escolar/Diploma/Certificado de conclusão'
+                                text='Por favor, faça o upload do seu certificado, diploma ou histórico escolar. Caso você tenha mais de um diploma ou certificado de conclusão,
+                                 faça também o upload do mesmo.'
                                 textDropzone='Arraste ou clique para selecionar a Foto ou arquivo desejado.'
                                 fileData={filesUser?.filter((file) => file.campo === 'historico/diploma')}
                                 usuarioId={id}
@@ -2072,8 +2129,9 @@ export default function EditUser() {
                         />}
 
                         <Box sx={styles.inputSection}>
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
                             <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, address: value })}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
                                 <EditFile
                                     isPermissionEdit={isPermissionEdit}
                                     columnId="id_doc_usuario"
@@ -2099,7 +2157,6 @@ export default function EditUser() {
                                     }}
                                 />
                             </FileInput>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nº' name='numero' onChange={handleChange} value={userData?.numero || ''} label='Nº *' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
@@ -2141,7 +2198,34 @@ export default function EditUser() {
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão *' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
+                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, titleDoc: value })}>
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
+                                <EditFile
+                                    isPermissionEdit={isPermissionEdit}
+                                    columnId="id_doc_usuario"
+                                    open={showEditFile.titleDoc}
+                                    newUser={newUser}
+                                    onSet={(set) => {
+                                        setShowEditFiles({ ...showEditFile, titleDoc: set })
+                                    }}
+                                    title='Título de Eleitor'
+                                    text='Faça o upload do seu título, depois clique em salvar.'
+                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                    fileData={filesUser?.filter((file) => file.campo === 'titulo')}
+                                    usuarioId={id}
+                                    campo='titulo'
+                                    tipo='documento usuario'
+                                    callback={(file) => {
+                                        if (file.status === 201 || file.status === 200) {
+                                            if (!newUser) { handleItems() }
+                                            else {
+                                                handleChangeFilesUser('titulo', file.fileId, file.filePreview)
+                                            }
+                                        }
+                                    }}
+                                />
+
+                            </FileInput>
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Zona' name='zona' onChange={handleChange} value={userData?.zona || ''} label='Zona' sx={{ flex: 1, }} />
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Seção' name='secao' onChange={handleChange} value={userData?.secao || ''} label='Seção' sx={{ flex: 1, }} />
                         </Box>
@@ -2191,7 +2275,36 @@ export default function EditUser() {
                                     }} />
                                 </Box>
                                 <Box sx={styles.inputSection}>
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
+                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, ctps: value })}>
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
+
+                                        <EditFile
+                                            isPermissionEdit={isPermissionEdit}
+                                            columnId="id_doc_usuario"
+                                            open={showEditFile.ctps}
+                                            newUser={newUser}
+                                            onSet={(set) => {
+                                                setShowEditFiles({ ...showEditFile, ctps: set })
+                                            }}
+                                            title='Carteira de Trabalho'
+                                            text='Faça o upload da dua carteira de trabalho, depois clique em salvar.'
+                                            textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                            fileData={filesUser?.filter((file) => file.campo === 'ctps')}
+                                            usuarioId={id}
+                                            campo='ctps'
+                                            tipo='documento usuario'
+                                            callback={(file) => {
+                                                if (file.status === 201 || file.status === 200) {
+                                                    if (!newUser) { handleItems() }
+                                                    else {
+                                                        handleChangeFilesUser('ctps', file.fileId, file.filePreview)
+                                                    }
+                                                }
+                                            }}
+                                        />
+
+                                    </FileInput>
+
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Série' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Série' sx={{ flex: 1, }} />
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
                                 </Box>
@@ -2208,10 +2321,7 @@ export default function EditUser() {
                                     />
                                 </Box>
                                 <Box sx={styles.inputSection}>
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupBank} valueSelection={contract?.banco_2} onSelect={(value) => setContract({ ...contract, banco_2: value })}
-                                        title="Banco 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Banco 2' name='banco_2' onChange={handleChangeContract} value={contract?.banco_2 || ''} label='Banco 2' sx={{ flex: 1, }} />
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
                                     <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
@@ -2571,7 +2681,7 @@ export default function EditUser() {
                             },
                             justifyContent: 'space-between'
                         }} onClick={() => setShowSelectiveProcess(!showSelectiveProcess)}>
-                            <Text title bold >Processo seletivo</Text>
+                            <Text title bold >Processo Seletivo</Text>
                             <Box sx={{
                                 ...styles.menuIcon,
                                 backgroundImage: `url(${icons.gray_arrow_down})`,
@@ -2586,11 +2696,49 @@ export default function EditUser() {
                         {showSelectiveProcess &&
                             <>
                                 <Box sx={{ display: 'flex', gap: 3, flex: 1, flexDirection: 'column' }}>
-
+                                    <Divider padding={0} />
+                                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
+                                        <Text bold>Boletim de resultados do ENEM:</Text>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            backgroundImage: `url('${icons.file}')`,
+                                            transition: '.3s',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => setShowEditFiles({ ...showEditFile, enem: true })} />
+                                    </Box>
+                                    <EditFile
+                                        isPermissionEdit={isPermissionEdit}
+                                        columnId="id_doc_usuario"
+                                        open={showEditFile.enem}
+                                        newUser={newUser}
+                                        onSet={(set) => {
+                                            setShowEditFiles({ ...showEditFile, enem: set })
+                                        }}
+                                        title='Boletim de resultados do ENEM'
+                                        text='Faça o upload do seu Boletim, depois clique em salvar.'
+                                        textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                        fileData={filesUser?.filter((file) => file.campo === 'enem')}
+                                        usuarioId={id}
+                                        campo='enem'
+                                        tipo='documento usuario'
+                                        callback={(file) => {
+                                            if (file.status === 201 || file.status === 200) {
+                                                if (!newUser) { handleItems() }
+                                                else {
+                                                    handleChangeFilesUser('enem', file.fileId, file.filePreview)
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <Divider padding={0} />
                                     <Box sx={{ ...styles.inputSection, maxWidth: 280 }}>
                                         <TextInput disabled={!isPermissionEdit && true} name='agendamento_processo' onChange={handleChangeSelectiveProcess} type="datetime-local" value={(selectiveProcessData?.agendamento_processo) || ''} label='Data do agendamento' sx={{ flex: 1, }} />
                                     </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '10px 0px 10px 5px', flexDirection: 'column' }}>
+                                    <Divider padding={0} />
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
                                         <Text bold>Redação:</Text>
                                         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
                                             <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
@@ -2599,7 +2747,8 @@ export default function EditUser() {
                                     </Box>
 
                                     <>
-                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '10px 0px 10px 5px' }}>
+                                        <Divider padding={0} />
+                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
                                             <Text bold>Prova - Redação:</Text>
                                             <Box sx={{
                                                 ...styles.menuIcon,
@@ -2611,7 +2760,7 @@ export default function EditUser() {
                                                 }
                                             }} onClick={() => console.log('redação')} />
                                         </Box>
-
+                                        <Divider padding={0} />
                                         <Box sx={styles.inputSection}>
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nota_processo' onBlur={handleBlurNota} type="number" onChange={handleChangeSelectiveProcess} value={selectiveProcessData?.nota_processo || ''} label='Nota da prova' sx={{ flex: 1, }} />
                                             <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupStatusProcess} valueSelection={selectiveProcessData?.status_processo} onSelect={(value) => setSelectiveProcessData({ ...selectiveProcessData, status_processo: value })}
@@ -2619,8 +2768,8 @@ export default function EditUser() {
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
                                         </Box>
-
-                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '10px 0px 10px 5px', flexDirection: 'column' }}>
+                                        <Divider padding={0} />
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
                                             <Text bold>Pré-Matrícula/Cadastro:</Text>
                                             <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
                                                 <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveProcess('pre-cadastro')} style={{ width: 120, height: 30 }} />

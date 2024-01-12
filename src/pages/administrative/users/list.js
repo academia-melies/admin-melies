@@ -166,7 +166,7 @@ export default function ListUsers(props) {
                         <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
                         <Text bold style={{ color: '#d6d6d6' }} light>{usersList.filter(filter)?.length || '0'}</Text>
                         <Text style={{ color: '#d6d6d6' }} light>de</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{usersList?.length || 10}</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{usersList?.length || 0}</Text>
                         <Text style={{ color: '#d6d6d6' }} light>usuários</Text>
                     </Box>
                 </Box>
@@ -228,7 +228,7 @@ export default function ListUsers(props) {
                 </Box>
             </ContentContainer>
             {
-                usersList.length > 0 ?
+                usersList?.filter(filter)?.length > 0 ?
                     <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
                     :
                     <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>

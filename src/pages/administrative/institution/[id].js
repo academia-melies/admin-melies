@@ -5,8 +5,9 @@ import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
 import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
-import { formatCNPJ } from "../../../helpers"
+import { formatCEP, formatCNPJ } from "../../../helpers"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import axios from "axios"
 
 export default function EditInstitution(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -31,7 +32,9 @@ export default function EditInstitution(props) {
         dt_rec_pres: '',
         pt_cred_pres: '',
         dt_cred_pres: '',
-        ativo: 1
+        ativo: 1,
+        endereco_pres: '',
+        endereco_ead: '',
     })
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
 
@@ -108,6 +111,11 @@ export default function EditInstitution(props) {
         if (value.target.name == 'cnpj') {
             let str = value.target.value;
             value.target.value = formatCNPJ(str)
+        }
+
+        if (value.target.name?.includes('cep')) {
+            let str = value.target.value;
+            value.target.value = formatCEP(str)
         }
 
         setInstitutionData((prevValues) => ({
@@ -280,6 +288,45 @@ export default function EditInstitution(props) {
         }
     }
 
+    const handleBlurCEP = (event) => {
+        const { value, name } = event.target;
+        findCEP(value, name);
+    };
+
+    async function findCEP(cep, name) {
+        setLoading(true)
+        try {
+            const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+            const { data } = response;
+
+            let fields = {}
+
+            if (name === 'cep_pres') {
+                fields = {
+                    rua_pres: data.logradouro,
+                    cidade_pres: data.localidade,
+                    uf_pres: data.uf,
+                    bairro_pres: data.bairro
+                }
+            } else {
+                fields = {
+                    rua_ead: data.logradouro,
+                    cidade_ead: data.localidade,
+                    uf_ead: data.uf,
+                    bairro_ead: data.bairro
+                }
+            }
+            setInstitutionData((prevValues) => ({
+                ...prevValues,
+                ...fields
+            }))
+        } catch (error) {
+        } finally {
+            setLoading(false)
+        }
+
+    }
+
     const groupStatus = [
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
@@ -289,6 +336,8 @@ export default function EditInstitution(props) {
         style: 'currency',
         currency: 'BRL'
     });
+
+
 
 
     return (
@@ -308,14 +357,19 @@ export default function EditInstitution(props) {
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Instituição</Text>
                 </Box>
                 <Box sx={styles.inputSection}>
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_instituicao' onChange={handleChange} value={institutionData?.nome_instituicao || ''} label='Nome' sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='CNPJ' name='cnpj' onChange={handleChange} value={institutionData?.cnpj || ''} label='CNPJ' sx={{ flex: 1, }} />
-                </Box>
-                <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Mantenedora' name='mantenedora' onChange={handleChange} value={institutionData?.mantenedora || ''} label='Mantenedora' sx={{ flex: 1, }} />
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Mantida' name='mantida' onChange={handleChange} value={institutionData?.mantida || ''} label='Mantida' sx={{ flex: 1, }} />
                 </Box>
-                <Text bold>Presencial</Text>
+                <Box sx={styles.inputSection}>
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='CNPJ' name='cnpj' onChange={handleChange} value={institutionData?.cnpj || ''} label='CNPJ' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Código Inep' name='cod_inep' onChange={handleChange} value={institutionData?.cod_inep || ''} label='Código Inep' sx={{ flex: 1, }} />
+                </Box>
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={institutionData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setInstitutionData({ ...institutionData, ativo: parseInt(value) })} />
+
+            </ContentContainer>
+
+            <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
+                <Text title bold >Presencial</Text>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Credenciamento' name='pt_cred_pres' onChange={handleChange} value={institutionData?.pt_cred_pres || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
                     <TextInput disabled={!isPermissionEdit && true} label="Data" placeholder='Data' name='dt_cred_pres' onChange={handleChange} value={(institutionData?.dt_cred_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
@@ -323,13 +377,15 @@ export default function EditInstitution(props) {
                     <TextInput disabled={!isPermissionEdit && true} label="Data" placeholder='Data' name='dt_rec_pres' onChange={handleChange} value={(institutionData?.dt_rec_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
 
                 </Box>
+                <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='endereco_pres' onChange={handleChange} value={institutionData?.endereco_pres || ''} label='Endereço' sx={{ flex: 1, }} />
+
                 <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
                     {arrayRecognitionP.map((rec, index) => (
                         <>
                             <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                 <TextInput disabled={!isPermissionEdit && true} label="Portaria de Renovação do Recredenciamento" placeholder='Portaria de Renovação do Recredenciamento' name={`ren_reconhecimento_p-${index}`} onChange={handleChangeRecognitionP} value={rec.ren_reconhecimento_p} sx={{ flex: 1 }} />
                                 <TextInput disabled={!isPermissionEdit && true} label="Data" placeholder='Data' name={`dt_renovacao_rec_p-${index}`} onChange={handleChangeRecognitionP} value={(rec?.dt_renovacao_rec_p)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                                <Box sx={{
+                                {newInstitution && <Box sx={{
                                     backgroundSize: 'cover',
                                     backgroundRepeat: 'no-repeat',
                                     backgroundPosition: 'center',
@@ -343,7 +399,7 @@ export default function EditInstitution(props) {
                                     }
                                 }} onClick={() => {
                                     newInstitution ? deleteRecognitionP(index) : handleDeleteRecognition(rec?.id_renovacao_rec_p)
-                                }} />
+                                }} />}
                             </Box>
                         </>
                     ))}
@@ -368,7 +424,23 @@ export default function EditInstitution(props) {
                         }} />}
                     </Box>
                 </Box>
-                <Text bold>EAD</Text>
+                <Text bold >Endereço</Text>
+
+                <Box sx={styles.inputSection}>
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep_pres' onChange={handleChange} value={institutionData?.cep_pres || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua_pres' onChange={handleChange} value={institutionData?.rua_pres || ''} label='Endereço *' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nº' name='numero_pres' onChange={handleChange} value={institutionData?.numero_pres || ''} label='Nº *' sx={{ flex: 1, }} />
+                </Box>
+                <Box sx={styles.inputSection}>
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Cidade' name='cidade_pres' onChange={handleChange} value={institutionData?.cidade_pres || ''} label='Cidade *' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='UF' name='uf_pres' onChange={handleChange} value={institutionData?.uf_pres || ''} label='UF *' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Bairro' name='bairro_pres' onChange={handleChange} value={institutionData?.bairro_pres || ''} label='Bairro *' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Complemento' name='complemento_pres' onChange={handleChange} value={institutionData?.complemento_pres || ''} label='Complemento' sx={{ flex: 1, }} />
+                </Box>
+            </ContentContainer>
+            <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
+                <Text title bold >EAD</Text>
+
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Credenciamento' name='pt_cred_ead' onChange={handleChange} value={institutionData?.pt_cred_ead || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Data' name='dt_cred_ead' onChange={handleChange} value={(institutionData?.dt_cred_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
@@ -420,7 +492,18 @@ export default function EditInstitution(props) {
                         }} />}
                     </Box>
                 </Box>
-                <RadioItem disabled={!isPermissionEdit && true} valueRadio={institutionData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setInstitutionData({ ...institutionData, ativo: parseInt(value) })} />
+                <Text bold >Endereço Polo Sede</Text>
+                <Box sx={styles.inputSection}>
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep_ead' onChange={handleChange} value={institutionData?.cep_ead || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua_ead' onChange={handleChange} value={institutionData?.rua_ead || ''} label='Endereço *' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nº' name='numero_ead' onChange={handleChange} value={institutionData?.numero_ead || ''} label='Nº *' sx={{ flex: 1, }} />
+                </Box>
+                <Box sx={styles.inputSection}>
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Cidade' name='cidade_ead' onChange={handleChange} value={institutionData?.cidade_ead || ''} label='Cidade *' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='UF' name='uf_ead' onChange={handleChange} value={institutionData?.uf_ead || ''} label='UF *' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Bairro' name='bairro_ead' onChange={handleChange} value={institutionData?.bairro_ead || ''} label='Bairro *' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Complemento' name='complemento_ead' onChange={handleChange} value={institutionData?.complemento_ead || ''} label='Complemento' sx={{ flex: 1, }} />
+                </Box>
             </ContentContainer>
         </>
     )
