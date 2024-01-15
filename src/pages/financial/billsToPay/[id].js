@@ -257,6 +257,15 @@ export default function EditBillToPay(props) {
         { label: 'Cancelado', value: 'Cancelado' }
     ]
 
+    const groupPaymentCount = [
+        { label: 'Itaú', value: 'Itaú' },
+        { label: 'Bradesco', value: 'Bradesco' },
+        { label: 'Dinheiro', value: 'Dinheiro' },
+        { label: 'Cartão de crédito', value: 'Cartão de crédito' },
+        { label: 'Cheque', value: 'Cheque' },
+        { label: 'Outros', value: 'Outros' }
+    ]
+
     const groupTypePayment = [
         { label: 'Salário', value: 'Salário' },
         { label: 'Bônus', value: 'Bônus' },
@@ -377,10 +386,35 @@ export default function EditBillToPay(props) {
                         />
                     </Box>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição/Observação' name='descricao_desp_f' onChange={handleChange} value={billToPayData?.descricao_desp_f || ''} label='Descrição/Observação' sx={{}} multiline rows={4} />
-                    <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => setBillToPayData({ ...billToPayData, status: value })}
-                        title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
+                    <Box sx={styles.inputSection}>
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Centro de custo' name='centro_centro' onChange={handleChange} value={billToPayData?.centro_centro || ''} label='Centro de custo' sx={{ flex: 1, }} />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nº NF-e' name='n_nfe' onChange={handleChange} value={billToPayData?.n_nfe || ''} label='Nº NF-e' sx={{ flex: 1, }} />
+                        <TextInput disabled={!isPermissionEdit && true}
+                            name='dt_nfe'
+                            onChange={handleChange}
+                            value={(billToPayData?.dt_nfe)?.split('T')[0] || ''}
+                            type="date"
+                            label='Data da NF-e'
+                            sx={{ width: 250 }} />
+                    </Box>
+                    <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
+                        <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
+                            if (value !== 'Pago') {
+                                setBillToPayData({ ...billToPayData, status: value, conta_pagamento: '' })
+                            }
+                            setBillToPayData({ ...billToPayData, status: value })
+                        }}
+                            title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        {billToPayData?.status === 'Pago' &&
+                            <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
+                                title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+
+                        }
+                    </Box>
                     <Box sx={{ padding: '0px 0px 20px 0px' }}>
                         <CheckBoxComponent disabled={!isPermissionEdit && true}
                             boxGroup={groupRecurrency}
@@ -456,10 +490,36 @@ export default function EditBillToPay(props) {
                         />
                     </Box>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição/Observação' name='descricao_desp_v' onChange={handleChange} value={billToPayData?.descricao_desp_v || ''} label='Descrição/Observação' sx={{}} multiline rows={4} />
-                    <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status_desp_v} onSelect={(value) => setBillToPayData({ ...billToPayData, status_desp_v: value })}
-                        title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
+                    <Box sx={styles.inputSection}>
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Centro de custo' name='centro_centro' onChange={handleChange} value={billToPayData?.centro_centro || ''} label='Centro de custo' sx={{ flex: 1, }} />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nº NF-e' name='n_nfe' onChange={handleChange} value={billToPayData?.n_nfe || ''} label='Nº NF-e' sx={{ flex: 1, }} />
+                        <TextInput disabled={!isPermissionEdit && true}
+                            name='dt_nfe'
+                            onChange={handleChange}
+                            value={(billToPayData?.dt_nfe)?.split('T')[0] || ''}
+                            type="date"
+                            label='Data da NF-e'
+                            sx={{ width: 250 }} />
+                    </Box>
+
+                    <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
+                        <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
+                            if (value !== 'Pago') {
+                                setBillToPayData({ ...billToPayData, status: value, conta_pagamento: '' })
+                            }
+                            setBillToPayData({ ...billToPayData, status: value })
+                        }}
+                            title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        {billToPayData?.status === 'Pago' &&
+                            <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
+                                title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
+
+                        }
+                    </Box>
                     <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
@@ -497,15 +557,31 @@ export default function EditBillToPay(props) {
                             label='Salário' sx={{ flex: 1, }}
                         />
                     </Box>
+                    <Box sx={{...styles.inputSection, justifyContent: 'flex-start'}}>
+                        <SelectList disabled={!isPermissionEdit && true} data={groupTypePayment} valueSelection={billToPayData?.tipo_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo_pagamento: value })}
+                            title="Tipo de pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Centro de custo' name='centro_centro' onChange={handleChange} value={billToPayData?.centro_centro || ''} label='Centro de custo' sx={{ maxWidth: 250, }} />
+                    </Box>
+                    <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
+                        <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status_pagamento} onSelect={(value) => {
+                            if (value !== 'Pago') {
+                                setBillToPayData({ ...billToPayData, status_pagamento: value, conta_pagamento: '' })
+                            }
+                            setBillToPayData({ ...billToPayData, status: value })
+                        }}
+                            title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        {billToPayData?.status === 'Pago' &&
+                            <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
+                                title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />
 
-                    <SelectList disabled={!isPermissionEdit && true} data={groupTypePayment} valueSelection={billToPayData?.tipo_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo_pagamento: value })}
-                        title="Tipo de pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
-                    <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, status_pagamento: value })}
-                        title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
+                        }
+                    </Box>
                     <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
