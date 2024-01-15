@@ -290,6 +290,7 @@ export default function EditClass(props) {
                                     <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
                                         <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Aluno</th>
                                         <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Area acadêmica</th>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Cadastro</th>
                                         <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nota Final</th>
                                         <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Status</th>
                                     </tr>
@@ -298,6 +299,7 @@ export default function EditClass(props) {
                                     {
                                         enrolledStudents?.map((item, index) => {
                                             const studentAcademic = `/academic/teacherArea/${item?.usuario_id}`
+                                            const userDatas = `/administrative/users/${item?.usuario_id}`
                                             return (
                                                 <tr key={`${item}-${index}`}>
                                                     <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
@@ -306,6 +308,11 @@ export default function EditClass(props) {
                                                     <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                                         <Link href={studentAcademic} target="_blank" style={{ color: theme ? 'blue' : 'red', }}>
                                                             link das notas
+                                                        </Link>
+                                                    </td>
+                                                    <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                        <Link href={userDatas} target="_blank" style={{ color: theme ? 'blue' : 'red', }}>
+                                                            Cadastro do aluno
                                                         </Link>
                                                     </td>
                                                     <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>

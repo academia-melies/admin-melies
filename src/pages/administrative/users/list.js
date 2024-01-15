@@ -7,6 +7,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { TablePagination } from "@mui/material"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { api } from "../../../api/api"
 
 export default function ListUsers(props) {
     const [usersList, setUsers] = useState([])
@@ -20,10 +21,38 @@ export default function ListUsers(props) {
         filterName: 'nome',
         filterOrder: 'asc'
     })
+    const [filtersField, setFiltersField] = useState({
+        enrollmentSituation: 'todos',
+        status: 'todos',
+        userPerfil: 'todos',
+    })
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const userFilterFunctions = {
+        ativo: (item) => filtersField?.status === 'todos' || item.ativo === filtersField?.status,
+        enrollmentSituation: (item) => filtersField?.enrollmentSituation === 'todos' || item?.total_matriculas_em_andamento === filtersField?.enrollmentSituation,
+        perfilUser: (item) => filtersField?.userPerfil === 'todos' || item?.perfil?.includes(filtersField?.userPerfil),
+    };
+
+
+    const filter = (item) => {
+        const normalizeString = (str) => {
+            return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        };
+
+        const normalizedFilterData = normalizeString(filterData);
+
+        return (
+            Object.values(userFilterFunctions).every(userFilterFunction => userFilterFunction(item)) &&
+            (
+                normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
+                normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
+            )
+        );
+    };
+
 
 
     const fetchPermissions = async () => {
@@ -37,30 +66,10 @@ export default function ListUsers(props) {
     }
 
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-    const filter = (item) => {
-        const normalizeString = (str) => {
-            return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        };
-
-        const normalizedFilterData = normalizeString(filterData);
-
-        if (filterAtive === 'todos') {
-            return normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
-                normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase());
-        } else {
-            return item?.ativo === filterAtive && (
-                normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
-                normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
-            );
-        }
-    };
-
 
     useEffect(() => {
-        if (perfil) {
-            getUsers();
-            fetchPermissions()
-        }
+        getUsers();
+        fetchPermissions()
         if (window.localStorage.getItem('list-users-filters')) {
             const meliesLocalStorage = JSON.parse(window.localStorage.getItem('list-users-filters') || null);
             setFilters({
@@ -68,12 +77,12 @@ export default function ListUsers(props) {
                 filterOrder: meliesLocalStorage?.filterOrder
             })
         }
-    }, [perfil]);
+    }, []);
 
     const getUsers = async () => {
         setLoading(true)
         try {
-            const response = await getUsersPerfil(perfil)
+            const response = await api.get(`/users`)
             const { data = [] } = response;
             setUsers(data)
         } catch (error) {
@@ -82,6 +91,8 @@ export default function ListUsers(props) {
             setLoading(false)
         }
     }
+
+
 
 
     useEffect(() => {
@@ -121,12 +132,9 @@ export default function ListUsers(props) {
 
     const column = [
         { key: 'id', label: 'ID' },
-        { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'location' },
+        { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'location', matricula: true },
         { key: 'email', label: 'E-mail' },
-        { key: 'cpf', label: 'CPF' },
         { key: 'email_melies', label: 'E-mail Méliès' },
-        { key: 'dt_criacao', label: 'Criado em', date: true },
-
     ];
 
     const listAtivo = [
@@ -137,11 +145,11 @@ export default function ListUsers(props) {
 
     const listEnrollStatus = [
         { label: 'Todos', value: 'todos' },
-        { label: 'Pendente de nota', value: 'Pendente de nota' },
-        { label: 'Reprovado', value: 'Reprovado' },
-        { label: 'Aprovado - Pendente de pré-matrícula', value: 'Aprovado - Pendente de pré-matrícula' },
-        { label: 'Aprovado - Em análise', value: 'Aprovado - Em análise' },
-        { label: 'Matriculado', value: 'Matriculado' },
+        // { label: 'Pendente de nota', value: 'Pendente de nota' },
+        // { label: 'Reprovado', value: 'Reprovado' },
+        // { label: 'Aprovado - Pendente de pré-matrícula', value: 'Aprovado - Pendente de pré-matrícula' },
+        // { label: 'Aprovado - Em análise', value: 'Aprovado - Em análise' },
+        { label: 'Matriculado', value: 1 },
     ]
 
     const listUser = [
@@ -175,8 +183,8 @@ export default function ListUsers(props) {
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
                             data={listUser}
-                            valueSelection={perfil}
-                            onSelect={(value) => setPerfil(value)}
+                            valueSelection={filtersField?.userPerfil}
+                            onSelect={(value) => setFiltersField({ ...filtersField, userPerfil: value })}
                             title="usuário"
                             filterOpition="value"
                             sx={{ flex: 1 }}
@@ -186,8 +194,8 @@ export default function ListUsers(props) {
 
                         <SelectList
                             data={listAtivo}
-                            valueSelection={filterAtive}
-                            onSelect={(value) => setFilterAtive(value)}
+                            valueSelection={filtersField?.status}
+                            onSelect={(value) => setFiltersField({ ...filtersField, status: value })}
                             title="status"
                             filterOpition="value"
                             sx={{ flex: 1 }}
@@ -197,8 +205,8 @@ export default function ListUsers(props) {
                         <SelectList
 
                             data={listEnrollStatus}
-                            valueSelection={filterEnrollStatus}
-                            onSelect={(value) => setFilterEnrollStatus(value)}
+                            valueSelection={filtersField?.enrollmentSituation}
+                            onSelect={(value) => setFiltersField({ ...filtersField, enrollmentSituation: value })}
                             title="situação/matrícula"
                             filterOpition="value"
                             sx={{ flex: 1 }}
@@ -211,6 +219,11 @@ export default function ListUsers(props) {
                             setPerfil('todos')
                             setFilterAtive('todos')
                             setFilterEnrollStatus('todos')
+                            setFiltersField({
+                                enrollmentSituation: 'todos',
+                                status: 'todos',
+                                userPerfil: 'todos'
+                            })
                             setFilterData('')
                         }} />
                     </Box>
@@ -229,7 +242,7 @@ export default function ListUsers(props) {
             </ContentContainer>
             {
                 usersList?.filter(filter)?.length > 0 ?
-                    <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
+                    <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} enrollmentsCount={true} filters={filters} onPress={(value) => setFilters(value)} onFilter />
                     :
                     <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                         <Text bold>Não foi encontrado usuarios {perfil}</Text>
