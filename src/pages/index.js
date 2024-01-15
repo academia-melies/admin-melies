@@ -143,7 +143,7 @@ function Home() {
       try {
          const response = await api.get(`/task/user/${user?.id}`)
          const { data } = response;
-         setTasksList(data)
+         setTasksList(data?.filter(item => item?.status_chamado === 'Em aberto'))
       } catch (error) {
          console.log(error)
       } finally {
@@ -716,7 +716,8 @@ function Home() {
                         }}>
                            {tasksList?.length > 0 ?
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, paddingBottom: 5 }}>
-                                 {tasksList?.map((item, index) => {
+                                 {tasksList?.sort((a, b) => b.dt_criacao.localeCompare(a.dt_criacao))
+                                 ?.map((item, index) => {
                                     return (
                                        <Box key={index} sx={{
                                           display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '12px 12px',

@@ -27,6 +27,7 @@ export const Table_V1 = (props) => {
         onPress = () => { },
         query = ``,
         route = false,
+        enrollmentsCount = false,
         targetBlank
     } = props;
 
@@ -173,10 +174,23 @@ export const Table_V1 = (props) => {
                                                                     <Text small bold>{row[column.key]}</Text>
                                                                 </Box>
                                                             ) : (
-                                                                column.price ? formatter.format(row[column?.key]) : column.date ? formatDate(row[column?.key]) : row[column?.key || '-']
+                                                                column.price ? formatter.format(row[column?.key]) : column.date ? formatDate(row[column?.key]) :
+                                                                    <Text style={{
+                                                                        maxWidth: column.matricula && '180px', textOverflow: 'ellipsis',
+                                                                        whiteSpace: 'nowrap',
+                                                                        overflow: 'hidden',
+                                                                    }}>
+                                                                        {row[column?.key || '-']}
+                                                                    </Text>
 
                                                             )
                                                         )}
+                                                        {(enrollmentsCount && row?.total_matriculas_em_andamento > 0 && column?.matricula) &&
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: colorPalette?.buttonColor, padding: '2px', width: 20, height: 20, borderRadius: 20 }}>
+                                                                <Text small bold>M</Text>
+                                                            </Box>
+
+                                                        }
                                                     </Box>
                                                 ) : (
                                                     <TableCell sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>---</TableCell>

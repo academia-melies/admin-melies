@@ -363,7 +363,7 @@ export default function Login() {
                                     opacity: 0.8,
                                     cursor: 'pointer'
                                 }
-                            }} onClick={() => showRedefinitionPass(false)} />
+                            }} onClick={() => setShowRedefinitionPass(false)} />
                         </Box>
                         <Box>
                             <Text>Insira a nova senha que recebeu por e-mail, para prosseguir. Lembre-se de alterar sua senha quando fizer o login.</Text>
