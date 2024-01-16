@@ -19,6 +19,7 @@ export default function EditTask(props) {
     const { id, slug } = router.query;
     const newTask = id === 'new';
     const [responsibles, setResponsibles] = useState([])
+    const [usersList, setUsersList] = useState([])
     const [taskData, setTaskData] = useState({
         status_chamado: '',
         responsavel_chamado: '',
@@ -59,6 +60,7 @@ export default function EditTask(props) {
             const { data } = response
             if (response?.status === 200) {
                 setTaskData(data)
+                console.log(data)
                 return true
             }
             return false
@@ -70,14 +72,22 @@ export default function EditTask(props) {
 
     async function listUsers() {
         try {
-            const response = await api.get(`/users/area?area=${'TI - Suporte'}`)
+            const response = await api.get(`/users`)
             const { data } = response
-            const groupResponsibles = data.map(responsible => ({
+            const groupResponsibles = data?.filter(item => item?.area === 'TI - Suporte')?.map(responsible => ({
                 label: responsible.nome,
                 value: responsible?.id
             }));
 
+            const groupUserBy = data.map(responsible => ({
+                label: responsible.nome,
+                value: responsible?.id
+            }));
+
+            const sortedUsers = groupUserBy?.sort((a, b) => a.label.localeCompare(b.label));
+
             setResponsibles(groupResponsibles)
+            setUsersList(sortedUsers)
         } catch (error) {
             return error
         }
@@ -392,6 +402,7 @@ export default function EditTask(props) {
         currency: 'BRL',
     });
 
+
     return (
         <>
 
@@ -415,7 +426,10 @@ export default function EditTask(props) {
                                         title="Prioridade *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <TextInput placeholder='Id de quem está solicitando' name='autor_chamado' onChange={handleChange} value={taskData?.autor_chamado || user?.nome} label='ID Autor *' sx={{ flex: 1, }} />
+                                    {user?.area === 'TI - Suporte' && <SelectList fullWidth data={usersList} valueSelection={taskData?.autor_chamado} onSelect={(value) => setTaskData({ ...taskData, autor_chamado: value })}
+                                        title="Autor *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />}
                                     <SelectList fullWidth data={responsibles} valueSelection={taskData?.responsavel_chamado} onSelect={(value) => setTaskData({ ...taskData, responsavel_chamado: value })}
                                         title="Responsável *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -439,6 +453,7 @@ export default function EditTask(props) {
 
                                     <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                                         <Text bold>Descrição:</Text>
+
                                         <Text style={{ whiteSpace: 'pre-line' }}>{taskData?.descricao_chamado}</Text>
                                     </Box>
                                     <Divider distance={0} />
@@ -707,7 +722,7 @@ export default function EditTask(props) {
 
                         </ContentContainer>
                     </Backdrop>
-                   {taskData?.status_chamado !== 'Finalizado' && <ContainDropzone
+                    {taskData?.status_chamado !== 'Finalizado' && <ContainDropzone
                         title="Arquivos"
                         text="Arraste e solte seus arquivos aqui ou clique para selecionar."
                         data={filesTask}
