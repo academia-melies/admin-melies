@@ -19,6 +19,7 @@ export default function Login() {
     const [imagesList, setImagesList] = useState([])
     const [showMenu, setShowMenu] = useState(false)
     const [showRedefinitionPass, setShowRedefinitionPass] = useState(false)
+    const [newPass, setNewPass] = useState(false)
     const [windowWidth, setWindowWidth] = useState(0)
     const smallWidthDevice = windowWidth < 1000
     const notebookWidth = windowWidth > 1100 && windowWidth < 1500
@@ -110,7 +111,7 @@ export default function Login() {
 
                 if (response.status === 200) {
                     alert.success("Nova senha enviada por e-mail.")
-                    setShowRedefinitionPass(true)
+                    setNewPass(true)
                 }
 
             } catch (error) {
@@ -288,16 +289,8 @@ export default function Login() {
                                         borderRadius: '100px',
                                     }}
                                     text='Entrar'
-                                    onClick={(event) => {
-                                        if (checkedReset(userData?.email)) {
-                                            setShowConfirmationDialog({
-                                                active: true,
-                                                event,
-                                                acceptAction: resetPassword,
-                                                title: 'Resetar Senha',
-                                                message: 'Uma nova senha será enviada para seu e-mail.',
-                                            })
-                                        }
+                                    onClick={() => {
+                                        setShowRedefinitionPass(true)
                                     }}
                                 >
                                     <Text small bold style={{ color: colorPalette.buttonColor }}>Redefinir</Text>
@@ -351,9 +344,9 @@ export default function Login() {
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 
-                    <ContentContainer>
+                    <ContentContainer sx={{ maxWidth: 400 }}>
                         <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
-                            <Text bold>Refenifição de Senha</Text>
+                            <Text large bold>Redefinição de Senha</Text>
                             <Box sx={{
                                 ...styles.menuIcon,
                                 backgroundImage: `url(${icons.gray_close})`,
@@ -363,16 +356,32 @@ export default function Login() {
                                     opacity: 0.8,
                                     cursor: 'pointer'
                                 }
-                            }} onClick={() => setShowRedefinitionPass(false)} />
+                            }} onClick={() => {
+                                setNewPass(false)
+                                setShowRedefinitionPass(false)}} />
+                        </Box>
+                        <Box sx={{ flex: 1, display: `flex`, justifyContent: 'center' }}>
+
+                            <Box sx={{
+                                backgroundSize: 'cover',
+                                display: 'flex',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center center',
+                                backgroundSize: 'contain',
+                                width: '200px',
+                                height: '150px',
+                                // backgroundColor: 'pink'
+                                backgroundImage: theme ? `url('/favicon.png')` : `url('/icons/favicon_dark.png')`, marginRight: 5, marginLeft: 0,
+                            }} />
                         </Box>
                         <Box>
-                            <Text>Insira a nova senha que recebeu por e-mail, para prosseguir. Lembre-se de alterar sua senha quando fizer o login.</Text>
+                            <Text>Informe seu e-mail e enviaremos uma nova senha por e-mail. Assim que receber, insira no campo abaixo a nova senha e faça Login.</Text>
                         </Box>
                         <Divider padding={0} />
                         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: smallWidthDevice ? '80%' : '100%', }}>
                                 <Box sx={{
-                                    display: 'flex', flexDirection: 'column', gap: 2, width: { xs: `80%`, xm: `80%`, md: '62.5%', lg: '62.5%' }, justifyContent: 'center',
+                                    display: 'flex', flexDirection: 'column', gap: 2, width: { xs: `80%`, xm: `80%`, md: '62.5%', lg: '90%' }, justifyContent: 'center',
                                     // alignItems: 'center',
                                 }}>
                                     <TextInput
@@ -402,7 +411,7 @@ export default function Login() {
                                             }
                                         }}
                                     />
-                                    <TextInput
+                                    {newPass && <TextInput
                                         placeholder='******'
                                         label='senha'
                                         colorLabel={'#fff'}
@@ -427,11 +436,11 @@ export default function Login() {
                                                 transition: 'background-color 1s',
                                             }
                                         }}
-                                    />
+                                    />}
                                 </Box>
-                                <Button
+                                {newPass && <Button
                                     style={{
-                                        width: { xs: `80%`, xm: `80%`, md: '60%', lg: '60%' },
+                                        width: '90%',
                                         padding: '12px 80px',
                                         marginBottom: 5,
                                         borderRadius: '100px',
@@ -453,15 +462,15 @@ export default function Login() {
                                     type="submit"
                                 >
                                     <Text small bold style={{ color: 'inherit' }}>Entrar</Text>
-                                </Button>
+                                </Button>}
                             </Box>
-                            <Text light small style={{ marginTop: 5 }}>Enviar senha novamente.</Text>
-                            <Button
+                            {!newPass && <Button
                                 style={{
-                                    width: '205px',
+                                    width: '90%',
                                     padding: '10px 30px',
                                     marginBottom: 5,
-                                    borderRadius: '100px',
+                                    marginTop: 15,
+                                    borderRadius: '12px',
                                     border: `1px solid ${colorPalette.buttonColor}`,
                                     transition: 'background-color 1s',
                                     "&:hover": {
@@ -475,11 +484,21 @@ export default function Login() {
                                     // padding: { xs: `6px 10px`, xm: `8px 16px`, md: `8px 16px`, lg: `8px 16px` },
                                     borderRadius: '100px',
                                 }}
-                                text='Entrar'
-                                onClick={() => resetPassword()}
+                                onClick={(event) => {
+                                    if (checkedReset(userData?.email)) {
+                                        setShowConfirmationDialog({
+                                            active: true,
+                                            event,
+                                            acceptAction: resetPassword,
+                                            title: 'Resetar Senha',
+                                            message: 'Uma nova senha será enviada para seu e-mail.',
+                                        })
+                                    }
+                                }}
                             >
-                                <Text small bold style={{ color: colorPalette.buttonColor }}>Redefinir</Text>
+                                <Text small bold style={{ color: colorPalette.buttonColor }}>Enviar nova senha</Text>
                             </Button>
+                            }
                         </form>
                     </ContentContainer>
                 </Box>
