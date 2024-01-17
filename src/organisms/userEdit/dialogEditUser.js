@@ -19,7 +19,6 @@ export const DialogUserEdit = (props) => {
    const userName = `${firstName} ${lastName}`;
    let fotoPerfil = user?.getPhoto?.location || '';
    const [userData, setUserData] = useState({
-
    })
    const [bgPhoto, setBgPhoto] = useState({})
    const [showEditFile, setShowEditFiles] = useState({
@@ -162,6 +161,7 @@ export const DialogUserEdit = (props) => {
                      </Box>}
                   <Text bold>{userName}</Text>
                   <EditFile
+                     isPermissionEdit={true}
                      columnId="id_foto_perfil"
                      open={showEditFile.photoProfile}
                      newUser={false}

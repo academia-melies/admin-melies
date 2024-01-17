@@ -175,7 +175,7 @@ export default function EditTask(props) {
                 await getTaskFiles()
                 await setAlterationTask(false)
                 console.log(task)
-                if (task?.status_chamado === 'Finalizado' && !task?.avaliacao_nota) { setShowAvaliation(true) }
+                if (task?.status_chamado === 'Finalizado' && !task?.avaliacao_nota && user?.id === task?.autor_chamado) { setShowAvaliation(true) }
                 setStatusAlteration({ finalizado: false, reaberto: false, analise: false })
             }
             // if (serviceResponse) {
@@ -561,16 +561,16 @@ export default function EditTask(props) {
                                                 <TextInput fullWidth
                                                     placeholder='Deixe seu comentário'
                                                     name='avaliacao_comentario'
-                                                    onChange={handleChange} value={taskData?.avaliacao_comentario || ''}
+                                                    onChange={user?.id === taskData?.autor_chamado && handleChange} value={taskData?.avaliacao_comentario || ''}
                                                     multiline
                                                     sx={{ width: '100%' }}
                                                     maxRows={8}
                                                     rows={4}
                                                 />
                                             </Box>
-                                            <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-start', marginTop: 2, marginLeft: 7 }}>
+                                            {user?.id === taskData?.autor_chamado && < Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-start', marginTop: 2, marginLeft: 7 }}>
                                                 <Button small text="Enviar" style={{ height: 30, width: 120 }} />
-                                            </Box>
+                                            </Box>}
                                         </Box>}
                                     {taskData?.status_chamado !== 'Finalizado' && <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                         <TextInput
@@ -932,7 +932,7 @@ export default function EditTask(props) {
                                         <TextInput fullWidth
                                             placeholder='Deixe seu comentário'
                                             name='avaliacao_comentario'
-                                            onChange={handleChange} value={taskData?.avaliacao_comentario || ''}
+                                            onChange={user?.id === taskData?.autor_chamado && handleChange} value={taskData?.avaliacao_comentario || ''}
                                             multiline
                                             sx={{ width: '100%' }}
                                             maxRows={8}
@@ -962,7 +962,7 @@ export default function EditTask(props) {
                         taskId={id}
                         filesContainer={newTask ? true : false}
                     />}
-                </Box>
+                </Box >
             </>}
         </>
     )
