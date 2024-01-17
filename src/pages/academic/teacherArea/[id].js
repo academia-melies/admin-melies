@@ -304,7 +304,7 @@ export default function StudentData(props) {
                                                 modulo_turma: item?.modulo
                                             })
                                             setModuleStudent(item?.modulo)
-                                        }} style={{ width: '90px', height: '30px', borderRadius: 0 }} />
+                                        }} style={{ height: '30px', borderRadius: 0 }} />
                                         {isDpEnrolled && <Box sx={{
                                             backgroundColor: 'red',
                                             width: 16,

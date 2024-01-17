@@ -622,7 +622,7 @@ function Home() {
 
                      {showSections?.notification &&
                         <Box sx={{
-                           width: 200, height: 400, overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
+                           width: 200, height: notificationUser ?.filter(item => item.ativo === 1)?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
                            scrollbarWidth: 'thin', // para navegadores que não são WebKit
                            scrollbarColor: 'transparent transparent', // para navegadores que não são WebKit
                            '&::-webkit-scrollbar': {
@@ -632,7 +632,7 @@ function Home() {
                               backgroundColor: 'transparent',
                            },
                         }}>
-                           {notificationUser?.length > 0 ? notificationUser
+                           {notificationUser ?.filter(item => item.ativo === 1)?.length > 0 ? notificationUser
                               ?.filter(item => item.ativo === 1)
                               ?.sort((a, b) => b.dt_criacao.localeCompare(a.dt_criacao))
                               ?.slice(0, 10)
@@ -704,7 +704,7 @@ function Home() {
                      </Box>
                      {showSections?.tasks &&
                         <Box sx={{
-                           width: 200, height: 400, overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
+                           width: 200, height: tasksList?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
                            scrollbarWidth: 'thin', // para navegadores que não são WebKit
                            scrollbarColor: 'transparent transparent', // para navegadores que não são WebKit
                            '&::-webkit-scrollbar': {
