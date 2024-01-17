@@ -531,7 +531,7 @@ export default function EditTask(props) {
                                                     {groupAvaliation?.map((item, index) => {
                                                         const complete = item?.value <= taskData?.avaliacao_nota ? true : false
                                                         return (
-                                                            <Box zIndex={index} onClick={() => {
+                                                            <Box key={index} onClick={() => {
                                                                 setTaskData({ ...taskData, avaliacao_nota: item?.value })
                                                             }} sx={{
                                                                 "&:hover": {
@@ -902,7 +902,7 @@ export default function EditTask(props) {
                                             {groupAvaliation?.map((item, index) => {
                                                 const complete = item?.value <= taskData?.avaliacao_nota ? true : false
                                                 return (
-                                                    <Box zIndex={index} onClick={() => {
+                                                    <Box key={index} onClick={() => {
                                                         setTaskData({ ...taskData, avaliacao_nota: item?.value })
                                                     }} sx={{
                                                         "&:hover": {

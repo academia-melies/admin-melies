@@ -2,7 +2,7 @@ export const versions = [
     { version: '1.0.0', build: '21/08/2023', msg: '' },
     {
         version: '1.1.1', build: '17/01/2024',
-        msg: 'Foi realizado a correção de Bugs no sistema, imcrementação de melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
+        msg: 'Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
         listChanges: [
             { change: 'Correções realizadas em "Chamados",' },
             { change: 'Novos recursos de avaliação e alterações de status em "Chamados",' },
