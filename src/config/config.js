@@ -6,8 +6,8 @@ export const versions = [
         listChanges: [
             { change: 'Correções realizadas em "Chamados",' },
             { change: 'Novos recursos de avaliação e alterações de status em "Chamados",' },
-            { change: 'Atualização da Versão disponibilizada para vizibilidade ao usuário,' },
-            { change: 'Incrementação de Menu de apoio lateral(esquerdo) "resumo" do usuário",' },
+            { change: 'Atualização da Versão disponibilizada para visibilidade ao usuário,' },
+            { change: 'Novo Menu de apoio lateral(esquerdo) "resumo" do usuário",' },
             { change: 'Funcionalidade de resetar senha,' },
             { change: 'Novos campos nas telas de Usuários, Cursos, Instituição, Financeiro (Contas a pagar),' },
             { change: 'Controle de permissões (Edição e leitura),' },
