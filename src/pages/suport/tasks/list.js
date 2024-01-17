@@ -113,16 +113,16 @@ export default function ListTasks(props) {
         return sortedTasks;
     }
 
-    console.log(user)
-
     const getTasks = async () => {
         setLoading(true)
         try {
             let query;
             if (user?.area === "TI - Suporte") {
                 query = '/tasks';
+                setFilters({ ...filters, status: 'Em aberto' })
             } else {
                 query = `/task/user/${user?.id}`;
+                setFilters({ ...filters, status: 'todos' })
             }
             const response = await api.get(query)
             const { data } = response;
@@ -156,7 +156,7 @@ export default function ListTasks(props) {
     }
 
     const column = [
-        { key: 'id_chamado', label: 'ID' },
+        { key: 'id_chamado', label: '#Ticket' },
         { key: 'prioridade_chamado', label: 'Prioridade', task: true },
         { key: 'titulo_chamado', label: 'Título' },
         { key: 'autor', label: 'Autor' },
@@ -176,7 +176,7 @@ export default function ListTasks(props) {
     const listStatus = [
         { label: 'Todos', value: 'todos' },
         { label: 'Em aberto', value: 'Em aberto' },
-        { label: 'Em andamento', value: 'Em andamento' },
+        { label: 'Em análise', value: 'Em análise' },
         { label: 'Finalizado', value: 'Finalizado' },
     ]
 

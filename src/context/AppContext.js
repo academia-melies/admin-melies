@@ -2,7 +2,7 @@ import { Backdrop, CircularProgress, useMediaQuery } from "@mui/material";
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
-import { Box, Button, Divider, Text } from "../atoms";
+import { Box, Button, ContentContainer, Divider, Text } from "../atoms";
 import { getDialogPosition } from "../helpers";
 import { Alert, Colors } from "../organisms";
 import { api } from "../api/api";
@@ -47,7 +47,7 @@ export const AppProvider = ({ children }) => {
         title: '',
         message: ''
     })
-
+    const [showVersion, setShowVersion] = useState(false)
     const router = useRouter()
     const alert = new ShowAlert(setAlertData)
     const calculateExpiration = (hours) => {
@@ -173,7 +173,10 @@ export const AppProvider = ({ children }) => {
                 userPermissions,
                 notificationUser, setNotificationUser,
                 latestVersionNumber,
-                menuItemsList
+                latestVersion,
+                menuItemsList,
+                showVersion,
+                setShowVersion
             }}
         >
             {children}
@@ -192,7 +195,92 @@ export const AppProvider = ({ children }) => {
                 colorPalette={colorPalette}
                 theme={theme}
             />
+            <UpdateVersion
+                user={user}
+                showVersion={showVersion}
+                setShowVersion={setShowVersion}
+                latestVersion={latestVersion}
+                colorPalette={colorPalette}
+                theme={theme}
+                setUser={setUser} />
         </AppContext.Provider>
+    )
+}
+
+export const UpdateVersion = ({ user, showVersion, setShowVersion, latestVersion, colorPalette, setUser, theme }) => {
+
+    const handleAttMsgVersion = async () => {
+        try {
+            const response = await api.patch(`/user/notificationVersion/false/${user?.id}`)
+            console.log(response)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+    return (
+        <Backdrop open={showVersion || user?.at_versao > 0} sx={{ zIndex: 999 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400 }}>
+                <ContentContainer>
+                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
+                        <Text large bold>Atualização de Versão</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setShowVersion(false)
+                            if (user?.at_versao > 0) {
+                                handleAttMsgVersion()
+                                setUser({ ...user, at_versao: 0 })
+                            }
+                        }} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', marginTop: 2 }}>
+                        <Text bold>Versão em produção - {latestVersion?.version} ({latestVersion?.build})</Text>
+                        <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                            <Text bold>Alterações realizadas</Text>
+                            <Text>{latestVersion?.msg}</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                            <Text bold>Algumas mudanças:</Text>
+
+                            {latestVersion?.listChanges?.map((item, index) => {
+                                return (
+                                    <Box key={index} sx={{
+                                        display: 'flex', gap: 1, color: 'rgb(75 85 99)', "&:hover": {
+                                            opacity: 0.8,
+                                            transform: 'scale(1.1)',
+                                            transition: '.5s',
+                                            color: colorPalette.buttonColor,
+                                            fontWeight: 'bold'
+                                        },
+                                        marginTop: 1
+                                    }}>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            aspectRatio: '1/1',
+                                            backgroundImage: `url('/icons/topic_icon.png')`,
+                                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                            transition: '.3s',
+                                        }} />
+                                        <Text small bold style={{ color: 'inherit', fontWeight: 'inherit' }}>{item?.change}</Text>
+                                    </Box>
+                                )
+                            })}
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Box>
+
+        </Backdrop>
     )
 }
 
@@ -229,7 +317,7 @@ export const ConfirmationModal = (props) => {
 
 
     return (
-        <Backdrop open={active} sx={{ zIndex: 99999 }}>
+        <Backdrop open={active} sx={{ zIndex: 9999999 }}>
             <Box sx={{
                 ...styles.confirmationContainer,
                 boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,

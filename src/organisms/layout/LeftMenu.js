@@ -1,9 +1,9 @@
-import { Avatar, useMediaQuery, useTheme } from "@mui/material"
+import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import Hamburger from "hamburger-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../atoms"
+import { Box, ContentContainer, Divider, Text } from "../../atoms"
 import { Colors, icons } from "./Colors"
 import { useAppContext } from "../../context/AppContext"
 import { IconTheme } from "../iconTheme/IconTheme"
@@ -13,7 +13,7 @@ import { api } from "../../api/api"
 
 export const LeftMenu = ({ }) => {
 
-   const { logout, user, colorPalette, theme, userPermissions, latestVersionNumber } = useAppContext();
+   const { logout, user, colorPalette, theme, userPermissions, latestVersion, showVersion, setShowVersion } = useAppContext();
    const name = user?.nome?.split(' ');
    const firstName = name[0];
    const lastName = name[name.length - 1];
@@ -26,6 +26,7 @@ export const LeftMenu = ({ }) => {
    const [showMenuMobile, setShowMenuMobile] = useState(false)
    const [showChangePassword, setShowChangePassword] = useState(false)
    const [showDialogEditUser, setShowDialogEditUser] = useState(false)
+
 
    const [menuItems, setMenuItems] = useState([]);
 
@@ -92,6 +93,16 @@ export const LeftMenu = ({ }) => {
          return prevGroupStates;
       });
    };
+
+   const handleAttMsgVersion = async () => {
+      try {
+         const response = await api.patch(`/user/notificationVersion/false/${user?.id}`)
+         console.log(response)
+      } catch (error) {
+         console.log(error)
+         return error
+      }
+   }
 
    return (
       <>
@@ -317,7 +328,9 @@ export const LeftMenu = ({ }) => {
                      cursor: 'pointer', opacity: 0.8
                   }
                }} onClick={() => router.push('/')} />
-               <Text style={{ bottom: 45, left: 20, position: 'absolute', color: 'gray' }}>version {latestVersionNumber}</Text>
+               <Box onClick={() => setShowVersion(true)} sx={{ cursor: 'pointer' }}>
+                  <Text style={{ bottom: 45, left: 60, position: 'absolute', color: 'gray' }}> v{latestVersion?.version}</Text>
+               </Box>
             </Box>
          </Box >
 
@@ -354,6 +367,68 @@ export const LeftMenu = ({ }) => {
                value={showDialogEditUser}
             />
          )}
+
+         {/* <Backdrop open={showVersion || user?.at_versao > 0} sx={{ zIndex: 999 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400 }}>
+               <ContentContainer>
+                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
+                     <Text large bold>Atualização de Versão</Text>
+                     <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_close})`,
+                        transition: '.3s',
+                        zIndex: 999999999,
+                        "&:hover": {
+                           opacity: 0.8,
+                           cursor: 'pointer'
+                        }
+                     }} onClick={() => {
+                        setShowVersion(false)
+                        if (user?.at_versao > 0) {
+                           handleAttMsgVersion()
+                           setUser({...user, at_versao: 0})
+                        }
+                     }} />
+                  </Box>
+                  <Divider distance={0} />
+                  <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', marginTop: 2 }}>
+                     <Text bold>Versão em produção - {latestVersion?.version} ({latestVersion?.build})</Text>
+                     <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                        <Text bold>Alterações realizadas</Text>
+                        <Text>{latestVersion?.msg}</Text>
+                     </Box>
+                     <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                        <Text bold>Algumas mudanças:</Text>
+
+                        {latestVersion?.listChanges?.map((item, index) => {
+                           return (
+                              <Box key={index} sx={{
+                                 display: 'flex', gap: 1, color: 'rgb(75 85 99)', "&:hover": {
+                                    opacity: 0.8,
+                                    transform: 'scale(1.1)',
+                                    transition: '.5s',
+                                    color: colorPalette.buttonColor,
+                                    fontWeight: 'bold'
+                                 },
+                                 marginTop: 1
+                              }}>
+                                 <Box sx={{
+                                    ...styles.menuIcon,
+                                    aspectRatio: '1/1',
+                                    backgroundImage: `url('/icons/topic_icon.png')`,
+                                    filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                    transition: '.3s',
+                                 }} />
+                                 <Text small bold style={{ color: 'inherit', fontWeight: 'inherit' }}>{item?.change}</Text>
+                              </Box>
+                           )
+                        })}
+                     </Box>
+                  </Box>
+               </ContentContainer>
+            </Box>
+
+         </Backdrop> */}
       </>
    )
 }

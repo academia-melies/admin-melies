@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
+import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../../atoms"
 import { ContainDropzone, RadioItem, SectionHeader } from "../../../organisms"
@@ -31,13 +31,20 @@ export default function EditTask(props) {
         responsible: false,
         participant: false
     })
-    const [statusAlteration, setStatusAlteration] = useState({ finalizado: false, reaberto: false })
+    const [statusAlteration, setStatusAlteration] = useState({ finalizado: false, reaberto: false, analise: false })
     const [filesTask, setFilesTask] = useState([])
     const [newInteration, setNewInteration] = useState({ descr_interacao: '' })
     const [interationsTask, setInterationsTask] = useState([])
     const [participantsTask, setParticipantsTask] = useState([])
     const themeApp = useTheme()
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [avaliationClient, setAvaliationClient] = useState(0)
+    const [showAvaliation, setShowAvaliation] = useState(false)
+
+    const [showList, setShowList] = useState({
+        status: false
+    })
+
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -54,14 +61,18 @@ export default function EditTask(props) {
         (data === 'Média' && 'green') ||
         (data === 'Baixa' && 'blue'))
 
+
+    const statusColor = (data) => ((data === 'Em aberto' && 'yellow') ||
+        (data === 'Finalizado' && 'green') ||
+        (data === 'Em análise' && 'blue'))
+
     const getTask = async () => {
         try {
             const response = await api.get(`/task/${id}`)
             const { data } = response
             if (response?.status === 200) {
                 setTaskData(data)
-                console.log(data)
-                return true
+                return data
             }
             return false
         } catch (error) {
@@ -138,7 +149,7 @@ export default function EditTask(props) {
             return
         }
         setTaskData({ ...taskData, autor_chamado: user?.id, status_chamado: 'Em aberto' })
-
+        setStatusAlteration({ finalizado: false, reaberto: false, analise: false })
     }, [id]);
 
     useEffect(() => {
@@ -163,6 +174,9 @@ export default function EditTask(props) {
                 await getParticipantsTask()
                 await getTaskFiles()
                 await setAlterationTask(false)
+                console.log(task)
+                if (task?.status_chamado === 'Finalizado' && !task?.avaliacao_nota) { setShowAvaliation(true) }
+                setStatusAlteration({ finalizado: false, reaberto: false, analise: false })
             }
             // if (serviceResponse) {
             //     await getContracts(serviceResponse.tipo_servico)
@@ -231,9 +245,9 @@ export default function EditTask(props) {
         }
     }
 
-    const handleEditTask = async ({ finalizado = false, reaberto = false, priority = false, responsible = false }) => {
+    const handleEditTask = async ({ finalizado = false, reaberto = false, analise = false, priority = false, responsible = false }) => {
         setLoading(true)
-        let status = (finalizado && 'finalizada') || (reaberto && 're-aberta') || false;
+        let status = (finalizado && 'atualizado para "finalizada"') || (reaberto && 'atualizado para "re-aberta"') || (analise && 'atualizado para "Em análise"') || false;
         if (priority) { taskData.prioridade_chamado = priority }
         if (responsible) { taskData.responsavel_chamado = responsible }
 
@@ -353,6 +367,25 @@ export default function EditTask(props) {
         }
     }
 
+    const handleSendAvaliation = async () => {
+        setLoading(true)
+
+        try {
+            const response = await api.patch(`/task/update/avaliation/${id}`, { taskData })
+            if (response?.status === 201) {
+                alert.success('Pesquisa enviada. Obrigado pela sua avaliação ;)');
+                await handleItems()
+                setShowAvaliation(false)
+                return
+            }
+            alert.error('Tivemos um problema ao enviar a pesquisa de satisfação.');
+        } catch (error) {
+            alert.error('Tivemos um problema ao enviar a pesquisa de satisfação.');
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleChange = (event) => {
         setTaskData((prevValues) => ({
             ...prevValues,
@@ -397,6 +430,21 @@ export default function EditTask(props) {
         { label: 'Baixa', value: 'Baixa' },
     ]
 
+
+    const groupAvaliation = [
+        { label: '', value: 1 },
+        { label: '', value: 2 },
+        { label: '', value: 3 },
+        { label: '', value: 4 },
+        { label: '', value: 5 },
+    ]
+
+    const listStatus = [
+        { label: 'Em aberto', value: 'Em aberto' },
+        { label: 'Em análise', value: 'Em análise' },
+        { label: 'Finalizado', value: 'Finalizado' },
+    ]
+
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -409,7 +457,7 @@ export default function EditTask(props) {
             {!taskData && <Forbidden />}
             {taskData && <> <SectionHeader
                 perfil={taskData?.tipo_chamado}
-                title={taskData?.titulo_chamado ? (`(#${taskData?.id_chamado || 'ID'}).${taskData?.titulo_chamado}`) : `Novo Chamado`}
+                title={taskData?.titulo_chamado ? (`Ticket (#${taskData?.id_chamado || 'ID'}).${taskData?.titulo_chamado}`) : `Novo Chamado`}
                 saveButton={newTask && true}
                 saveButtonAction={newTask && handleCreateTask}
             />
@@ -475,6 +523,55 @@ export default function EditTask(props) {
                                             )
                                         })}
                                     </Box>
+                                    {taskData?.status_chamado === 'Finalizado' &&
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'start', marginBottom: 5, padding: '20px', marginTop: 10 }}>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', marginLeft: 7 }}>
+                                                <Text bold>Em uma escala de 1 a 5, como você avaliaria nosso serviço:</Text>
+                                                <Box sx={{ display: 'flex', gap: 1.5, marginBottom: 2 }}>
+                                                    {groupAvaliation?.map((item, index) => {
+                                                        const complete = item?.value <= taskData?.avaliacao_nota ? true : false
+                                                        return (
+                                                            <Box zIndex={index} onClick={() => {
+                                                                setTaskData({ ...taskData, avaliacao_nota: item?.value })
+                                                            }} sx={{
+                                                                "&:hover": {
+                                                                    opacity: 0.7,
+                                                                    cursor: 'pointer',
+                                                                }
+                                                            }} >
+                                                                <Box sx={{
+                                                                    ...styles.menuIcon,
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    aspectRatio: '1:1',
+                                                                    backgroundImage: complete ? `url('/icons/star_complete_icon.png')` : `url('/icons/star_underline_icon.png')`,
+                                                                    transition: '.3s',
+                                                                    zIndex: 9999,
+                                                                }} />
+                                                            </Box>
+                                                        )
+                                                    })}
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', alignItems: 'start', gap: 2, width: '100%' }}>
+                                                <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'center' }}>
+                                                    <Avatar src={taskData?.foto_autor} />
+                                                    <Text xsmall style={{ textAlign: 'center' }}>{taskData?.autor?.split(' ')[0]}</Text>
+                                                </Box>
+                                                <TextInput fullWidth
+                                                    placeholder='Deixe seu comentário'
+                                                    name='avaliacao_comentario'
+                                                    onChange={handleChange} value={taskData?.avaliacao_comentario || ''}
+                                                    multiline
+                                                    sx={{ width: '100%' }}
+                                                    maxRows={8}
+                                                    rows={4}
+                                                />
+                                            </Box>
+                                            <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-start', marginTop: 2, marginLeft: 7 }}>
+                                                <Button small text="Enviar" style={{ height: 30, width: 120 }} />
+                                            </Box>
+                                        </Box>}
                                     {taskData?.status_chamado !== 'Finalizado' && <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                         <TextInput
                                             placeholder='Digite sua nova interação'
@@ -550,7 +647,66 @@ export default function EditTask(props) {
                                     </Box>
                                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                         <Text bold>Status:</Text>
-                                        <Text>{taskData?.status_chamado}</Text>
+                                        {!isPermissionEdit && <Text>{taskData?.status_chamado}</Text>}
+                                        <Box sx={{
+                                            display: isPermissionEdit ? 'flex' : 'none',
+                                            backgroundColor: colorPalette.primary,
+                                            height: 30,
+                                            gap: 2,
+                                            alignItems: 'center',
+                                            maxWidth: 150,
+                                            borderRadius: 2,
+                                            justifyContent: 'start',
+                                            "&:hover": {
+                                                opacity: 0.7,
+                                                cursor: 'pointer',
+                                            }
+                                        }} onClick={() => setShowList({ ...showList, status: !showList?.status })}>
+                                            <Box sx={{ display: 'flex', backgroundColor: statusColor(taskData?.status_chamado), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                            <Text bold>{taskData?.status_chamado}</Text>
+                                            <Box sx={{
+                                                ...styles.menuIcon,
+                                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                // filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                                transition: '.3s',
+                                                width: 13, height: 13,
+                                                aspectRatio: '1/1'
+                                            }} />
+                                        </Box>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, marginTop: .5 }}>
+                                            {showList?.status &&
+                                                listStatus?.filter(item => item?.value !== taskData?.status_chamado)?.map((item, index) => {
+                                                    return (
+                                                        <Box key={index} sx={{
+                                                            display: 'flex',
+                                                            backgroundColor: colorPalette.primary,
+                                                            height: 30,
+                                                            gap: 2,
+                                                            alignItems: 'center',
+                                                            maxWidth: 150,
+                                                            borderRadius: 2,
+                                                            justifyContent: 'start',
+                                                            "&:hover": {
+                                                                opacity: 0.7,
+                                                                cursor: 'pointer',
+                                                            }
+                                                        }} onClick={() => {
+                                                            setTaskData({ ...taskData, status_chamado: item?.value })
+                                                            setStatusAlteration({
+                                                                finalizado: item?.value === 'Finalizado' ? true : false,
+                                                                reaberto: item?.value === 'Em aberto' ? true : false,
+                                                                analise: item?.value === 'Em análise' ? true : false
+                                                            })
+                                                            setAlterationTask(true)
+                                                            setShowList({ ...showList, status: false })
+                                                        }}>
+                                                            <Box sx={{ display: 'flex', backgroundColor: statusColor(item?.value), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                                            <Text bold>{item?.label}</Text>
+                                                        </Box>
+                                                    )
+                                                })
+                                            }
+                                        </Box>
                                     </Box>
                                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                         <Text bold>Tipo de tarefa:</Text>
@@ -611,12 +767,12 @@ export default function EditTask(props) {
                                     </Box>
                                     {taskData?.status_chamado !== 'Finalizado' && <Button text="Finalizar Tarefa" small style={{ height: 35 }} onClick={() => {
                                         setTaskData({ ...taskData, status_chamado: 'Finalizado' })
-                                        setStatusAlteration({ finalizado: true, reaberto: false })
+                                        setStatusAlteration({ finalizado: true, reaberto: false, analise: false })
                                         setAlterationTask(true)
                                     }} />}
                                     {taskData?.status_chamado === 'Finalizado' && <Button text="Reabrir Tarefa" small style={{ height: 35 }} onClick={() => {
                                         setTaskData({ ...taskData, status_chamado: 'Em aberto' })
-                                        setStatusAlteration({ finalizado: false, reaberto: true })
+                                        setStatusAlteration({ finalizado: false, reaberto: true, analise: false })
                                         setAlterationTask(true)
                                     }} />}
                                     <Button disabled={!isPermissionEdit && true} secondary text="Alterar Prioridade" small style={{ height: 35 }} onClick={() => setShowPriorityAltern(true)} />
@@ -722,6 +878,74 @@ export default function EditTask(props) {
 
                         </ContentContainer>
                     </Backdrop>
+                    <Backdrop open={showAvaliation} sx={{ zIndex: 999999 }}>
+                        <ContentContainer>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
+                                <Text bold large>Deixa sua avaliação</Text>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(${icons.gray_close})`,
+                                    transition: '.3s',
+                                    zIndex: 999999999,
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => setShowAvaliation(false)} />
+                            </Box>
+
+                            {taskData?.status_chamado === 'Finalizado' &&
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'start', padding: '20px', marginTop: 2 }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center' }}>
+                                        <Text bold>Em uma escala de 1 a 5, como você avaliaria nosso serviço:</Text>
+                                        <Box sx={{ display: 'flex', gap: 1.5, marginBottom: 2 }}>
+                                            {groupAvaliation?.map((item, index) => {
+                                                const complete = item?.value <= taskData?.avaliacao_nota ? true : false
+                                                return (
+                                                    <Box zIndex={index} onClick={() => {
+                                                        setTaskData({ ...taskData, avaliacao_nota: item?.value })
+                                                    }} sx={{
+                                                        "&:hover": {
+                                                            opacity: 0.7,
+                                                            cursor: 'pointer',
+                                                        }
+                                                    }} >
+                                                        <Box sx={{
+                                                            ...styles.menuIcon,
+                                                            width: 20,
+                                                            height: 20,
+                                                            aspectRatio: '1:1',
+                                                            backgroundImage: complete ? `url('/icons/star_complete_icon.png')` : `url('/icons/star_underline_icon.png')`,
+                                                            transition: '.3s',
+                                                            zIndex: 9999,
+                                                        }} />
+                                                    </Box>
+                                                )
+                                            })}
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'start', gap: 2, width: '100%' }}>
+                                        <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'center' }}>
+                                            <Avatar src={taskData?.foto_autor} />
+                                            <Text xsmall style={{ textAlign: 'center' }}>{taskData?.autor?.split(' ')[0]}</Text>
+                                        </Box>
+                                        <TextInput fullWidth
+                                            placeholder='Deixe seu comentário'
+                                            name='avaliacao_comentario'
+                                            onChange={handleChange} value={taskData?.avaliacao_comentario || ''}
+                                            multiline
+                                            sx={{ width: '100%' }}
+                                            maxRows={8}
+                                            rows={4}
+                                        />
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-start', marginTop: 2, marginLeft: 7 }}>
+                                        <Button text="Enviar" style={{ height: 35, width: 120 }} onClick={() => handleSendAvaliation()} />
+                                    </Box>
+                                </Box>}
+                        </ContentContainer>
+                    </Backdrop>
+
                     {taskData?.status_chamado !== 'Finalizado' && <ContainDropzone
                         title="Arquivos"
                         text="Arraste e solte seus arquivos aqui ou clique para selecionar."
