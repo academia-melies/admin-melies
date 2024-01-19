@@ -415,12 +415,12 @@ export default function CalendarComponent(props) {
                 </Box>
             </ContentContainer>
 
-            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 5, }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs:'column', md: 'row', lg: 'row', xl: 'row' }, flexWrap: 'wrap', gap: 5, }}>
                 {filteredEvents?.filter(filter).map((month, index) => (
                     <Box key={`${month}-${index}`} sx={{
                         marginBottom: 2,
                         minHeight: 400,
-                        maxWidth: '30%',
+                        maxWidth: { xs:'100%', md: '30%', lg: '30%', xl: '30%' },
                         minWidth: '30%'
                     }}>
                         <Text bold title sx={{ textAlign: 'center' }}>{moment(month?.start).format('MMMM YYYY')} </Text>

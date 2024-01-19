@@ -22,9 +22,10 @@ export const SelectList = (props) => {
     const { colorPalette } = useAppContext()
     const [showClearButton, setShowClearButton] = useState(false);
 
-
+ 
+    
     return (
-        <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px", }}>
+        <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px" }}>
             <FormControl fullWidth>
                 <InputLabel
                     InputLabelProps={{ sx: { fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } } }}
