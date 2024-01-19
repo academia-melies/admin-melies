@@ -22,7 +22,8 @@ export const SelectList = (props) => {
     const { colorPalette } = useAppContext()
     const [showClearButton, setShowClearButton] = useState(false);
 
-
+ 
+    
     return (
         <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px" }}>
             <FormControl fullWidth>
