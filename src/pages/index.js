@@ -275,13 +275,17 @@ function Home() {
             <link rel="icon" href="https://adm-melies.s3.amazonaws.com/logo_vermelho_linhas_brancas.svg" />
          </Head>
          <Box sx={{ display: 'flex', gap: 1, flexDirection: 'row' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', width: showMenuHelp ? { xs: '100%', xm: '100%', md: '75%', lg: '75%' } : '96%', transition: '0.5s', marginTop: 10, padding: '10px 50px' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', width: showMenuHelp ? { xs: '100%', xm: '100%', md: '75%', lg: '75%' } : { xs: '100%', xm: '96%', md: '96%', lg: '96%' }, transition: '0.5s', marginTop: 10, 
+            padding:{ xs:  '10px 15px', xm:  '10px 50px', md:  '10px 50px', lg:  '10px 50px' } }}>
                <Box>
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' }, alignItems: 'center', gap: 2 }}>
                      <Text
                         bold
                         veryLarge
-                        style={{ padding: { xs: '0', xm: '10px 0px 10px 0px', md: '10px 0px 10px 0px', lg: '10px 0px 10px 0px' }, display: 'flex', gap: 8 }}>
+                        style={{
+                           padding: { xs: '0', xm: '10px 0px 10px 0px', md: '10px 0px 10px 0px', lg: '10px 0px 10px 0px' }, display: 'flex',
+                           flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' }, gap: 8
+                        }}>
                         Bem-vindo,
                         <Text bold veryLarge style={{ color: colorPalette.buttonColor }}>
                            {user?.nome}!
@@ -338,7 +342,7 @@ function Home() {
                         {menu?.map((group, index) =>
                            <ContentContainer key={`${group}-${index}`} sx={{
                               alignItems: 'center', backgroundColor: colorPalette.buttonColor,
-                              minWidth: '180px',
+                              width: { xs: '120px', xm: '180px', md: '180px', lg: '180px' },
                               transition: '.5s',
                               "&:hover": {
                                  cursor: 'pointer',
@@ -358,25 +362,34 @@ function Home() {
                   }
                </ContentContainer>
                <Divider />
-               <ContentContainer row style={{ display: 'flex', marginTop: 5, backgroundColor: 'none', boxShadow: 'none', position: 'relative', alignItems: 'start', justifyContent: 'start' }}>
+               <ContentContainer row style={{
+                  padding: { xs: '10px', xm: '30px', md: '30px', lg: '30px' },
+                  flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' },
+                  display: 'flex', marginTop: 5, backgroundColor: 'none', boxShadow: 'none', position: 'relative', alignItems: 'start', justifyContent: 'start'
+               }}>
 
                   <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 1, maxHeight: 350, overflowY: 'auto' }}>
                      <Text large bold style={{ textAlign: 'center' }}>Aniversáriantes de {formattedMonth} 🎉🎉</Text>
                      <Box sx={{ display: 'flex', justifyContent: 'center', }}>
                         {listBirthDay.length > 0 ?
-                           <Box sx={{ borderRadius: '8px', minWidth: '400px', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                           <Box sx={{ borderRadius: '8px', minWidth: { xs: '100px', xm: '400px', md: '400px', lg: '400px' }, display: 'flex', flexDirection: 'column', gap: 1 }}>
                               {listBirthDay?.map((item, index) => {
                                  const date = item?.nascimento?.split('T')[0]
                                  const day = date?.split('-')[2]
                                  const month = date?.split('-')[1]
                                  return (
                                     <ContentContainer row key={index} style={{ display: 'flex', backgroundColor: colorPalette?.primary, position: 'relative', boxShadow: 'none', alignItems: 'center', maxHeight: 100 }}>
-                                       <Box sx={{ display: 'flex', borderRadius: 40, backgroundColor: colorPalette?.buttonColor, width: 40, height: 40, padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: 15, left: 10, zIndex: 999 }}>
+                                       <Box sx={{
+                                          display: 'flex', borderRadius: 40, backgroundColor: colorPalette?.buttonColor,
+                                          height: { xs: 30, sm: 40, md: 40, lg: 40 },
+                                          width: { xs: 30, sm: 40, md: 40, lg: 40 },
+                                          padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: 15, left: 10, zIndex: 999
+                                       }}>
                                           <Text bold small style={{ color: '#fff' }}>{day}/{month}</Text>
                                        </Box>
                                        <Avatar src={item?.location} sx={{
-                                          height: { xs: '100%', sm: 65, md: 65, lg: 65 },
-                                          width: { xs: '100%', sm: 65, md: 65, lg: 65 },
+                                          height: { xs: 40, sm: 65, md: 65, lg: 65 },
+                                          width: { xs: 40, sm: 65, md: 65, lg: 65 },
                                        }} variant="circular"
                                        />
                                        <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -622,7 +635,7 @@ function Home() {
 
                      {showSections?.notification &&
                         <Box sx={{
-                           width: 200, height: notificationUser ?.filter(item => item.ativo === 1)?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
+                           width: 200, height: notificationUser?.filter(item => item.ativo === 1)?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
                            scrollbarWidth: 'thin', // para navegadores que não são WebKit
                            scrollbarColor: 'transparent transparent', // para navegadores que não são WebKit
                            '&::-webkit-scrollbar': {
@@ -632,7 +645,7 @@ function Home() {
                               backgroundColor: 'transparent',
                            },
                         }}>
-                           {notificationUser ?.filter(item => item.ativo === 1)?.length > 0 ? notificationUser
+                           {notificationUser?.filter(item => item.ativo === 1)?.length > 0 ? notificationUser
                               ?.filter(item => item.ativo === 1)
                               ?.sort((a, b) => b.dt_criacao.localeCompare(a.dt_criacao))
                               ?.slice(0, 10)
@@ -717,39 +730,39 @@ function Home() {
                            {tasksList?.length > 0 ?
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, paddingBottom: 5 }}>
                                  {tasksList?.sort((a, b) => b.dt_criacao.localeCompare(a.dt_criacao))
-                                 ?.map((item, index) => {
-                                    return (
-                                       <Box key={index} sx={{
-                                          display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '12px 12px',
-                                          backgroundColor: colorPalette.primary,
-                                          borderRadius: 2,
-                                          maxHeight: 150,
-                                          "&:hover": {
-                                             backgroundColor: colorPalette.primary + '99',
-                                             cursor: 'pointer'
-                                          },
-                                       }}>
-                                          <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                             <Text small bold style={{ color: colorPalette?.buttonColor }}>Aberto por:</Text>
-                                             <Text small>{item?.autor}</Text>
-                                          </Box>
-                                          <Box sx={{
-                                             display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1,
-                                             padding: '10px 0px'
+                                    ?.map((item, index) => {
+                                       return (
+                                          <Box key={index} sx={{
+                                             display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '12px 12px',
+                                             backgroundColor: colorPalette.primary,
+                                             borderRadius: 2,
+                                             maxHeight: 150,
+                                             "&:hover": {
+                                                backgroundColor: colorPalette.primary + '99',
+                                                cursor: 'pointer'
+                                             },
                                           }}>
-                                             <Text small bold>{item?.titulo_chamado}</Text>
-                                             <Text small style={{
-                                                textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                             }}>{item?.descricao_chamado}</Text>
+                                             <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                                <Text small bold style={{ color: colorPalette?.buttonColor }}>Aberto por:</Text>
+                                                <Text small>{item?.autor}</Text>
+                                             </Box>
+                                             <Box sx={{
+                                                display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1,
+                                                padding: '10px 0px'
+                                             }}>
+                                                <Text small bold>{item?.titulo_chamado}</Text>
+                                                <Text small style={{
+                                                   textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                   overflow: 'hidden',
+                                                }}>{item?.descricao_chamado}</Text>
+                                             </Box>
+                                             <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'space-between' }}>
+                                                <Text small style={{ color: '#606060' }}>aberto em: {formatTimeStamp(item?.dt_criacao, true)}</Text>
+                                                <Button secondary text="visitar" small style={{ height: 20 }} onClick={() => router.push(`/suport/tasks/${item?.id_chamado}`)} />
+                                             </Box>
                                           </Box>
-                                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'space-between' }}>
-                                             <Text small style={{ color: '#606060' }}>aberto em: {formatTimeStamp(item?.dt_criacao, true)}</Text>
-                                             <Button secondary text="visitar" small style={{ height: 20 }} onClick={() => router.push(`/suport/tasks/${item?.id_chamado}`)} />
-                                          </Box>
-                                       </Box>
-                                    )
-                                 })}
+                                       )
+                                    })}
                               </Box>
                               : <Text light small>Você não possui chamados em aberto</Text>
                            }

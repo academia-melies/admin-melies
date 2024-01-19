@@ -515,8 +515,8 @@ const MenuItem = (props) => {
                </Box>
                <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 10, xl: 11.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
                   {showSubItems &&
-                     [...new Set(subitem.map(item => item.to))].map((to, index) => {
-                        const item = subitem.find(item => item.to === to);
+                     [...new Set(subitem?.map(item => item.to))].map((to, index) => {
+                        const item = subitem?.find(item => item.to === to);
                         const currentPage = item.to === pathname;
                         const key = `${index}_${item.id_subitem}`;
 
