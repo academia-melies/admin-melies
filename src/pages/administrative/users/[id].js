@@ -1641,7 +1641,8 @@ export default function EditUser() {
                                 <Box sx={{ ...styles.inputSection }}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login *' sx={{ flex: 1, }} />
 
-                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cert_nascimento: value })}>
+                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cert_nascimento: value })}
+                                        style={{ border: filesUser?.filter((file) => file.campo === 'nascimento').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
                                         <EditFile
                                             isPermissionEdit={isPermissionEdit}
@@ -1852,7 +1853,8 @@ export default function EditUser() {
                         </Box>
                         <Box sx={styles.inputSection}>
                             {!foreigner &&
-                                <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cpf: value })}>
+                                <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cpf: value })}
+                                    style={{ border: filesUser?.filter((file) => file.campo === 'cpf').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
                                 </FileInput>
                             }
@@ -1881,7 +1883,8 @@ export default function EditUser() {
                                 }}
                             />
                             {foreigner &&
-                                <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, foreigner: value })}>
+                                <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, foreigner: value })}
+                                    style={{ border: filesUser?.filter((file) => file.campo === 'estrangeiro').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />
                                     <EditFile
                                         isPermissionEdit={isPermissionEdit}
@@ -1991,7 +1994,8 @@ export default function EditUser() {
                                 <>
 
                                     <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <FileInput left onClick={() => setShowEditFiles({ ...showEditFile, cpf_dependente: true })}>
+                                        <FileInput left onClick={() => setShowEditFiles({ ...showEditFile, cpf_dependente: true })}
+                                            style={{ border: filesUser?.filter((file) => file.campo === 'cpf_dependente').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'nome_dependente', dep?.id_dependente)} value={dep.nome_dependente} sx={{ flex: 1 }} />
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'cpf_dependente', dep?.id_dependente)} value={dep.cpf_dependente} sx={{ flex: 1 }} />
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'dt_nasc_dependente', dep?.id_dependente)} type="date" value={(dep.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
@@ -2085,7 +2089,8 @@ export default function EditUser() {
                                 />
                             </Box>
                         </ContentContainer>
-                        <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, schoolRecord: value })} style={{ alignItems: 'center' }}>
+                        <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, schoolRecord: value })}
+                            style={{ border: filesUser?.filter((file) => file.campo === 'historico/diploma').length < 1 && `1px solid ${colorPalette?.buttonColor}`, alignItems: 'center' }}>
                             <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => {
                                 if (value !== 'Ensino médio') {
                                     setUserData({ ...userData, escolaridade: value, tipo_origem_ensi_med: '' })
@@ -2130,7 +2135,8 @@ export default function EditUser() {
 
                         <Box sx={styles.inputSection}>
                             <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
-                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, address: value })}>
+                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, address: value })}
+                                style={{ border: filesUser?.filter((file) => file.campo === 'comprovante residencia').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                 <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
                                 <EditFile
                                     isPermissionEdit={isPermissionEdit}
@@ -2166,7 +2172,8 @@ export default function EditUser() {
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
-                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, rg: value })}>
+                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, rg: value })}
+                            style={{ border: filesUser?.filter((file) => file.campo === 'rg').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                 <TextInput disabled={!isPermissionEdit && true} placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
                                 <EditFile
                                     isPermissionEdit={isPermissionEdit}
@@ -2198,7 +2205,8 @@ export default function EditUser() {
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão *' sx={{ flex: 1, }} />
                         </Box>
                         <Box sx={styles.inputSection}>
-                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, titleDoc: value })}>
+                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, titleDoc: value })}
+                            style={{ border: filesUser?.filter((file) => file.campo === 'titulo').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                 <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
                                 <EditFile
                                     isPermissionEdit={isPermissionEdit}
@@ -2275,7 +2283,8 @@ export default function EditUser() {
                                     }} />
                                 </Box>
                                 <Box sx={styles.inputSection}>
-                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, ctps: value })}>
+                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, ctps: value })}
+                                    style={{ border: filesUser?.filter((file) => file.campo === 'ctps').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
 
                                         <EditFile
