@@ -563,6 +563,7 @@ export default function EditFrequency(props) {
                                                                                     horizontal={true}
                                                                                     onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_2', parseInt(value), aulaId)}
                                                                                 />
+                                                                                
                                                                             </td>
                                                                             <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
                                                                                 <TextInput disabled={!isPermissionEdit && true}

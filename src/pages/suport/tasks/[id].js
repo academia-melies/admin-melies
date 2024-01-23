@@ -419,6 +419,7 @@ export default function EditTask(props) {
 
     const groupContract = [
         { label: 'Solicitação', value: 'Solicitação' },
+        { label: 'Sugestões', value: 'Sugestões' },
         { label: 'Alteração', value: 'Alteração' },
         { label: 'Erro', value: 'Erro' },
     ]
