@@ -93,7 +93,9 @@ export const DialogUserEdit = (props) => {
             setLoading(true)
             const response = await api.patch(`/userDetails/update/${user.id}`, { userData })
             if (response.status === 201) {
-               return alert.success('Suas informações foram atualizadas.')
+               await alert.success('Suas informações foram atualizadas.')
+               onClick(false)
+               return 
             }
          } catch (error) {
             if (error?.response?.status === 400) {
