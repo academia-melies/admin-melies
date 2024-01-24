@@ -1,4 +1,4 @@
-import { TextField } from "@mui/material";
+import { TextField, styled } from "@mui/material";
 import { Colors } from "../organisms";
 import { useAppContext } from "../context/AppContext";
 import InputAdornment from '@mui/material/InputAdornment';
@@ -16,6 +16,8 @@ export const TextInput = (props) => {
          id="fieldssss"
          label={label}
          {...props}
+         disabled={false}
+         onChange={props.disabled ? () => { } : props.onChange}
          InputProps={{
             autocomplete: 'no',
             autoComplete: 'off',
@@ -28,10 +30,13 @@ export const TextInput = (props) => {
                borderRadius: 2,
                fontSize: small ? '12px' : { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' },
                fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',
-               ...InputProps?.style,
-               color: colorPalette.textColor,
                backgroundColor: colorPalette.inputColor,
+               color: colorPalette.textColor,
+               ...InputProps?.style,
                maxHeight: props.multiline ? 'none' : '45px',
+               '&.disabled': {
+                  color: 'white', // Cor do texto quando desabilitado
+               },
             },
 
             startAdornment: props.type === "coin"
@@ -90,6 +95,7 @@ export const TextInput = (props) => {
       />
    );
 };
+
 
 const styles = {
    date: {

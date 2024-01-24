@@ -20,6 +20,8 @@ export const versions = [
             { change: 'Correções Turmas listadas em "Interesses" do usuário.' },
             { change: 'Novos recursos de "Pendência de arquivos" em usuários.' },
             { change: 'Novos campos no cadastro do Curso,' },
+            { change: 'Último acesso,' },
+            { change: 'Ajustado v1 responsividade Mobile.' },
         ]
     },
 ]

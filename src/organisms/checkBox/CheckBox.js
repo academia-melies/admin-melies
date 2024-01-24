@@ -51,7 +51,7 @@ export const CheckBoxComponent = (props) => {
     };
 
     return (
-        <FormControl sx={{ padding: padding ? '5px 13px' : '', gap: gap &&0}}>
+        <FormControl sx={{ padding: padding ? '5px 13px' : '', gap: gap && 0 }}>
             <FormLabel sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}>{title}</FormLabel>
             <FormGroup sx={{ ...style, ...sx }} row={horizontal}>
                 {boxGroup?.map((item) => (
@@ -61,9 +61,8 @@ export const CheckBoxComponent = (props) => {
                         control={
                             <Checkbox
                                 sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}
-                                onChange={() => handleCheckboxChange(item.value)}
+                                onChange={disabled ? () => { } : () => handleCheckboxChange(item.value)}
                                 checked={getChecked(item.value)}
-                                disabled={disabled}
                             />
                         }
                         label={item?.label}

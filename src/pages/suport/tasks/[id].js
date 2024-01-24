@@ -554,7 +554,8 @@ export default function EditTask(props) {
                                                     })}
                                                 </Box>
                                             </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'start', gap: 2, width: '100%' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'start', gap: 2, width: '100%',
+                                        flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
                                                 <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'center' }}>
                                                     <Avatar src={taskData?.foto_autor} />
                                                     <Text xsmall style={{ textAlign: 'center' }}>{taskData?.autor?.split(' ')[0]}</Text>
@@ -880,7 +881,9 @@ export default function EditTask(props) {
                         </ContentContainer>
                     </Backdrop>
                     <Backdrop open={showAvaliation} sx={{ zIndex: 999999 }}>
-                        <ContentContainer>
+                        <ContentContainer sx={{
+                            margin: { xs: '15px', md: '0px', lg: '0px', xl: '0px' }
+                        }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
                                 <Text bold large>Deixa sua avaliação</Text>
                                 <Box sx={{
@@ -925,7 +928,10 @@ export default function EditTask(props) {
                                             })}
                                         </Box>
                                     </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'start', gap: 2, width: '100%' }}>
+                                    <Box sx={{
+                                        display: 'flex', alignItems: 'start', gap: 2, width: '100%',
+                                        flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
+                                    }}>
                                         <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'center' }}>
                                             <Avatar src={taskData?.foto_autor} />
                                             <Text xsmall style={{ textAlign: 'center' }}>{taskData?.autor?.split(' ')[0]}</Text>

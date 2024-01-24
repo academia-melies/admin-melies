@@ -455,7 +455,8 @@ export default function EditBillToPay(props) {
                             rows={4} />
                     }
 
-                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
+                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
                             <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
@@ -520,7 +521,8 @@ export default function EditBillToPay(props) {
 
                         }
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
+                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
                             <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
@@ -582,7 +584,8 @@ export default function EditBillToPay(props) {
 
                         }
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
+                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
                             <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>

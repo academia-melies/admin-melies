@@ -1636,8 +1636,11 @@ export default function EditUser() {
                 </Box>
                 {showSections?.accessData &&
                     <>
-                        <Box sx={{ ...styles.inputSection, whiteSpace: 'nowrap', alignItems: 'end', gap: 4 }}>
+                        <Box sx={{ ...styles.inputSection, whiteSpace: 'nowrap', alignItems: { xs: 'start', md: 'start', lg: 'end', xl: 'end' }, gap: 4 }}>
                             <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
+                                <Box sx={{ padding: '10px 0px 10px 10px' }}>
+                                    <Text small light>Último acesso em: {formatTimeStamp(userData?.ultimo_acesso, true)}</Text>
+                                </Box>
                                 <Box sx={{ ...styles.inputSection }}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Login' name='login' onChange={handleChange} value={userData?.login || ''} label='Login *' sx={{ flex: 1, }} />
 
@@ -2173,7 +2176,7 @@ export default function EditUser() {
                         </Box>
                         <Box sx={styles.inputSection}>
                             <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, rg: value })}
-                            style={{ border: filesUser?.filter((file) => file.campo === 'rg').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                style={{ border: filesUser?.filter((file) => file.campo === 'rg').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                 <TextInput disabled={!isPermissionEdit && true} placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
                                 <EditFile
                                     isPermissionEdit={isPermissionEdit}
@@ -2206,7 +2209,7 @@ export default function EditUser() {
                         </Box>
                         <Box sx={styles.inputSection}>
                             <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, titleDoc: value })}
-                            style={{ border: filesUser?.filter((file) => file.campo === 'titulo').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                style={{ border: filesUser?.filter((file) => file.campo === 'titulo').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                 <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
                                 <EditFile
                                     isPermissionEdit={isPermissionEdit}
@@ -2284,7 +2287,7 @@ export default function EditUser() {
                                 </Box>
                                 <Box sx={styles.inputSection}>
                                     <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, ctps: value })}
-                                    style={{ border: filesUser?.filter((file) => file.campo === 'ctps').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                        style={{ border: filesUser?.filter((file) => file.campo === 'ctps').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
 
                                         <EditFile
@@ -3037,7 +3040,10 @@ export default function EditUser() {
 
             <Backdrop open={showSections.historic} sx={{ zIndex: 99999, }}>
                 {showSections.historic &&
-                    <ContentContainer style={{ maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '280px' }, overflowY: matches && 'auto', }}>
+                    <ContentContainer style={{
+                        maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '280px' },
+                        margin: { xs: '0px 10px', md: '0px', lg: '0px' }, overflowY: matches && 'auto',
+                    }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                             <Text bold large>Observações</Text>
                             <Box sx={{

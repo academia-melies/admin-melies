@@ -353,9 +353,13 @@ export default function ListBillsToPay(props) {
                 title="Contas a pagar"
                 perfil={menuSelected}
             />
-            <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
+            <Box sx={{ display: 'flex', width: '100%', gap: 2,
+          flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
 
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{
+                    display: 'flex', gap: 2,
+                    flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
+                }}>
                     <ContentContainer row style={{ justifyContent: 'center' }}>
                         <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
                             <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
@@ -425,7 +429,8 @@ export default function ListBillsToPay(props) {
                     </Box>
                 </ContentContainer>
             </Box>
-            <Box sx={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
+        flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
                 <SelectList
                     data={years}
                     valueSelection={filterYear}
@@ -434,7 +439,7 @@ export default function ListBillsToPay(props) {
                     sx={{ backgroundColor: colorPalette.secondary }}
                     clean={false}
                 />
-                <Box sx={{ display: 'flex', }}>
+                <Box sx={{ display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' }}}>
                     {monthFilter?.map((item, index) => {
                         const monthSelected = item?.value === filterMonth;
                         return (
