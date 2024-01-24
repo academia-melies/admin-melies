@@ -275,8 +275,10 @@ function Home() {
             <link rel="icon" href="https://adm-melies.s3.amazonaws.com/logo_vermelho_linhas_brancas.svg" />
          </Head>
          <Box sx={{ display: 'flex', gap: 1, flexDirection: 'row' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', width: showMenuHelp ? { xs: '100%', xm: '100%', md: '75%', lg: '75%' } : { xs: '100%', xm: '96%', md: '96%', lg: '96%' }, transition: '0.5s', marginTop: 10, 
-            padding:{ xs:  '10px 15px', xm:  '10px 50px', md:  '10px 50px', lg:  '10px 50px' } }}>
+            <Box sx={{
+               display: 'flex', flexDirection: 'column', width: showMenuHelp ? { xs: '100%', xm: '100%', md: '75%', lg: '75%' } : { xs: '100%', xm: '96%', md: '96%', lg: '96%' }, transition: '0.5s', marginTop: 10,
+               padding: { xs: '10px 15px', xm: '10px 50px', md: '10px 50px', lg: '10px 50px' }
+            }}>
                <Box>
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' }, alignItems: 'center', gap: 2 }}>
                      <Text
@@ -304,6 +306,166 @@ function Home() {
                      width={'auto'}
                   />
                </Box>
+
+               <Divider distance={5} />
+               <Box sx={{ padding: '15px 15px', borderRadius: 2, display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', backgroundColor: colorPalette.secondary }}>
+                  <Box sx={{
+                     display: 'flex', marginBottom: showSections?.notification && 3, gap: 2, alignItems: 'center',
+                     "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                     }
+                  }} onClick={() => setShowSections({ ...showSections, notification: !showSections?.notification })} >
+                     <Text bold small>Últimas notificações</Text>
+                     <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        // filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                        transform: showSections?.notification ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: '.3s',
+                        width: 13, height: 13,
+                        aspectRatio: '1/1'
+                     }} />
+                  </Box>
+
+                  {showSections?.notification &&
+                     <Box sx={{
+                        width: 200, height: notificationUser?.filter(item => item.ativo === 1)?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
+                        scrollbarWidth: 'thin', // para navegadores que não são WebKit
+                        scrollbarColor: 'transparent transparent', // para navegadores que não são WebKit
+                        '&::-webkit-scrollbar': {
+                           width: '6px',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                           backgroundColor: 'transparent',
+                        },
+                     }}>
+                        {notificationUser?.filter(item => item.ativo === 1)?.length > 0 ? notificationUser
+                           ?.filter(item => item.ativo === 1)
+                           ?.sort((a, b) => b.dt_criacao.localeCompare(a.dt_criacao))
+                           ?.slice(0, 10)
+                           ?.map((item, index) => {
+                              const vizualized = item?.vizualizado === 0 ? false : true
+                              return (
+                                 <Box key={index} sx={{
+                                    display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '8px 12px',
+                                    backgroundColor: colorPalette.primary,
+                                    borderRadius: 2,
+                                    "&:hover": {
+                                       backgroundColor: colorPalette.primary + '99',
+                                       cursor: 'pointer'
+                                    }
+                                 }}>
+                                    <Box sx={{ display: 'flex', gap: 1.75, }}>
+                                       <Box sx={{ display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1 }}>
+                                          <Text small bold>{item?.titulo}</Text>
+                                          <Text small>{item?.menssagem}</Text>
+                                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'space-between' }}>
+                                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                {item?.id_path && <Text bold small>id: {item?.id_path}</Text>}
+                                                <Text style={{ color: '#606060' }} xsmall>{formatTimeAgo(item?.dt_criacao, true)}</Text>
+                                                {vizualized ?
+                                                   <>
+                                                      <Text style={{ color: '#606060', marginTop: 2 }} xsmall>-</Text>
+                                                      <Text style={{ color: '#606060', marginTop: 2 }} xsmall>vista</Text>
+                                                   </>
+                                                   :
+                                                   <Box sx={{ backgroundColor: colorPalette.buttonColor, borderRadius: 8, padding: '1px 5px' }}>
+                                                      <Text xsmall style={{ color: '#fff' }}>new</Text>
+                                                   </Box>
+                                                }
+                                             </Box>
+                                             <Button secondary text="visitar" small style={{ height: 20 }} onClick={() => router.push(item?.path)} />
+                                          </Box>
+                                       </Box>
+                                    </Box>
+                                 </Box>
+                              )
+                           })
+                           :
+                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative' }}>
+                              <Text small>Você não possui novas notificações.</Text>
+                           </Box>
+                        }
+
+                     </Box>}
+               </Box>
+
+               <Box sx={{ padding: '15px 15px', marginTop: 1, borderRadius: 2, display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', backgroundColor: colorPalette.secondary }}>
+                  <Box sx={{
+                     display: 'flex', marginBottom: showSections?.tasks ? 3 : 0, gap: 2, alignItems: 'center',
+                     "&:hover": {
+                        opacity: 0.8,
+                        cursor: 'pointer'
+                     }
+                  }} onClick={() => setShowSections({ ...showSections, tasks: !showSections?.tasks })} >
+                     <Text bold small>Chamados em aberto</Text>
+                     <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                        // filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                        transform: showSections?.tasks ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: '.3s',
+                        width: 13, height: 13,
+                        aspectRatio: '1/1'
+                     }} />
+                  </Box>
+                  {showSections?.tasks &&
+                     <Box sx={{
+                        width: 200, height: tasksList?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
+                        scrollbarWidth: 'thin', // para navegadores que não são WebKit
+                        scrollbarColor: 'transparent transparent', // para navegadores que não são WebKit
+                        '&::-webkit-scrollbar': {
+                           width: '6px',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                           backgroundColor: 'transparent',
+                        },
+                     }}>
+                        {tasksList?.length > 0 ?
+                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, paddingBottom: 5 }}>
+                              {tasksList?.sort((a, b) => b.dt_criacao.localeCompare(a.dt_criacao))
+                                 ?.map((item, index) => {
+                                    return (
+                                       <Box key={index} sx={{
+                                          display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '12px 12px',
+                                          backgroundColor: colorPalette.primary,
+                                          borderRadius: 2,
+                                          maxHeight: 150,
+                                          "&:hover": {
+                                             backgroundColor: colorPalette.primary + '99',
+                                             cursor: 'pointer'
+                                          },
+                                       }}>
+                                          <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                             <Text small bold style={{ color: colorPalette?.buttonColor }}>Aberto por:</Text>
+                                             <Text small>{item?.autor}</Text>
+                                          </Box>
+                                          <Box sx={{
+                                             display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1,
+                                             padding: '10px 0px'
+                                          }}>
+                                             <Text small bold>{item?.titulo_chamado}</Text>
+                                             <Text small style={{
+                                                textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                             }}>{item?.descricao_chamado}</Text>
+                                          </Box>
+                                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'space-between' }}>
+                                             <Text small style={{ color: '#606060' }}>aberto em: {formatTimeStamp(item?.dt_criacao, true)}</Text>
+                                             <Button secondary text="visitar" small style={{ height: 20 }} onClick={() => router.push(`/suport/tasks/${item?.id_chamado}`)} />
+                                          </Box>
+                                       </Box>
+                                    )
+                                 })}
+                           </Box>
+                           : <Text light small>Você não possui chamados em aberto</Text>
+                        }
+
+                     </Box>
+                  }
+               </Box>
+
                <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none', }}>
                   <Divider />
                   <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>

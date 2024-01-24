@@ -121,7 +121,7 @@ export default function StudentGrade(props) {
             <SectionHeader
                 title={`Avaliação Semestral (${studentGradeList?.filter(filter)?.length || '0'})`}
             />
-             <ContentContainer>
+             <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -165,6 +165,7 @@ export default function StudentGrade(props) {
                     />
                 </Box>
             </ContentContainer>
+
           
             {studentGradeList.length > 0 ?
                 <Table_V1 data={sortClasses()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_turma'} filters={filters} onPress={(value) => setFilters(value)} onFilter/>

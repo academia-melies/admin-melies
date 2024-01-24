@@ -337,7 +337,9 @@ export default function ListBillsToPay(props) {
             </ContentContainer>
 
             <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', gap: 5, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' } }}>
-                <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'center', xl: 'center' } }}>
+                <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'center', xl: 'center' },
+                flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' }
+             }}>
                     {monthFilter?.map((item, index) => {
                         const monthSelected = item?.value === filters?.month;
                         return (
@@ -361,7 +363,7 @@ export default function ListBillsToPay(props) {
 
 
             <Box sx={{ display: 'flex', gap: 2, flex: 1, flexDirection: 'column' }}>
-                <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row', flex: 1 }}>
+                <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' }, flex: 1 }}>
                     <ContentContainer fullWidth>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', }}>
                             <Box sx={{
@@ -522,7 +524,9 @@ export default function ListBillsToPay(props) {
                         />
                     </ContentContainer>
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', flex: 1 }}>
-                        <ContentContainer fullWidth>
+                        <ContentContainer fullWidth sx={{
+                            flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' }
+                        }}>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', }}>
                                 <Box sx={{
                                     ...styles.menuIcon,

@@ -1,12 +1,13 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms"
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { TablePagination } from "@mui/material"
+import { Backdrop, TablePagination } from "@mui/material"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { icons } from "../../../organisms/layout/Colors"
 
 export default function ListInstitution(props) {
     const [institutionList, setInstitutionList] = useState([])
@@ -25,7 +26,7 @@ export default function ListInstitution(props) {
     })
     const router = useRouter()
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-
+    const [showFilterMobile, setShowFilterMobile] = useState(false)
 
     const fetchPermissions = async () => {
         try {
@@ -62,7 +63,11 @@ export default function ListInstitution(props) {
 
     useEffect(() => {
         if (firstRender) return setFirstRender(false);
-        window.localStorage.setItem('list-institution-filters', JSON.stringify({ filterName: filters.filterName, filterOrder: filters.filterOrder }));
+        window.localStorage.setItem('list-institution-filters', JSON.stringify({ filterName: filtersOrders.filterName, filterOrder: filtersOrders.filterOrder }));
+    }, [filtersOrders])
+
+    useEffect(() => {
+        setShowFilterMobile(false)
     }, [filters])
 
     const handleChangePage = (event, newPage) => {
@@ -79,7 +84,7 @@ export default function ListInstitution(props) {
 
 
     const sortInstitution = () => {
-        const { filterName, filterOrder } = filters;
+        const { filterName, filterOrder } = filtersOrders;
 
         const sortedInstitution = [...institutionList].sort((a, b) => {
             const valueA = filterName === 'id_instituicao' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
@@ -131,7 +136,7 @@ export default function ListInstitution(props) {
                 newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
-            <ContentContainer>
+            <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -168,12 +173,75 @@ export default function ListInstitution(props) {
                         onPageChange={handleChangePage}
                         rowsPerPage={rowsPerPage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
+                        
                         style={{ color: colorPalette.textColor }} // Define a cor do texto
                         backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
                         nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
                     />
                 </Box>
             </ContentContainer >
+
+            <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
+                <TextInput placeholder="Buscar pelo nome.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{
+                    flex: 1,
+                }} />
+                <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
+                <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+                    <TablePagination
+                        component="div"
+                        count={institutionList?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        labelRowsPerPage="Items"
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
+                    />
+                </Box>
+                <Divider distance={0} />
+            </Box>
+
+
+            <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
+                <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                        <Text bold large>Filtros</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilterMobile(false)} />
+                    </Box>
+                    <Divider padding={0} />
+                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative', }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, alignItems: 'start', flexDirection: 'column' }}>
+                            <SelectList
+                                fullWidth
+                                data={listAtivo}
+                                valueSelection={filters?.status}
+                                onSelect={(value) => setFilters({ ...filters, status: value })}
+                                title="Status"
+                                filterOpition="value"
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                                clean={false}
+                            />
+                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
+                            <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => () => setFilters({
+                                status: 'todos'
+                            })} />
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
             {institutionList?.length >= 1 ?
                 <Table_V1 data={sortInstitution()?.filter(filter)} columns={column} columnId={'id_instituicao'} filters={filtersOrders} onPress={(value) => setFiltersOrders(value)} onFilter />
                 :
@@ -183,4 +251,21 @@ export default function ListInstitution(props) {
             }
         </>
     )
+}
+
+const styles = {
+    containerRegister: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: 1.5,
+        padding: '40px'
+    },
+    menuIcon: {
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 15,
+        height: 15,
+    },
 }

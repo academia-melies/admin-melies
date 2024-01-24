@@ -29,12 +29,16 @@ export const SectionHeader = (props) => {
             width: '100%',
             alignItems: 'center',
          }}>
-            <Box sx={{ display: 'flex', flex: 1, height: '100%', maxWidth: '100%', gap: 2, overflow: 'hidden', position: 'relative', alignItems: 'center' }}>
+            <Box sx={{
+               display: 'flex', flex: 1, height: '100%', maxWidth: { xs: '90%', sm: '100%', md: '100%', lg: '100%' }, gap: 2,
+                overflow: { sm: 'hidden', md: 'hidden', lg: 'hidden' }, position: 'relative', alignItems: 'center',
+               flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap' },
+            }}>
                <Text
                   veryLarge='true'
                   bold='true'
                   style={{
-                     whiteSpace: 'nowrap',
+                     whiteSpace: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap' },
                      textAlign: { xs: `center`, sm: 'start', md: 'start', lg: 'start' },
                      color: colorPalette.textColor
                   }}>{title}</Text>
@@ -57,7 +61,7 @@ export const SectionHeader = (props) => {
                right: { xs: 0, sm: 20, md: 40, lg: 60, xl: 60 },
                maxWidth: '350px',
                // margin: { xs: 'auto' },
-               zIndex: 9999,
+               zIndex: 999,
                padding: { xs: 2, sm: 0, md: 0, lg: 0 },
                // backgroundColor: colorPalette.primary,
                gap: 1,

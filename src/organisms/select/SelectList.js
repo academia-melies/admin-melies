@@ -22,8 +22,8 @@ export const SelectList = (props) => {
     const { colorPalette } = useAppContext()
     const [showClearButton, setShowClearButton] = useState(false);
 
- 
-    
+
+
     return (
         <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px" }}>
             <FormControl fullWidth>
@@ -31,14 +31,14 @@ export const SelectList = (props) => {
                     InputLabelProps={{ sx: { fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } } }}
                     sx={{ ...inputStyle, fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } }}>{title}</InputLabel>
                 <Select
-                    disabled={disabled}
+                    disabled={false}
                     sx={{
                         borderRadius: "8px", backgroundColor: colorPalette.inputColor, height: 45, color: colorPalette.textColor, ...sx, maxHeight: 45, transition: 'background-color 1s',
                         fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' }
                     }}
                     value={valueSelection}
                     label={title}
-                    onChange={(event) => onSelect(event.target.value)}
+                    onChange={disabled ? () => { } : (event) => onSelect(event.target.value)}
                     endAdornment={clean ?
                         <InputAdornment position="end">
                             {(valueSelection && !disabled) && (
