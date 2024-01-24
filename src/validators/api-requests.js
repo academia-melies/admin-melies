@@ -82,9 +82,9 @@ export const createEnrollment = async (id, enrollmentData) => {
    }
 }
 
-export const createCourse = async (courseData, userId) => {
+export const createCourse = async (courseData, userId, files) => {
    try {
-      const response = await api.post(`/course/create`, { courseData, userId })
+      const response = await api.post(`/course/create`, { courseData, userId, files })
       return response
    } catch (error) {
       return error
@@ -197,7 +197,21 @@ export const editGrid = async ({ id, gridData }) => {
 
 export const uploadFile = async (data) => {
 
-   const { formData, usuario_id = null, campo = null, tipo = null, images = false, tela = null, contract, servicoId, screen, taskId, matricula_id = null, material_id = null } = data;
+   const {
+      formData,
+      usuario_id = null,
+      campo = null,
+      tipo = null,
+      images = false,
+      tela = null,
+      contract,
+      servicoId,
+      screen,
+      taskId,
+      matricula_id = null,
+      material_id = null,
+      courseId = null
+   } = data;
 
    let query = `?usuario_id=${usuario_id}`;
 
@@ -209,7 +223,8 @@ export const uploadFile = async (data) => {
    if (taskId) query += `&taskId=${taskId}`;
    if (matricula_id) query += `&matricula_id=${matricula_id}`;
    if (material_id) query += `&material_id=${material_id}`;
-   
+   if (courseId) query += `&courseId=${courseId}`;
+
    try {
       if (images) {
          const response = await api.post(`/file/image/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
@@ -226,13 +241,18 @@ export const uploadFile = async (data) => {
          return response
       }
 
-      if(matricula_id){
+      if (matricula_id) {
          const response = await api.post(`/student/enrrolments/contract/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
          return response
       }
 
-      if(material_id){
+      if (material_id) {
          const response = await api.post(`/catalog/material/image/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+         return response
+      }
+
+      if (courseId) {
+         const response = await api.post(`/course/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
          return response
       }
 
@@ -245,7 +265,7 @@ export const uploadFile = async (data) => {
    }
 }
 
-export const deleteFile = async ({ fileId, usuario_id, campo, key, matriculaId }) => {
+export const deleteFile = async ({ fileId, usuario_id, campo, key, matriculaId, courseId }) => {
 
    let query = `?key=${key}`;
 
@@ -258,7 +278,12 @@ export const deleteFile = async ({ fileId, usuario_id, campo, key, matriculaId }
          const response = await api.delete(`/student/enrrolments/contract/delete/${fileId}${query}`)
          return response
       }
-      
+
+      if (courseId) {
+         const response = await api.delete(`/course/document/delete/${fileId}${query}`)
+         return response
+      }
+
       const response = await api.delete(`/file/delete/${fileId}${query}`)
       return response
    } catch (error) {
