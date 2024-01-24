@@ -1,12 +1,12 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text } from "../../../atoms"
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { icons } from "../../../organisms/layout/Colors"
 import { api } from "../../../api/api"
-import { TablePagination } from "@mui/material"
+import { Backdrop, TablePagination } from "@mui/material"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
 export default function ListGrid(props) {
@@ -19,6 +19,7 @@ export default function ListGrid(props) {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [showFilterMobile, setShowFilterMobile] = useState(false)
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -62,6 +63,11 @@ export default function ListGrid(props) {
         getGrid();
     }, []);
 
+
+    useEffect(() => {
+        setShowFilterMobile(false)
+    }, [filterAtive])
+
     const getGrid = async () => {
         setLoading(true)
         try {
@@ -96,7 +102,7 @@ export default function ListGrid(props) {
                 newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
-            <ContentContainer>
+            <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -107,7 +113,7 @@ export default function ListGrid(props) {
                         <Text style={{ color: '#d6d6d6' }} light>grades</Text>
                     </Box>
                 </Box>
-                <SearchBar placeholder='Artes visuais, Desenvolvimento de Games...' style={{ backgroundColor: colorPalette.inputColor, transition: 'background-color 1s', }} onChange={setFilterData} />
+                <TextInput placeholder="Buscar por Grade.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
@@ -141,6 +147,67 @@ export default function ListGrid(props) {
                 </Box>
             </ContentContainer>
 
+
+            <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
+                <TextInput placeholder="Buscar por Grade.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
+                <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+                    <TablePagination
+                        component="div"
+                        count={gridList?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        labelRowsPerPage="Items"
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
+                    />
+                </Box>
+                <Divider distance={0} />
+            </Box>
+
+
+            <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
+                <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                        <Text bold large>Filtros</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilterMobile(false)} />
+                    </Box>
+                    <Divider padding={0} />
+                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative', }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, alignItems: 'start', flexDirection: 'column' }}>
+                            <SelectList
+                                data={listAtivo}
+                                valueSelection={filterAtive}
+                                onSelect={(value) => setFilterAtive(value)}
+                                title="status"
+                                filterOpition="value"
+                                sx={{ flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                                clean={false}
+                            />
+                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
+                            <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
+                    setFilterAtive('todos')
+                    setFilterData('')
+                }} />
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
             {gridList ? (
                 gridList.filter(filter).slice(startIndex, endIndex).map((item, index) => {
                     const gridData = item.disciplinas;
@@ -155,7 +222,9 @@ export default function ListGrid(props) {
                     });
 
                     return (
-                        <ContentContainer key={`${item}-${index}`}>
+                        <ContentContainer key={`${item}-${index}`} sx={{
+                            padding: { xs: '0px', sm: '10px', md: '30px', lg: '30px', xl: '30px' }
+                        }}>
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -164,7 +233,8 @@ export default function ListGrid(props) {
                                     "&:hover": {
                                         opacity: 0.8,
                                         cursor: 'pointer'
-                                    }
+                                    },
+                                    padding: { xs: '30px', sm: '30px', md: '0px', lg: '0px', xl: '0px' }
                                 }}
                                 onClick={() => toggleGridTable(index)}
                             >

@@ -116,7 +116,7 @@ export const LeftMenu = ({ }) => {
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center center',
                   width: '100%',
-                  height: { md: '180px', lg: '180px', xl: '205px' },
+                  height: { xs: '200px', md: '180px', lg: '180px', xl: '205px' },
                   position: 'absolute',
                   backgroundColor: colorPalette.secondary,
                   top: -40,
@@ -195,6 +195,7 @@ export const LeftMenu = ({ }) => {
                            // router.push(`/administrative/users/${user?.id}`)
                            setShowUserOptions(!showUserOptions)
                            setShowDialogEditUser(true)
+                           setShowMenuMobile(false)
                         }} />
                      </Box>
                   </Box>
@@ -296,18 +297,25 @@ export const LeftMenu = ({ }) => {
                                  </Box>
                                  : <>
                                     {groupStates[index] && (
-                                       group.items.map((item, index) => {
-                                          return (
-                                             <MenuItem
-                                                currentPage={item.to === pathname}
-                                                key={`${index}_${item.to}`}
-                                                to={item.to}
-                                                text={item.text}
-                                                icon={item.icon}
-                                                onClick={() => setShowMenuMobile(false)}
-                                                slug={item.to}
-                                             />)
-                                       }))}
+                                       group.items.filter(item =>
+                                          item.permissoes.some(permission => userPermissions.some(userPerm => userPerm.id_grupo_perm === permission.grupo_perm_id)))
+                                          .map((item, index) => {
+                                             return (
+                                                <MenuItem
+                                                   currentPage={item.to === pathname}
+                                                   key={`${index}_${item.to}`}
+                                                   to={item.to}
+                                                   text={item.text}
+                                                   icon={item.icon}
+                                                   onClick={() => setShowMenuMobile(false)}
+                                                   slug={item.to}
+                                                   subitem={item.subitems}
+                                                   pathname={pathname}
+                                                />
+
+                                             )
+                                          }
+                                          ))}
                                  </>
                               }
                            </Box>

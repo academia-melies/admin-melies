@@ -36,9 +36,9 @@ export const RadioItem = (props) => {
                                     color: colorPalette.textColor,
                                     fontSize: '9px'
                                 }
-                            }} onChange={(event) => onSelect(event.target.value)}
+                            }} onChange={disabled ? () => { } : (event) => onSelect(event.target.value)}
                                 checked={getChecked(item.value)}
-                                disabled={disabled} />
+                            />
                         } label={item?.label} sx={{
                             '& .MuiTypography-root': {
                                 fontFamily: 'MetropolisRegular',

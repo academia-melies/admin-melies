@@ -396,7 +396,10 @@ export default function CalendarComponent(props) {
         <>
             <SectionHeader title={`Calendario Geral`} />
             <ContentContainer>
-                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center' }}>
+                <Box sx={{
+                    display: 'flex', justifyContent: 'start', gap: 2, alignItems: { xs: 'star', sm: 'star', md: 'center', lg: 'center', xl: 'center' },
+                    flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row', xl: 'row' }
+                }}>
                     <Box sx={{ display: 'flex', gap: 1.5 }}>
                         <SelectList clean={false} data={groupMonths} valueSelection={semesterSelect} onSelect={(value) => setSemesterSelect(value)}
                             title="Vizualizar por:" filterOpition="value" sx={{ color: colorPalette.textColor, maxWidth: 280 }}
@@ -415,12 +418,12 @@ export default function CalendarComponent(props) {
                 </Box>
             </ContentContainer>
 
-            <Box sx={{ display: 'flex', flexDirection: { xs:'column', md: 'row', lg: 'row', xl: 'row' }, flexWrap: 'wrap', gap: 5, }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }, flexWrap: 'wrap', gap: 5, }}>
                 {filteredEvents?.filter(filter).map((month, index) => (
                     <Box key={`${month}-${index}`} sx={{
                         marginBottom: 2,
                         minHeight: 400,
-                        maxWidth: { xs:'100%', md: '30%', lg: '30%', xl: '30%' },
+                        maxWidth: { xs: '100%', md: '30%', lg: '30%', xl: '30%' },
                         minWidth: '30%'
                     }}>
                         <Text bold title sx={{ textAlign: 'center' }}>{moment(month?.start).format('MMMM YYYY')} </Text>
