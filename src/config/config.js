@@ -13,4 +13,13 @@ export const versions = [
             { change: 'Controle de permissões (Edição e leitura),' },
         ]
     },
+    {
+        version: '1.1.2', build: '24/01/2024',
+        msg: 'Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
+        listChanges: [
+            { change: 'Correções Turmas listadas em "Interesses" do usuário.' },
+            { change: 'Novos recursos de "Pendência de arquivos" em usuários.' },
+            { change: 'Novos campos no cadastro do Curso,' },
+        ]
+    },
 ]

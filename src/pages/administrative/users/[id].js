@@ -3224,14 +3224,15 @@ export const EditFile = (props) => {
         fileData = [],
         columnId = '',
         matriculaId,
-        isPermissionEdit
+        isPermissionEdit,
+        courseId
     } = props
 
     const { alert, setLoading, matches } = useAppContext()
 
     const handleDeleteFile = async (files) => {
         setLoading(true)
-        const response = await deleteFile({ fileId: files?.[columnId], usuario_id: usuarioId, campo: files.campo, key: files?.key_file, matriculaId })
+        const response = await deleteFile({ fileId: files?.[columnId], usuario_id: usuarioId, campo: files.campo, key: files?.key_file, matriculaId, courseId })
         const { status } = response
         let file = {
             status
@@ -3248,7 +3249,7 @@ export const EditFile = (props) => {
     return (
         <Backdrop open={open} sx={{ zIndex: 99999, }}>
             <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll', }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
                     <Text bold>{title}</Text>
                     <Box sx={{
                         ...styles.menuIcon,
@@ -3297,6 +3298,7 @@ export const EditFile = (props) => {
                             campo={campo}
                             tipo={tipo}
                             matricula_id={matriculaId}
+                            courseId={courseId}
                         />
 
                     </Box>}
