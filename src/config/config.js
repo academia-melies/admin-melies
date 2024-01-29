@@ -25,7 +25,7 @@ export const versions = [
         ]
     },
     {
-        version: '1.2.1', build: '24/01/2024',
+        version: '1.2.1', build: '29/01/2024',
         msg: 'O Sistema agora está responsivo para celular!! Além do ajuste responsividade para celular, Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
         listChanges: [
             { change: 'Reponsividade para Celular, Tablet, etc.' }
