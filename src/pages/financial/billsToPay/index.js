@@ -353,8 +353,10 @@ export default function ListBillsToPay(props) {
                 title="Contas a pagar"
                 perfil={menuSelected}
             />
-            <Box sx={{ display: 'flex', width: '100%', gap: 2,
-          flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
+            <Box sx={{
+                display: 'flex', width: '100%', gap: 2,
+                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
+            }}>
 
                 <Box sx={{
                     display: 'flex', gap: 2,
@@ -429,8 +431,10 @@ export default function ListBillsToPay(props) {
                     </Box>
                 </ContentContainer>
             </Box>
-            <Box sx={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
-        flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
+            <Box sx={{
+                display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
+                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
+            }}>
                 <SelectList
                     data={years}
                     valueSelection={filterYear}
@@ -439,7 +443,7 @@ export default function ListBillsToPay(props) {
                     sx={{ backgroundColor: colorPalette.secondary }}
                     clean={false}
                 />
-                <Box sx={{ display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' }}}>
+                <Box sx={{ display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' } }}>
                     {monthFilter?.map((item, index) => {
                         const monthSelected = item?.value === filterMonth;
                         return (
@@ -562,7 +566,10 @@ export default function ListBillsToPay(props) {
                                                     />
                                                 </td>
                                                 {columnTable?.map((column, colIndex) => (
-                                                    <td key={colIndex} style={{ textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}
+                                                    <td key={colIndex} style={{
+                                                        textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}`,
+                                                        minWidth: column?.label === 'id' ? 60 : 0
+                                                    }}
                                                         onClick={(e) => {
                                                             column?.label === 'id' ? pusBillId(item)
                                                                 :
