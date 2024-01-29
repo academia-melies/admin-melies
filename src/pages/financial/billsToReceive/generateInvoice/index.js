@@ -1,14 +1,15 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text, TextInput } from "../../../../atoms"
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
 import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
 import { formatTimeStamp } from "../../../../helpers"
-import { TablePagination } from "@mui/material"
+import { Backdrop, TablePagination } from "@mui/material"
 import Link from "next/link"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
+import { icons } from "../../../../organisms/layout/Colors"
 
 export default function ListInvoices(props) {
     const [invoicesList, setInvoicesList] = useState([])
@@ -29,6 +30,8 @@ export default function ListInvoices(props) {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [showFilterMobile, setShowFilterMobile] = useState(false)
+
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -133,6 +136,10 @@ export default function ListInvoices(props) {
         }
     }
 
+    useEffect(() => {
+        setShowFilterMobile(false)
+    }, [filters])
+
     const verifyExistsNfse = () => {
         const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
         let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
@@ -221,7 +228,7 @@ export default function ListInvoices(props) {
             <SectionHeader
                 title={`Emissão NF-e (${invoicesList.filter(filter)?.length || '0'})`}
             />
-            <ContentContainer>
+            <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -283,6 +290,86 @@ export default function ListInvoices(props) {
                 </Box>
             </ContentContainer>
 
+
+            <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
+                <TextInput placeholder="Buscar pelo nome.." name='filters' type="search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} value={filters?.search} sx={{ flex: 1 }} />
+                <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
+                <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+                    <TablePagination
+                        component="div"
+                        count={invoicesList?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        labelRowsPerPage="Items"
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
+                    />
+                </Box>
+                <Divider distance={0} />
+            </Box>
+
+
+            <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
+                <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                        <Text bold large>Filtros</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilterMobile(false)} />
+                    </Box>
+                    <Divider padding={0} />
+                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative', }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, alignItems: 'start', flexDirection: 'column', width: '100%' }}>
+                            <SelectList
+                                fullWidth
+                                data={listAtivo}
+                                valueSelection={filters?.parcel}
+                                onSelect={(value) => setFilters({ ...filters, parcel: value })}
+                                title="Status Parcela"
+                                filterOpition="value"
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                                clean={false}
+                            />
+                            <SelectList
+                                fullWidth
+                                data={listStatusNF}
+                                valueSelection={filters?.nfse}
+                                onSelect={(value) => setFilters({ ...filters, nfse: value })}
+                                title="Status NFSe"
+                                filterOpition="value"
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                                clean={false}
+                            />
+                            <Box sx={{ ...styles.inputSection, gap: 1, padding: '20px 0px', display: 'flex' }}>
+                                <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} sx={{ width: '100%' }} />
+                                <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} sx={{ width: '100%' }} />
+                            </Box>
+                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
+                            <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
+                                setFilters({
+                                    parcel: 'todos',
+                                    nfse: 'todos',
+                                    search: '',
+                                    startDate: '',
+                                    endDate: ''
+                                })
+                            }} />
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
             {invoicesList.length > 0 ?
                 <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap', border: `1px solid ${colorPalette.textColor}` }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
@@ -329,7 +416,7 @@ export default function ListInvoices(props) {
                                     <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary }}>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             <CheckBoxComponent
-                                            disabled={!isPermissionEdit && true}
+                                                disabled={!isPermissionEdit && true}
                                                 boxGroup={groupSelect(item?.id_parcela_matr)}
                                                 valueChecked={invoicesSelected}
                                                 horizontal={true}
@@ -426,12 +513,15 @@ export default function ListInvoices(props) {
             </Box>
 
             {invoicesSelected && <>
-                <Box sx={{ display: 'flex', position: 'fixed', left: 280, bottom: 20, display: 'flex', gap: 0.5, alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{
+                    display: 'flex', position: 'fixed',
+                    left: { xs: 150, sm: 150, md: 280, lg: 280, xl: 280 }, bottom: 20, display: 'flex', gap: 0.5, alignItems: 'center', justifyContent: 'center'
+                }}>
                     <Text>Linhas selecionadas: </Text>
                     <Text bold>{invoicesSelected?.split(',')?.length}</Text>
                 </Box>
 
-                <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 55, display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'flex', position: 'fixed', right: { xs: 10, sm: 10, md: 60, lg: 60, xl: 60 }, bottom: 55, display: 'flex', gap: 2 }}>
                     <Button text="Emitir NF" style={{ width: '120px', height: '40px' }} onClick={(event) => setShowConfirmationDialog({
                         active: true,
                         event,
@@ -455,6 +545,20 @@ export const styles = {
         alignItems: 'center',
         justifyContent: 'space-around',
         gap: 1.8,
-        flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
+        flexDirection: { xs: 'row', sm: 'row', md: 'row', lg: 'row' }
+    },
+    containerRegister: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: 1.5,
+        padding: '40px'
+    },
+    menuIcon: {
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 15,
+        height: 15,
     },
 }

@@ -148,6 +148,7 @@ export const LeftMenu = ({ }) => {
                            // router.push(`/administrative/users/${user?.id}`)
                            setShowUserOptions(!showUserOptions)
                            setShowDialogEditUser(true)
+                           setShowMenuMobile(false)
                         }} />
                      <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff', fontFamily: 'MetropolisSemiBold' }}>{userName}</Text>
                      {/* <Box sx={{
@@ -279,6 +280,9 @@ export const LeftMenu = ({ }) => {
                                              .map((item, index) => {
                                                 return (
                                                    <MenuItem
+                                                      router={router}
+                                                      setShowMenuMobile={setShowMenuMobile}
+                                                      showMenuMobile={showMenuMobile}
                                                       currentPage={item.to === pathname}
                                                       key={`${index}_${item.to}`}
                                                       to={item.to}
@@ -302,6 +306,9 @@ export const LeftMenu = ({ }) => {
                                           .map((item, index) => {
                                              return (
                                                 <MenuItem
+                                                   setShowMenuMobile={setShowMenuMobile}
+                                                   router={router}
+                                                   showMenuMobile={showMenuMobile}
                                                    currentPage={item.to === pathname}
                                                    key={`${index}_${item.to}`}
                                                    to={item.to}
@@ -453,119 +460,272 @@ const MenuItem = (props) => {
       onClick,
       slug,
       subitem,
-      pathname
+      pathname,
+      showMenuMobile,
+      router,
+      setShowMenuMobile
    } = props
+
+   const isMobile = showMenuMobile;
+
+   const handleClick = (event) => {
+      event.preventDefault(); // Prevents the default link behavior
+      event.stopPropagation()
+      if (isMobile) {
+         // Only toggle showSubItems if the clicked item has subitems
+         setShowSubItems(subitem && subitem?.length > 0 ? !showSubItems : showSubItems);
+
+         if (subitem && subitem?.length < 1) {
+            router.push(to)
+            onClick()
+         }
+      } else {
+         if (onClick) {
+         }
+      }
+   };
 
    return (
       <>
-         <Link
-            href={to || '/#'}
-            onClick={onClick}
-            style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`, minWidth: 110 }}
-            onMouseEnter={() => setShowSubItems(true)}
-            onMouseLeave={() => setShowSubItems(false)}
-         >
-            <Box sx={{
-               display: 'flex',
-               width: '100%',
-               borderRadius: 2,
-               color: 'inherit',
-               transition: '.2s',
-               ...(currentPage && to != null ?
-                  {
-                     // border: `1px solid ${Colors.orange}`,
-                     // backgroundColor: colorPalette.buttonColor,
-                     color: colorPalette.buttonColor,
-                  }
-                  :
-                  {
-                     "&:hover": {
-                        // backgroundColor: colorPalette.buttonColor + '22',
-
-
+         {isMobile
+            ?
+            <Box
+               onClick={(e) => handleClick(e)}
+               style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`, minWidth: 110, position: 'relative' }}
+            >
+               {<Box sx={{ display: 'flex', position: 'absolute', height: '105%', width: 2, backgroundColor: colorPalette.primary, left: 1 }} />}
+               <Box sx={{
+                  display: 'flex',
+                  width: '100%',
+                  borderRadius: 2,
+                  color: 'inherit',
+                  transition: '.2s',
+                  flexDirection: {
+                     xs: 'column', md: 'column', lg: 'row', xl: 'row'
+                  },
+                  ...(currentPage && to != null ?
+                     {
+                        // border: `1px solid ${Colors.orange}`,
+                        // backgroundColor: colorPalette.buttonColor,
+                        color: colorPalette.buttonColor,
                      }
-                  }),
-            }}>
-               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit', justifyContent: 'space-between' }}>
-                  {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
-                  <Text
-                     small
-                     sx={{
-                        color: colorPalette.textColor,
-                        transition: 'background-color 1s',
+                     :
+                     {
                         "&:hover": {
-                           color: colorPalette.buttonColor,
-                        },
-                        ...(currentPage && to != null &&
-                        {
-                           color: colorPalette.buttonColor,
+                           // backgroundColor: colorPalette.buttonColor + '22',
+
+
                         }
-                        ),
-                     }}>
-                     {text}
-                  </Text>
-                  {subitem?.length > 0 &&
+                     }),
+               }}>
+
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit', justifyContent: 'space-between' }}>
+                     {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
+                     <Text
+                        small
+                        sx={{
+                           color: colorPalette.textColor,
+                           transition: 'background-color 1s',
+                           "&:hover": {
+                              color: colorPalette.buttonColor,
+                           },
+                           ...(currentPage && to != null &&
+                           {
+                              color: colorPalette.buttonColor,
+                           }
+                           ),
+                        }}>
+                        {text}
+                     </Text>
+                     {subitem?.length > 0 &&
+                        <Box sx={{
+                           ...styles.menuIcon,
+                           backgroundImage: `url(${icons.gray_arrow_down})`,
+                           transform: showSubItems ? 'rotate(0deg)' : 'rotate(-90deg)',
+                           transition: '.3s',
+                           right: 12,
+                           width: 15,
+                           aspectRatio: '1/1',
+                           height: 15,
+                           // position: 'absolute',
+                           "&:hover": {
+                              opacity: 0.8,
+                              cursor: 'pointer'
+                           }
+                        }} />}
+                  </Box>
+                  <Box sx={{
+                     position: { xs: 'relative', md: 'absolute', lg: 'absolute', xl: 'absolute' }, marginLeft: { md: 11, lg: 10, xl: 11.5 },
+                     boxShadow: { xs: 'none', md: 'none', lg: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, xl: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, },
+                  }}>
                      <Box sx={{
-                        ...styles.menuIcon,
-                        backgroundImage: `url(${icons.gray_arrow_down})`,
-                        transform: 'rotate(-90deg)',
-                        transition: '.3s',
-                        right: 12,
-                        width: 15,
-                        aspectRatio: '1/1',
-                        height: 15,
-                        // position: 'absolute',
-                        "&:hover": {
-                           opacity: 0.8,
-                           cursor: 'pointer'
-                        }
-                     }} />}
-               </Box>
-               <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 10, xl: 11.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
-                  {showSubItems &&
-                     [...new Set(subitem?.map(item => item.to))].map((to, index) => {
-                        const item = subitem?.find(item => item.to === to);
-                        const currentPage = item.to === pathname;
-                        const key = `${index}_${item.id_subitem}`;
+                        position: { xs: 'relative', md: 'absolute', lg: 'absolute', xl: 'absolute' }, marginLeft: { md: 11, lg: 10, xl: 11.5 },
+                        boxShadow: { xs: 'none', md: 'none', lg: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, xl: `rgba(149, 157, 165, 0.17) 0px 6px 24px` },
+                        marginTop: (subitem?.length > 0 && showSubItems) ? '5px' : 0,
+                        display: 'flex', flexDirection: 'column'
+                     }}>
+                        {subitem?.length > 0 && showSubItems && <Box sx={{ display: 'flex', position: 'absolute', height: '100%', width: 2, backgroundColor: colorPalette.primary }} />}
+                        {showSubItems &&
+                           [...new Set(subitem?.map(item => item.to))].map((to, index) => {
+                              const item = subitem?.find(item => item.to === to);
+                              const currentPage = item.to === pathname;
+                              const key = `${index}_${item.id_subitem}`;
 
-                        return (
-                           <Link key={key}
-                              href={item.to || '/#'}
-                              style={{ display: 'flex', width: '100%', backgroundColor: colorPalette.secondary, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}
-                           >
-                              <Box sx={{
-                                 display: 'flex',
-                                 padding: `8px 18px`,
-                                 width: '100%',
-                                 borderRadius: 2,
-                                 color: 'inherit',
-                                 transition: '.2s',
-                                 ...(currentPage && item.to != null ?
-                                    { color: colorPalette.buttonColor } : {}),
-                              }}>
-                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
-                                    <Text
-                                       small
-                                       sx={{
-                                          color: colorPalette.textColor,
-                                          transition: 'background-color 1s',
-                                          "&:hover": {
-                                             color: colorPalette.buttonColor,
-                                          },
-                                          ...(currentPage && item.to != null && { color: colorPalette.buttonColor }
-                                          ),
-                                       }}>
-                                       {item.text}
-                                    </Text>
+                              return (
+                                 <Box key={key}
+                                    style={{
+                                       display: 'flex', width: '100%', backgroundColor: colorPalette.secondary,
+                                       boxShadow: { xs: 'none', md: 'none', lg: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, xl: `rgba(149, 157, 165, 0.17) 0px 6px 24px` },
+                                    }}
+                                 >
+                                    <Box sx={{
+                                       display: 'flex',
+                                       padding: `8px 18px`,
+                                       width: '100%',
+                                       borderRadius: 2,
+                                       color: 'inherit',
+                                       transition: '.2s',
+                                       ...(currentPage && item.to != null ?
+                                          { color: colorPalette.buttonColor } : {}),
+                                    }} onClick={() => {
+                                       router.push(item.to)
+                                       setShowMenuMobile(false)
+                                    }}>
+                                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
+                                          <Text
+                                             small
+                                             sx={{
+                                                color: colorPalette.textColor,
+                                                transition: 'background-color 1s',
+                                                "&:hover": {
+                                                   color: colorPalette.buttonColor,
+                                                },
+                                                ...(currentPage && item.to != null && { color: colorPalette.buttonColor }
+                                                ),
+                                             }}>
+                                             {item.text}
+                                          </Text>
+                                       </Box>
+                                    </Box>
                                  </Box>
-                              </Box>
-                           </Link>
-                        );
-                     })}
+                              );
+                           })}
+                     </Box>
+                  </Box>
                </Box>
+            </Box >
+            :
+            <>
+               <Link
+                  href={to || '/#'}
+                  onClick={onClick}
+                  style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`, minWidth: 110 }}
+                  onMouseEnter={() => setShowSubItems(true)}
+                  onMouseLeave={() => setShowSubItems(false)}
+               >
+                  <Box sx={{
+                     display: 'flex',
+                     width: '100%',
+                     borderRadius: 2,
+                     color: 'inherit',
+                     transition: '.2s',
+                     ...(currentPage && to != null ?
+                        {
+                           // border: `1px solid ${Colors.orange}`,
+                           // backgroundColor: colorPalette.buttonColor,
+                           color: colorPalette.buttonColor,
+                        }
+                        :
+                        {
+                           "&:hover": {
+                              // backgroundColor: colorPalette.buttonColor + '22',
 
-            </Box>
-         </Link>
+
+                           }
+                        }),
+                  }}>
+                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit', justifyContent: 'space-between' }}>
+                        {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
+                        <Text
+                           small
+                           sx={{
+                              color: colorPalette.textColor,
+                              transition: 'background-color 1s',
+                              "&:hover": {
+                                 color: colorPalette.buttonColor,
+                              },
+                              ...(currentPage && to != null &&
+                              {
+                                 color: colorPalette.buttonColor,
+                              }
+                              ),
+                           }}>
+                           {text}
+                        </Text>
+                        {subitem?.length > 0 &&
+                           <Box sx={{
+                              ...styles.menuIcon,
+                              backgroundImage: `url(${icons.gray_arrow_down})`,
+                              transform: 'rotate(-90deg)',
+                              transition: '.3s',
+                              right: 12,
+                              width: 15,
+                              aspectRatio: '1/1',
+                              height: 15,
+                              // position: 'absolute',
+                              "&:hover": {
+                                 opacity: 0.8,
+                                 cursor: 'pointer'
+                              }
+                           }} />}
+                     </Box>
+                     <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 10, xl: 11.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
+                        {showSubItems &&
+                           [...new Set(subitem?.map(item => item.to))].map((to, index) => {
+                              const item = subitem?.find(item => item.to === to);
+                              const currentPage = item.to === pathname;
+                              const key = `${index}_${item.id_subitem}`;
+
+                              return (
+                                 <Link key={key}
+                                    href={item.to || '/#'}
+                                    style={{ display: 'flex', width: '100%', backgroundColor: colorPalette.secondary, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}
+                                 >
+                                    <Box sx={{
+                                       display: 'flex',
+                                       padding: `8px 18px`,
+                                       width: '100%',
+                                       borderRadius: 2,
+                                       color: 'inherit',
+                                       transition: '.2s',
+                                       ...(currentPage && item.to != null ?
+                                          { color: colorPalette.buttonColor } : {}),
+                                    }}>
+                                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
+                                          <Text
+                                             small
+                                             sx={{
+                                                color: colorPalette.textColor,
+                                                transition: 'background-color 1s',
+                                                "&:hover": {
+                                                   color: colorPalette.buttonColor,
+                                                },
+                                                ...(currentPage && item.to != null && { color: colorPalette.buttonColor }
+                                                ),
+                                             }}>
+                                             {item.text}
+                                          </Text>
+                                       </Box>
+                                    </Box>
+                                 </Link>
+                              );
+                           })}
+                     </Box>
+
+                  </Box>
+               </Link>
+            </>}
+
       </>
    )
 }

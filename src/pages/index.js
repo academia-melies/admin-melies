@@ -308,7 +308,7 @@ function Home() {
                </Box>
 
                <Divider distance={5} />
-               <Box sx={{ padding: '15px 15px', borderRadius: 2, display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', backgroundColor: colorPalette.secondary }}>
+               <Box sx={{ padding: '20px 15px', borderRadius: 2, display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', backgroundColor: colorPalette.secondary }}>
                   <Box sx={{
                      display: 'flex', marginBottom: showSections?.notification && 3, gap: 2, alignItems: 'center',
                      "&:hover": {
@@ -316,7 +316,7 @@ function Home() {
                         cursor: 'pointer'
                      }
                   }} onClick={() => setShowSections({ ...showSections, notification: !showSections?.notification })} >
-                     <Text bold small>Últimas notificações</Text>
+                     <Text bold>Últimas notificações</Text>
                      <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: `url(${icons.gray_arrow_down})`,
@@ -358,8 +358,8 @@ function Home() {
                                  }}>
                                     <Box sx={{ display: 'flex', gap: 1.75, }}>
                                        <Box sx={{ display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1 }}>
-                                          <Text small bold>{item?.titulo}</Text>
-                                          <Text small>{item?.menssagem}</Text>
+                                          <Text bold>{item?.titulo}</Text>
+                                          <Text>{item?.menssagem}</Text>
                                           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'space-between' }}>
                                              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                                 {item?.id_path && <Text bold small>id: {item?.id_path}</Text>}
@@ -391,7 +391,7 @@ function Home() {
                      </Box>}
                </Box>
 
-               <Box sx={{ padding: '15px 15px', marginTop: 1, borderRadius: 2, display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', backgroundColor: colorPalette.secondary }}>
+               <Box sx={{ padding: '20px 15px', marginTop: 1, borderRadius: 2, display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', backgroundColor: colorPalette.secondary }}>
                   <Box sx={{
                      display: 'flex', marginBottom: showSections?.tasks ? 3 : 0, gap: 2, alignItems: 'center',
                      "&:hover": {
@@ -399,7 +399,7 @@ function Home() {
                         cursor: 'pointer'
                      }
                   }} onClick={() => setShowSections({ ...showSections, tasks: !showSections?.tasks })} >
-                     <Text bold small>Chamados em aberto</Text>
+                     <Text bold>Chamados em aberto</Text>
                      <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: `url(${icons.gray_arrow_down})`,
@@ -438,15 +438,15 @@ function Home() {
                                           },
                                        }}>
                                           <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                             <Text small bold style={{ color: colorPalette?.buttonColor }}>Aberto por:</Text>
-                                             <Text small>{item?.autor}</Text>
+                                             <Text bold style={{ color: colorPalette?.buttonColor }}>Aberto por:</Text>
+                                             <Text>{item?.autor}</Text>
                                           </Box>
                                           <Box sx={{
                                              display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1,
                                              padding: '10px 0px'
                                           }}>
-                                             <Text small bold>{item?.titulo_chamado}</Text>
-                                             <Text small style={{
+                                             <Text bold>{item?.titulo_chamado}</Text>
+                                             <Text style={{
                                                 textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
                                              }}>{item?.descricao_chamado}</Text>
