@@ -1,12 +1,13 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text, TextInput } from "../../../../atoms"
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { getUsersPerfil } from "../../../../validators/api-requests"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
 import { api } from "../../../../api/api"
-import { TablePagination } from "@mui/material"
+import { Backdrop, TablePagination } from "@mui/material"
+import { icons } from "../../../../organisms/layout/Colors"
 
 export default function ListStudentsLoans(props) {
     const [usersList, setUsers] = useState([])
@@ -19,6 +20,7 @@ export default function ListStudentsLoans(props) {
     const [filterEnrollStatus, setFilterEnrollStatus] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [page, setPage] = useState(0);
+    const [showFilterMobile, setShowFilterMobile] = useState(false)
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [filters, setFilters] = useState({
         filterName: 'nome',
@@ -64,6 +66,10 @@ export default function ListStudentsLoans(props) {
     useEffect(() => {
         listClasses()
     }, [])
+
+    useEffect(() => {
+        setShowFilterMobile(false)
+    }, [filtersField])
 
 
     useEffect(() => {
@@ -170,7 +176,7 @@ export default function ListStudentsLoans(props) {
             // newButton
             // newButtonAction={() => router.push(`/library/${pathname}/new`)}
             />
-            <ContentContainer>
+           <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -229,6 +235,71 @@ export default function ListStudentsLoans(props) {
                 </Box>
             </ContentContainer>
 
+            <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
+            <TextInput placeholder="Buscar por nome, sobrenome" name='filters' type="search" onChange={(event) => setFiltersField({ ...filtersField, search: event.target.value })} value={filtersField?.search} sx={{ flex: 1 }} />
+                <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
+                <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+                    <TablePagination
+                        component="div"
+                        count={sortUsers()?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        labelRowsPerPage="Items"
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
+                    />
+                </Box>
+                <Divider distance={0} />
+            </Box>
+
+
+            <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
+                <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                        <Text bold large>Filtros</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilterMobile(false)} />
+                    </Box>
+                    <Divider padding={0} />
+                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative', }}>
+                        <Box sx={{
+                            display: 'flex', gap: 2, alignItems: 'start', flexDirection: 'column', width: '100%',
+                        }}>
+                            <SelectList
+                            fullWidth
+                            data={listAtivo}
+                            valueSelection={filtersField?.status}
+                            onSelect={(value) => setFiltersField({ ...filtersField, status: value })}
+                            title="Status"
+                            filterOpition="value"
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                            clean={false}
+                        />
+                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
+                            <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
+                            setFiltersField({
+                                search: '',
+                                classStudent: 'todos',
+                                status: 'todos'
+                            })
+                        }} />
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
             {usersList.length > 0 ?
                 <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter route={`/library/loans/students`} />
                 :
@@ -238,4 +309,21 @@ export default function ListStudentsLoans(props) {
             }
         </>
     )
+}
+
+const styles = {
+    containerRegister: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: 1.5,
+        padding: '40px'
+    },
+    menuIcon: {
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 15,
+        height: 15,
+    },
 }

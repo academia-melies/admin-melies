@@ -56,8 +56,8 @@ export default function OurTeamList(props) {
         <>
             <SectionHeader title={`Conheça nossa Equipe`} />
 
-            <Box sx={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '560px' }}>
+            <Box sx={{ display: 'flex', gap: 5, marginTop: 8, flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: { xs: '0px', sm: '0px', md: '450px', lg: '450px', xl: '450px' } }}>
                     <Text title bold>Administrativo</Text>
                     <Text style={{ marginBottom: 15, color: 'rgb(75 85 99)' }}>
                         Somos um grupo dinâmico de indivíduos apaixonados pelo que fazemos e dedicados a entregar os melhores resultados para nossos clientes.
@@ -92,14 +92,15 @@ export default function OurTeamList(props) {
                                         opacity: 0.8,
                                         transform: 'scale(0.9)',
                                         transition: '.5s',
-                                    }
+                                    },
+                                    width: { xs: 350, sm: 300, md: 350, lg: 330 }
                                 }}>
                                 <Avatar src={item?.location} sx={{
-                                    height: { xs: '100%', sm: 150, md: 150, lg: 180 },
-                                    width: { xs: '100%', sm: 150, md: 150, lg: 180 },
+                                    height: { xs: 120, sm: 150, md: 150, lg: 180 },
+                                    width: { xs: 120, sm: 150, md: 150, lg: 180 },
                                 }} variant="circular" />
-                                <Text large bold>{item?.nome}</Text>
-                                <Box sx={{display: 'flex', flexDirection: 'column', justufyContent: 'center', alignItems: 'center'}}>
+                                <Text bold>{item?.nome}</Text>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', justufyContent: 'center', alignItems: 'center' }}>
                                     <Text style={{ color: colorPalette.buttonColor }}>{item?.funcao || 'Administrativo'}</Text>
                                     <Text light>{item?.area}</Text>
                                 </Box>
@@ -110,8 +111,11 @@ export default function OurTeamList(props) {
             </Box >
             <Divider size={'2px'} color={!theme ? colorPalette.secondary : '#e5e7eb'} />
 
-            <Box sx={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '560px' }}>
+            <Box sx={{
+                display: 'flex', gap: 10, marginTop: 8, flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row', xl: 'row' },
+                justifyContent: { xs: 'center', sm: 'center', md: 'start', lg: 'start', xl: 'start' }
+            }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: { xs: '0px', sm: '0px', md: '450px', lg: '400px', xl: '400px' }, maxWidth: '400px' }}>
                     <Text title bold>Equipe Acadêmica</Text>
                     <Text style={{ marginBottom: 15, color: 'rgb(75 85 99)', }}>
                         Somos uma equipe apaixonada e dedicada, comprometida em oferecer a melhor educação em artes digitais, preparando nossos alunos para se destacarem no mercado de trabalho.
@@ -137,6 +141,7 @@ export default function OurTeamList(props) {
                         </Box>
                     )}
                 </Box>
+
                 <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justufyContent: 'center' }}>
                     {employeeList?.filter(f => f.professor === 1).map((item, index) => {
                         return (
@@ -145,14 +150,15 @@ export default function OurTeamList(props) {
                                     opacity: 0.8,
                                     transform: 'scale(0.9)',
                                     transition: '.5s',
-                                }
+                                },
+                                width: { xs: 350, sm: 300, md: 350, lg: 330 }
                             }}>
                                 <Avatar src={item?.location} sx={{
-                                    height: { xs: '100%', sm: 150, md: 150, lg: 180 },
-                                    width: { xs: '100%', sm: 150, md: 150, lg: 180 },
+                                    height: { xs: 120, sm: 150, md: 150, lg: 180 },
+                                    width: { xs: 120, sm: 150, md: 150, lg: 180 },
                                 }} variant="circular" />
-                                <Text large bold>{item?.nome}</Text>
-                                <Box sx={{display: 'flex', flexDirection: 'column', justufyContent: 'center', alignItems: 'center'}}>
+                                <Text bold>{item?.nome}</Text>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', justufyContent: 'center', alignItems: 'center' }}>
                                     <Text style={{ color: colorPalette.buttonColor }}>{item?.funcao || 'Professor'}</Text>
                                     <Text light>{item?.area}</Text>
                                 </Box>

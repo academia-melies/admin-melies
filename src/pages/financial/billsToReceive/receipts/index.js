@@ -1,13 +1,14 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text, TextInput } from "../../../../atoms"
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
 import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
 import { formatTimeStamp } from "../../../../helpers"
-import { TablePagination } from "@mui/material"
+import { Backdrop, TablePagination } from "@mui/material"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
+import { icons } from "../../../../organisms/layout/Colors"
 
 export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
@@ -19,6 +20,7 @@ export default function ListReceipts(props) {
     const [allSelected, setAllSelected] = useState();
     const router = useRouter()
     const [page, setPage] = useState(0);
+    const [showFilterMobile, setShowFilterMobile] = useState(false)
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const fetchPermissions = async () => {
@@ -97,6 +99,10 @@ export default function ListReceipts(props) {
             });
         });
     };
+
+    useEffect(() => {
+        setShowFilterMobile(false)
+    }, [filterPayment, filterAtive])
 
     const priorityColor = (data) => (
         ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
@@ -181,7 +187,7 @@ export default function ListReceipts(props) {
             <SectionHeader
                 title={`Contas a receber (${installmentsList.filter(filter)?.length || '0'})`}
             />
-            <ContentContainer>
+            <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                 </Box>
@@ -229,7 +235,82 @@ export default function ListReceipts(props) {
                 </Box>
             </ContentContainer>
 
-            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
+            <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
+                <TextInput placeholder="Buscar pelo pagante ou aluno" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
+                <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+                    <TablePagination
+                        component="div"
+                        count={installmentsList?.filter(filter)?.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        labelRowsPerPage="Items"
+                        style={{ color: colorPalette.textColor }} // Define a cor do texto
+                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
+                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
+                    />
+                </Box>
+                <Divider distance={0} />
+            </Box>
+
+
+            <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
+                <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                        <Text bold large>Filtros</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilterMobile(false)} />
+                    </Box>
+                    <Divider padding={0} />
+                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative', }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, alignItems: 'start', flexDirection: 'column', width: '100%' }}>
+                            <SelectList
+                                fullWidth
+                                data={listAtivo}
+                                valueSelection={filterAtive}
+                                onSelect={(value) => setFilterAtive(value)}
+                                title="status"
+                                filterOpition="value"
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                                clean={false}
+                            />
+                            <SelectList
+                                fullWidth
+                                data={listPayment}
+                                valueSelection={filterPayment}
+                                onSelect={(value) => setFilterPayment(value)}
+                                title="tipo de pagamento"
+                                filterOpition="value"
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                                clean={false}
+                            />
+                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
+                            <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
+                                setFilterPayment('todos')
+                                setFilterAtive('todos')
+                                setFilterData('')
+                            }} />
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+            <Box sx={{
+                display: 'flex', flexDirection: 'row', gap: 4,
+                overflowY: 'auto',
+                scrollbarColor: 'transparent transparent',
+            }}>
                 <Box sx={{
                     display: 'flex',
                     backgroundColor: colorPalette.secondary,
@@ -438,7 +519,8 @@ export default function ListReceipts(props) {
             }
 
             {(installmentsSelected && isPermissionEdit) && <>
-                <Box sx={{ display: 'flex', position: 'fixed', left: 280, bottom: 20, display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'flex', position: 'fixed', 
+                left: { xs: 20, sm: 20, md: 280, lg: 280, xl: 280 }, bottom: 20, display: 'flex', gap: 2, flexWrap: 'wrap'  }}>
                     <Button text="Baixar" style={{ width: '120px', height: '40px' }} />
                     <Button secondary text="Restaurar parcelas" style={{ width: '200px', height: '40px', backgroundColor: colorPalette.primary }} />
                     <Button secondary text="Excluir" style={{ width: '120px', height: '40px', backgroundColor: colorPalette.primary }} />
@@ -450,4 +532,21 @@ export default function ListReceipts(props) {
             }
         </>
     )
+}
+
+const styles = {
+    containerRegister: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: 1.5,
+        padding: '40px'
+    },
+    menuIcon: {
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 15,
+        height: 15,
+    },
 }

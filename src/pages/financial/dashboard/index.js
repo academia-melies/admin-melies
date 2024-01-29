@@ -4,6 +4,8 @@ import { SectionHeader, SelectList } from "../../../organisms";
 import { api } from "../../../api/api";
 import { useAppContext } from "../../../context/AppContext";
 import dynamic from "next/dynamic";
+import { Backdrop } from "@mui/material";
+import { icons } from "../../../organisms/layout/Colors";
 const GraphChart = dynamic(() => import('../../../organisms/graph/graph'), { ssr: false });
 
 
@@ -40,6 +42,7 @@ export default function ListBillsToPay(props) {
     const [categoryExpenseGraph, setCategoryExpenseGraph] = useState()
     const [barChartLabels, setBarChartLabels] = useState([])
     const [averageTicket, setAverageTicket] = useState(0)
+    const [showFilterMobile, setShowFilterMobile] = useState(false)
     const [totalSales, setTotalSales] = useState(0)
     const [totalPays, setTotalPays] = useState(0)
     const [qntSales, setQntSales] = useState(0)
@@ -173,6 +176,8 @@ export default function ListBillsToPay(props) {
 
     useEffect(() => {
         handleCalculationGraph(billstToReceiveData, billstToPayData)
+        setShowFilterMobile(false)
+
     }, [filters])
 
     const formatter = new Intl.NumberFormat('pt-BR', {
@@ -301,7 +306,7 @@ export default function ListBillsToPay(props) {
                 title="Resumo Financeiro"
             />
 
-            <ContentContainer>
+            <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', gap: 2 }}>
 
@@ -336,10 +341,73 @@ export default function ListBillsToPay(props) {
                 </Box>
             </ContentContainer>
 
+
+            <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
+                <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
+                <Divider distance={0} />
+            </Box>
+
+
+            <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
+                <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                        <Text bold large>Filtros</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilterMobile(false)} />
+                    </Box>
+                    <Divider padding={0} />
+                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative', }}>
+                        <Box sx={{
+                            display: 'flex', gap: 2, alignItems: 'start', flexDirection: 'column', width: '100%',
+                        }}>
+                            <SelectList
+                                fullWidth
+                                data={listPaymentType}
+                                valueSelection={filters?.payment || ''}
+                                onSelect={(value) => setFilters({ ...filters, payment: value })}
+                                filterOpition="value"
+                                sx={{ color: colorPalette.textColor, maxWidth: 300 }}
+                                title="Pagamento"
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                clean={false}
+                            />
+                            <SelectList
+                                fullWidth
+                                data={years}
+                                title="Ano"
+                                valueSelection={filters?.year}
+                                onSelect={(value) => setFilters({ ...filters, year: value })}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                filterOpition="value"
+                                sx={{ color: colorPalette.textColor, maxWidth: 300 }}
+                                clean={false}
+                            />
+                        </Box>
+                        <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
+                            <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => setFilters({
+                                payment: 'Todos',
+                                month: 'Todos',
+                                year: 'Todos'
+                            })} />
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+
             <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', gap: 5, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' } }}>
-                <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'center', xl: 'center' },
-                flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' }
-             }}>
+                <Box sx={{
+                    display: 'flex', justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'center', xl: 'center' },
+                    flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' }
+                }}>
                     {monthFilter?.map((item, index) => {
                         const monthSelected = item?.value === filters?.month;
                         return (
