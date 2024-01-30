@@ -24,4 +24,22 @@ export const versions = [
             { change: 'Ajustado v1 responsividade Mobile.' },
         ]
     },
+    {
+        version: '1.2.1', build: '29/01/2024',
+        msg: 'O Sistema agora está responsivo para celular!! Além do ajuste responsividade para celular, Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
+        listChanges: [
+            { change: 'Reponsividade para Celular, Tablet, etc.' }
+        ]
+    },
+    {
+        version: '1.2.2', build: '30/01/2024',
+        msg: 'O Sistema foi ajustado para celular. Foi re-estrurado o painel de Chamados, incluído a opção para todas as áreas.',
+        listChanges: [
+            { change: 'Reponsividade para Celular, Tablet, etc.' },
+            { change: 'Novas funcionalidades no painel de chamados' },
+            { change: 'Painel de chamados (Tarefas, solicitações, etc.) para todas as áreas.' },
+            { change: 'Novo layout no painel de chamados.' },
+            { change: 'Relatório de avaliações dos chamados.' },
+        ]
+    },
 ]
