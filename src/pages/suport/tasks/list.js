@@ -126,7 +126,7 @@ export default function ListTasks(props) {
             let query;
             if (user?.area === "TI - Suporte") {
                 query = '/tasks';
-                setFilters({ ...filters, status: 'Em aberto' })
+                setFilters({ ...filters, status: 'Pendente' })
             } else {
                 query = `/task/user/${user?.id}`;
                 setFilters({ ...filters, status: 'todos' })
@@ -185,6 +185,7 @@ export default function ListTasks(props) {
         { label: 'Em aberto', value: 'Em aberto' },
         { label: 'Em análise', value: 'Em análise' },
         { label: 'Finalizado', value: 'Finalizado' },
+        { label: 'Pendente', value: 'Pendente' },
     ]
 
     const groupType = [

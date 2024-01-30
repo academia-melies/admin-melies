@@ -118,7 +118,6 @@ export const AppProvider = ({ children }) => {
                 api.defaults.headers.Authorization = `Bearer ${userData?.token}`
                 setUser({ ...userData, getPhoto });
                 setNotificationUser(notificationsData)
-                router.push('/');
                 return response
             }
             return response

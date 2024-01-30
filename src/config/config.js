@@ -31,4 +31,15 @@ export const versions = [
             { change: 'Reponsividade para Celular, Tablet, etc.' }
         ]
     },
+    {
+        version: '1.2.2', build: '30/01/2024',
+        msg: 'O Sistema foi ajustado para celular. Foi re-estrurado o painel de Chamados, incluído a opção para todas as áreas.',
+        listChanges: [
+            { change: 'Reponsividade para Celular, Tablet, etc.' },
+            { change: 'Novas funcionalidades no painel de chamados' },
+            { change: 'Painel de chamados (Tarefas, solicitações, etc.) para todas as áreas.' },
+            { change: 'Novo layout no painel de chamados.' },
+            { change: 'Relatório de avaliações dos chamados.' },
+        ]
+    },
 ]
