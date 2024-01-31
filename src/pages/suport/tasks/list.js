@@ -133,6 +133,7 @@ export default function ListTasks(props) {
             }
             const response = await api.get(query)
             const { data } = response;
+            console.log(response)
             setTasksList(data)
         } catch (error) {
             console.log(error)
