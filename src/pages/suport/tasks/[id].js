@@ -495,7 +495,7 @@ export default function EditTask(props) {
                             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 2.5, padding: 5, }}>
                                 <Box sx={styles.inputSection}>
                                     <SelectList fullWidth data={groupArea} valueSelection={taskData?.area} onSelect={(value) => setTaskData({ ...taskData, area: value })}
-                                        title="Área *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        title="Para Área:*" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
                                     <SelectList fullWidth data={groupContract} valueSelection={taskData?.tipo_chamado} onSelect={(value) => setTaskData({ ...taskData, tipo_chamado: value })}
@@ -667,10 +667,10 @@ export default function EditTask(props) {
                                             height: 30,
                                             gap: 2,
                                             alignItems: 'center',
-                                            maxWidth: 180,
+                                            // maxWidth: 180,
                                             borderRadius: 2,
-                                            padding: '0px 8px 0px 0px',
-                                            justifyContent: 'space-around',
+                                            padding: '0px 12px 0px 12px',
+                                            justifyContent: 'space-between',
                                             "&:hover": {
                                                 opacity: 0.7,
                                                 cursor: 'pointer',
@@ -704,7 +704,7 @@ export default function EditTask(props) {
                                                             gap: 2,
                                                             alignItems: 'center',
                                                             padding: '0px 10px',
-                                                            maxWidth: 200,
+                                                            // maxWidth: 200,
                                                             borderRadius: 2,
                                                             justifyContent: 'flex-start',
                                                             "&:hover": {
@@ -791,9 +791,9 @@ export default function EditTask(props) {
                                             height: 30,
                                             gap: 2,
                                             alignItems: 'center',
-                                            maxWidth: 140,
+                                            // maxWidth: 140,
                                             borderRadius: 2,
-                                            padding: '0px 8px 0px 0px',
+                                            padding: '0px 12px 0px 0px',
                                             justifyContent: 'space-between',
                                             "&:hover": {
                                                 opacity: 0.7,
@@ -823,7 +823,7 @@ export default function EditTask(props) {
                                                             height: 30,
                                                             gap: 2,
                                                             alignItems: 'center',
-                                                            maxWidth: 140,
+                                                            padding: '0px 12px 0px 0px',
                                                             borderRadius: 2,
                                                             justifyContent: 'start',
                                                             "&:hover": {
