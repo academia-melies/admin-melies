@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
-import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
+import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -22,7 +22,8 @@ export default function ReportAvaliations(props) {
     const [filters, setFilters] = useState({
         status: 'Finalizado',
         startDate: '',
-        endDate: ''
+        endDate: '',
+        avaliation: 'com avaliacao'
     })
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
@@ -36,6 +37,15 @@ export default function ReportAvaliations(props) {
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         status: (item) => filters.status === 'todos' || item.status_chamado === filters.status,
+        avaliation: (item) => {
+            if (filters.avaliation === 'todos') {
+                return true;
+            } else if (filters.avaliation === 'com avaliacao') {
+                return item.avaliacao_nota > 0;
+            } else {
+                return item.avaliacao_nota === null;
+            }
+        },
         date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item.vencimento, filters?.startDate, filters?.endDate) : item,
     };
     const [showFilterMobile, setShowFilterMobile] = useState(false)
@@ -189,11 +199,10 @@ export default function ReportAvaliations(props) {
         { label: 'Pendente', value: 'Pendente' },
     ]
 
-    const groupType = [
+    const groupAvaliationFilter = [
+        { label: 'Com avaliação', value: 'com avaliacao' },
+        { label: 'Sem avaliação', value: 'sem avaliacao' },
         { label: 'Todos', value: 'todos' },
-        { label: 'Solicitação', value: 'Solicitação' },
-        { label: 'Alteração', value: 'Alteração' },
-        { label: 'Erro', value: 'Erro' },
     ]
 
     const groupPriority = [
@@ -212,9 +221,10 @@ export default function ReportAvaliations(props) {
         { label: '', value: 5 },
     ]
 
-    let someAvaliations = tasksList?.map(item => item.avaliacao_nota)?.reduce((acc, curr) => acc + curr, 0)
-    let qntAvaliations = tasksList?.map(item => item.avaliacao_nota)?.length
-    let mediaAvaliations = parseFloat(someAvaliations / qntAvaliations).toFixed(1)
+    let someAvaliations = tasksList?.filter(item => item.avaliacao_nota !== null)
+    let qntAvaliations = someAvaliations?.length;
+    let somaAvaliacoes = someAvaliations.reduce((acc, item) => acc + item.avaliacao_nota, 0);
+    let mediaAvaliations = qntAvaliations > 0 ? (somaAvaliacoes / qntAvaliations).toFixed(1) : 0;
 
     const exportToExcel = () => {
         const headers = ['Ticket', 'Comentário', 'Avaliação', 'Data', 'Autor', 'Atendente'];
@@ -239,6 +249,8 @@ export default function ReportAvaliations(props) {
         const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         saveAs(blob, 'avaliações_chamados.xlsx');
     };
+
+    console.log(filters?.avaliation)
 
     return (
         <>
@@ -323,13 +335,19 @@ export default function ReportAvaliations(props) {
                         setFilters({
                             status: 'Finalizado',
                             startDate: '',
-                            endDate: ''
+                            endDate: '',
+                            avaliation: 'todos'
                         })
                         setFilterData('')
                     }} />
                 </Box>
             </Box>
 
+            <RadioItem disabled={!isPermissionEdit && true}
+                valueRadio={filters?.avaliation}
+                group={groupAvaliationFilter}
+                horizontal={true}
+                onSelect={(value) => setFilters({ ...filters, avaliation: value })} />
 
             <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
                 <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
