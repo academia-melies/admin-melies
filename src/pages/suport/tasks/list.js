@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
-import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
+import { CheckBoxComponent, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -13,14 +13,14 @@ export default function ListTasks(props) {
     const [tasksList, setTasksList] = useState([])
     const [responsibles, setResponsibles] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, userPermissions, menuItemsList, user } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList, user, theme } = useAppContext()
     const [filters, setFilters] = useState({
         responsible: 'todos',
-        status: 'Em aberto',
+        status: 'Em aberto, Pendente, Em análise',
         priority: 'todos',
         participant: 'todos',
         actor: 'todos',
-        type: 'todos'
+        type: 'todos',
     })
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
@@ -30,17 +30,18 @@ export default function ListTasks(props) {
     })
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [menuSelected, setMenuSelected] = useState('meus')
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         responsible: (item) => filters.responsible === 'todos' || item.responsavel_chamado === filters.responsible,
-        status: (item) => filters.status === 'todos' || item.status_chamado === filters.status,
+        status: (item) => filters.status === 'todos' || filters.status?.includes(item?.status_chamado),
         priority: (item) => filters.priority === 'todos' || item.prioridade_chamado === filters.priority,
         actor: (item) => filters.actor === 'todos' || item.autor === filters.actor,
-        type: (item) => filters.type === 'todos' || item.tipo_chamado === filters.type
+        type: (item) => filters.type === 'todos' || item.tipo_chamado === filters.type,
+        taskVizualization: (item) => menuSelected === 'todos' || item.autor_chamado === user?.id
     };
     const [showFilterMobile, setShowFilterMobile] = useState(false)
-
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const fetchPermissions = async () => {
         try {
@@ -64,7 +65,7 @@ export default function ListTasks(props) {
         return (
             normalizedTituloChamado?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
             normalizedIdChamado?.includes(filterData.toString())
-        ) && Object.values(filterFunctions).every(filterFunction => filterFunction(item));
+        ) && (Object.values(filterFunctions).every(filterFunction => filterFunction(item)));
     };
 
 
@@ -126,10 +127,10 @@ export default function ListTasks(props) {
             let query;
             if (user?.area === "TI - Suporte") {
                 query = '/tasks';
-                setFilters({ ...filters, status: 'Pendente' })
+                setFilters({ ...filters, status: 'Em aberto, Pendente, Em análise' })
             } else {
                 query = `/task/user/${user?.id}`;
-                setFilters({ ...filters, status: 'todos' })
+                setFilters({ ...filters, status: 'Em aberto, Pendente, Em análise' })
             }
             const response = await api.get(query)
             const { data } = response;
@@ -165,6 +166,7 @@ export default function ListTasks(props) {
 
     const column = [
         { key: 'id_chamado', label: '#Ticket' },
+        { key: 'area', label: 'Para Área' },
         { key: 'prioridade_chamado', label: 'Prioridade', task: true },
         { key: 'titulo_chamado', label: 'Título' },
         { key: 'autor', label: 'Autor' },
@@ -204,6 +206,11 @@ export default function ListTasks(props) {
         { label: 'Baixa', value: 'Baixa' },
     ]
 
+    const menusFilters = [
+        { id: '01', text: 'Meus chamados', value: 'meus' },
+        { id: '02', text: `Chamados da Área "${user?.area}"`, value: 'todos' },
+    ]
+
 
     return (
         <>
@@ -213,6 +220,36 @@ export default function ListTasks(props) {
                 newButton
                 newButtonAction={() => router.push(`/suport/${pathname}/new`)}
             />
+
+            <Box sx={{ display: 'flex', alignItems: 'end' }}>
+                <Text light style={{ marginRight: 10 }}>vizualizar por:</Text>
+                {menusFilters?.map((item, index) => {
+                    const menu = item?.value === menuSelected;
+                    return (
+                        <Box key={index} sx={{
+                            display: 'flex',
+                            padding: '5px 28px',
+                            backgroundColor: menu ? colorPalette.buttonColor : colorPalette.primary,
+                            borderTop: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
+                            borderRight: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
+                            borderLeft: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
+                            // transition: 'border-bottom 0.1s ease-in-out',
+                            transition: 'backdround-color 0.1s ease-in-out',
+                            "&:hover": {
+                                opacity: !menu && 0.8,
+                                cursor: 'pointer'
+                            },
+                            borderRadius: '5px 5px 0px 0px',
+                            boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                        }} onClick={() => {
+                            setMenuSelected(item?.value)
+                        }}>
+                            <Text large style={{ color: menu ? '#fff' : colorPalette.textColor }}>{item?.text}</Text>
+                        </Box>
+                    )
+                })}
+            </Box>
+
             <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
@@ -258,7 +295,7 @@ export default function ListTasks(props) {
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                         clean={false}
                     />
-                    <SelectList
+                    {/* <SelectList
                         fullWidth
                         data={listStatus}
                         valueSelection={filters?.status}
@@ -267,7 +304,7 @@ export default function ListTasks(props) {
                         filterOpition="value"
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                         clean={false}
-                    />
+                    /> */}
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
                         <Button secondary text="Limpar filtros" small style={{ width: 120 }} onClick={() => setFilters({
                             responsible: 'todos',
@@ -290,6 +327,14 @@ export default function ListTasks(props) {
                         nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
                     />
                 </Box>
+                <CheckBoxComponent disabled={!isPermissionEdit && true}
+                    boxGroup={listStatus}
+                    valueChecked={filters?.status || null}
+                    horizontal={true}
+                    onSelect={(value) => {
+                        setFilters({ ...filters, status: value })
+                    }}
+                    sx={{ width: 1 }} />
             </ContentContainer >
 
             <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
