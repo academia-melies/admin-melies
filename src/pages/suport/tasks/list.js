@@ -30,7 +30,7 @@ export default function ListTasks(props) {
     })
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [menuSelected, setMenuSelected] = useState('meus')
+    const [menuSelected, setMenuSelected] = useState('Atríbuidos a mim')
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
@@ -39,7 +39,18 @@ export default function ListTasks(props) {
         priority: (item) => filters.priority === 'todos' || item.prioridade_chamado === filters.priority,
         actor: (item) => filters.actor === 'todos' || item.autor === filters.actor,
         type: (item) => filters.type === 'todos' || item.tipo_chamado === filters.type,
-        taskVizualization: (item) => menuSelected === 'todos' || item.autor_chamado === user?.id
+        taskVizualization: (item) => {
+            if (menuSelected === 'Atríbuidos a mim') {
+                return item.responsavel_chamado === user?.id
+            } else if (menuSelected === 'Abertos por mim') {
+                return item.autor_chamado === user?.id
+            }
+            else if (menuSelected === 'Pendente de responsável') {
+                return item.responsavel_chamado === null
+            } else {
+                return true
+            }
+        }
     };
     const [showFilterMobile, setShowFilterMobile] = useState(false)
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
@@ -206,8 +217,10 @@ export default function ListTasks(props) {
     ]
 
     const menusFilters = [
-        { id: '01', text: 'Meus chamados', value: 'meus' },
-        { id: '02', text: `Chamados da Área "${user?.area}"`, value: 'todos' },
+        { id: '01', text: 'Atríbuidos a mim', value: 'Atríbuidos a mim' },
+        { id: '01', text: 'Abertos por mim', value: 'Abertos por mim' },
+        { id: '02', text: `Chamados da Área`, value: `Chamados da Área` },
+        { id: '01', text: 'Pendente de responsável', value: 'Pendente de responsável' },
     ]
 
 
@@ -240,9 +253,16 @@ export default function ListTasks(props) {
                             },
                             borderRadius: '5px 5px 0px 0px',
                             boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                            position: 'relative'
                         }} onClick={() => {
                             setMenuSelected(item?.value)
                         }}>
+                            {item.value === "Pendente de responsável" && <Box sx={{
+                                display: 'flex', padding: '2px 5px', backgroundColor: 'red', opacity: 0.8,
+                                position: 'absolute', top: -15, right: -15, borderRadius: 2, zIndex: 999
+                            }}>
+                                <Text xsmall style={{ color: '#fff' }}>IMPORTANTE</Text>
+                            </Box>}
                             <Text large style={{ color: menu ? '#fff' : colorPalette.textColor }}>{item?.text}</Text>
                         </Box>
                     )
