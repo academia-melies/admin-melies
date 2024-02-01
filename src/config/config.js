@@ -1,7 +1,7 @@
 export const versions = [
-    { version: '1.0.0', build: '21/08/2023', msg: '' },
+    { version: '1.0.0', build: '21/08/2023', msg: '', status: 'lançada' },
     {
-        version: '1.1.1', build: '17/01/2024',
+        version: '1.1.1', build: '17/01/2024', status: 'lançada',
         msg: 'Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
         listChanges: [
             { change: 'Correções realizadas em "Chamados",' },
@@ -14,7 +14,7 @@ export const versions = [
         ]
     },
     {
-        version: '1.1.2', build: '24/01/2024',
+        version: '1.1.2', build: '24/01/2024', status: 'lançada',
         msg: 'Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
         listChanges: [
             { change: 'Correções Turmas listadas em "Interesses" do usuário.' },
@@ -25,14 +25,14 @@ export const versions = [
         ]
     },
     {
-        version: '1.2.1', build: '29/01/2024',
+        version: '1.2.1', build: '29/01/2024', status: 'lançada',
         msg: 'O Sistema agora está responsivo para celular!! Além do ajuste responsividade para celular, Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
         listChanges: [
             { change: 'Reponsividade para Celular, Tablet, etc.' }
         ]
     },
     {
-        version: '1.2.2', build: '30/01/2024',
+        version: '1.2.2', build: '30/01/2024', status: 'lançada',
         msg: 'O Sistema foi ajustado para celular. Foi re-estrurado o painel de Chamados, incluído a opção para todas as áreas.',
         listChanges: [
             { change: 'Reponsividade para Celular, Tablet, etc.' },
@@ -40,6 +40,15 @@ export const versions = [
             { change: 'Painel de chamados (Tarefas, solicitações, etc.) para todas as áreas.' },
             { change: 'Novo layout no painel de chamados.' },
             { change: 'Relatório de avaliações dos chamados.' },
+        ]
+    },
+    {
+        version: '1.2.3', build: '-',
+        status: 'pendente',
+        msg: 'Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
+        listChanges: [
+            { change: 'Criação do "Diário de Aula" em Acadêmico.' },
+            { change: 'Novas funcionalidades para todas as áreas no Painel de Chamados.' },
         ]
     },
 ]
