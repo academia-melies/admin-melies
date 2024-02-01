@@ -97,7 +97,6 @@ export const LeftMenu = ({ }) => {
    const handleAttMsgVersion = async () => {
       try {
          const response = await api.patch(`/user/notificationVersion/false/${user?.id}`)
-         console.log(response)
       } catch (error) {
          console.log(error)
          return error

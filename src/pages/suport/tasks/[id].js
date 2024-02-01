@@ -51,7 +51,6 @@ export default function EditTask(props) {
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            console.log(actions)
             setIsPermissionEdit(actions)
         } catch (error) {
             console.log(error)
@@ -114,7 +113,6 @@ export default function EditTask(props) {
         try {
             const response = await api.get(`/task/interation/${id}`)
             const { data } = response
-            console.log(data)
             if (data?.length > 0) {
                 setInterationsTask(data)
             }
@@ -181,7 +179,6 @@ export default function EditTask(props) {
                 await getParticipantsTask()
                 await getTaskFiles()
                 await setAlterationTask(false)
-                console.log(task)
                 if (task?.status_chamado === 'Finalizado' && !task?.avaliacao_nota && user?.id === task?.autor_chamado) { setShowAvaliation(true) }
                 setStatusAlteration({ finalizado: false, reaberto: false, analise: false })
             }
