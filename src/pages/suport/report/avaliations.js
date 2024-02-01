@@ -250,8 +250,6 @@ export default function ReportAvaliations(props) {
         saveAs(blob, 'avaliações_chamados.xlsx');
     };
 
-    console.log(filters?.avaliation)
-
     return (
         <>
             <SectionHeader

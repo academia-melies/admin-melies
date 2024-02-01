@@ -54,10 +54,9 @@ export const AppProvider = ({ children }) => {
         const now = new Date();
         return now.getTime() + hours * 60 * 60 * 1000;
     };
-
-    const latestVersion = versions[versions.length - 1];
-    const latestVersionNumber = latestVersion.version;
-    const latestVersionBuildDate = latestVersion.build;
+    const filterVersions = versions?.filter(item => item.status === 'lançada');
+    const latestVersion = filterVersions[filterVersions.length - 1];
+    const latestVersionNumber = latestVersion?.version;
 
     useEffect(() => {
         const handleMenuItems = async () => {
@@ -211,7 +210,6 @@ export const UpdateVersion = ({ user, showVersion, setShowVersion, latestVersion
     const handleAttMsgVersion = async () => {
         try {
             const response = await api.patch(`/user/notificationVersion/false/${user?.id}`)
-            console.log(response)
         } catch (error) {
             console.log(error)
             return error

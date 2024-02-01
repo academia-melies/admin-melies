@@ -34,6 +34,7 @@ export const SectionHeader = (props) => {
                 overflow: { sm: 'hidden', md: 'hidden', lg: 'hidden' }, position: 'relative', alignItems: 'center',
                flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap' },
             }}>
+               <Box sx={{height: '100%', width: 6, backgroundColor: colorPalette.buttonColor}}/>
                <Text
                   veryLarge='true'
                   bold='true'
