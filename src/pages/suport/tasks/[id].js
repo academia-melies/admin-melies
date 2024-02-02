@@ -363,8 +363,14 @@ export default function EditTask(props) {
                 setTaskData({ ...taskData, responsavel_chamado: value })
             }
             let description = `${user?.nome} alterou o responsável para ${label}.`
-            await handleEditTask({ finalizado: false, reaberto: false, responsible: value })
-            await handleAddInteration(description)
+            const response = await api.patch(`/task/responsible/update/${id}`, { responsibleId: value })
+            if (response?.status === 200) {
+                await handleAddInteration(description)
+            } else {
+                alert.error('Tivemos um problema ao atualizar a Tarefa.');
+            }
+
+           
             setShowAlternUsers({ responsible: false, participant: false })
         } catch (error) {
             console.log(error)
