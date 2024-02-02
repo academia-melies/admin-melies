@@ -6,11 +6,12 @@ import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../.
 import { ContainDropzone, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
-import { formatTimeStamp } from "../../../helpers"
+import { formatTimeStamp, getRandomInt } from "../../../helpers"
 import { icons } from "../../../organisms/layout/Colors"
 import Link from "next/link"
 import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import Dropzone from "react-dropzone"
 
 export default function EditTask(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList, theme } = useAppContext()
@@ -26,14 +27,17 @@ export default function EditTask(props) {
         responsavel_chamado: null,
         autor_chamado: user?.id,
     })
+    const [filesDrop, setFilesDrop] = useState([])
     const [alterationTask, setAlterationTask] = useState(false)
     const [showPriorityAltern, setShowPriorityAltern] = useState(false)
     const [showAlternUsers, setShowAlternUsers] = useState({
         responsible: false,
         participant: false
     })
+    const [filterData, setFilterData] = useState('')
     const [statusAlteration, setStatusAlteration] = useState({ finalizado: false, reaberto: false, analise: false, area: false })
     const [filesTask, setFilesTask] = useState([])
+    const [filesInterationTask, setFilesInterationTask] = useState([])
     const [newInteration, setNewInteration] = useState({ descr_interacao: '' })
     const [interationsTask, setInterationsTask] = useState([])
     const [participantsTask, setParticipantsTask] = useState([])
@@ -42,11 +46,22 @@ export default function EditTask(props) {
     const [avaliationClient, setAvaliationClient] = useState(0)
     const [showAvaliation, setShowAvaliation] = useState(false)
     const [showInterations, setShowInterations] = useState(false)
-
+    const [filters, setFilters] = useState({
+        type: 'todos',
+        category: 'todos',
+        searchUser: '',
+    })
     const [showList, setShowList] = useState({
         status: false,
         area: false
     })
+    const filterFunctions = {
+        searchUser: (item) => {
+            const normalizedSearchTerm = removeAccents(filters?.searchUser?.toLowerCase());
+            const normalizedItemTitle = removeAccents(item?.label?.toLowerCase());
+            return normalizedItemTitle.includes(normalizedSearchTerm);
+        },
+    };
 
     const fetchPermissions = async () => {
         try {
@@ -57,6 +72,16 @@ export default function EditTask(props) {
             return error
         }
     }
+
+
+    const removeAccents = (str) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
+    const filter = (item) => {
+        return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
+    };
+
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const priorityColor = (data) => ((data === 'Alta' && 'yellow') ||
         (data === 'Urgente' && 'red') ||
@@ -66,7 +91,6 @@ export default function EditTask(props) {
 
     const statusColor = (data) => ((data === 'Em aberto' && 'yellow') ||
         (data === 'Finalizado' && 'green') ||
-        (data === 'Pendente' && 'red') ||
         (data === 'Em análise' && 'blue'))
 
     const getTask = async () => {
@@ -116,6 +140,7 @@ export default function EditTask(props) {
             if (data?.length > 0) {
                 setInterationsTask(data)
             }
+            console.log(response)
         } catch (error) {
             console.log(error)
             return error
@@ -145,15 +170,13 @@ export default function EditTask(props) {
         }
     }
 
-
-
     useEffect(() => {
         if (!newTask) {
             handleItems();
             setNewInteration({ ...newInteration, usuario_id: userId, chamado_id: id })
             return
         }
-        setTaskData({ ...taskData, autor_chamado: user?.id, status_chamado: 'Pendente' })
+        setTaskData({ ...taskData, autor_chamado: user?.id, status_chamado: 'Em aberto' })
         setStatusAlteration({ finalizado: false, reaberto: false, analise: false })
     }, [id]);
 
@@ -282,9 +305,27 @@ export default function EditTask(props) {
         try {
             const response = await api.post(`/task/interation/create`, { newInteration });
             if (response?.status === 201) {
+                const { interationId } = response?.data
+
+                if (filesDrop?.length > 0) {
+                    for (const uploadedFile of filesDrop) {
+                        const formData = new FormData();
+                        formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
+                        try {
+                            const response = await api.post(`/task/interation/file/upload?interationId=${interationId}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+                            console.log(response)
+                        } catch (error) {
+                            console.log(error)
+                            alert.error('Tivemos um problema ao adicionar arquivos a Tarefa.');
+                            return error
+                        }
+                    }
+                }
+
                 alert.success('Interação adicionada com sucesso.');
                 setNewInteration({ ...newInteration, descr_interacao: '' })
                 handleItems()
+                setFilesDrop([]);
             }
         } catch (error) {
             alert.error('Tivemos um problema ao criar a Tarefa.');
@@ -294,6 +335,11 @@ export default function EditTask(props) {
             setLoading(false)
         }
     }
+
+    const handleRemoveFile = (file) => {
+        const arquivosAtualizados = filesDrop.filter((uploadedFile) => uploadedFile.id !== file.id);
+        setFilesDrop(arquivosAtualizados);
+    };
 
     const handleChangePriority = async (value) => {
         try {
@@ -452,8 +498,7 @@ export default function EditTask(props) {
     const listStatus = [
         { label: 'Em aberto', value: 'Em aberto' },
         { label: 'Em análise', value: 'Em análise' },
-        { label: 'Finalizado', value: 'Finalizado' },
-        { label: 'Pendente', value: 'Pendente' },
+        { label: 'Finalizado', value: 'Finalizado' }
     ]
 
     const groupArea = [
@@ -554,7 +599,7 @@ export default function EditTask(props) {
                                             return (
                                                 <Box sx={{ display: 'flex', flexDirection: 'column' }} key={index}>
                                                     <ContentContainer sx={{
-                                                        display: 'flex', gap: 3, flexDirection: 'column', flex: 1, padding: '10px',
+                                                        display: 'flex', gap: 2, flexDirection: 'column', flex: 1, padding: '10px',
                                                         border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
                                                     }} >
                                                         <Box sx={{ display: 'flex', gap: 2, flex: 1, padding: '10px 10px', borderRadius: '8px 8px 0px 0px', alignItems: 'center' }}>
@@ -571,8 +616,16 @@ export default function EditTask(props) {
                                                         </Box>
                                                         {showInterations &&
                                                             <>
-                                                                <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', justifyContent: 'start', padding: '5px 0px 15px 15px' }}>
+                                                                <Box sx={{ display: 'flex', gap: 3, alignItems: 'start', justifyContent: 'start', flexDirection: 'column', padding: '5px 0px 15px 15px' }}>
                                                                     <Text>{item?.descr_interacao}</Text>
+
+                                                                    <Box sx={{ display: item?.files.length > 0 ? 'flex' : 'none', gap: 1, flexDirection: 'column' }}>
+                                                                        {item?.files?.map((file, index) => (
+                                                                            <Link key={index} href={file?.url_file} target="_blank">
+                                                                                <Text xsmall style={{ textDecoration: 'underline', color: 'blue' }}>{file?.name_file}</Text>
+                                                                            </Link>
+                                                                        ))}
+                                                                    </Box>
                                                                 </Box>
                                                             </>}
                                                     </ContentContainer>
@@ -590,7 +643,8 @@ export default function EditTask(props) {
                                                         const complete = item?.value <= taskData?.avaliacao_nota ? true : false
                                                         return (
                                                             <Box key={index} onClick={() => {
-                                                                setTaskData({ ...taskData, avaliacao_nota: item?.value })
+                                                                user?.id === taskData?.autor_chamado &&
+                                                                    setTaskData({ ...taskData, avaliacao_nota: item?.value })
                                                             }} sx={{
                                                                 "&:hover": {
                                                                     opacity: 0.7,
@@ -630,26 +684,66 @@ export default function EditTask(props) {
                                                 />
                                             </Box>
                                             {user?.id === taskData?.autor_chamado && < Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-start', marginTop: 2, marginLeft: 7 }}>
-                                                <Button small text="Enviar" style={{ height: 30, width: 120 }} />
+                                                <Button small text="Enviar" style={{ height: 30, width: 120 }} onClick={() => handleSendAvaliation()} />
                                             </Box>}
                                         </Box>
                                     }
                                     {
-                                        taskData?.status_chamado !== 'Finalizado' && <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                            <TextInput
-                                                placeholder='Digite sua nova interação'
-                                                name='descr_interacao'
-                                                onChange={handleChangeInteration}
-                                                value={newInteration?.descr_interacao || ''}
-                                                sx={{ flex: 1, }}
-                                                multiline
-                                                maxRows={8}
-                                                rows={6}
-                                            />
-                                            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
-                                                <Button secondary text="Adicionar interação" small style={{ width: 160 }} onClick={() => handleAddInteration()} />
+                                        taskData?.status_chamado !== 'Finalizado' &&
+                                        <>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                <TextInput
+                                                    placeholder='Digite sua nova interação'
+                                                    name='descr_interacao'
+                                                    onChange={handleChangeInteration}
+                                                    value={newInteration?.descr_interacao || ''}
+                                                    sx={{ flex: 1, }}
+                                                    multiline
+                                                    maxRows={8}
+                                                    rows={6}
+                                                />
+                                                <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
+                                                    <Button secondary text="Adicionar interação" small style={{ width: 160 }} onClick={() => handleAddInteration()} />
+                                                </Box>
                                             </Box>
-                                        </Box>
+
+                                            <DropZoneTasks setFilesDrop={setFilesDrop} filesDrop={filesDrop} />
+                                            {filesDrop?.length > 0 &&
+                                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                                    {filesDrop?.map((item, index) => {
+                                                        const typePdf = item?.name?.includes('pdf') || null;
+                                                        return (
+                                                            <Box key={index} sx={{ display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} >
+                                                                <Box sx={{ display: 'flex', gap: 1, padding: '0px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
+                                                                    <Text small>{item?.name}</Text>
+                                                                    <Box sx={{
+                                                                        ...styles.menuIcon,
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        aspectRatio: '1:1',
+                                                                        backgroundImage: `url(${icons.gray_close})`,
+                                                                        transition: '.3s',
+                                                                        zIndex: 9999,
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer'
+                                                                        }
+                                                                    }} onClick={() => handleRemoveFile(item)} />
+                                                                </Box>
+                                                                <Box
+                                                                    sx={{
+                                                                        backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : item?.preview}')`,
+                                                                        backgroundSize: 'cover',
+                                                                        backgroundRepeat: 'no-repeat',
+                                                                        backgroundPosition: 'center center',
+                                                                        width: { xs: '100%', sm: 100, md: 100, lg: 150, xl: 150 },
+                                                                        aspectRatio: '1/1',
+                                                                    }} />
+                                                            </Box>
+                                                        )
+                                                    })}
+                                                </Box>}
+                                        </>
                                     }
                                 </ContentContainer>
                                 <ContentContainer sx={{
@@ -757,7 +851,7 @@ export default function EditTask(props) {
                                         <Text bold>Participantes:</Text>
                                         {participantsTask?.map((item, index) => {
                                             return (
-                                                <Box key={index} sx={{ display: 'flex', gap: 1, maxWidth: 180, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
+                                                <Box key={index} sx={{ display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
                                                     <Text small>{item?.nome}</Text>
                                                     {isPermissionEdit && <Box sx={{
                                                         ...styles.menuIcon,
@@ -988,8 +1082,9 @@ export default function EditTask(props) {
                                 }} onClick={() => setShowAlternUsers({ responsible: false, participant: false })} />
                             </Box>
                             <Divider distance={0} />
+                            <TextInput placeholder="Buscar pelo nome" name='filterData' type="search" onChange={(event) => setFilters({ ...filters, searchUser: event.target.value })} value={filters?.searchUser} sx={{ flex: 1 }} />
                             <Box sx={{ display: 'flex', marginTop: 2, flexDirection: 'column', alignItems: 'center', justifyContent: 'start', maxHeight: 280, overflow: 'auto', borderRadius: 2 }}>
-                                {responsibles?.map((item, index) => {
+                                {responsibles?.filter(filter)?.map((item, index) => {
                                     return (
                                         <Box key={index} sx={{
                                             display: 'flex',
@@ -1091,7 +1186,7 @@ export default function EditTask(props) {
                         </ContentContainer>
                     </Backdrop>
 
-                    {taskData?.status_chamado !== 'Finalizado' && <ContainDropzone
+                    {newTask && <ContainDropzone
                         title="Arquivos"
                         text="Arraste e solte seus arquivos aqui ou clique para selecionar."
                         data={filesTask}
@@ -1110,6 +1205,64 @@ export default function EditTask(props) {
                 </Box >
             </>}
         </>
+    )
+}
+
+
+const DropZoneTasks = ({ filesDrop, setFilesDrop, children }) => {
+
+    const { setLoading, colorPalette, theme } = useAppContext()
+
+
+    const onDropFiles = async (files) => {
+        try {
+            setLoading(true)
+            const uploadedFiles = files.map(file => ({
+                file,
+                id: getRandomInt(1, 999),
+                name: file.name,
+                preview: URL.createObjectURL(file),
+                progress: 0,
+                uploaded: false,
+                error: false,
+                url: null
+            }));
+
+            setFilesDrop(prevFilesDrop => [...prevFilesDrop, ...uploadedFiles]);
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    return (
+        <Dropzone
+            accept={{ 'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'], 'image/png': ['.png', '.PNG'], 'application/pdf': ['.pdf'] }}
+            onDrop={onDropFiles}
+            addRemoveLinks={true}
+            removeLink={(file) => handleRemoveFile(file)}
+        >
+            {({ getRootProps, getInputProps, isDragActive, isDragReject }) => (
+                <Box {...getRootProps()}
+                    sx={{
+                        // ...styles.dropZoneContainer,
+                        // border: `2px dashed ${colorPalette.primary + 'aa'}`,
+                        // backgroundColor: isDragActive && !isDragReject ? colorPalette.secondary : isDragReject ? '#ff000042' : colorPalette.primary,
+                    }}
+                >
+                    <input {...getInputProps()} />
+                    <Box sx={{ textAlign: 'center', display: 'flex', fontSize: 12, gap: 0, alignItems: 'center' }}>
+                        <Button small style={{ height: 25, borderRadius: '6px 0px 0px 6px' }} text="Selecionar" />
+                        <Box sx={{ textAlign: 'center', display: 'flex', border: `1px solid ${(theme ? '#eaeaea' : '#404040')}`, padding: '0px 15px', maxWidth: 400, height: 25, alignItems: 'center' }}>
+                            <Text light small>Selecione um arquivo ou foto</Text>
+                        </Box>
+                    </Box>
+                </Box>
+            )}
+        </Dropzone>
     )
 }
 
@@ -1134,5 +1287,21 @@ const styles = {
         justifyContent: 'space-around',
         gap: 1.8,
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
-    }
+    },
+    dropZoneContainer: {
+        display: 'flex',
+        padding: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 2,
+        cursor: 'pointer',
+        // flex: 1,
+    },
+    menuIcon: {
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
+    },
 }
