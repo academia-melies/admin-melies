@@ -493,8 +493,8 @@ const TableReport = ({ data = [], filters = [], onPress = () => { } }) => {
                 <Table sx={{ borderCollapse: 'collapse', width: '100%' }}>
                     <TableHead>
                         <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
-                            {columns.map((column) => (
-                                <TableCell sx={{ padding: '16px', }}>
+                            {columns.map((column, index) => (
+                                <TableCell key={index} sx={{ padding: '16px', }}>
                                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
                                         <Text bold style={{ textAlign: 'center' }}>{column.label}</Text>
                                         <Box sx={{
