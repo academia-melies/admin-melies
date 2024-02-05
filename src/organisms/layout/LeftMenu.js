@@ -2,7 +2,7 @@ import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import Hamburger from "hamburger-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Box, ContentContainer, Divider, Text } from "../../atoms"
 import { Colors, icons } from "./Colors"
 import { useAppContext } from "../../context/AppContext"
@@ -27,7 +27,7 @@ export const LeftMenu = ({ }) => {
    const [showChangePassword, setShowChangePassword] = useState(false)
    const [showDialogEditUser, setShowDialogEditUser] = useState(false)
 
-
+   const containerRef = useRef(null);
    const [menuItems, setMenuItems] = useState([]);
 
    useEffect(() => {
@@ -45,6 +45,24 @@ export const LeftMenu = ({ }) => {
       }
       handleMenuItems()
    }, [])
+
+
+   useEffect(() => {
+      if (!showUserOptions) {
+
+         const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+               setShowUserOptions(false);
+            }
+         };
+
+         document.addEventListener('mousedown', handleClickOutside);
+
+         return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+         };
+      }
+   }, []);
 
 
    const [groupStates, setGroupStates] = useState(menuItems.map(() => false));
@@ -145,7 +163,7 @@ export const LeftMenu = ({ }) => {
                         src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`}
                         onClick={() => {
                            // router.push(`/administrative/users/${user?.id}`)
-                           setShowUserOptions(!showUserOptions)
+                           // setShowUserOptions(!showUserOptions)
                            setShowDialogEditUser(true)
                            setShowMenuMobile(false)
                         }} />
@@ -194,27 +212,32 @@ export const LeftMenu = ({ }) => {
                         }} onClick={() => {
                            // router.push(`/administrative/users/${user?.id}`)
                            setShowUserOptions(!showUserOptions)
-                           setShowDialogEditUser(true)
+                           // setShowDialogEditUser(true)
                            setShowMenuMobile(false)
                         }} />
                      </Box>
                   </Box>
-                  {/* {showUserOptions &&
-                     <>
-                        <Box sx={{ ...styles.containerUserOpitions, backgroundColor: colorPalette.buttonColor }}>
+                  {showUserOptions &&
+                     <Box sx={{ ...styles.containerUserOpitions, backgroundColor: colorPalette.secondary, border: `1px solid ${(theme ? '#eaeaea' : '#404040')}` }}>
+                        <div ref={containerRef}>
                            <Box onClick={() => {
-                              router.push(`/administrative/employee/${user?.id}`)
+                              router.push(`/administrative/users/${user?.id}`)
+                              setShowMenuMobile(false)
                               setShowUserOptions(!showUserOptions)
-                           }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' }, }}>
-                              <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff' }}>Editar</Text>
+                           }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '88', cursor: 'pointer' }, }}>
+                              <Text bold style={{ ...styles.text, textAlign: 'center', color: colorPalette?.textColor }}>Meus dados</Text>
                            </Box>
-                           <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '22', cursor: 'pointer' } }}
-                              onClick={logout}>
-                              <Text bold style={{ ...styles.text, textAlign: 'center', color: '#fff' }}>Sair</Text>
+                           <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '88', cursor: 'pointer' } }}
+                              onClick={() => {
+                                 setShowDialogEditUser(true)
+                                 setShowMenuMobile(false)
+                                 setShowUserOptions(!showUserOptions)
+                              }}>
+                              <Text bold style={{ ...styles.text, textAlign: 'center', color: colorPalette?.textColor }}>Alterar senha</Text>
                            </Box>
-                        </Box>
-                     </>
-                  } */}
+                        </div>
+                     </Box>
+                  }
                </Box>
                <Box sx={{ ...styles.boxMenu, ...(showMenuMobile && { overflowY: 'auto' }) }}>
                   {menuItems.map((group, index) => {
