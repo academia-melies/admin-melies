@@ -306,8 +306,10 @@ function Home() {
                      width={'auto'}
                   />
                </Box>
+               <Box sx={{display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }}}>
+                  <Divider distance={5} />
+               </Box>
 
-               <Divider distance={5} />
                <Box sx={{ padding: '20px 15px', borderRadius: 2, display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', backgroundColor: colorPalette.secondary }}>
                   <Box sx={{
                      display: 'flex', marginBottom: showSections?.notification && 3, gap: 2, alignItems: 'center',
