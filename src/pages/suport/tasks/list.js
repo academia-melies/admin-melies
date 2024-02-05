@@ -11,6 +11,7 @@ import { icons } from "../../../organisms/layout/Colors"
 import { formatTimeStamp } from "../../../helpers"
 import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
 import Link from "next/link"
+import { Divide } from "hamburger-react"
 
 export default function ListTasks(props) {
     const [tasksList, setTasksList] = useState([])
@@ -27,6 +28,10 @@ export default function ListTasks(props) {
     })
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
+    const [vizualizedForm, setVizualizedForm] = useState({
+        cards: false,
+        list: true
+    })
     const [filtersOrders, setFiltersOrders] = useState({
         filterName: 'nome',
         filterOrder: 'asc'
@@ -341,14 +346,81 @@ export default function ListTasks(props) {
                         nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
                     />
                 </Box>
-                <CheckBoxComponent disabled={!isPermissionEdit && true}
-                    boxGroup={listStatus}
-                    valueChecked={filters?.status || null}
-                    horizontal={true}
-                    onSelect={(value) => {
-                        setFilters({ ...filters, status: value })
-                    }}
-                    sx={{ width: 1 }} />
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
+                    <CheckBoxComponent disabled={!isPermissionEdit && true}
+                        boxGroup={listStatus}
+                        valueChecked={filters?.status || null}
+                        horizontal={true}
+                        onSelect={(value) => {
+                            setFilters({ ...filters, status: value })
+                        }}
+                        sx={{ width: 1 }} />
+
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text bold xsmall>Vizualizar como: </Text>
+                        <Tooltip title="Card/Grade">
+                            <div>
+                                <Box sx={{
+                                    display: 'flex',
+                                    backgroundColor: vizualizedForm?.cards && colorPalette?.primary,
+                                    transform: vizualizedForm?.cards && 'scale(1.2, 1.2)',
+                                    transition: '.2s',
+                                    borderRadius: 2,
+                                    padding: '5px',
+                                    "&:hover": {
+                                        cursor: 'pointer',
+                                        backgroundColor: colorPalette?.primary + '66',
+                                    },
+                                }}  onClick={() => setVizualizedForm({ cards: true, list: false })} >
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        backgroundImage: `url('/icons/icon_card.png')`,
+                                        transition: '.3s',
+                                        width: 22,
+                                        filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                        height: 22,
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        },
+                                    }}
+                                       />
+                                </Box>
+                            </div>
+                        </Tooltip>
+                        <Tooltip title="Lista/Tabela">
+                            <div>
+                                <Box sx={{
+                                    display: 'flex',
+                                    backgroundColor: vizualizedForm?.list && colorPalette?.primary,
+                                    transform: vizualizedForm?.list && 'scale(1.2, 1.2)',
+                                    transition: '.2s',
+                                    borderRadius: 2,
+                                    padding: '5px',
+                                    "&:hover": {
+                                        cursor: 'pointer',
+                                        backgroundColor: colorPalette?.primary + '66',
+                                    },
+                                }} onClick={() => setVizualizedForm({ cards: false, list: true })}>
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                    filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                    backgroundImage: `url('/icons/icon_list.png')`,
+                                        transition: '.3s',
+                                        width: 22,
+                                        height: 22,
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        },
+                                    }}
+                                         />
+                                </Box>
+                            </div>
+                        </Tooltip>
+                    </Box>
+                </Box>
+
             </ContentContainer >
 
             <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
@@ -446,10 +518,19 @@ export default function ListTasks(props) {
                     </Box>
                 </ContentContainer>
             </Backdrop>
-            <TableReport
-                data={sortTasks().filter(filter).slice(startIndex, endIndex)}
-                filters={filtersOrders} onPress={(value) => setFiltersOrders(value)}
-            />
+            {vizualizedForm?.list &&
+                <TableReport
+                    data={sortTasks().filter(filter).slice(startIndex, endIndex)}
+                    filters={filtersOrders} onPress={(value) => setFiltersOrders(value)}
+                />
+            }
+            {vizualizedForm?.cards &&
+                <CardReport
+                    vizualizedForm={vizualizedForm}
+                    data={sortTasks().filter(filter).slice(startIndex, endIndex)}
+                    filters={filtersOrders} onPress={(value) => setFiltersOrders(value)}
+                />
+            }
             {/* <Table_V1 data={sortTasks().filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_chamado'} columnActive={false} filters={filtersOrders} onPress={(value) => setFiltersOrders(value)} onFilter targetBlank /> */}
         </>
     )
@@ -603,6 +684,162 @@ const TableReport = ({ data = [], filters = [], onPress = () => { } }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
+        </ContentContainer >
+    )
+}
+
+
+const CardReport = ({ data = [], vizualizedForm }) => {
+    const { setLoading, colorPalette, theme, user } = useAppContext()
+    const [visibleCards, setVisibleCards] = useState(0);
+
+    const router = useRouter();
+    const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
+    const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
+
+    const handleRowClick = (id) => {
+        window.open(`/suport/tasks/${id}`, '_blank');
+        return;
+    };
+
+    const priorityColor = (data) => ((data === 'Alta' && 'yellow') ||
+        (data === 'Urgente' && 'red') ||
+        (data === 'Média' && 'green') ||
+        (data === 'Baixa' && 'blue'))
+
+
+    const statusColor = (data) => ((data === 'Em aberto' && 'yellow') ||
+        (data === 'Pendente' && 'red') ||
+        (data === 'Finalizado' && 'green') ||
+        (data === 'Em análise' && 'blue'))
+
+
+    useEffect(() => {
+        // Adicionando atraso para simular o efeito de carregamento
+        const delay = 80; // Ajuste conforme necessário
+
+        const showCard = (index) => {
+            setTimeout(() => {
+                setVisibleCards(index + 1);
+            }, (index + 1) * delay);
+        };
+
+        // Mostrando os cards gradualmente
+        data.forEach((item, index) => {
+            showCard(index);
+        });
+
+        // Simulando o fim do carregamento após todos os cards serem exibidos
+        setTimeout(() => {
+        }, (data.length + 1) * delay); // +1 para garantir tempo suficiente após o último card
+    }, [data]);
+
+    return (
+        <ContentContainer sx={{ display: 'flex', width: '100%', padding: 0, backgroundColor: colorPalette.primary, boxShadow: 'none', borderRadius: 2 }}>
+
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: vizualizedForm?.cards ? 'wrap' : 'nowrap', transition: 'opacity 1s ease-in-out', }}>
+                {data?.map((item, index) => {
+                    return (
+                        <Box key={index} sx={{
+                            display: 'flex',
+                            gap: 3,
+                            flexDirection: 'column',
+                            width: 350,
+                            padding: '30px 20px',
+                            backgroundColor: colorPalette?.secondary,
+                            borderRadius: 2,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer',
+                                transition: '.3s',
+                                backgroundColor: colorPalette?.secondary + '88'
+                            },
+                            boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
+                            opacity: index < visibleCards ? 1 : 0,
+                            transition: `opacity 0.5s ease-in-out`,
+                        }}
+                            onClick={() => handleRowClick(item?.id_chamado)}
+                        >
+
+
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    backgroundColor: colorPalette.primary,
+                                    height: 30,
+                                    gap: 2,
+                                    alignItems: 'center',
+                                    maxWidth: 150,
+                                    borderRadius: 2,
+                                    justifyContent: 'start',
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', backgroundColor: statusColor(item?.status_chamado), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                <Text small bold>{item?.status_chamado}</Text>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: .5 }}>
+                                <Text xsmall bold>Aberto por:</Text>
+                                <Text xsmall>{item?.autor}</Text>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', padding: '20px', border: `1px solid ${theme ? '#eaeaea' : '#404040'}` }}>
+
+                                <Text bold>{item?.titulo_chamado}</Text>
+
+                                <Box sx={{
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    maxHeight: '50px',
+                                }}>
+                                    <Text small style={{
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'wrap',
+                                        maxHeight: 60,
+                                        overflow: 'hidden',
+                                    }}>{item?.descricao_chamado}</Text>
+                                </Box>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                <Text small bold>Prioridade: </Text>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        backgroundColor: colorPalette.primary,
+                                        height: 30,
+                                        gap: 2,
+                                        alignItems: 'center',
+                                        // width: 100,
+                                        borderRadius: 2,
+                                        justifyContent: 'start',
+                                    }}
+                                >
+                                    <Box sx={{ display: 'flex', backgroundColor: priorityColor(item?.prioridade_chamado), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                    <Text small bold>{item?.prioridade_chamado}</Text>
+                                </Box>
+                            </Box>
+
+                            <Divider distance={0} />
+                            <Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: .5 }}>
+                                    <Text xsmall bold>criado:</Text>
+                                    <Text xsmall>{formatTimeStamp(item?.dt_criacao, true) || '-'}</Text>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: .5 }}>
+                                    <Text xsmall bold>atualizado:</Text>
+                                    <Text xsmall>{formatTimeStamp(item?.dt_atualizacao, true) || '-'}</Text>
+                                </Box>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: .5 }}>
+                                <Text small bold>para:</Text>
+                                <Text small>{item?.atendente}</Text>
+                            </Box>
+                        </Box>
+                    )
+                })}
+            </Box>
         </ContentContainer >
     )
 }
