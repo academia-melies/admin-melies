@@ -358,23 +358,32 @@ export default function EditTask(props) {
 
 
     const handleChangeResponsible = async (value, label) => {
+        setLoading(true)
         try {
             if (value) {
                 setTaskData({ ...taskData, responsavel_chamado: value })
             }
-            let description = `${user?.nome} alterou o responsável para ${label}.`
+            let description;
+            if (label) {
+                description = `${user?.nome} alterou o responsável para ${label}.`
+            } else {
+                description = `${user?.nome} se tornou responsável por esse atender esse chamado.`
+
+            }
             const response = await api.patch(`/task/responsible/update/${id}`, { responsibleId: value })
             if (response?.status === 200) {
                 await handleAddInteration(description)
+                handleItems()
             } else {
                 alert.error('Tivemos um problema ao atualizar a Tarefa.');
             }
 
-           
             setShowAlternUsers({ responsible: false, participant: false })
         } catch (error) {
             console.log(error)
             return error
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -1013,7 +1022,7 @@ export default function EditTask(props) {
                                         setAlterationTask(true)
                                     }} />}
                                     {!taskData?.responsavel_chamado && <Button disabled={!isPermissionEdit && true} secondary text="Tornar-se Responsável" small style={{ height: 35 }} onClick={() => {
-                                        handleChangeResponsible(user?.id, user?.nome)
+                                        handleChangeResponsible(user?.id)
                                     }} />}
                                     <Button disabled={!isPermissionEdit && true} secondary text="Alterar Prioridade" small style={{ height: 35 }} onClick={() => setShowPriorityAltern(true)} />
                                     <Button disabled={!isPermissionEdit && true} secondary text="Alterar Responsável" small style={{ height: 35 }} onClick={() => setShowAlternUsers({ participant: false, responsible: true })} />
