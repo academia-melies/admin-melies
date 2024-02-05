@@ -9,16 +9,15 @@ import { createClass, deleteClass, editClass } from "../../../validators/api-req
 import { SelectList } from "../../../organisms/select/SelectList"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 
-export default function EditAdministrativeFees(props) {
+export default function EditCostCenter(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     let userId = user?.id;
     const router = useRouter()
     const { id } = router.query;
-    const newRate = id === 'new';
-    const [rateData, setRateData] = useState({
-        ensino_graduacao_taxa: null,
-        prazo_taxa: null,
-        valor_taxa: '0.00',
+    const newCostCenter = id === 'new';
+    const [costCenterData, setCostCenterData] = useState({
+        nome_cc: null,
+        area: '',
         ativo: 1
     })
     const themeApp = useTheme()
@@ -37,19 +36,20 @@ export default function EditAdministrativeFees(props) {
     useEffect(() => {
         fetchPermissions()
     }, [])
-    const getRate = async () => {
+    const getCostCenter = async () => {
         try {
-            const response = await api.get(`/rate/${id}`)
+            const response = await api.get(`/costCenter/${id}`)
             const { data } = response
-            setRateData(data)
+            setCostCenterData(data)
         } catch (error) {
             console.log(error)
+            return error
         }
     }
 
     useEffect(() => {
         (async () => {
-            if (newRate) {
+            if (newCostCenter) {
                 return
             }
             await handleItems();
@@ -62,9 +62,9 @@ export default function EditAdministrativeFees(props) {
     const handleItems = async () => {
         setLoading(true)
         try {
-            await getRate()
+            await getCostCenter()
         } catch (error) {
-            alert.error('Ocorreu um arro ao carregar a Taxa')
+            alert.error('Ocorreu um arro ao carregar o Centro de Custo')
         } finally {
             setLoading(false)
         }
@@ -72,94 +72,68 @@ export default function EditAdministrativeFees(props) {
 
     const handleChange = (event) => {
 
-        // if (event.target.name === 'valor_taxa') {
-        //     const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
-
-        //     if (rawValue === '') {
-        //         event.target.value = '';
-        //     } else {
-        //         let intValue = rawValue.slice(0, -2) || 0; // Parte inteira
-        //         const decimalValue = rawValue.slice(-2); // Parte decimal
-
-        //         if (intValue === '0' && rawValue.length > 2) {
-        //             intValue = '';
-        //         }
-
-        //         const formattedValue = `${intValue}.${decimalValue}`;
-        //         event.target.value = formattedValue;
-        //     }
-
-        //     setRateData((prevValues) => ({
-        //         ...prevValues,
-        //         [event.target.name]: event.target.value,
-        //     }));
-
-        //     return;
-        // }
-
-
-        setRateData((prevValues) => ({
+        setCostCenterData((prevValues) => ({
             ...prevValues,
             [event.target.name]: event.target.value,
         }))
     }
 
     const checkRequiredFields = () => {
-        // if (!rateData.nome) {
+        // if (!costCenterData.nome) {
         //     alert.error('Usuário precisa de nome')
         //     return false
         // }
         return true
     }
 
-    const handleCreateRate = async () => {
+    const handleCreate = async () => {
         setLoading(true)
         if (checkRequiredFields()) {
             try {
-                const response = await api.post(`/rate/create`, { rateData, userId });
+                const response = await api.post(`/costCenter/create`, { costCenterData, userId });
                 const { data } = response
                 if (response?.status === 201) {
-                    alert.success('Taxa cadastrada com sucesso.');
-                    router.push(`/financial/administrativeFees/list`)
+                    alert.success('Centro de Custo cadastrado com sucesso.');
+                    router.push(`/financial/costCenter/list`)
                 }
             } catch (error) {
-                alert.error('Tivemos um problema ao cadastrar taxa.');
+                alert.error('Tivemos um problema ao cadastrar o Centro de Custo.');
             } finally {
                 setLoading(false)
             }
         }
     }
 
-    const handleDeleteRate = async () => {
+    const handleDelete = async () => {
         setLoading(true)
         try {
-            const response = await api.delete(`/rate/delete/${id}`);
+            const response = await api.delete(`/costCenter/delete/${id}`);
             if (response?.status === 200) {
-                alert.success('Taxa excluída.');
-                router.push(`/financial/administrativeFees/list`)
+                alert.success('Centro de Custo excluído.');
+                router.push(`/financial/costCenter/list`)
             }
 
         } catch (error) {
-            alert.error('Tivemos um problema ao excluir a Taxa.');
+            alert.error('Tivemos um problema ao excluir o Centro de Custo.');
             console.log(error)
         } finally {
             setLoading(false)
         }
     }
 
-    const handleEditRate = async () => {
+    const handleEdit = async () => {
         if (checkRequiredFields()) {
             setLoading(true)
             try {
-                const response = await api.patch(`/rate/update/${id}`, { rateData })
+                const response = await api.patch(`/costCenter/update/${id}`, { costCenterData })
                 if (response?.status === 201) {
-                    alert.success('Taxa atualizada com sucesso.');
+                    alert.success('Centro de Custo atualizado com sucesso.');
                     handleItems()
                     return
                 }
-                alert.error('Tivemos um problema ao atualizar Taxa.');
+                alert.error('Tivemos um problema ao atualizar Centro de Custo.');
             } catch (error) {
-                alert.error('Tivemos um problema ao atualizar Taxa.');
+                alert.error('Tivemos um problema ao atualizar Centro de Custo.');
             } finally {
                 setLoading(false)
             }
@@ -171,6 +145,20 @@ export default function EditAdministrativeFees(props) {
         { label: 'inativo', value: 0 },
     ]
 
+    const groupArea = [
+        { label: 'Financeiro', value: 'Financeiro' },
+        { label: 'Biblioteca', value: 'Biblioteca' },
+        { label: 'TI - Suporte', value: 'TI - Suporte' },
+        { label: 'RH', value: 'RH' },
+        { label: 'Marketing', value: 'Marketing' },
+        { label: 'Atendimento/Recepção', value: 'Atendimento/Recepção' },
+        { label: 'Secretaria', value: 'Secretaria' },
+        { label: 'Administrativo', value: 'Administrativo' },
+        { label: 'Diretoria', value: 'Diretoria' },
+        { label: 'Acadêmica', value: 'Acadêmica' },
+
+    ]
+
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -179,32 +167,27 @@ export default function EditAdministrativeFees(props) {
     return (
         <>
             <SectionHeader
-                perfil={'taxa'}
-                title={rateData?.ensino_graduacao_taxa || `Nova Taxa`}
+                perfil={costCenterData?.area}
+                title={costCenterData?.nome_cc || `Novo Centro de Custo`}
                 saveButton={isPermissionEdit}
-                saveButtonAction={newRate ? handleCreateRate : handleEditRate}
-                deleteButton={!newRate && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteRate })}
+                saveButtonAction={newCostCenter ? handleCreate : handleEdit}
+                deleteButton={!newCostCenter && isPermissionEdit}
+                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete, title: 'Deseja Prosseguir?', message: 'Tem certeza que deseja excluír o centro de custo? Uma vez excluído, não será possível recupera-lo.' })}
             />
 
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Taxa Administrativa</Text>
+                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Centro de Custo</Text>
                 </Box>
-                <TextInput disabled={!isPermissionEdit && true} placeholder='Ensino graduacao taxa' name='ensino_graduacao_taxa' onChange={handleChange} value={rateData?.ensino_graduacao_taxa || ''} label='Ensino graduacao taxa' sx={{ flex: 1, }} />
                 <Box sx={styles.inputSection}>
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Prazo' name='prazo_taxa' onChange={handleChange} value={rateData?.prazo_taxa || ''} label='Prazo' sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true}
-                        placeholder='0.00'
-                        name='valor_taxa'
-                        type="coin"
-                        onChange={handleChange}
-                        value={(rateData?.valor_taxa) || ''}
-                        label='Valor' sx={{ flex: 1, }}
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Ex: Administrativo terceirizado' name='nome_cc' onChange={handleChange} value={costCenterData?.nome_cc || ''} label='Nome do CC:' sx={{ flex: 1, }} />
+                    <SelectList fullWidth data={groupArea} valueSelection={costCenterData?.area} onSelect={(value) => setCostCenterData({ ...costCenterData, area: value })}
+                        title="Área:*" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
-                <RadioItem disabled={!isPermissionEdit && true} valueRadio={rateData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setRateData({ ...rateData, ativo: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={costCenterData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCostCenterData({ ...costCenterData, ativo: parseInt(value) })} />
             </ContentContainer>
         </>
     )

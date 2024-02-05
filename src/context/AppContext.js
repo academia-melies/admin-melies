@@ -54,25 +54,10 @@ export const AppProvider = ({ children }) => {
         const now = new Date();
         return now.getTime() + hours * 60 * 60 * 1000;
     };
+
     const filterVersions = versions?.filter(item => item.status === 'lançada');
     const latestVersion = filterVersions[filterVersions.length - 1];
     const latestVersionNumber = latestVersion?.version;
-
-    useEffect(() => {
-        const handleMenuItems = async () => {
-            try {
-                const response = await api.get(`/menuItems`)
-                const { data } = response
-                if (response.status === 200) {
-                    setMenuItemsList(data)
-                }
-            } catch (error) {
-                console.log(error)
-                return error
-            }
-        }
-        handleMenuItems()
-    }, [])
 
     useEffect(() => {
         async function loadUserFromCookies() {
@@ -90,10 +75,11 @@ export const AppProvider = ({ children }) => {
                         setUserPermissions(userData?.permissoes)
                         setNotificationUser(notificationsData)
                     }
-                    else setUser(null);
+                    else logout();
                 }
             } catch (error) {
                 console.log(error)
+                return error
             } finally {
                 setLoading(false)
             }
@@ -128,9 +114,13 @@ export const AppProvider = ({ children }) => {
     }
 
     const logout = () => {
-        localStorage.removeItem('token')
-        setUser(null)
-        delete api.defaults.headers.Authorization
+        try {
+            localStorage.removeItem('token')
+            setUser(null)
+            delete api.defaults.headers.Authorization
+        } catch (error) {
+            return error
+        }
     }
 
     const colorsThem = () => {
@@ -144,9 +134,68 @@ export const AppProvider = ({ children }) => {
         })
     }
 
+
+    const checkTokenExpiration = () => {
+        const token = localStorage.getItem('token');
+
+        if (token != null) {
+            try {
+                const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+                const expirationTime = tokenPayload.exp * 1000; // em milissegundos
+                const currentTime = new Date().getTime();
+                const timeUntilExpiration = expirationTime - currentTime;
+
+                if (timeUntilExpiration < 0) {
+                    logout();
+                    alert.info('Sua sessão expirou. Faça login novamente.');
+                } else if (timeUntilExpiration < notificationThreshold) {
+                    alert.info('Seu token está prestes a expirar. Faça login novamente.');
+                }
+            } catch (error) {
+                console.error('Erro ao decodificar o token:', error);
+                return error
+            }
+        }
+    };
+    useEffect(() => {
+        checkTokenExpiration();
+
+        // Adicione um listener para mudanças de rota
+        const handleRouteChange = () => {
+            checkTokenExpiration();
+        };
+
+        // Adicione o listener
+        router.events.on('routeChangeStart', handleRouteChange);
+
+        // Remova o listener quando o componente for desmontado
+        return () => {
+            router.events.off('routeChangeStart', handleRouteChange);
+        };
+    }, []);
+
+
+
     useEffect(() => {
         colorsThem();
     }, [theme])
+
+
+    useEffect(() => {
+        const handleMenuItems = async () => {
+            try {
+                const response = await api.get(`/menuItems`)
+                const { data } = response
+                if (response.status === 200) {
+                    setMenuItemsList(data)
+                }
+            } catch (error) {
+                console.log(error)
+                return error
+            }
+        }
+        handleMenuItems()
+    }, [])
 
     return (
         <AppContext.Provider

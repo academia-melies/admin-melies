@@ -22,6 +22,7 @@ export default function EditBillToPay(props) {
     const [showHistoric, setShowHistoric] = useState(false)
     const [listHistoric, setListHistoric] = useState([])
     const [usersList, setUsers] = useState([])
+    const [costCenterList, setCostCenterList] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
@@ -36,7 +37,7 @@ export default function EditBillToPay(props) {
     }
     const menusFilters = [
         { id: '01', text: 'Despesas Fixas', value: 'Despesas Fixas', key: 'fixed' },
-        { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis', key: 'variable' },
+        // { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis', key: 'variable' },
         { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento', key: 'personal' },
     ]
 
@@ -56,10 +57,10 @@ export default function EditBillToPay(props) {
                     valueData = data?.valor_desp_f
                     valueInput = 'valor_desp_f';
                 }
-                if (typeMenu === 'variable') {
-                    valueData = data?.valor_desp_v;
-                    valueInput = 'valor_desp_v';
-                }
+                // if (typeMenu === 'variable') {
+                //     valueData = data?.valor_desp_v;
+                //     valueInput = 'valor_desp_v';
+                // }
                 if (typeMenu === 'personal') {
                     valueData = data?.vl_pagamento;
                     valueInput = 'vl_pagamento';
@@ -118,6 +119,7 @@ export default function EditBillToPay(props) {
     useEffect(() => {
         fetchPermissions()
         listUsers()
+        listCostCenter()
     }, [])
 
     async function listUsers() {
@@ -131,6 +133,16 @@ export default function EditBillToPay(props) {
         setUsers(groupEmployee)
     }
 
+    async function listCostCenter() {
+        const response = await api.get(`/costCenters`)
+        const { data } = response
+        const groupCostCenter = data?.map(cc => ({
+            label: cc.nome_cc,
+            value: cc?.id_centro_custo
+        }));
+
+        setCostCenterList(groupCostCenter)
+    }
 
     const handleItems = async () => {
         setLoading(true)
@@ -185,7 +197,9 @@ export default function EditBillToPay(props) {
         return true
     }
 
-    let typeExpense = (bill === '01' && `fixed`) || (bill === '02' && `variable`) || (bill === '03' && `personal`)
+    let typeExpense = (bill === '01' && `fixed`) ||
+        //  (bill === '02' && `variable`) ||
+        (bill === '03' && `personal`)
 
     const handleCreate = async () => {
 
@@ -264,6 +278,24 @@ export default function EditBillToPay(props) {
         { label: 'Cartão de crédito', value: 'Cartão de crédito' },
         { label: 'Cheque', value: 'Cheque' },
         { label: 'Outros', value: 'Outros' }
+    ]
+
+
+    const groupType = [
+        { label: 'Pagamento', value: 'Pagamento' },
+        { label: 'Benefícios', value: 'Benefícios' },
+        { label: 'Taxas e tarífas', value: 'Taxas e tarifas' },
+        { label: 'Outros', value: 'Outros' }
+    ]
+
+    const groupRecorrency = [
+        { label: 'Não recorrente', value: 1 },
+        { label: 'Semanal', value: 7 },
+        { label: 'Quinzenal', value: 15 },
+        { label: 'Mensal', value: 30 },
+        { label: 'Trismestral', value: 90 },
+        { label: 'Semestral', value: 182 },
+        { label: 'Anual', value: 365 }
     ]
 
     const groupTypePayment = [
@@ -367,14 +399,23 @@ export default function EditBillToPay(props) {
                 deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete })}
             />
 
+            {/* Despesas */}
             {bill === '01' &&
                 <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                     <Box>
                         <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Despesa</Text>
                     </Box>
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição' name='descricao' onChange={handleChange} value={billToPayData?.descricao || ''} label='Descrição:' sx={{}} />
                     <Box sx={styles.inputSection}>
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Empresa/Fornecedor' name='empresa_paga' onChange={handleChange} value={billToPayData?.empresa_paga || ''} label='Empresa/Fornecedor' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento' sx={{ flex: 1, }} />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento:' sx={{ flex: 1, }} />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nº Lançamentos' name='n_lancamentos' onChange={handleChange} value={billToPayData?.n_lancamentos || ''} type="number" label='Nº Lançamentos:' sx={{ width: 150, }} />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupRecorrency} valueSelection={billToPayData?.recorrencia} onSelect={(value) => setBillToPayData({ ...billToPayData, recorrencia: value })}
+                            title="Recorrência: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                    </Box>
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Observação' name='observacao' onChange={handleChange} value={billToPayData?.descricao || ''} label='Observação:' sx={{ flex: 1, }} multiline rows={4} />
+                    <Box sx={styles.inputSection}>
                         <TextInput disabled={!isPermissionEdit && true}
                             placeholder='0.00'
                             name='valor_desp_f'
@@ -384,10 +425,16 @@ export default function EditBillToPay(props) {
                             label='Valor Total' sx={{ flex: 1, }}
                         // onBlur={() => calculationValues(pricesCourseData)}
                         />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupType} valueSelection={billToPayData?.tipo} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo: value })}
+                            title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={billToPayData?.centro_custo} onSelect={(value) => setBillToPayData({ ...billToPayData, centro_custo: value })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
                     </Box>
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição/Observação' name='descricao_desp_f' onChange={handleChange} value={billToPayData?.descricao_desp_f || ''} label='Descrição/Observação' sx={{}} multiline rows={4} />
                     <Box sx={styles.inputSection}>
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Centro de custo' name='centro_centro' onChange={handleChange} value={billToPayData?.centro_centro || ''} label='Centro de custo' sx={{ flex: 1, }} />
                         <TextInput disabled={!isPermissionEdit && true} placeholder='Nº NF-e' name='n_nfe' onChange={handleChange} value={billToPayData?.n_nfe || ''} label='Nº NF-e' sx={{ flex: 1, }} />
                         <TextInput disabled={!isPermissionEdit && true}
                             name='dt_nfe'
@@ -397,41 +444,41 @@ export default function EditBillToPay(props) {
                             label='Data da NF-e'
                             sx={{ width: 250 }} />
                     </Box>
+
                     <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
-                        <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
                             if (value !== 'Pago') {
                                 setBillToPayData({ ...billToPayData, status: value, conta_pagamento: '' })
                             }
                             setBillToPayData({ ...billToPayData, status: value })
                         }}
-                            title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                            title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
                         {billToPayData?.status === 'Pago' &&
-                            <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
-                                title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-
+                            <>
+                                <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
+                                    title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <TextInput disabled={!isPermissionEdit && true}
+                                    name='dt_pagamento'
+                                    onChange={handleChange}
+                                    value={(billToPayData?.dt_pagamento)?.split('T')[0] || ''}
+                                    type="date"
+                                    label='Data de Pagamento'
+                                    sx={{ width: 250 }} />
+                            </>
                         }
                     </Box>
-                    <Box sx={{ padding: '0px 0px 20px 0px' }}>
-                        <CheckBoxComponent disabled={!isPermissionEdit && true}
-                            boxGroup={groupRecurrency}
-                            valueChecked={billToPayData?.recorrencia_mensal || ''}
-                            horizontal={mobile ? false : true}
-                            onSelect={(value) => {
-                                setBillToPayData({ ...billToPayData, recorrencia_mensal: value })
-                            }}
-                            sx={{ width: 1 }} />
-                    </Box>
-                    {billToPayData?.recorrencia_mensal === 'Sim' && billToPayData?.dt_vencimento &&
+
+                    {(billToPayData?.recorrencia > 1 && billToPayData?.dt_vencimento) &&
                         <TextInput disabled={!isPermissionEdit && true}
                             name='dt_prox_pagamento'
                             onChange={handleChange}
                             value={(billToPayData?.dt_prox_pagamento)?.split('T')[0] || ''}
                             type="date"
-                            label='Proximo vencimento'
+                            label='Data prevista prox pagamento'
                             sx={{ width: 250 }} />
                     }
 
@@ -455,8 +502,10 @@ export default function EditBillToPay(props) {
                             rows={4} />
                     }
 
-                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
-                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
+                    <Box sx={{
+                        display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
+                        flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
+                    }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
                             <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
@@ -472,73 +521,7 @@ export default function EditBillToPay(props) {
                     </Box>
                 </ContentContainer>
             }
-
-            {bill === '02' &&
-                <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                    <Box>
-                        <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Despesa</Text>
-                    </Box>
-                    <Box sx={styles.inputSection}>
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Empresa/Fornecedor' name='empresa_paga_v' onChange={handleChange} value={billToPayData?.empresa_paga_v || ''} label='Empresa/Fornecedor' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true}
-                            placeholder='0.00'
-                            name='valor_desp_v'
-                            type="coin"
-                            onChange={handleChange}
-                            value={(billToPayData?.valor_desp_v) || ''}
-                            label='Valor Total' sx={{ flex: 1, }}
-                        />
-                    </Box>
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição/Observação' name='descricao_desp_v' onChange={handleChange} value={billToPayData?.descricao_desp_v || ''} label='Descrição/Observação' sx={{}} multiline rows={4} />
-                    <Box sx={styles.inputSection}>
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Centro de custo' name='centro_centro' onChange={handleChange} value={billToPayData?.centro_centro || ''} label='Centro de custo' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nº NF-e' name='n_nfe' onChange={handleChange} value={billToPayData?.n_nfe || ''} label='Nº NF-e' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true}
-                            name='dt_nfe'
-                            onChange={handleChange}
-                            value={(billToPayData?.dt_nfe)?.split('T')[0] || ''}
-                            type="date"
-                            label='Data da NF-e'
-                            sx={{ width: 250 }} />
-                    </Box>
-
-                    <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
-                        <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
-                            if (value !== 'Pago') {
-                                setBillToPayData({ ...billToPayData, status: value, conta_pagamento: '' })
-                            }
-                            setBillToPayData({ ...billToPayData, status: value })
-                        }}
-                            title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                        />
-                        {billToPayData?.status === 'Pago' &&
-                            <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
-                                title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-
-                        }
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
-                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Text bold>Criado por:</Text>
-                            <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Text bold>Criado em:</Text>
-                            <Text>{formatTimeStamp(billToPayData?.dt_criacao, true)}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Text bold>Ultima atualização:</Text>
-                            <Text>{formatTimeStamp(billToPayData?.dt_atualizacao, true)}</Text>
-                        </Box>
-                    </Box>
-                </ContentContainer>
-            }
-
+            {/* //Folha de pagamento */}
             {bill === '03' &&
                 <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                     <Box>
@@ -559,12 +542,19 @@ export default function EditBillToPay(props) {
                             label='Salário' sx={{ flex: 1, }}
                         />
                     </Box>
-                    <Box sx={{...styles.inputSection, justifyContent: 'flex-start'}}>
+                    <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
                         <SelectList disabled={!isPermissionEdit && true} data={groupTypePayment} valueSelection={billToPayData?.tipo_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo_pagamento: value })}
                             title="Tipo de pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Centro de custo' name='centro_centro' onChange={handleChange} value={billToPayData?.centro_centro || ''} label='Centro de custo' sx={{ maxWidth: 250, }} />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupType} valueSelection={billToPayData?.tipo} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo: value })}
+                            title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={billToPayData?.centro_custo} onSelect={(value) => setBillToPayData({ ...billToPayData, centro_custo: value })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
                     </Box>
                     <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
                         <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status_pagamento} onSelect={(value) => {
@@ -577,15 +567,25 @@ export default function EditBillToPay(props) {
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
                         {billToPayData?.status === 'Pago' &&
-                            <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
-                                title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-
+                            <>
+                                <SelectList disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
+                                    title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <TextInput disabled={!isPermissionEdit && true}
+                                    name='dt_baixa'
+                                    onChange={handleChange}
+                                    value={(billToPayData?.dt_baixa)?.split('T')[0] || ''}
+                                    type="date"
+                                    label='Data da Baixa'
+                                    sx={{ width: 250 }} />
+                            </>
                         }
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
-                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' } }}>
+                    <Box sx={{
+                        display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
+                        flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
+                    }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Criado por:</Text>
                             <Text>{usersList?.filter(item => item.value === billToPayData?.usuario_resp)?.map(item => item.label)}</Text>

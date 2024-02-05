@@ -49,6 +49,9 @@ export const versions = [
         listChanges: [
             { change: 'Criação do "Diário de Aula" em Acadêmico.' },
             { change: 'Novas funcionalidades para todas as áreas no Painel de Chamados.' },
+            { change: 'Opção de vizualizar por lista/Tabela ou cards (Painel de chamados).' },
+            { change: 'Novas telas e relatórios em "Financeiro".' },
+            { change: 'Novo campo para editar "Meus Dados" no menu do úsuario.' },
         ]
     },
 ]

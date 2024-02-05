@@ -367,7 +367,7 @@ export default function EditTask(props) {
             if (label) {
                 description = `${user?.nome} alterou o responsável para ${label}.`
             } else {
-                description = `${user?.nome} se tornou responsável por esse atender esse chamado.`
+                description = `${user?.nome} se tornou responsável por atender esse chamado.`
 
             }
             const response = await api.patch(`/task/responsible/update/${id}`, { responsibleId: value })
@@ -620,19 +620,31 @@ export default function EditTask(props) {
                                                         <Box sx={{ display: 'flex', gap: 2, flex: 1, padding: '10px 10px', borderRadius: '8px 8px 0px 0px', alignItems: 'center' }}>
                                                             <Avatar src={item?.location} sx={{}} />
                                                             <Box sx={{
-                                                                display: 'flex', gap: 0.5, flex: 1, borderRadius: '8px 8px 0px 0px', alignItems: 'center',
+                                                                display: 'flex', gap: 1, flex: 1, borderRadius: '8px 8px 0px 0px', alignItems: 'center',
                                                                 flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
                                                             }}>
                                                                 <Text style={{}} light>Por</Text>
                                                                 <Text bold style={{}}>{item?.criado_por}</Text>
                                                                 <Text style={{}} light>em</Text>
                                                                 <Text bold style={{}}>{formatTimeStamp(item?.dt_criacao, true)}</Text>
+                                                                <Box sx={{
+                                                                    ...styles.menuIcon,
+                                                                    backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                                    transform: !showInterations ? 'rotate(0deg)' : 'rotate(-180deg)',
+                                                                    transition: '.3s',
+                                                                    width: 18, height: 18,
+                                                                    aspectRatio: '1/1',
+                                                                    "&:hover": {
+                                                                        opacity: 0.7,
+                                                                        cursor: 'pointer',
+                                                                    }
+                                                                }} onClick={() => setShowInterations(!showInterations)} />
                                                             </Box>
                                                         </Box>
                                                         {showInterations &&
                                                             <>
                                                                 <Box sx={{ display: 'flex', gap: 3, alignItems: 'start', justifyContent: 'start', flexDirection: 'column', padding: '5px 0px 15px 15px' }}>
-                                                                    <Text>{item?.descr_interacao}</Text>
+                                                                    <Text style={{ whiteSpace: 'pre-line' }} >{item?.descr_interacao}</Text>
 
                                                                     <Box sx={{ display: item?.files.length > 0 ? 'flex' : 'none', gap: 1, flexDirection: 'column' }}>
                                                                         {item?.files?.map((file, index) => (
