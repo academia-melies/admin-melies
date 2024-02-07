@@ -155,7 +155,6 @@ export default function ListTasks(props) {
                 setFilters({ ...filters, status: 'Em aberto, Em análise' })
             }
             const response = await api.get(query)
-            console.log(response)
             const { data } = response;
             setTasksList(data)
         } catch (error) {

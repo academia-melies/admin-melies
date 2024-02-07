@@ -144,6 +144,7 @@ export const AppProvider = ({ children }) => {
                 const expirationTime = tokenPayload.exp * 1000; // em milissegundos
                 const currentTime = new Date().getTime();
                 const timeUntilExpiration = expirationTime - currentTime;
+                const notificationThreshold = 5 * 60 * 1000;
 
                 if (timeUntilExpiration < 0) {
                     logout();

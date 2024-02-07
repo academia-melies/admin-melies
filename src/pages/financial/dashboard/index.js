@@ -81,12 +81,11 @@ export default function ListBillsToPay(props) {
         try {
             const response = await api.get('/expenses/allList')
             const { data } = response;
-            const fixedValues = await mapExpenseData(data?.fixed, 'dt_vencimento');
-            const variableValues = await mapExpenseData(data?.variable, 'dt_vencimento');
+            const Values = await mapExpenseData(data?.expenses, 'dt_vencimento');
             const personalValues = await mapExpenseData(data?.personal, 'dt_pagamento');
 
-            setBillstToPayData({ fixed: fixedValues, variable: variableValues, personal: personalValues })
-            return { fixed: fixedValues, variable: variableValues, personal: personalValues }
+            setBillstToPayData({ expenses: Values, personal: personalValues })
+            return { expenses: Values, personal: personalValues }
 
         } catch (error) {
             console.log(error)
@@ -117,14 +116,12 @@ export default function ListBillsToPay(props) {
 
 
     const handleCalculationGraph = async (billstReceive, billstPay) => {
-        let billsFixed = billstPay?.fixed?.filter(filter);
-        let billsVariable = billstPay?.variable?.filter(filter);
+        let billsExpenses = billstPay?.expenses?.filter(filter);
         let billsPersonal = billstPay?.personal?.filter(filter);
 
-        let fixed = billsFixed?.map(item => parseFloat(item.valor_desp_f))?.reduce((acc, curr) => acc + curr, 0)
-        let variable = billsVariable?.map(item => parseFloat(item.valor_desp_v))?.reduce((acc, curr) => acc + curr, 0)
+        let fixed = billsExpenses?.map(item => parseFloat(item.valor_desp))?.reduce((acc, curr) => acc + curr, 0)
         let personal = billsPersonal?.map(item => parseFloat(item.vl_pagamento))?.reduce((acc, curr) => acc + curr, 0)
-        setTotalPays(fixed + variable + personal)
+        setTotalPays(fixed + personal)
 
         let data = billstReceive?.filter(filter);
         let qntSalesValue = data?.length;
@@ -139,18 +136,11 @@ export default function ListBillsToPay(props) {
         const { series, labels } = processChartData(data);
         setFormPaymentGraph({ series, labels });
 
-        let fixedData = [];
-        let totalFixed = 0;
-        if (billstPay?.fixed) {
-            fixedData = billstPay?.fixed?.filter(filter);
-            totalFixed = fixedData?.reduce((acc, expense) => acc + expense?.valor_desp_f, 0);
-        }
-
-        let variableData = [];
-        let totalVariable = 0;
-        if (billstPay?.variable) {
-            variableData = billstPay?.variable?.filter(filter);
-            totalVariable = variableData?.reduce((acc, expense) => acc + expense?.valor_desp_v, 0);
+        let expenseData = [];
+        let totalExpenses = 0;
+        if (billstPay?.expenses) {
+            expenseData = billstPay?.expenses?.filter(filter);
+            totalExpenses = expenseData?.reduce((acc, expense) => acc + expense?.valor_desp, 0);
         }
 
         let personalData = [];
@@ -162,8 +152,8 @@ export default function ListBillsToPay(props) {
 
 
         setCategoryExpenseGraph({
-            labels: ['Fixa', 'Variável', 'Folha de pagamento'],
-            series: [totalFixed, totalVariable, totalPersonal]
+            labels: ['Despesas', 'Folha de pagamento'],
+            series: [totalExpenses, totalPersonal]
         });
 
 
@@ -483,7 +473,7 @@ export default function ListBillsToPay(props) {
                                 <Divider distance={0} />
                                 <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
                                     <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold style={{ color: totalSales < totalPays ? 'red' : 'green' }}>{formatter.format(totalPays)}</Text>
+                                        <Text large bold style={{ color: 'red' }}>{formatter.format(totalPays)}</Text>
                                     </Box>
                                     <Text light>Despesa</Text>
                                 </Box>
