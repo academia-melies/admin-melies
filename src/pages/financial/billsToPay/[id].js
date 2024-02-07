@@ -18,11 +18,12 @@ export default function EditBillToPay(props) {
     const { id, bill } = router.query;
     const newBill = id === 'new';
     const [billToPayData, setBillToPayData] = useState({})
-    const [newReadjustment, setNewReadjustment] = useState()
+    const [newReadjustment, setNewReadjustment] = useState(0)
     const [showHistoric, setShowHistoric] = useState(false)
     const [listHistoric, setListHistoric] = useState([])
     const [usersList, setUsers] = useState([])
     const [costCenterList, setCostCenterList] = useState([])
+    const [accountList, setAccountList] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
@@ -36,7 +37,7 @@ export default function EditBillToPay(props) {
         }
     }
     const menusFilters = [
-        { id: '01', text: 'Despesas Fixas', value: 'Despesas Fixas', key: 'fixed' },
+        { id: '01', text: 'Despesas', value: 'Despesas', key: 'expense' },
         // { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis', key: 'variable' },
         { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento', key: 'personal' },
     ]
@@ -47,20 +48,19 @@ export default function EditBillToPay(props) {
     const getBillToPay = async () => {
         setLoading(true);
         try {
-            const response = await api.get(`/expenses/${typeMenu}/${id}`);
+            let query = '/expense'
+            if (typeMenu === 'personal') { query = query += `/${typeMenu}` }
+            const response = await api.get(`${query}/${id}`);
             const { data } = response;
 
             if (data) {
                 let valueData;
                 let valueInput;
-                if (typeMenu === 'fixed') {
-                    valueData = data?.valor_desp_f
-                    valueInput = 'valor_desp_f';
+                if (typeMenu === 'expense') {
+                    valueData = data?.valor_desp
+                    valueInput = 'valor_desp';
                 }
-                // if (typeMenu === 'variable') {
-                //     valueData = data?.valor_desp_v;
-                //     valueInput = 'valor_desp_v';
-                // }
+
                 if (typeMenu === 'personal') {
                     valueData = data?.vl_pagamento;
                     valueInput = 'vl_pagamento';
@@ -85,8 +85,10 @@ export default function EditBillToPay(props) {
 
     const handleHistoric = async () => {
         try {
+            let query = '/expense'
+            if (typeMenu === 'personal') { query = query += `/${typeMenu}` }
             if (bill === '01' || bill === '03') {
-                const historic = await api.get(`/expenses/${typeMenu}/historic/${id}`);
+                const historic = await api.get(`${query}/historic/${id}`);
                 if (historic?.data) {
                     setListHistoric(historic?.data)
                 }
@@ -120,6 +122,7 @@ export default function EditBillToPay(props) {
         fetchPermissions()
         listUsers()
         listCostCenter()
+        listAccounts()
     }, [])
 
     async function listUsers() {
@@ -144,6 +147,18 @@ export default function EditBillToPay(props) {
         setCostCenterList(groupCostCenter)
     }
 
+
+    async function listAccounts() {
+        const response = await api.get(`/accounts`)
+        const { data } = response
+        const groupCostCenter = data?.map(cc => ({
+            label: cc.nome_conta,
+            value: cc?.id_conta
+        }));
+
+        setAccountList(groupCostCenter)
+    }
+
     const handleItems = async () => {
         setLoading(true)
         try {
@@ -157,7 +172,7 @@ export default function EditBillToPay(props) {
 
     const handleChange = async (event) => {
 
-        if (event.target.name === 'valor_desp_f' || event.target.name === 'valor_desp_v' || event.target.name === 'vl_pagamento') {
+        if (event.target.name === 'valor_desp' || event.target.name === 'vl_pagamento') {
             const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
             if (rawValue === '') {
@@ -197,16 +212,15 @@ export default function EditBillToPay(props) {
         return true
     }
 
-    let typeExpense = (bill === '01' && `fixed`) ||
-        //  (bill === '02' && `variable`) ||
-        (bill === '03' && `personal`)
 
     const handleCreate = async () => {
 
         setLoading(true)
         if (checkRequiredFields()) {
+            let query = '/expense'
+            if (bill === '03') { query = query += `/personal` }
             try {
-                const response = await api.post(`/expenses/${typeExpense}/create/${usuario_id}`, { billToPayData });
+                const response = await api.post(`${query}/create/${usuario_id}`, { billToPayData });
                 if (response?.status === 201) {
                     alert.success('Despesa cadastrada.');
                     router.push(`/financial/billsToPay`)
@@ -222,7 +236,10 @@ export default function EditBillToPay(props) {
     const handleDelete = async () => {
         setLoading(true)
         try {
-            const response = await api.delete(`/expenses/${typeExpense}/${id}`)
+            let query = '/expense'
+            if (bill === '03') { query = query += `/personal` }
+
+            const response = await api.delete(`${query}/${id}`)
             if (response?.status == 200) {
                 alert.success('Despesa excluída com sucesso.');
                 router.push(`/financial/billsToPay`)
@@ -240,8 +257,10 @@ export default function EditBillToPay(props) {
     const handleEdit = async () => {
         if (checkRequiredFields()) {
             setLoading(true)
+            let query = '/expense'
+            if (bill === '03') { query = query += `/personal` }
             try {
-                const response = await api.patch(`/expenses/${typeExpense}/update/${id}`, { billToPayData, userId: usuario_id, obs_reajuste: billToPayData?.obs_reajuste_desp_f })
+                const response = await api.patch(`${query}/update/${id}`, { billToPayData, userId: usuario_id, obs_reajuste: billToPayData?.obs_reajuste_desp })
                 if (response?.status === 200) {
                     alert.success('Despesa atualizado com sucesso.');
                     handleItems()
@@ -257,12 +276,12 @@ export default function EditBillToPay(props) {
     }
 
     useEffect(() => {
-        if (billToPayData?.recorrencia_mensal === 'Sim' && billToPayData?.dt_vencimento) {
+        if (billToPayData?.recorrencia > 1 && billToPayData?.dt_vencimento) {
             calculateNextDate(billToPayData?.dt_vencimento)
         } else {
             setBillToPayData({ ...billToPayData, dt_prox_pagamento: '' })
         }
-    }, [billToPayData?.dt_vencimento, billToPayData?.recorrencia_mensal])
+    }, [billToPayData?.dt_vencimento, billToPayData?.recorrencia])
 
 
     const groupStatus = [
@@ -313,11 +332,10 @@ export default function EditBillToPay(props) {
         },
     ]
 
+
     const groupReadjustment = [
-        {
-            label: 'Reajuste de valor',
-            value: 'Sim'
-        },
+        { label: 'Sim', value: 1 },
+        { label: 'Não', value: 0 },
     ]
 
     const formatter = new Intl.NumberFormat('pt-BR', {
@@ -380,18 +398,25 @@ export default function EditBillToPay(props) {
     }
 
 
-    const column = [
-        { key: 'id_historico_desp_f', label: 'ID' },
-        { key: 'vl_reajuste_desp_f', label: 'R$ Reajuste', price: true },
+    const columnExpense = [
+        { key: 'id_historico_desp', label: 'ID' },
+        { key: 'vl_reajuste_desp', label: 'R$ Reajuste', price: true },
         { key: 'dt_reajuste', label: 'Data do reajuste', date: true },
-        { key: 'obs_reajuste_desp_f', label: 'Observações' },
+        { key: 'obs_reajuste_desp', label: 'Observações' },
+    ];
+
+    const columnPersonal = [
+        { key: 'id_historico_folha_p', label: 'ID' },
+        { key: 'vl_reajuste', label: 'R$ Reajuste', price: true },
+        { key: 'dt_reajuste', label: 'Data do reajuste', date: true },
+        { key: 'obs_reajuste', label: 'Observações' },
     ];
 
 
     return (
         <>
             <SectionHeader
-                title={(typeExpense === 'fixed' && billToPayData?.empresa_paga) || (typeExpense === 'variable' && billToPayData?.empresa_paga_v) || (typeExpense === 'personal' && billToPayData?.nome) || `Nova Despesa`}
+                title={(bill === '01' && billToPayData?.descricao) || (bill === '03' && billToPayData?.funcionario) || `Nova Despesa`}
                 perfil={menusFilters?.filter(item => item?.id === bill)?.map(item => item?.value)}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newBill ? handleCreate : handleEdit}
@@ -408,20 +433,20 @@ export default function EditBillToPay(props) {
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição' name='descricao' onChange={handleChange} value={billToPayData?.descricao || ''} label='Descrição:' sx={{}} />
                     <Box sx={styles.inputSection}>
                         <TextInput disabled={!isPermissionEdit && true} placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento:' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nº Lançamentos' name='n_lancamentos' onChange={handleChange} value={billToPayData?.n_lancamentos || ''} type="number" label='Nº Lançamentos:' sx={{ width: 150, }} />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nº Lançamentos' name='n_lancamento' onChange={handleChange} value={billToPayData?.n_lancamento || ''} type="number" label='Nº Lançamentos:' sx={{ width: 150, }} />
                         <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupRecorrency} valueSelection={billToPayData?.recorrencia} onSelect={(value) => setBillToPayData({ ...billToPayData, recorrencia: value })}
                             title="Recorrência: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
                     </Box>
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Observação' name='observacao' onChange={handleChange} value={billToPayData?.descricao || ''} label='Observação:' sx={{ flex: 1, }} multiline rows={4} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Observação' name='observacao' onChange={handleChange} value={billToPayData?.observacao || ''} label='Observação:' sx={{ flex: 1, }} multiline rows={4} />
                     <Box sx={styles.inputSection}>
                         <TextInput disabled={!isPermissionEdit && true}
                             placeholder='0.00'
-                            name='valor_desp_f'
+                            name='valor_desp'
                             type="coin"
                             onChange={handleChange}
-                            value={(billToPayData?.valor_desp_f) || ''}
+                            value={(billToPayData?.valor_desp) || ''}
                             label='Valor Total' sx={{ flex: 1, }}
                         // onBlur={() => calculationValues(pricesCourseData)}
                         />
@@ -447,9 +472,6 @@ export default function EditBillToPay(props) {
 
                     <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
                         <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
-                            if (value !== 'Pago') {
-                                setBillToPayData({ ...billToPayData, status: value, conta_pagamento: '' })
-                            }
                             setBillToPayData({ ...billToPayData, status: value })
                         }}
                             title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, }}
@@ -457,7 +479,7 @@ export default function EditBillToPay(props) {
                         />
                         {billToPayData?.status === 'Pago' &&
                             <>
-                                <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
+                                <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountList} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
                                     title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
@@ -482,20 +504,17 @@ export default function EditBillToPay(props) {
                             sx={{ width: 250 }} />
                     }
 
-                    <CheckBoxComponent disabled={!isPermissionEdit && true}
-                        boxGroup={groupReadjustment}
-                        valueChecked={newReadjustment || ''}
-                        horizontal={mobile ? false : true}
-                        onSelect={(value) => {
-                            setNewReadjustment(value)
-                        }}
-                        sx={{ width: 1 }} />
+                    <RadioItem disabled={!isPermissionEdit && true} valueRadio={newReadjustment} group={groupReadjustment} title="Reajuste de valor:" horizontal={true}
+                         onSelect={(value) => {
+                            setNewReadjustment(parseInt(value))
+                        }}/>
 
-                    {newReadjustment === 'Sim' &&
+
+                    {newReadjustment === 1 &&
                         <TextInput disabled={!isPermissionEdit && true} placeholder='Observação de ajuste'
-                            name='obs_reajuste_desp_f'
+                            name='obs_reajuste_desp'
                             onChange={handleChange}
-                            value={billToPayData?.obs_reajuste_desp_f || ''}
+                            value={billToPayData?.obs_reajuste_desp || ''}
                             label='Observação de ajuste'
                             sx={{}}
                             multiline
@@ -543,6 +562,14 @@ export default function EditBillToPay(props) {
                         />
                     </Box>
                     <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
+                        <SelectList disabled={!isPermissionEdit && true} data={groupRecorrency} valueSelection={billToPayData?.recorrencia} onSelect={(value) => setBillToPayData({ ...billToPayData, recorrencia: value })}
+                            title="Recorrência: " filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Dia de pagamento' name='dia_padrao' onChange={handleChange} value={billToPayData?.dia_padrao || ''} type="number" label='Dia de pagamento:' sx={{ width: 200, }} />
+
+                    </Box>
+                    <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
                         <SelectList disabled={!isPermissionEdit && true} data={groupTypePayment} valueSelection={billToPayData?.tipo_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo_pagamento: value })}
                             title="Tipo de pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -557,10 +584,7 @@ export default function EditBillToPay(props) {
                         />
                     </Box>
                     <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
-                        <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status_pagamento} onSelect={(value) => {
-                            if (value !== 'Pago') {
-                                setBillToPayData({ ...billToPayData, status_pagamento: value, conta_pagamento: '' })
-                            }
+                        <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
                             setBillToPayData({ ...billToPayData, status: value })
                         }}
                             title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
@@ -568,7 +592,7 @@ export default function EditBillToPay(props) {
                         />
                         {billToPayData?.status === 'Pago' &&
                             <>
-                                <SelectList disabled={!isPermissionEdit && true} data={groupPaymentCount} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
+                                <SelectList disabled={!isPermissionEdit && true} data={accountList} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
                                     title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
@@ -622,7 +646,8 @@ export default function EditBillToPay(props) {
                     {showHistoric &&
                         <>
                             {listHistoric ?
-                                <Table_V1 isPermissionEdit={isPermissionEdit} data={listHistoric} columns={column} columnId={'id_historico_desp_f'} columnActive={false} center routerPush={false} tolltip={false} />
+                                <Table_V1 isPermissionEdit={isPermissionEdit} data={listHistoric} columns={bill === '01' ? columnExpense : columnPersonal}
+                                    columnId={bill === '01' ? 'id_historico_desp' : 'id_historico_folha_p'} columnActive={false} center routerPush={false} tolltip={false} />
                                 :
                                 <Box sx={{ alignItems: 'start', justifyContent: 'start', display: 'flex' }}>
                                     <Text light>Não encontramos histórico de valores</Text>

@@ -11,88 +11,88 @@ export const TextInput = (props) => {
    const { colorPalette } = useAppContext();
 
    return (
-      <TextField
-         autoComplete='off'
-         id="fieldssss"
-         label={label}
-         {...props}
-         disabled={false}
-         onChange={props.disabled ? () => { } : props.onChange}
-         InputProps={{
-            autocomplete: 'no',
-            autoComplete: 'off',
-            form: {
-               autocomplete: 'off',
-            },
-            sx: {
-               transition: 'background-color 1s',
-               disableUnderline: true,
-               borderRadius: 2,
-               fontSize: small ? '12px' : { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' },
-               fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',
-               backgroundColor: colorPalette.inputColor,
-               color: colorPalette.textColor,
-               ...InputProps?.style,
-               maxHeight: props.multiline ? 'none' : '45px',
-               '&.disabled': {
-                  color: 'white', // Cor do texto quando desabilitado
+         <TextField
+            autoComplete='off'
+            id="fieldssss"
+            label={label}
+            {...props}
+            disabled={false}
+            onChange={props.disabled ? () => { } : props.onChange}
+            InputProps={{
+               autocomplete: 'no',
+               autoComplete: 'off',
+               form: {
+                  autocomplete: 'off',
                },
-            },
+               sx: {
+                  transition: 'background-color 1s',
+                  disableUnderline: true,
+                  borderRadius: 2,
+                  fontSize: small ? '12px' : { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' },
+                  fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',
+                  backgroundColor: colorPalette.inputColor,
+                  color: colorPalette.textColor,
+                  ...InputProps?.style,
+                  height: props.multiline ? 'none' : '45px',
+                  '&.disabled': {
+                     color: 'white', // Cor do texto quando desabilitado
+                  },
+               },
 
-            startAdornment: props.type === "coin"
-               ? (
-                  <InputAdornment position="start">
-                     <Text>R$ </Text>
-                  </InputAdornment>
-               )
-               : props.type === "search"
+               startAdornment: props.type === "coin"
                   ? (
                      <InputAdornment position="start">
-                        <Box sx={{
-                           ...styles.menuIcon,
-                           filter: 'brightness(0) invert(.7)',
-                           backgroundImage: `url('/icons/search_input_icon.png')`,
-                           transition: '.3s',
-                           "&:hover": {
-                              opacity: 0.8,
-                              cursor: 'pointer'
-                           }
-                        }} />
+                        <Text>R$ </Text>
                      </InputAdornment>
                   )
-                  : null,
-         }}
-         InputLabelProps={
-            props.type === "date" || props.type === "datetime-local"
-               ? {
-                  shrink: true,
-                  style: {
-                     color: colorPalette.textColor,
-                     fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '13px', xl: '14px' },
-                     fontFamily: 'MetropolisBold',
-                     zIndex: 9
-                  },
-                  sx: {
-                     zIndex: 9
-                  }
-               }
-               : {
-                  sx: {
-                     color: colorPalette.textColor,
-                     fontSize: {
-                        xs: '16px',
-                        xm: '13px',
-                        md: '13px',
-                        lg: '13px',
-                        xl: '14px'
+                  : props.type === "search"
+                     ? (
+                        <InputAdornment position="start">
+                           <Box sx={{
+                              ...styles.menuIcon,
+                              filter: 'brightness(0) invert(.7)',
+                              backgroundImage: `url('/icons/search_input_icon.png')`,
+                              transition: '.3s',
+                              "&:hover": {
+                                 opacity: 0.8,
+                                 cursor: 'pointer'
+                              }
+                           }} />
+                        </InputAdornment>
+                     )
+                     : null,
+            }}
+            InputLabelProps={
+               props.type === "date" || props.type === "datetime-local"
+                  ? {
+                     shrink: true,
+                     style: {
+                        color: colorPalette.textColor,
+                        fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '13px', xl: '14px' },
+                        fontFamily: 'MetropolisBold',
+                        zIndex: 9
                      },
-                     fontFamily: 'MetropolisBold',
-                     zIndex: 99,
-                     ...InputLabelProps?.style
+                     sx: {
+                        zIndex: 9
+                     }
                   }
-               }
-         }
-      />
+                  : {
+                     sx: {
+                        color: colorPalette.textColor,
+                        fontSize: {
+                           xs: '16px',
+                           xm: '13px',
+                           md: '13px',
+                           lg: '13px',
+                           xl: '14px'
+                        },
+                        fontFamily: 'MetropolisBold',
+                        zIndex: 99,
+                        ...InputLabelProps?.style
+                     }
+                  }
+            }
+         />
    );
 };
 

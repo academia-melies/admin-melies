@@ -10,8 +10,8 @@ import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import { Backdrop, TablePagination } from "@mui/material"
 import { icons } from "../../../organisms/layout/Colors"
 
-export default function ListCostCenter(props) {
-    const [costCentersList, setCostCentersList] = useState([])
+export default function ListAccounts(props) {
+    const [accountList, setAccountList] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette, alert, userPermissions, menuItemsList } = useAppContext()
     const router = useRouter()
@@ -36,7 +36,7 @@ export default function ListCostCenter(props) {
         return (
             Object.values(filterFunctions).every(filterFunction => filterFunction(item)) &&
             (
-                normalizeString(item?.nome_cc)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
+                normalizeString(item?.nome_conta)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
             )
         );
     };
@@ -66,9 +66,12 @@ export default function ListCostCenter(props) {
     const getFees = async () => {
         setLoading(true)
         try {
-            const response = await api.get('/costCenters')
+            const response = await api.get('/accounts')
+            console.log(response)
             const { data = [] } = response;
-            setCostCentersList(data)
+            if(data?.length > 0){
+                setAccountList(data)
+            }
         } catch (error) {
             console.log(error)
         } finally {
@@ -97,9 +100,10 @@ export default function ListCostCenter(props) {
 
 
     const column = [
-        { key: 'id_centro_custo', label: 'ID' },
-        { key: 'nome_cc', label: 'Centro de Custo' },
-        { key: 'area', label: 'Área' }
+        { key: 'id_conta', label: 'ID' },
+        { key: 'nome_conta', label: 'Nome da Conta' },
+        { key: 'agencia', label: 'Agência' },
+        { key: 'conta', label: 'Conta' }
     ];
 
     const listAtivo = [
@@ -111,7 +115,7 @@ export default function ListCostCenter(props) {
     return (
         <>
             <SectionHeader
-                title={`Centro de Custos (${costCentersList?.filter(filter)?.length || '0'})`}
+                title={`Contas (${accountList?.filter(filter)?.length || '0'})`}
                 newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/financial/${pathname}/new`)}
             />
@@ -120,13 +124,13 @@ export default function ListCostCenter(props) {
                     <Text bold large>Filtros</Text>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                         <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{costCentersList?.filter(filter)?.length || '0'}</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{accountList?.filter(filter)?.length || '0'}</Text>
                         <Text style={{ color: '#d6d6d6' }} light>de</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{costCentersList?.length || 0}</Text>
-                        <Text style={{ color: '#d6d6d6' }} light>centro de custo</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{accountList?.length || 0}</Text>
+                        <Text style={{ color: '#d6d6d6' }} light>Contas</Text>
                     </Box>
                 </Box>
-                <TextInput placeholder="Buscar pelo Centro de custo" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <TextInput placeholder="Buscar pelo nome da conta" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
@@ -150,7 +154,7 @@ export default function ListCostCenter(props) {
                     </Box>
                     <TablePagination
                         component="div"
-                        count={costCentersList?.filter(filter)?.length}
+                        count={accountList?.filter(filter)?.length}
                         page={page}
                         onPageChange={handleChangePage}
                         rowsPerPage={rowsPerPage}
@@ -163,13 +167,13 @@ export default function ListCostCenter(props) {
             </ContentContainer>
 
             <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
-                <TextInput placeholder="Buscar 50 anos luz, câmera e ação.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <TextInput placeholder="Buscar por conta" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
 
                 <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
                 <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
                     <TablePagination
                         component="div"
-                        count={costCentersList?.filter(filter)?.length}
+                        count={accountList?.filter(filter)?.length}
                         page={page}
                         onPageChange={handleChangePage}
                         rowsPerPage={rowsPerPage}
@@ -226,16 +230,16 @@ export default function ListCostCenter(props) {
                     </Box>
                 </ContentContainer>
             </Backdrop>
-            {costCentersList?.length > 0 ?
+            {accountList?.length > 0 ?
                 <div ref={componentPDF}>
-                    <Table_V1 data={costCentersList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_centro_custo'} columnActive={true} />
+                    <Table_V1 data={accountList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_conta'} columnActive={true} />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
-                    <Text bold>Não conseguimos encontrar Centro de custos</Text>
+                    <Text bold>Não conseguimos encontrar Contas cadastradas</Text>
                 </Box>
             }
-            {costCentersList?.length > 0 &&
+            {accountList?.length > 0 &&
                 <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.8, flex: 1, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
                     <Text bold>Exportar:</Text>
                     <Box sx={{
