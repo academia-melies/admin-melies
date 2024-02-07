@@ -43,8 +43,8 @@ export const versions = [
         ]
     },
     {
-        version: '1.3.1', build: '-',
-        status: 'pendente',
+        version: '1.3.1', build: '08/02/2024',
+        status: 'lançada',
         msg: 'Foi incluído novas Telas e funcionalidades, realizado correções de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e muito mais!',
         listChanges: [
             { change: 'Criação do "Diário de Aula" em Acadêmico (Con link da aula do Teams).' },
