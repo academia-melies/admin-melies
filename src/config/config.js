@@ -43,15 +43,19 @@ export const versions = [
         ]
     },
     {
-        version: '1.2.3', build: '-',
+        version: '1.3.1', build: '-',
         status: 'pendente',
-        msg: 'Foi realizado a correção de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e novas funcionalidades.',
+        msg: 'Foi incluído novas Telas e funcionalidades, realizado correções de Bugs no sistema, novas melhorias atendidas através dos chamados realizados ao Suporte Méliès e muito mais!',
         listChanges: [
-            { change: 'Criação do "Diário de Aula" em Acadêmico.' },
+            { change: 'Criação do "Diário de Aula" em Acadêmico (Con link da aula do Teams).' },
             { change: 'Novas funcionalidades para todas as áreas no Painel de Chamados.' },
             { change: 'Opção de vizualizar por lista/Tabela ou cards (Painel de chamados).' },
-            { change: 'Novas telas e relatórios em "Financeiro".' },
+            { change: 'Novas telas e relatórios em "Financeiro" (Centro de Custos, Contas, entre outras)' },
             { change: 'Novo campo para editar "Meus Dados" no menu do úsuario.' },
+            { change: 'Nova estrutura de Contas a Pagar e Receber em Financeiros.' },
+            { change: 'Nova tela de Folha de pagamentos (Com novas funcionalidades).' },
+            { change: 'Checkagem de segurança de autenticação, com tempo limite de 1hr de expiração. (Segurança do Sistema)' },
+            { change: 'Adicionado opção do usuário editar seus dados.' },
         ]
     },
 ]

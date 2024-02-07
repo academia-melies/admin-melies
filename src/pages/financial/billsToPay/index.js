@@ -1,14 +1,15 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Text, TextInput } from "../../../atoms"
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { formatDate, formatTimeStamp } from "../../../helpers"
-import { Avatar, TablePagination } from "@mui/material"
+import { Avatar, Backdrop, TablePagination } from "@mui/material"
 import Link from "next/link"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { icons } from "../../../organisms/layout/Colors"
 
 const monthFilter = [
     { month: 'Jan', value: 0 },
@@ -32,12 +33,16 @@ const menusFilters = [
 ]
 
 export default function ListBillsToPay(props) {
-    const [fixedExpenses, setFixedExpenses] = useState([])
     const [expensesData, setExpensesData] = useState([])
-    const [variableExpenses, setVariableExpenses] = useState([])
     const [personalExpenses, setPersonalExpenses] = useState([])
-    const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
-    const [filterYear, setFilterYear] = useState(2023)
+    const [filters, setFilters] = useState({
+        status: 'todos'
+    })
+
+    const [expensesList, setExpensesList] = useState([])
+    const [dicidioPorcent, setDicidioPorcent] = useState(0)
+    const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
+    const [filterYear, setFilterYear] = useState(2024)
     const [filterMonth, setFilterMonth] = useState(9)
     const [expensesSelected, setExpensesSelected] = useState(null);
     const [allSelected, setAllSelected] = useState();
@@ -47,7 +52,9 @@ export default function ListBillsToPay(props) {
     const [billstToReceive, setBillstToReceive] = useState([]);
     const [menuSelected, setMenuSelected] = useState('Despesas')
     const [columnTable, setColumnTable] = useState([])
+    const [showDicidioBox, setShowDicidioBox] = useState(false)
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -60,9 +67,15 @@ export default function ListBillsToPay(props) {
 
     const filter = (item) => {
         let dateFilter = menuSelected === 'Folha de Pagamento' ? item?.dt_pagamento : item?.dt_vencimento;
-        let date = new Date(dateFilter)
-        let monthSelect = date.getMonth()
-        return monthSelect === filterMonth;
+        let date = new Date(dateFilter);
+        let monthSelect = date.getMonth();
+        let yearSelect = date.getFullYear();
+        let filterYearNumber = parseInt(filterYear, 10);
+        let filterData = filterMonth === 'todos' ? item : monthSelect === filterMonth;
+        let filterStatus = filters?.status.includes('todos') ? item : filters?.status.includes(item?.status)
+
+
+        return (filterData && yearSelect === filterYearNumber && filterStatus);
     }
 
     useEffect(() => {
@@ -71,13 +84,12 @@ export default function ListBillsToPay(props) {
     }, [])
 
     const handleLoadData = () => {
-        getFixedExpenses('fixed')
-        getVariableExpenses('variable')
+        getExpenses()
         getPersonalExpenses('personal')
     }
 
     useEffect(() => {
-        if (menuSelected === 'Despesas Fixas') getFixedExpenses('fixed');
+        if (menuSelected === 'Despesas') getExpenses();
         // if (menuSelected === 'Despesas Variáveis') { getVariableExpenses('variable') }
         if (menuSelected === 'Folha de Pagamento') { getPersonalExpenses('personal') }
     }, [menuSelected]);
@@ -85,15 +97,17 @@ export default function ListBillsToPay(props) {
 
 
     useEffect(() => {
-        if (menuSelected === 'Despesas Fixas') {
+        if (menuSelected === 'Despesas') {
 
             setColumnTable([
-                { key: 'id_despesa_f', label: 'id' },
+                { key: 'id_despesa', label: 'id' },
+                { key: 'descricao', label: 'Descrição' },
+                { key: 'valor_desp', label: 'Valor', price: true },
                 { key: 'dt_vencimento', label: 'Vencimento', date: true },
-                { key: 'descricao_desp_f', label: 'Descrição' },
-                { key: 'valor_desp_f', label: 'Valor', price: true },
-                { key: 'empresa_paga', label: 'Fornecedor/Empresa' },
-                { key: 'status', label: 'Status' },
+                { key: 'nome_cc', label: 'Centro de Custo' },
+                { key: 'nome_conta', label: 'Conta' },
+                { key: 'dt_pagamento', label: 'Dt Baixa', date: true },
+                { key: 'status', label: 'Status', status: true },
             ])
         }
         const dateNow = new Date()
@@ -103,21 +117,18 @@ export default function ListBillsToPay(props) {
     }, []);
 
 
-    const getFixedExpenses = async (typeExpense) => {
+    const getExpenses = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/expenses/${typeExpense}`)
+            const response = await api.get(`/expenses`)
             const { data } = response;
-            // const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
-            // setAllSelected(groupIds)
-            setFixedExpenses(data)
             if (data.length > 0) {
-
+                setExpensesList(data)
                 setExpensesData(data.map(item => {
-                    const valorDespF = parseFloat(item.valor_desp_f);
+                    const valorDesp = parseFloat(item.valor_desp);
                     return {
                         ...item,
-                        valor_tipo: isNaN(valorDespF) ? item.valor_desp_f : valorDespF.toFixed(2)
+                        valor_tipo: isNaN(valorDesp) ? item.valor_desp : valorDesp.toFixed(2)
                     };
                 }));
             }
@@ -128,42 +139,19 @@ export default function ListBillsToPay(props) {
         }
     }
 
-    const getVariableExpenses = async (typeExpense) => {
+    const getPersonalExpenses = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/expenses/${typeExpense}`)
+            const response = await api.get(`/expenses/personal`)
             const { data } = response;
-            setVariableExpenses(data)
-            if (data.length > 0) {
+            if (data?.length > 0) {
+                setPersonalExpenses(data)
 
                 setExpensesData(data.map(item => {
-                    const valorDespF = parseFloat(item.valor_desp_v);
+                    const valorDesp = parseFloat(item.vl_pagamento);
                     return {
                         ...item,
-                        valor_tipo: isNaN(valorDespF) ? item.valor_desp_v : valorDespF.toFixed(2)
-                    };
-                }));
-            }
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const getPersonalExpenses = async (typeExpense) => {
-        setLoading(true)
-        try {
-            const response = await api.get(`/expenses/${typeExpense}`)
-            const { data } = response;
-            setPersonalExpenses(data)
-            if (data.length > 0) {
-
-                setExpensesData(data.map(item => {
-                    const valorDespF = parseFloat(item.vl_pagamento);
-                    return {
-                        ...item,
-                        valor_tipo: isNaN(valorDespF) ? item.vl_pagamento : valorDespF.toFixed(2)
+                        valor_tipo: isNaN(valorDesp) ? item.vl_pagamento : valorDesp.toFixed(2)
                     };
                 }));
             }
@@ -234,6 +222,69 @@ export default function ListBillsToPay(props) {
         }
     }
 
+
+    const handleBaixa = async () => {
+        if (expensesSelected) {
+            setLoading(true)
+            let query = '/expense'
+            const [queryType] = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.key);
+            if (queryType === 'personal') { query = query += `/personal` }
+            const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
+
+            try {
+                const response = await api.patch(`${query}/baixa`, { isToUpdate })
+                const { status } = response?.data
+                if (status) {
+                    alert.success('Todas as Baixas foram realizadas com sucesso.');
+                    setExpensesSelected('');
+                    handleLoadData()
+                    return
+                }
+                alert.error('Tivemos um problema ao efetivar as Baixa.');
+            } catch (error) {
+                alert.error('Tivemos um problema ao efetivar as Baixa.');
+                console.log(error)
+                return error
+
+            } finally {
+                setLoading(false)
+            }
+        } else {
+            alert.info('Selecione um item antes de dar baixa.')
+        }
+    }
+
+
+    const handleDicidio = async () => {
+        if (menuSelected === 'Folha de Pagamento') {
+            setLoading(true)
+            const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
+
+            try {
+                const response = await api.patch(`/expense/personal/reajustment/dicidio`, { isToUpdate, userId: user?.id, dicidioPorcent })
+                const { status } = response?.data
+                if (status) {
+                    alert.success('Dicídio aplicado para todos.');
+                    setExpensesSelected('');
+                    setShowDicidioBox(false)
+                    handleLoadData()
+                    return
+                }
+                alert.error('Tivemos um problema ao aplicado dicídio.');
+            } catch (error) {
+                alert.error('Tivemos um problema ao aplicado dicídio.');
+                console.log(error)
+                return error
+
+            } finally {
+                setLoading(false)
+            }
+        } else {
+            alert.info('Selecione um item antes de dar baixa.')
+        }
+    }
+
+
     const pusNewBill = async () => {
         const routePush = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.id);
         let queryRoute = `/financial/billsToPay/new?bill=${routePush}`
@@ -242,8 +293,7 @@ export default function ListBillsToPay(props) {
 
     const pusBillId = async (item) => {
         let itemId = 'new';
-        if (menuSelected === 'Despesas Fixas') itemId = item?.id_despesa_f;
-        // if (menuSelected === 'Despesas Variáveis') itemId = item?.id_despesa_v
+        if (menuSelected === 'Despesas') itemId = item?.id_despesa;
         if (menuSelected === 'Folha de Pagamento') itemId = item?.id_pagamento_folha
         const routePush = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.id);
         let queryRoute = `/financial/billsToPay/${itemId}?bill=${routePush}`
@@ -262,31 +312,27 @@ export default function ListBillsToPay(props) {
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-    const columnFixed = [
-        { key: 'id_despesa_f', label: 'id' },
+    const columnExpense = [
+        { key: 'id_despesa', label: 'id' },
+        { key: 'descricao', label: 'Descrição' },
+        { key: 'valor_desp', label: 'Valor', price: true },
         { key: 'dt_vencimento', label: 'Vencimento', date: true },
-        { key: 'descricao_desp_f', label: 'Descrição' },
-        { key: 'valor_desp_f', label: 'Valor', price: true },
-        { key: 'empresa_paga', label: 'Fornecedor/Empresa' },
+        { key: 'nome_cc', label: 'Centro de Custo' },
+        { key: 'nome_conta', label: 'Conta' },
+        { key: 'dt_pagamento', label: 'Dt Baixa', date: true },
         { key: 'status', label: 'Status', status: true },
-    ];
-
-    const columnVariable = [
-        { key: 'id_despesa_v', label: 'id' },
-        { key: 'dt_vencimento', label: 'Vencimento', date: true },
-        { key: 'descricao_desp_v', label: 'Descrição' },
-        { key: 'valor_desp_v', label: 'Valor', price: true },
-        { key: 'empresa_paga_v', label: 'Fornecedor/Empresa' },
-        { key: 'status_desp_v', label: 'Status', status: true },
     ];
 
     const columnPersonal = [
         { key: 'id_pagamento_folha', label: 'id' },
         { key: 'funcionario', label: 'Funcionário' },
         { key: 'funcao', label: 'Cargo/Função' },
-        { key: 'dt_pagamento', label: 'Pagamento', date: true },
+        { key: 'nome_cc', label: 'Centro de Custo' },
+        { key: 'nome_conta', label: 'Conta' },
+        { key: 'dt_pagamento', label: 'Vencimento', date: true },
+        { key: 'dt_baixa', label: 'Baixa', date: true },
         { key: 'vl_pagamento', label: 'Salário', price: true },
-        { key: 'status_pagamento', label: 'Status', status: true },
+        { key: 'status', label: 'Status', status: true },
     ];
 
     const listAtivo = [
@@ -316,6 +362,13 @@ export default function ListBillsToPay(props) {
         },
     ]
 
+    const groupStatus = [
+        { label: 'Todos', value: 'todos' },
+        { label: 'Pago', value: 'Pago' },
+        { label: 'Pendente', value: 'Pendente' },
+        { label: 'Cancelado', value: 'Cancelado' }
+    ]
+
     const groupProstated = [
         { label: 'sim', value: 1 },
         { label: 'não', value: 0 },
@@ -333,11 +386,10 @@ export default function ListBillsToPay(props) {
     ]
 
 
-    let valueFixed = fixedExpenses?.map(item => parseFloat(item.valor_desp_f))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-    let valueVariable = variableExpenses?.map(item => parseFloat(item.valor_desp_v))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
+    let valueExpenses = expensesList?.map(item => parseFloat(item.valor_desp))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
     let valuePersonal = personalExpenses?.map(item => parseFloat(item.vl_pagamento))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
 
-    let totalExpenses = parseFloat(valueFixed) + parseFloat(valueVariable) + parseFloat(valuePersonal)
+    let totalExpenses = parseFloat(valueExpenses) + parseFloat(valuePersonal)
     let totalExpensesView = expensesData?.filter(filter)?.map(item => parseFloat(item.valor_tipo)).reduce((acc, currentValue) => acc + (currentValue || 0), 0)
 
     let saldoAtual = billstToReceive?.filter(item => (item.status_parcela === 'Pago' || item.status_parcela === 'Aprovado'))
@@ -435,13 +487,18 @@ export default function ListBillsToPay(props) {
                 display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
                 flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
             }}>
-                <SelectList
-                    data={years}
-                    valueSelection={filterYear}
-                    onSelect={(value) => setFilterYear(value)}
-                    filterOpition="value"
-                    sx={{ backgroundColor: colorPalette.secondary }}
-                    clean={false}
+                <TextInput
+                    name="year"
+                    value={filterYear || ''}
+                    label='Ano:'
+                    onChange={(event) => setFilterYear(event.target.value)}
+                    sx={{ width: 200 }}
+                    InputProps={{
+                        style: {
+                            backgroundColor: colorPalette.secondary
+                        }
+                    }}
+                    type="number"
                 />
                 <Box sx={{ display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' } }}>
                     {monthFilter?.map((item, index) => {
@@ -457,7 +514,14 @@ export default function ListBillsToPay(props) {
                                     cursor: 'pointer'
                                 },
                                 boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                            }} onClick={() => setFilterMonth(item?.value)}>
+                            }} onClick={() => {
+                                if (monthSelected) {
+                                    setFilterMonth('todos')
+                                }
+                                else {
+                                    setFilterMonth(item?.value)
+                                }
+                            }}>
                                 <Text large style={{ color: monthSelected ? '#fff' : colorPalette.textColor }}>{item?.month}</Text>
                             </Box>
                         )
@@ -486,7 +550,7 @@ export default function ListBillsToPay(props) {
                             }} onClick={() => {
                                 setMenuSelected(item?.value)
                                 setColumnTable(
-                                    (item?.value === 'Despesas Fixas' && columnFixed) ||
+                                    (item?.value === 'Despesas' && columnExpense) ||
                                     // (item?.value === 'Despesas Variáveis' && columnVariable) ||
                                     (item?.value === 'Folha de Pagamento' && columnPersonal)
                                 )
@@ -496,19 +560,52 @@ export default function ListBillsToPay(props) {
                         )
                     })}
                 </Box>
-                <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, position: 'relative', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
-                    <Box sx={{ display: 'flex', gap: 1, height: 30, position: 'absolute', top: 30, left: 40 }}>
-                        <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => pusNewBill()} />
-                        <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
-                            active: true,
-                            event,
-                            acceptAction: handleDelete,
-                            title: `Excluir ${menuSelected}`,
-                            message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
-                        })} />
-                        {menuSelected === 'Folha de Pagamento' && <Button disabled={!isPermissionEdit && true} small secondary text="aplicar reajuste para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }} />}
+
+                <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
+
+                    <Box sx={{ display: 'flex', padding: '20px 40px', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <CheckBoxComponent disabled={!isPermissionEdit && true}
+                            boxGroup={groupStatus}
+                            valueChecked={filters?.status}
+                            horizontal={true}
+                            onSelect={(value) => {
+                                setFilters({ ...filters, status: value })
+                            }}
+                            sx={{ width: 1 }} />
+
+                        <Box sx={{ display: 'flex', gap: 1, }}>
+                            <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => pusNewBill()} />
+                            <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
+                                active: true,
+                                event,
+                                acceptAction: handleDelete,
+                                title: `Excluir ${menuSelected}`,
+                                message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
+                            })} />
+                            <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                                onClick={(event) => setShowConfirmationDialog({
+                                    active: true,
+                                    event,
+                                    acceptAction: handleBaixa,
+                                    title: `Dar Baixa das - ${menuSelected}`,
+                                    message: 'Tem certeza que deseja seguir com a as baixas?'
+                                })} />
+
+                            {menuSelected === 'Folha de Pagamento' && <Button disabled={!isPermissionEdit && true} small secondary text="aplicar dicídio para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }}
+                                onClick={() => {
+                                    if (expensesSelected) {
+                                        setShowDicidioBox(true)
+                                    } else {
+                                        alert.info('Selecione um item para aplicar o dicídio')
+                                    }
+
+                                }}
+                            />
+                            }
+                        </Box>
+
                     </Box>
-                    <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '50px', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
+                    <div style={{ borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
                         {expensesData?.filter(filter).length > 0 ?
                             <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                                 <thead>
@@ -540,7 +637,7 @@ export default function ListBillsToPay(props) {
                                 <tbody style={{ flex: 1, }}>
                                     {expensesData?.filter(filter)?.map((item, index) => {
                                         let itemId;
-                                        if (menuSelected === 'Despesas Fixas') itemId = item?.id_despesa_f;
+                                        if (menuSelected === 'Despesas') itemId = item?.id_despesa;
                                         // if (menuSelected === 'Despesas Variáveis') itemId = item?.id_despesa_v
                                         if (menuSelected === 'Folha de Pagamento') itemId = item?.id_pagamento_folha
                                         const isSelected = expensesSelected?.includes(itemId) || null;
@@ -638,6 +735,41 @@ export default function ListBillsToPay(props) {
                     </div>
                 </Box>
             </Box>
+
+
+            <Backdrop open={showDicidioBox} sx={{ zIndex: 999 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Insira a porcentagem do Dicídio</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowDicidioBox(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                        <TextInput placeholder="0.5" name='dicidio' onChange={(event) => setDicidioPorcent(event.target.value)} value={dicidioPorcent} sx={{ flex: 1 }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Aplicar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={(event) => setShowConfirmationDialog({
+                                active: true,
+                                event,
+                                acceptAction: handleDicidio,
+                                title: `Aplicar Dicídio`,
+                                message: 'Tem certeza que deseja seguir com o reajuste?'
+                            })} />
+                        <Button disabled={!isPermissionEdit && true} small secondary text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => setShowDicidioBox(false)} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
         </>
     )
 }

@@ -18,6 +18,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css"; // Estilo para o recurso de arrastar e soltar (se estiver usando)
 import "react-big-calendar/lib/addons/dragAndDrop"; // Recurso de arrastar e soltar (se estiver usando)
 import Hamburger from 'hamburger-react'
+import Link from 'next/link'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -53,6 +54,8 @@ function Home() {
    const [showMessageBirthDay, setShowMessageBirthDay] = useState(false)
    const [idSelected, setIdSelected] = useState()
    const [showMenuHelp, setShowMenuHelp] = useState(false)
+   const [showClassDay, setShowClassDay] = useState({ active: false, item: {} })
+
    const [showSections, setShowSections] = useState({
       legend: false,
       notification: false,
@@ -306,7 +309,7 @@ function Home() {
                      width={'auto'}
                   />
                </Box>
-               <Box sx={{display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }}}>
+               <Box sx={{ display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' } }}>
                   <Divider distance={5} />
                </Box>
 
@@ -592,39 +595,48 @@ function Home() {
                                  const date = formatDate(item?.dt_aula)
                                  const classDay = `${item?.nome_turma} - ${item?.nome_disciplina}`;
                                  return (
-                                    <ContentContainer row key={index} style={{
-                                       display: 'flex',
-                                       backgroundColor: colorPalette?.primary, boxShadow: 'none',
-                                       position: 'relative',
-                                       alignItems: 'center',
-                                       maxHeight: 100,
-                                       paddingTop: 7
-                                    }}>
-                                       <Box sx={{
-                                          display: 'flex', borderRadius: 5,
-                                          backgroundColor: colorPalette?.buttonColor,
-                                          padding: '5px 5px',
-                                          position: 'absolute',
-                                          top: 3,  // Ajuste aqui para mover para cima
-                                          left: 3, // Ajuste aqui para mover para a esquerda
-                                          zIndex: 999
+                                    <Box key={index} sx={{
+                                       display: 'flex', flexDirection: 'column', position: 'relative',
+                                       "&:hover": {
+                                          opacity: 0.8,
+                                          cursor: 'pointer'
+                                       }
+                                    }} onClick={() => setShowClassDay({ active: true, item })}>
+                                       <ContentContainer row style={{
+                                          display: 'flex',
+                                          backgroundColor: colorPalette?.primary, boxShadow: 'none',
+                                          alignItems: 'center',
+                                          maxHeight: 100,
+                                          padding: '20px'
                                        }}>
-                                          <Text bold small style={{ color: '#fff' }}>{date}</Text>
-                                       </Box>
-                                       <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                          <Text light bold>{classDay}</Text>
-                                          <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
-                                             {item?.professor1 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                <Text bold>1º professor: </Text>
-                                                <Text light>{item?.professor1}</Text>
-                                             </Box>}
-                                             {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                <Text bold>2º professor: </Text>
-                                                <Text light>{item?.professor2}</Text>
-                                             </Box>}
+                                          <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', width: '100%' }}>
+                                             <Box sx={{
+                                                display: 'flex', borderRadius: 5,
+                                                backgroundColor: colorPalette?.buttonColor,
+                                                padding: '5px 5px',
+                                                position: 'absolute',
+                                                top: -5,  // Ajuste aqui para mover para cima
+                                                right: -10, // Ajuste aqui para mover para a esquerda
+                                                zIndex: 999
+                                             }}>
+                                                <Text bold xsmall style={{ color: '#fff' }}>{date}</Text>
+                                             </Box>
+                                             <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                <Text light bold>{classDay}</Text>
+                                                <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                   {item?.professor1 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                      <Text bold>1º professor: </Text>
+                                                      <Text light>{item?.professor1}</Text>
+                                                   </Box>}
+                                                   {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                      <Text bold>2º professor: </Text>
+                                                      <Text light>{item?.professor2}</Text>
+                                                   </Box>}
+                                                </Box>
+                                             </Box>
                                           </Box>
-                                       </Box>
-                                    </ContentContainer>
+                                       </ContentContainer>
+                                    </Box>
                                  )
                               })}
                            </Box>
@@ -635,6 +647,36 @@ function Home() {
                         }
                      </Box>
                   </ContentContainer>
+                  <Backdrop open={showClassDay?.active} sx={{ zIndex: 9999 }}>
+                     <ContentContainer>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'start', width: '100%', position: 'relative' }}>
+                           <Text bold>Descrição da Aula</Text>
+                           <Box sx={{
+                              ...styles.menuIcon,
+                              backgroundImage: `url(${icons.gray_close})`,
+                              transition: '.3s',
+                              zIndex: 999999999,
+                              position: 'absolute',
+                              right: 5,
+                              top: 2,
+                              "&:hover": {
+                                 opacity: 0.8,
+                                 cursor: 'pointer'
+                              }
+                           }} onClick={() => setShowClassDay({ active: false, item: {} })} />
+                        </Box>
+                        <Divider />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 350 }}>
+                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              <Text bold>Resumo da aula:</Text>
+                              <Text>{showClassDay?.item?.resumo_aula}</Text>
+                           </Box>
+                           <Link href={showClassDay?.item?.link_aula || ''} target='_blank'>
+                              <Button small disabled={showClassDay?.item?.link_aula ? false : true} text="Assistir aula" />
+                           </Link>
+                        </Box>
+                     </ContentContainer>
+                  </Backdrop>
                </ContentContainer>
             </Box>
 
