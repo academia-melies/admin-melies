@@ -505,9 +505,9 @@ export default function EditBillToPay(props) {
                     }
 
                     <RadioItem disabled={!isPermissionEdit && true} valueRadio={newReadjustment} group={groupReadjustment} title="Reajuste de valor:" horizontal={true}
-                         onSelect={(value) => {
+                        onSelect={(value) => {
                             setNewReadjustment(parseInt(value))
-                        }}/>
+                        }} />
 
 
                     {newReadjustment === 1 &&
@@ -606,6 +606,23 @@ export default function EditBillToPay(props) {
                             </>
                         }
                     </Box>
+
+                    <RadioItem disabled={!isPermissionEdit && true} valueRadio={newReadjustment} group={groupReadjustment} title="Reajuste de valor:" horizontal={true}
+                        onSelect={(value) => {
+                            setNewReadjustment(parseInt(value))
+                        }} />
+
+                    {newReadjustment === 1 &&
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Observação de ajuste'
+                            name='obs_reajuste_desp'
+                            onChange={handleChange}
+                            value={billToPayData?.obs_reajuste_desp || ''}
+                            label='Observação de ajuste'
+                            sx={{}}
+                            multiline
+                            rows={4} />
+                    }
+
                     <Box sx={{
                         display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, marginLeft: 1,
                         flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
