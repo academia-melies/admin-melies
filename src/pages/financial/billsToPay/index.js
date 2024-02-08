@@ -40,7 +40,8 @@ export default function ListBillsToPay(props) {
     })
 
     const [expensesList, setExpensesList] = useState([])
-    const [dicidioPorcent, setDicidioPorcent] = useState(0)
+    const [dissidioPorcent, setDissidioPorcent] = useState(0)
+    const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_pagamento: '' })
     const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
     const [filterYear, setFilterYear] = useState(2024)
     const [filterMonth, setFilterMonth] = useState(9)
@@ -52,7 +53,11 @@ export default function ListBillsToPay(props) {
     const [billstToReceive, setBillstToReceive] = useState([]);
     const [menuSelected, setMenuSelected] = useState('Despesas')
     const [columnTable, setColumnTable] = useState([])
-    const [showDicidioBox, setShowDicidioBox] = useState(false)
+    const [showDissidioBox, setShowDissidioBox] = useState(false)
+    const [showBaixa, setShowBaixa] = useState(false)
+    const [accountList, setAccountList] = useState([])
+
+
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
 
     const fetchPermissions = async () => {
@@ -83,9 +88,21 @@ export default function ListBillsToPay(props) {
         handleLoadData()
     }, [])
 
+    async function listAccounts() {
+        const response = await api.get(`/accounts`)
+        const { data } = response
+        const groupCostCenter = data?.map(cc => ({
+            label: cc.nome_conta,
+            value: cc?.id_conta
+        }));
+
+        setAccountList(groupCostCenter)
+    }
+
     const handleLoadData = () => {
         getExpenses()
         getPersonalExpenses('personal')
+        listAccounts()
     }
 
     useEffect(() => {
@@ -224,7 +241,7 @@ export default function ListBillsToPay(props) {
 
 
     const handleBaixa = async () => {
-        if (expensesSelected) {
+        if (expensesSelected && baixaData?.conta_pagamento !== '' && baixaData?.dt_baixa !== '') {
             setLoading(true)
             let query = '/expense'
             const [queryType] = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.key);
@@ -232,12 +249,15 @@ export default function ListBillsToPay(props) {
             const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
 
             try {
-                const response = await api.patch(`${query}/baixa`, { isToUpdate })
+                const response = await api.patch(`${query}/baixa`, { isToUpdate, baixaData })
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
                     setExpensesSelected('');
-                    handleLoadData()
+                    setShowBaixa(false)
+                    setBaixaData({ dt_baixa: '', conta_pagamento: '' });
+                    setMenuSelected('Despesas')
+                    getExpenses()
                     return
                 }
                 alert.error('Tivemos um problema ao efetivar as Baixa.');
@@ -250,29 +270,30 @@ export default function ListBillsToPay(props) {
                 setLoading(false)
             }
         } else {
-            alert.info('Selecione um item antes de dar baixa.')
+            alert.info('Selecione um item antes de dar baixa e preencha todos os campos corretamente.')
         }
     }
 
 
-    const handleDicidio = async () => {
+    const handleDissidio = async () => {
         if (menuSelected === 'Folha de Pagamento') {
             setLoading(true)
             const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
 
             try {
-                const response = await api.patch(`/expense/personal/reajustment/dicidio`, { isToUpdate, userId: user?.id, dicidioPorcent })
+                const response = await api.patch(`/expense/personal/reajustment/dissidio`, { isToUpdate, userId: user?.id, dissidioPorcent })
                 const { status } = response?.data
                 if (status) {
-                    alert.success('Dicídio aplicado para todos.');
+                    alert.success('Dissídio aplicado para todos.');
                     setExpensesSelected('');
-                    setShowDicidioBox(false)
-                    handleLoadData()
+                    setShowDissidioBox(false)
+                    setMenuSelected('Despesas')
+                    getExpenses()
                     return
                 }
-                alert.error('Tivemos um problema ao aplicado dicídio.');
+                alert.error('Tivemos um problema ao aplicado dissídio.');
             } catch (error) {
-                alert.error('Tivemos um problema ao aplicado dicídio.');
+                alert.error('Tivemos um problema ao aplicado dissídio.');
                 console.log(error)
                 return error
 
@@ -583,20 +604,14 @@ export default function ListBillsToPay(props) {
                                 message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
                             })} />
                             <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
-                                onClick={(event) => setShowConfirmationDialog({
-                                    active: true,
-                                    event,
-                                    acceptAction: handleBaixa,
-                                    title: `Dar Baixa das - ${menuSelected}`,
-                                    message: 'Tem certeza que deseja seguir com a as baixas?'
-                                })} />
+                                onClick={() => setShowBaixa(true)} />
 
-                            {menuSelected === 'Folha de Pagamento' && <Button disabled={!isPermissionEdit && true} small secondary text="aplicar dicídio para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }}
+                            {menuSelected === 'Folha de Pagamento' && <Button disabled={!isPermissionEdit && true} small secondary text="aplicar dissídio para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }}
                                 onClick={() => {
                                     if (expensesSelected) {
-                                        setShowDicidioBox(true)
+                                        setShowDissidioBox(true)
                                     } else {
-                                        alert.info('Selecione um item para aplicar o dicídio')
+                                        alert.info('Selecione um item para aplicar o dissídio')
                                     }
 
                                 }}
@@ -737,10 +752,10 @@ export default function ListBillsToPay(props) {
             </Box>
 
 
-            <Backdrop open={showDicidioBox} sx={{ zIndex: 999 }}>
+            <Backdrop open={showDissidioBox} sx={{ zIndex: 999 }}>
                 <ContentContainer sx={{ zIndex: 9999 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
-                        <Text bold large>Insira a porcentagem do Dicídio</Text>
+                        <Text bold large>Insira a porcentagem do Dissídio</Text>
                         <Box sx={{
                             ...styles.menuIcon,
                             backgroundImage: `url(${icons.gray_close})`,
@@ -750,23 +765,71 @@ export default function ListBillsToPay(props) {
                                 opacity: 0.8,
                                 cursor: 'pointer'
                             }
-                        }} onClick={() => setShowDicidioBox(false)} />
+                        }} onClick={() => setShowDissidioBox(false)} />
                     </Box>
                     <Divider distance={0} />
                     <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
-                        <TextInput placeholder="0.5" name='dicidio' onChange={(event) => setDicidioPorcent(event.target.value)} value={dicidioPorcent} sx={{ flex: 1 }} />
+                        <TextInput placeholder="0.5" name='dissidio' onChange={(event) => setDissidioPorcent(event.target.value)} value={dissidioPorcent} sx={{ flex: 1 }} />
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
                         <Button disabled={!isPermissionEdit && true} small text="Aplicar" style={{ height: '30px', borderRadius: '6px' }}
                             onClick={(event) => setShowConfirmationDialog({
                                 active: true,
                                 event,
-                                acceptAction: handleDicidio,
-                                title: `Aplicar Dicídio`,
+                                acceptAction: handleDissidio,
+                                title: `Aplicar Dissídio`,
                                 message: 'Tem certeza que deseja seguir com o reajuste?'
                             })} />
                         <Button disabled={!isPermissionEdit && true} small secondary text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
-                            onClick={() => setShowDicidioBox(false)} />
+                            onClick={() => setShowDissidioBox(false)} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+
+            <Backdrop open={showBaixa} sx={{ zIndex: 999 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Dados da Baixa</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowBaixa(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                        <TextInput disabled={!isPermissionEdit && true}
+                            name='dt_baixa'
+                            onChange={(event) => setBaixaData({ ...baixaData, dt_baixa: event.target.value })}
+                            value={(baixaData?.dt_baixa)?.split('T')[0] || ''}
+                            type="date"
+                            label='Data da Baixa'
+                            sx={{ width: 250 }} />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountList} valueSelection={baixaData?.conta_pagamento} onSelect={(value) => setBaixaData({ ...baixaData, conta_pagamento: value })}
+                            title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={(event) => setShowConfirmationDialog({
+                                active: true,
+                                event,
+                                acceptAction: handleBaixa,
+                                title: `Dar Baixa das - ${menuSelected}`,
+                                message: 'Tem certeza que deseja seguir com a as baixas?'
+                            })} />
+                        <Button disabled={!isPermissionEdit && true} small secondary text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => {
+                                setShowBaixa(false)
+                                setBaixaData({ dt_baixa: '', conta_pagamento: '' });
+                            }} />
                     </Box>
                 </ContentContainer>
             </Backdrop>

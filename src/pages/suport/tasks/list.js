@@ -43,7 +43,7 @@ export default function ListTasks(props) {
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         responsible: (item) => filters.responsible === 'todos' || item.responsavel_chamado === filters.responsible,
-        status: (item) => filters.status === 'todos' || filters.status?.includes(item?.status_chamado),
+        status: (item) => filters.status?.includes('todos') || filters.status?.includes(item?.status_chamado),
         priority: (item) => filters.priority === 'todos' || item.prioridade_chamado === filters.priority,
         actor: (item) => filters.actor === 'todos' || item.autor === filters.actor,
         type: (item) => filters.type === 'todos' || item.tipo_chamado === filters.type,
