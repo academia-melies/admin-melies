@@ -173,17 +173,12 @@ export default function StudentDetailsMEC(props) {
         }
     }
 
-    const column = [
-        { key: 'id_chamado', label: '#Ticket' },
-        { key: 'prioridade_chamado', label: 'Prioridade', task: true },
-        { key: 'titulo_chamado', label: 'Título' },
-        { key: 'autor', label: 'Autor' },
-        { key: 'nome', label: 'Executor' },
-        { key: 'status_chamado', label: 'Status' },
-        { key: 'dt_criacao', label: 'Criado em', date: true },
-        { key: 'dt_atualizacao', label: 'Atualizado em', date: true },
 
-    ];
+    const menuUserStudent = [
+        { id: '01', icon: '/icons/folder_icon.png', text: 'Prontuário do Aluno', to: '/academic/frequency/list', query: true },
+        { id: '02', icon: '/icons/folder_icon.png', text: 'Requerimento de Matrícula', to: '/academic/frequency/list', query: true },
+
+    ]
 
     const listAtivo = [
         { label: 'Todos', value: 'todos' },
@@ -256,90 +251,41 @@ export default function StudentDetailsMEC(props) {
                 title={`Área de Dados dos Alunos para MEC`}
             />
 
-            <Box>
-                <Box sx={{
-                    display: 'flex', padding: '10px 20px',
-                    boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
-                }}>
-                    <Text>Prontuário do Aluno</Text>
-                </Box>
+            <Box sx={{display: 'flex', gap: 2}}>
+                {menuUserStudent?.map((item, index) => {
+                    return (
+                        <Box key={index} sx={{
+                            display: 'flex', padding: '25px',
+                            borderRadius: 2,
+                            backgroundColor: colorPalette.secondary,
+                            boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            gap: 2,
+                            transition: '.3s',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer',
+                                transform: 'scale(1.1, 1.1)'
+                            }
+
+                        }}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 22, height: 22, aspectRatio: '1/1',
+                                backgroundImage: `url('${item?.icon}')`,
+                                transition: '.3s',
+                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+
+                            }} />
+                            <Text bold>{item?.text}</Text>
+                        </Box>
+                    )
+                })
+                }
             </Box>
 
         </>
-    )
-}
-
-const TableReport = ({ data = [], groupAvaliation }) => {
-    const { setLoading, colorPalette, userPermissions, menuItemsList, user } = useAppContext()
-
-    return (
-        <ContentContainer sx={{ display: 'flex', width: '100%', padding: 0, backgroundColor: colorPalette.primary, boxShadow: 'none', borderRadius: 2 }}>
-
-            <div style={{ overflow: 'auto', width: '100%' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                    <thead>
-                        <tr style={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
-                            <th style={{ padding: '16px' }}><Text bold>#ticket</Text></th>
-                            <th style={{ padding: '16px' }}><Text bold>Comentário</Text></th>
-                            <th style={{ padding: '16px' }}><Text bold>Avaliação</Text></th>
-                            <th style={{ padding: '16px' }}><Text bold>Data</Text></th>
-                            <th style={{ padding: '16px' }}><Text bold>Autor</Text></th>
-                            <th style={{ padding: '16px' }}><Text bold>Atendente</Text></th>
-                        </tr>
-                    </thead>
-                    <tbody style={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
-                        {
-                            data?.map((item, index) => {
-                                return (
-                                    <tr key={`${item}-${index}`}>
-                                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.id_chamado}</Text>
-                                        </td>
-                                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.avaliacao_comentario}</Text>
-                                        </td>
-                                        <td style={{ padding: '15px 10px', textAlign: 'center' }}>
-                                            {item?.avaliacao_nota ?
-                                                <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', alignItems: 'center' }}>
-                                                    {groupAvaliation?.map((star, index) => {
-                                                        const complete = star?.value <= item?.avaliacao_nota ? true : false
-                                                        return (
-                                                            <Box key={index} sx={{
-                                                                display: 'flex', justifyContent: 'center', alignItems: 'center'
-                                                            }} >
-                                                                <Box sx={{
-                                                                    ...styles.menuIcon,
-                                                                    width: 15,
-                                                                    height: 15,
-                                                                    aspectRatio: '1:1',
-                                                                    backgroundImage: complete ? `url('/icons/star_complete_icon.png')` : `url('/icons/star_underline_icon.png')`,
-                                                                    transition: '.3s',
-                                                                    zIndex: 9999,
-                                                                }} />
-                                                            </Box>
-                                                        )
-                                                    })}
-                                                </Box>
-                                                : <Text>Sem avaliação</Text>}
-                                        </td>
-                                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{formatTimeStamp(item?.dt_criacao, true) || '-'}</Text>
-                                        </td>
-                                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.autor || '-'}</Text>
-                                        </td>
-                                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text> {item?.nome || 'Sem atendimento'}</Text>
-                                        </td>
-                                    </tr>
-                                );
-                            })
-
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </ContentContainer>
     )
 }
 
