@@ -165,12 +165,11 @@ export default function EditUser() {
     const [highestModule, setHighestModule] = useState(null)
     const [showEditPhoto, setShowEditPhoto] = useState(false)
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-
-
+    
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            if (id === user?.id) {
+            if (parseInt(id) === parseInt(user?.id)) {
                 setIsPermissionEdit(true)
             } else {
                 setIsPermissionEdit(actions)
@@ -2873,6 +2872,16 @@ export default function EditUser() {
                                                                     getInterestEdit(interest.id_interesse)
                                                                     setShowSections({ ...showSections, viewInterest: true })
                                                                 }} />
+
+                                                                <Button disabled={!isPermissionEdit && true} small text="Requerimento" sx={{
+                                                                    // width: 25,
+                                                                    transition: '.3s',
+                                                                    zIndex: 999999999,
+                                                                    "&:hover": {
+                                                                        opacity: 0.8,
+                                                                        cursor: 'pointer'
+                                                                    }
+                                                                }} onClick={() => handleEnrollment(interest)} />
 
                                                                 {interest?.turma_id && <Button disabled={!isPermissionEdit && true} small text="Matricular" sx={{
                                                                     // width: 25,
