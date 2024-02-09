@@ -64,7 +64,7 @@ export const UserHeader = (props) => {
                         }
                     }} onClick={() => router.push('/')} />
                     {/* Usuário do VALDIR Com botao voltar gigante */}
-                    {user?.id === 71 ?
+                    {(user?.id === 71 && user?.id === 48) ?
                         <Box sx={{
                             position: 'absolute',
                             left: 300,

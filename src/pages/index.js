@@ -268,6 +268,63 @@ function Home() {
 
    const lengthNotifications = notificationUser?.filter(item => item?.vizualizado === 0)?.length;
 
+
+   const CustomToolbar = (toolbar) => {
+
+      const goToNext = () => {
+         toolbar.onNavigate('NEXT');
+      };
+
+      const goToPrev = () => {
+         toolbar.onNavigate('PREV');
+      };
+
+      const firstLetter = toolbar?.label?.charAt(0).toUpperCase();
+      const restOfMonth = toolbar?.label?.slice(1);
+      const formattedMonth = `${firstLetter}${restOfMonth}`;
+
+
+      return (
+         <div className="rbc-toolbar">
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+               <Box sx={{
+                  ...styles.menuIcon,
+                  padding: '8px',
+                  margin: '0px 5px',
+                  backgroundImage: `url(${icons.gray_arrow_down})`,
+                  // filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                  transform: 'rotate(90deg)',
+                  transition: '.3s',
+                  width: 18, height: 18,
+                  aspectRatio: '1/1',
+                  "&:hover": {
+                     opacity: 0.8,
+                     cursor: 'pointer',
+                     backgroundColor: colorPalette.primary
+                  }
+               }} onClick={goToPrev} />
+               <Text small bold>{formattedMonth}</Text>
+               <Box sx={{
+                  ...styles.menuIcon,
+                  margin: '0px 5px',
+                  backgroundImage: `url(${icons.gray_arrow_down})`,
+                  // filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                  transform: 'rotate(-90deg)',
+                  transition: '.3s',
+                  width: 18, height: 18,
+                  aspectRatio: '1/1',
+                  "&:hover": {
+                     opacity: 0.8,
+                     cursor: 'pointer',
+                     backgroundColor: colorPalette.primary
+                  }
+               }} onClick={goToNext} />
+            </Box>
+         </div>
+      );
+   };
+
+
    return (
       <>
          <Head>
@@ -708,7 +765,7 @@ function Home() {
                </Box>
                {showMenuHelp && <>
                   <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', marginBottom: 5 }}>
-                     <Text bold style={{ textAlign: 'center' }}>Eventos do mês {moment(defaultYear?.start).format('MMMM YYYY')}</Text>
+                     <Text bold style={{ textAlign: 'center' }}>Eventos do mês</Text>
                      <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 5, padding: '15px' }}>
                         <Calendar
                            localizer={localizer}
@@ -720,6 +777,9 @@ function Home() {
                            selectable
                            eventPropGetter={eventStyleGetter}
                            messages={messages}
+                           components={{
+                              toolbar: CustomToolbar,
+                           }}
                            style={{
                               fontFamily: 'MetropolisBold',
                               color: colorPalette.textColor,
