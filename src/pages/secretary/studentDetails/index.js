@@ -176,7 +176,7 @@ export default function StudentDetailsMEC(props) {
 
     const menuUserStudent = [
         { id: '01', icon: '/icons/folder_icon.png', text: 'Prontuário do Aluno', to: '/academic/frequency/list', query: true },
-        { id: '02', icon: '/icons/folder_icon.png', text: 'Requerimento de Matrícula', to: '/academic/frequency/list', query: true },
+        { id: '02', icon: '/icons/folder_icon.png', text: 'Requerimento de Matrícula', to: `/secretary/studentDetails/requeriments`, query: true },
 
     ]
 
@@ -269,7 +269,7 @@ export default function StudentDetailsMEC(props) {
                                 transform: 'scale(1.1, 1.1)'
                             }
 
-                        }}>
+                        }} onClick={() => router.push(item?.to)}>
                             <Box sx={{
                                 ...styles.menuIcon,
                                 width: 22, height: 22, aspectRatio: '1/1',

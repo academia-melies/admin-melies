@@ -29,6 +29,7 @@ export default function EditService(props) {
         fornecedor: '',
         login: '',
         tipo_licenciamento: '',
+        link_site: '',
         ativo: 1,
     })
     const [contractData, setContractData] = useState([])
@@ -401,8 +402,10 @@ export default function EditService(props) {
                         value={(serviceData?.valor) || ''}
                         label='Valor' sx={{ flex: 1, }}
                     />
-                    {serviceData?.tipo_servico === 'Software' &&
+                    {serviceData?.tipo_servico === 'Software' && <>
                         <TextInput disabled={!isPermissionEdit && true} placeholder='Quantidade de Licenças' name='quantidade' onChange={handleChange} type="number" value={serviceData?.quantidade || ''} label='Quantidade de Licenças' sx={{ flex: 1, }} />
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Link do site:' name='link_site' onChange={handleChange} value={serviceData?.link_site || ''} label='Link do site' sx={{ flex: 1, }} />
+                    </>
                     }
                     {(serviceData?.tipo_servico === 'Servidor' || serviceData?.tipo_servico === 'Domínio') && (
                         <TextInput disabled={!isPermissionEdit && true}
