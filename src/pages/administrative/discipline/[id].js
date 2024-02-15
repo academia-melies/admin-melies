@@ -27,12 +27,16 @@ export default function EditDiscipline(props) {
         recurso_apoio: null,
         bibl_basica: null,
         bibl_compl: null,
+        descricao: null
     })
     const [disciplines, setDisciplines] = useState([])
+    const [softwares, setSoftwares] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [skills, setSkills] = useState({});
+    const [software, setSoftware] = useState({});
     const [arraySkills, setArraySkills] = useState([])
+    const [arraySoftwares, setArraySoftwares] = useState([])
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
 
 
@@ -67,6 +71,16 @@ export default function EditDiscipline(props) {
         }
     }
 
+    const getSoftwareDiscipline = async () => {
+        try {
+            const response = await api.get(`/disciplines/software/${id}`)
+            const { data } = response
+            setArraySoftwares(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
 
 
     useEffect(() => {
@@ -81,6 +95,7 @@ export default function EditDiscipline(props) {
     useEffect(() => {
         fetchPermissions()
         listDisciplines()
+        listSoftwares()
     }, [])
 
     async function listDisciplines() {
@@ -98,11 +113,31 @@ export default function EditDiscipline(props) {
     }
 
 
+    async function listSoftwares() {
+        try {
+            const response = await api.get(`/service/software/active`)
+            const { data } = response
+            const groupSoftwares = data.map(soft => ({
+                label: soft.nome_servico,
+                value: soft?.id_servico
+            }));
+            const sortedSoftwares = groupSoftwares.sort((a, b) => a.label.localeCompare(b.label, 'pt', { sensitivity: 'base' }));
+
+
+            setSoftwares(groupSoftwares);
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+
     const handleItems = async () => {
         setLoading(true)
         try {
             await getDiscipline()
             getSkillDiscipline()
+            getSoftwareDiscipline()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
         } finally {
@@ -141,6 +176,26 @@ export default function EditDiscipline(props) {
         }
     };
 
+    const addSoftware = () => {
+        setArraySoftwares((prevArray) => [...prevArray, {
+            nome_software: software?.nome_software,
+            software_id: software?.software_id
+        }])
+        setSoftware({})
+    }
+
+
+    const deleteSoftware = (index) => {
+
+        if (newDiscipline) {
+            setArraySoftwares((prevArray) => {
+                const newArray = [...prevArray];
+                newArray.splice(index, 1);
+                return newArray;
+            });
+        }
+    };
+
     const checkRequiredFields = () => {
         // if (!disciplineData.nome) {
         //     alert.error('Usuário precisa de nome')
@@ -153,7 +208,7 @@ export default function EditDiscipline(props) {
         setLoading(true)
         if (checkRequiredFields()) {
             try {
-                const response = await createDiscipline({ disciplineData, arraySkills, usuario_id });
+                const response = await createDiscipline({ disciplineData, arraySkills, arraySoftwares, usuario_id });
                 const { data } = response
                 if (response?.status === 201) {
                     alert.success('Disciplina cadastrado com sucesso.');
@@ -237,6 +292,49 @@ export default function EditDiscipline(props) {
     }
 
 
+    const deleteSoftwareDiscipline = async (id_software_dp) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/disciplines/software/delete/${id_software_dp}`)
+            if (response?.status == 201) {
+                alert.success('Software removida.');
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a Software selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const addSoftwareDiscipline = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/disciplines/software/create/${id}/${usuario_id}`, { software })
+            if (response?.status == 201) {
+                alert.success('Software adicionada.');
+                setSoftware({})
+                handleItems()
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao remover a Software selecionada.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleSelectSoftware = (value) => {
+        const nome_software = softwares?.filter(item => item.value === value).map(item => item.label)
+        setSoftware((prevValues) => ({
+            ...prevValues,
+            software_id: value,
+            nome_software: nome_software
+        }))
+    }
+
+
     const groupStatus = [
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
@@ -279,8 +377,13 @@ export default function EditDiscipline(props) {
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
-
-
+                <TextInput disabled={!isPermissionEdit && true}
+                    placeholder='Ex: Estudo dos princípios de animação através da produção prática e da análise de cenas animadas...'
+                    name='descricao' onChange={handleChange} value={disciplineData?.descricao || ''} label='Descrição:'
+                    multiline
+                    maxRows={5}
+                    rows={3}
+                    sx={{}} />
                 <RadioItem disabled={!isPermissionEdit && true} valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value) })} />
             </ContentContainer>
             <ContentContainer>
@@ -412,6 +515,107 @@ export default function EditDiscipline(props) {
                         newDiscipline ? addSkills() : addSkillDiscipline()
                     }} />}
                 </Box>
+            </ContentContainer>
+
+            <ContentContainer style={{ boxShadow: 'none' }}>
+                <Box>
+                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Softwares Ultilizados</Text>
+                </Box>
+
+                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                    <Text bold>Escolha um Software</Text>
+                    <SelectList disabled={!isPermissionEdit && true}
+                        fullWidth
+                        data={softwares}
+                        valueSelection={software?.software_id || ''}
+                        onSelect={(value) =>
+                            handleSelectSoftware(value)
+                        }
+                        filterOpition="value"
+                        sx={{ color: colorPalette.textColor, flex: 1 }}
+                        inputStyle={{
+                            color: colorPalette.textColor,
+                            fontSize: "15px",
+                            fontFamily: "MetropolisBold",
+                        }}
+                    />
+                    {isPermissionEdit && <Box sx={{
+                        backgroundSize: 'cover',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'center',
+                        width: 25,
+                        height: 25,
+                        borderRadius: '50%',
+                        backgroundImage: `url(/icons/include_icon.png)`,
+                        transition: '.3s',
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={() => {
+                        newDiscipline ? addSoftware() : addSoftwareDiscipline()
+                    }} />}
+                </Box>
+
+                {arraySoftwares?.length > 0 &&
+                    <Box sx={{ display: 'flex' }}>
+
+                        <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                            <table style={{ borderCollapse: 'collapse', }}>
+                                <thead>
+                                    <tr style={{ backgroundColor: colorPalette.primary, color: colorPalette.textColor, }}>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>ID Software</th>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Nome</th>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Fornecedor</th>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Qnt Licenças</th>
+                                        <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}></th>
+                                    </tr>
+                                </thead>
+                                <tbody style={{ flex: 1 }}>
+                                    {
+                                        arraySoftwares?.map((item, index) => {
+                                            return (
+                                                <tr key={`${item}-${index}`}>
+                                                    <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {item?.software_id}
+                                                    </td>
+                                                    <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {item?.nome_software || '-'}
+                                                    </td>
+                                                    <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {item?.software_fornecedor || '-'}
+                                                    </td>
+                                                    <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {item?.quantidade || '-'}
+                                                    </td>
+                                                    <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                        {isPermissionEdit && <Box sx={{
+                                                            backgroundSize: 'cover',
+                                                            backgroundRepeat: 'no-repeat',
+                                                            backgroundPosition: 'center',
+                                                            width: 15,
+                                                            height: 15,
+                                                            aspectRatio: '1/1',
+                                                            backgroundImage: `url(/icons/remove_icon.png)`,
+                                                            transition: '.3s',
+                                                            "&:hover": {
+                                                                opacity: 0.8,
+                                                                cursor: 'pointer'
+                                                            }
+                                                        }} onClick={() => {
+                                                            newDiscipline ? deleteSoftware(index) : deleteSoftwareDiscipline(item?.id_software_dp)
+                                                        }} />}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </Box>}
+
             </ContentContainer>
         </>
     )
