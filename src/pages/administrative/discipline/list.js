@@ -124,7 +124,7 @@ export default function ListDiscipline(props) {
         { key: 'id_disciplina', label: 'ID' },
         { key: 'nome_disciplina', label: 'Nome' },
         { key: 'carga_hr_dp', label: 'Carga Horária' },
-        { key: 'objetivo_dp', label: 'Objetivo' },
+        { key: 'descricao', label: 'Sobre' },
         { key: 'dt_criacao', label: 'Criado em', date: true },
 
     ];
