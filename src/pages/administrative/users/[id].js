@@ -165,7 +165,7 @@ export default function EditUser() {
     const [highestModule, setHighestModule] = useState(null)
     const [showEditPhoto, setShowEditPhoto] = useState(false)
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    
+
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -2881,7 +2881,9 @@ export default function EditUser() {
                                                                         opacity: 0.8,
                                                                         cursor: 'pointer'
                                                                     }
-                                                                }} onClick={() => handleEnrollment(interest)} />
+                                                                }} onClick={() =>
+                                                                    window.open(`/secretary/studentDetails/requeriments?userId=${userData?.id}&classId=${interest?.turma_id}&moduleEnrollment=1&courseId=${interest?.curso_id}`,
+                                                                        '_blank')} />
 
                                                                 {interest?.turma_id && <Button disabled={!isPermissionEdit && true} small text="Matricular" sx={{
                                                                     // width: 25,
