@@ -31,7 +31,7 @@ export const ContentContainer = (props) => {
    return (
       <Box sx={{
          ...styles.contentContainer,
-         boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
+         boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
          overflow,
          gap,
          backgroundColor: colorPalette.secondary,
