@@ -27,7 +27,7 @@ export default function RequerimentEnrollment(props) {
     const [disciplinesSelected, setDisciplinesSelected] = useState()
     const [disciplinesCourse, setDisciplinesCourse] = useState()
     const [courseData, setCourseData] = useState({})
-    const [fileUser, setFileUser] = useState([])
+    const [filesUser, setFilesUser] = useState([])
     const [showDocSection, setShowDocSection] = useState(false)
     const [showDropFile, setShowDropFile] = useState({ active: false, campo: '', tipo: 'documento usuario', title: '' })
 
@@ -40,8 +40,6 @@ export default function RequerimentEnrollment(props) {
             return error
         }
     }
-
-    console.log(fileUser)
 
 
     const getClass = async () => {
@@ -125,7 +123,7 @@ export default function RequerimentEnrollment(props) {
     }
 
     const handleChangeFiles = (fileId, filePreview, campo) => {
-        setFileUser((prevClassDays) => [
+        setFilesUser((prevClassDays) => [
             ...prevClassDays,
             {
                 id_doc_usuario: fileId,
@@ -153,10 +151,54 @@ export default function RequerimentEnrollment(props) {
 
 
     const handleRemoveFile = (file) => {
-        const arquivosAtualizados = fileUser.filter((uploadedFile) => uploadedFile.id !== file.id);
-        setFileUser(arquivosAtualizados);
+        const arquivosAtualizados = filesUser.filter((uploadedFile) => uploadedFile.id !== file.id);
+        setFilesUser(arquivosAtualizados);
     };
 
+
+    const handleSendRequeriment = async () => {
+        setLoading(true)
+        try {
+            const requerimentData = {
+                usuario_id: userId,
+                turma_id: classId,
+                modulo_matricula: moduleEnrollment,
+                curso_id: courseId,
+                status: 'Enviado para o aluno',
+                aprovado: null,
+                usuario_resp: user?.id
+            }
+            const response = await api.post(`/requeriment/create`, {
+                requerimentData, disciplinesSelected, disciplinesModule: disciplines
+            })
+            const { requerimentId } = response?.data
+            if (response?.status === 201) {
+                if (filesUser?.length > 0) {
+                    for (const uploadedFile of filesUser) {
+                        const formData = new FormData();
+                        formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
+                        try {
+                            const response = await api.post(`/requeriment/file/upload?usuario_id=${userId}&req_matricula_id=${requerimentId}&campo=${uploadedFile?.campo}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+                        } catch (error) {
+                            console.log(error)
+                            alert.error('Tivemos um problema ao adicionar arquivos ao requerimento.');
+                            return error
+                        }
+                    }
+                }
+                alert.success('Requerimento enviado ao aluno')
+                router.push('/secretary/studentDetails/requeriments/student')
+            } else {
+                alert.error('Ocorreu um erro ao enviar requerimento ao aluno.')
+            }
+        } catch (error) {
+            console.log(error)
+            alert.error('Ocorreu um erro ao enviar requerimento ao aluno.')
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
 
 
     const groupStatus = [
@@ -254,7 +296,7 @@ export default function RequerimentEnrollment(props) {
                             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                                 {documentsStudent?.map((item, index) => {
 
-                                    const fileInsert = fileUser?.filter(file => file?.campo === item?.key)?.length > 0;
+                                    const fileInsert = filesUser?.filter(file => file?.campo === item?.key)?.length > 0;
                                     return (
                                         <Box key={index}>
                                             <Box key={index} sx={{
@@ -306,11 +348,11 @@ export default function RequerimentEnrollment(props) {
                                                             }
                                                         }} onClick={() => setShowDropFile({ ...showDropFile, active: false, campo: '', title: '' })} />
                                                     </Box>
-                                                    <DropZoneDocument setFilesDrop={setFileUser} filesDrop={fileUser} campo={showDropFile?.campo} />
+                                                    <DropZoneDocument setFilesDrop={setFilesUser} filesDrop={filesUser} campo={showDropFile?.campo} />
 
-                                                    {fileUser?.length > 0 &&
+                                                    {filesUser?.length > 0 &&
                                                         <Box sx={{ display: 'flex', gap: 2 }}>
-                                                            {fileUser?.filter(item => item?.campo === showDropFile?.campo)?.map((item, index) => {
+                                                            {filesUser?.filter(item => item?.campo === showDropFile?.campo)?.map((item, index) => {
                                                                 const typePdf = item?.name?.includes('pdf') || null;
                                                                 return (
                                                                     <Box key={index} sx={{ display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} >
@@ -526,7 +568,7 @@ export default function RequerimentEnrollment(props) {
                         </ContentContainer>
                     </ContentContainer>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button text="Enviar requerimento" />
+                        <Button text="Enviar requerimento" onClick={() => handleSendRequeriment()} />
                     </Box>
                 </>
             }

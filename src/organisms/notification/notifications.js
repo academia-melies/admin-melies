@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../context/AppContext";
-import { Box, ContentContainer, Divider, Text } from "../../atoms";
-import { Colors } from "../layout/Colors";
+import { Box, Button, ContentContainer, Divider, Text } from "../../atoms";
+import { Colors, icons } from "../layout/Colors";
 import { Avatar, Backdrop, CircularProgress } from "@mui/material";
 import { api } from "../../api/api";
 import { formatTimeAgo } from "../../helpers";
 import { DialogNotifications } from "./dialogNotification";
+import CancelIcon from '@mui/icons-material/Cancel';
 
 export const Notifications = ({ showNotification = false, setShowNotification }) => {
-    const { colorPalette, theme, logout, notificationUser, setNotificationUser } = useAppContext()
+    const { colorPalette, theme, logout, notificationUser, setNotificationUser, setShowConfirmationDialog, user, alert } = useAppContext()
     const [loadingNotification, setLoadingNotification] = useState(false)
     const [groupStates, setGroupStates] = useState(notificationUser.map(() => false));
     const containerRef = useRef(null);
@@ -16,6 +17,8 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         inbox: true,
         archive: false
     })
+    const [showOpitions, setShowOpitions] = useState(false)
+
     const [notificationData, setNotificationData] = useState([])
     const [notificationSelect, setNotificationSelect] = useState()
     const [showDialog, setShowDialog] = useState(false)
@@ -111,12 +114,32 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         }
     }
 
+
+    const handleDeleteNotifications = async () => {
+        try {
+            setLoadingNotification(true)
+            const updateNotification = await api.delete(`/notification/deleteAll/${user?.id}`);
+            if (updateNotification?.status === 200) {
+                alert.success('Todas as notificações foram excluídas.')
+                setNotificationUser([]);
+            } else {
+                alert.error('Ocorreu um erro ao excluír as notificações.')
+            }
+        } catch (error) {
+            alert.error('Ocorreu um erro ao excluír as notificações.')
+            return error;
+        } finally {
+            setLoadingNotification(false)
+        }
+    }
+
+
     return (
         <>
             <div ref={containerRef}>
                 {showNotification &&
 
-                    <ContentContainer style={{ position: 'absolute', zIndex: 99999, left: -360, top: 45, width: 415, maxHeight: 600, overflowY: 'auto', padding: 2, display: 'flex', flexDirection: 'column' }}>
+                    <ContentContainer style={{ position: 'absolute', zIndex: 9999, left: -360, top: 45, width: 415, maxHeight: 600, overflowY: 'auto', padding: 2, display: 'flex', flexDirection: 'column' }}>
 
                         <Box>
                             <Text bold>Notificações</Text>
@@ -131,13 +154,20 @@ export const Notifications = ({ showNotification = false, setShowNotification })
                                 aspectRatio: '1/1',
                                 position: 'absolute',
                                 right: 15, top: 15,
-                                zIndex: 999999999,
+                                zIndex: 9999,
                                 "&:hover": {
                                     opacity: 0.8,
                                     cursor: 'pointer'
                                 }
-                            }} />
+                            }} onClick={(event) => setShowConfirmationDialog({
+                                active: true,
+                                event,
+                                acceptAction: handleDeleteNotifications,
+                                title: 'Limpar notificações',
+                                message: 'Tem certeza que deseja excluir todas as notificações.',
+                            })} />
                         </Box>
+
                         <Box sx={{ display: 'flex', gap: 3, position: 'absolute', top: 45 }}>
                             <Box sx={{
                                 borderBottom: `2px solid ${showMenu?.inbox ? 'black' : 'transparent'}`, padding: '10px 0px', display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
@@ -220,7 +250,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
                                                 left: -5
                                             }} />}
                                         <Box sx={{ display: 'flex', gap: 1.75, }}>
-                                            <Avatar src={item?.imagem || item?.location|| ''} sx={{
+                                            <Avatar src={item?.imagem || item?.location || ''} sx={{
                                                 height: { xs: '100%', sm: 45, md: 45, lg: 60 },
                                                 width: { xs: '100%', sm: 45, md: 45, lg: 60 },
                                             }} variant="circular"
@@ -228,7 +258,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
                                             <Box sx={{ display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1 }}>
                                                 <Text small bold>{item?.titulo}</Text>
                                                 <Text small>{item?.menssagem}</Text>
-                                               {item?.id_path && <Text bold small>id: {item?.id_path}</Text>}
+                                                {item?.id_path && <Text bold small>id: {item?.id_path}</Text>}
                                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                                     <Text style={{ color: '#606060', marginTop: 2 }} xsmall>{formatTimeAgo(item?.dt_criacao, true)}</Text>
                                                     {vizualized ?
