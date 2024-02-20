@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
+import { Avatar, Backdrop, useMediaQuery, useTheme, Tooltip } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField, FileInput, Divider } from "../../../atoms"
 import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, TableOfficeHours, Table_V1 } from "../../../organisms"
@@ -2842,6 +2842,9 @@ export default function EditUser() {
                                     <tbody style={{ flex: 1 }}>
                                         {
                                             arrayInterests?.map((interest, index) => {
+                                                const requeriments = interest?.requeriments?.some(item => item?.aprovado === 1);
+                                                const approvedRequeriment = requeriments ? true : false;
+                                                const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
                                                 return (
                                                     <tr key={`${interest}-${index}`}>
                                                         <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
@@ -2885,15 +2888,19 @@ export default function EditUser() {
                                                                     window.open(`/secretary/studentDetails/requeriments?userId=${userData?.id}&classId=${interest?.turma_id}&moduleEnrollment=1&courseId=${interest?.curso_id}`,
                                                                         '_blank')} />
 
-                                                                {interest?.turma_id && <Button disabled={!isPermissionEdit && true} small text="Matricular" sx={{
-                                                                    // width: 25,
-                                                                    transition: '.3s',
-                                                                    zIndex: 999999999,
-                                                                    "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer'
-                                                                    }
-                                                                }} onClick={() => handleEnrollment(interest)} />}
+                                                                <Tooltip title={disable ? 'Necessário primeiro requerimento' : ''}>
+                                                                    <div>
+                                                                        <Button disabled={disable} small text="Matricular" sx={{
+                                                                            // width: 25,
+                                                                            transition: '.3s',
+                                                                            zIndex: 999999999,
+                                                                            "&:hover": {
+                                                                                opacity: 0.8,
+                                                                                cursor: 'pointer'
+                                                                            }
+                                                                        }} onClick={() => handleEnrollment(interest)} />
+                                                                    </div>
+                                                                </Tooltip>
                                                                 {newUser &&
                                                                     <Box sx={{
                                                                         backgroundSize: 'cover',
