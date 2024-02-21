@@ -88,8 +88,9 @@ export default function RequerimentList(props) {
 
     const statusColor = (data) => ((data === 'Enviado para o aluno' && '#ffcc00') ||
         (data?.includes('Aguardando aprovação') && '#00008b') ||
-        (data?.includes('Aprovado com ressalvas') && '#8b0000') ||
-        (data?.includes('Aprovado aprovação') && '#006400'))
+        (data?.includes('Aprovado com ressalvas') && '#006400') ||
+        (data?.includes('Aprovado') && '#006400') ||
+        (data?.includes('Reprovado') && 'red'))
 
 
     return (

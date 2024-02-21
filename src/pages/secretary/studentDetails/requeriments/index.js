@@ -166,7 +166,8 @@ export default function RequerimentEnrollment(props) {
                 curso_id: courseId,
                 status: 'Enviado para o aluno',
                 aprovado: null,
-                usuario_resp: user?.id
+                usuario_resp: user?.id,
+                dispensou_disciplina: dispensedDp
             }
             const response = await api.post(`/requeriment/create`, {
                 requerimentData, disciplinesSelected, disciplinesModule: disciplines

@@ -66,7 +66,8 @@ export default function RequerimentEnrollmentStudent(props) {
                 dispensado: disciplines?.dispensado,
                 descricao_dp: disciplines?.descricao,
                 softwares: disciplines?.softwares,
-                aprovado: disciplines?.aprovado
+                aprovado: disciplines?.aprovado,
+                motivo_reprovado: disciplines?.motivo_reprovado
             }));
 
 
@@ -120,16 +121,18 @@ export default function RequerimentEnrollmentStudent(props) {
 
 
     const handleToggleSelection = (value) => {
-        const updatedSelectedDisciplines = [...disciplinesSelected];
-        const selectedIndex = updatedSelectedDisciplines.indexOf(value);
+        const updatedDisciplines = disciplines.map(discipline => {
+            if (discipline.id_disc_req_mat === value) {
+                const newDispensed = parseInt(value);
+                return {
+                    ...discipline,
+                    dispensado: newDispensed,
+                };
+            }
+            return discipline;
+        });
 
-        if (selectedIndex === -1) {
-            updatedSelectedDisciplines.push(value);
-        } else {
-            updatedSelectedDisciplines.splice(selectedIndex, 1);
-        }
-
-        setDisciplinesSelected(updatedSelectedDisciplines);
+        setDisciplines(updatedDisciplines);
     };
 
 
@@ -163,6 +166,35 @@ export default function RequerimentEnrollmentStudent(props) {
     };
 
 
+    const handleChangeReasonStatusDiscipline = async (disciplineId, value) => {
+        const updatedDisciplines = disciplines.map(discipline => {
+            if (discipline.id_disc_req_mat === disciplineId) {
+                return {
+                    ...discipline,
+                    motivo_reprovado: value,
+                };
+            }
+            return discipline;
+        });
+
+        setDisciplines(updatedDisciplines);
+    };
+
+    const handleChangeReasonStatusDoc = async (fileId, value) => {
+        const updatedFiles = fileUser.map(file => {
+            if (file.id_doc_req_matr === fileId) {
+                return {
+                    ...file,
+                    motivo_reprovado: value,
+                };
+            }
+            return file;
+        });
+
+        setFileUser(updatedFiles);
+    };
+
+
 
     const handleChangeStatusFiles = async (fileId, result) => {
         const updatedFiles = fileUser.map((file) => {
@@ -182,29 +214,45 @@ export default function RequerimentEnrollmentStudent(props) {
     const handleUpdateRequeriment = async () => {
         setLoading(true)
         try {
+            let status = requerimentData?.status;
+
+            if (parseInt(requerimentData?.aprovado) === 1) {
+                if (disciplines?.some(item => parseInt(item?.aprovado) === 0) || fileUser?.some(file => parseInt(file?.aprovado) === 0)) {
+                    status = 'Aprovado com ressalvas';
+                } else {
+                    status = 'Aprovado';
+                }
+            } else if (parseInt(requerimentData?.aprovado) === 0) {
+                status = 'Reprovado';
+            }
+
+
+            requerimentData.status = status;
             const response = await api.patch(`/requeriment/update/${id}`, { requerimentData })
             if (response?.status === 200) {
                 if (fileUser?.length > 0) {
                     for (let file of fileUser) {
                         let fileId = file?.id_doc_req_matr
-                        const fileUpdate = await api.patch(`/requeriment/files/update/${fileId}`, { file })
+                        const fileUpdate = await api.patch(`/requeriment/file/update/${fileId}`, { file })
                     }
                 }
 
                 if (disciplines?.length > 0) {
                     for (let discipline of disciplines) {
-                        let disciplineId = file?.id_disc_req_mat
-                        let status = (discipline?.aprovado !== null && discipline?.aprovado !== '' && discipline?.dispensado === 1) ?
+                        let disciplineId = discipline?.id_disc_req_mat
+                        let statusDiscipline = (discipline?.aprovado !== null && discipline?.aprovado !== '' && discipline?.dispensado === 1) ?
                             (parseInt(discipline?.aprovado) === 1 ? 'Dispensa aprovada' : 'Dispensa reprovada') : 'Em análise'
-                        let data = {
-                            status: status,
+                        let disciplineData = {
+                            status: statusDiscipline,
                             dispensado: discipline?.dispensado,
-                            aprovado: discipline?.aprovado
+                            aprovado: discipline?.aprovado,
+                            motivo_reprovado: discipline?.motivo_reprovado
                         }
-                        const updateDiscipline = await api.patch(`/requeriment/discipline/update/${disciplineId}`, { data })
+                        await api.patch(`/requeriment/discipline/update/${disciplineId}`, { disciplineData })
                     }
                 }
                 alert.success('Requerimento atualizado com sucesso.')
+                router.push('/secretary/studentDetails/requeriments/student')
             } else {
                 alert.error('Ocorreu um erro ao atualizar o requerimento')
             }
@@ -270,10 +318,10 @@ export default function RequerimentEnrollmentStudent(props) {
                     />
                     <div ref={componentPDF}>
 
-                        {(statusRequeriment !== null || statusRequeriment !== '') && <Box sx={{
+                        {(requerimentData?.aprovado !== null || requerimentData?.aprovado !== '') && <Box sx={{
                             position: 'absolute', top: 110, right: 65,
                             display: 'flex', gap: 2, padding: '10px 12px', alignItems: 'center',
-                            backgroundColor: statusColor(statusRequeriment),
+                            backgroundColor: statusColor(requerimentData?.aprovado),
                             transition: '.3s',
                             borderRadius: 2,
                         }}>
@@ -338,9 +386,9 @@ export default function RequerimentEnrollmentStudent(props) {
 
                                             const boxBackgroundColor = associatedFile
                                                 ? parseInt(associatedFile?.aprovado) === 1
-                                                    ? 'green'
+                                                    ? 'rgba(144, 238, 144, 0.7)'
                                                     : parseInt(associatedFile?.aprovado) === 0
-                                                        ? 'red'
+                                                        ? 'rgba(255, 99, 71, 0.7)'
                                                         : colorPalette?.primary
                                                 : colorPalette?.primary;
 
@@ -358,8 +406,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                             <Box key={index} sx={{
                                                                 display: 'flex', padding: '10px',
                                                                 borderRadius: 2,
-                                                                backgroundColor: colorPalette?.primary,
-                                                                border: `1px solid ${boxBackgroundColor}`,
+                                                                backgroundColor: boxBackgroundColor,
                                                                 // boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
                                                                 alignItems: 'center',
                                                                 justifyContent: 'flex-start',
@@ -454,40 +501,56 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                                 }} />
                                                                                         </Link>
 
-                                                                                        <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center' }}>
-                                                                                            <Box sx={{
-                                                                                                display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid green',
-                                                                                                backgroundColor: parseInt(item?.aprovado) === 1 ? 'green' : 'transparent',
-                                                                                                borderRadius: 2,
-                                                                                                transition: '.3s',
-                                                                                                "&:hover": {
-                                                                                                    opacity: 0.8,
-                                                                                                    cursor: 'pointer',
-                                                                                                    transform: 'scale(1.1, 1.1)'
-                                                                                                },
-                                                                                            }} onClick={() => handleChangeStatusFiles(item?.id_doc_req_matr, 1)}>
-                                                                                                {parseInt(item?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />}
-                                                                                                <Text small style={{ color: parseInt(item?.aprovado) === 1 ? '#fff' : 'green' }}>
-                                                                                                    {parseInt(item?.aprovado) === 1 ? 'Aprovado' : 'Aprovar'}
-                                                                                                </Text>
+                                                                                        <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center', flexDirection: 'column' }}>
+                                                                                            <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center', }}>
+                                                                                                <Box sx={{
+                                                                                                    display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid green',
+                                                                                                    backgroundColor: parseInt(item?.aprovado) === 1 ? 'green' : 'transparent',
+                                                                                                    borderRadius: 2,
+                                                                                                    transition: '.3s',
+                                                                                                    "&:hover": {
+                                                                                                        opacity: 0.8,
+                                                                                                        cursor: 'pointer',
+                                                                                                        transform: 'scale(1.1, 1.1)'
+                                                                                                    },
+                                                                                                }} onClick={() => handleChangeStatusFiles(item?.id_doc_req_matr, 1)}>
+                                                                                                    {parseInt(item?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />}
+                                                                                                    <Text small style={{ color: parseInt(item?.aprovado) === 1 ? '#fff' : 'green' }}>
+                                                                                                        {parseInt(item?.aprovado) === 1 ? 'Aprovado' : 'Aprovar'}
+                                                                                                    </Text>
 
-                                                                                            </Box>
-                                                                                            <Box sx={{
-                                                                                                display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid red',
-                                                                                                backgroundColor: parseInt(item?.aprovado) === 0 ? 'red' : 'transparent',
-                                                                                                transition: '.3s',
-                                                                                                borderRadius: 2, "&:hover": {
-                                                                                                    opacity: 0.8,
-                                                                                                    cursor: 'pointer',
-                                                                                                    transform: 'scale(1.1, 1.1)'
-                                                                                                },
-                                                                                            }} onClick={() => handleChangeStatusFiles(item?.id_doc_req_matr, 0)}>
+                                                                                                </Box>
+                                                                                                <Box sx={{
+                                                                                                    display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid red',
+                                                                                                    backgroundColor: parseInt(item?.aprovado) === 0 ? 'red' : 'transparent',
+                                                                                                    transition: '.3s',
+                                                                                                    borderRadius: 2, "&:hover": {
+                                                                                                        opacity: 0.8,
+                                                                                                        cursor: 'pointer',
+                                                                                                        transform: 'scale(1.1, 1.1)'
+                                                                                                    },
+                                                                                                }} onClick={() => handleChangeStatusFiles(item?.id_doc_req_matr, 0)}>
 
-                                                                                                {parseInt(item?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 12 }} />}
-                                                                                                <Text small style={{ color: parseInt(item?.aprovado) === 0 ? '#fff' : 'red' }}>
-                                                                                                    {parseInt(item?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
-                                                                                                </Text>
+                                                                                                    {parseInt(item?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 12 }} />}
+                                                                                                    <Text small style={{ color: parseInt(item?.aprovado) === 0 ? '#fff' : 'red' }}>
+                                                                                                        {parseInt(item?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
+                                                                                                    </Text>
+                                                                                                </Box>
                                                                                             </Box>
+
+                                                                                            {(parseInt(item?.aprovado) === 0 && showDocSection) &&
+                                                                                                <Box sx={{ display: 'flex', gap: 1, marginTop: 1, zIndex: 9999 }}>
+                                                                                                    <TextInput
+                                                                                                        placeholder='Documento vencido..'
+                                                                                                        name='motivo_reprovado' onChange={(e) => handleChangeReasonStatusDoc(item?.id_doc_req_matr, e.target.value)}
+                                                                                                        value={item?.motivo_reprovado || ''}
+                                                                                                        label='Motivo:'
+                                                                                                        multiline
+                                                                                                        maxRows={3}
+                                                                                                        rows={2}
+                                                                                                    />
+                                                                                                </Box>
+                                                                                            }
                                                                                         </Box>
                                                                                     </Box>
                                                                                 )
@@ -540,18 +603,17 @@ export default function RequerimentEnrollmentStudent(props) {
                                     <Box>
                                         <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                                             {disciplines.map((item, index) => {
-                                                const selected = disciplinesSelected?.includes(item?.value)
+                                                // const selected = disciplinesSelected?.includes(item?.value)
+                                                const selected = parseInt(item?.dispensado) === 0 ? true : false;
                                                 const softwares = item?.softwares
 
-                                                const boxBackgroundColor = item?.dispensado === 1
-                                                    ? parseInt(item?.aprovado) === 1
-                                                        ? 'green'
-                                                        : parseInt(item?.aprovado) === 0
-                                                            ? 'red'
-                                                            : 'none'
-                                                    : 'none';
+                                                const boxBackgroundColor = item?.aprovado === 1
+                                                    ? 'green'
+                                                    : item?.aprovado === 0
+                                                        ? 'red'
+                                                        : 'none';
 
-                                                const titleTooltip = item?.dispensado === 1
+                                                const titleTooltip = item?.aprovado === 1
                                                     ? parseInt(item?.aprovado) === 1
                                                         ? 'Dispensa aprovada'
                                                         : parseInt(item?.aprovado) === 0
@@ -576,16 +638,13 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                 width: 16,
                                                                                 height: 16,
                                                                                 borderRadius: 16,
-                                                                                cursor: 'pointer',
                                                                                 transition: '.5s',
                                                                                 border: !selected ? `1px solid ${colorPalette.textColor}` : '',
                                                                                 '&:hover': {
                                                                                     opacity: selected ? 0.8 : 0.6,
                                                                                     boxShadow: selected ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                                                                                 }
-                                                                            }}
-                                                                            onClick={() => handleToggleSelection(item.value)}
-                                                                        >
+                                                                            }}>
                                                                             {selected ? (
                                                                                 <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
                                                                             ) : (
@@ -620,41 +679,57 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                             })
                                                                         }
                                                                     </Box>
-                                                                    {!selected && <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'flex-start' }}>
-                                                                        <Box sx={{
-                                                                            display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid green',
-                                                                            backgroundColor: parseInt(item?.aprovado) === 1 ? 'green' : 'transparent',
-                                                                            borderRadius: 2,
-                                                                            transition: '.3s',
-                                                                            "&:hover": {
-                                                                                opacity: 0.8,
-                                                                                cursor: 'pointer',
-                                                                                transform: 'scale(1.1, 1.1)'
-                                                                            },
-                                                                        }} onClick={() => handleChangeStatusDiscipline(item?.id_disc_req_mat, 1)}>
-                                                                            {parseInt(item?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />}
-                                                                            <Text small style={{ color: parseInt(item?.aprovado) === 1 ? '#fff' : 'green' }}>
-                                                                                {parseInt(item?.aprovado) === 1 ? 'Aprovado' : 'Aprovar'}
-                                                                            </Text>
+                                                                    {!selected &&
+                                                                        <Box sx={{ display: 'flex', gap: 2, minWidth: 400, justifyContent: 'flex-start', flexDirection: 'column' }}>
+                                                                            <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'flex-start' }}>
+                                                                                <Box sx={{
+                                                                                    display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid green',
+                                                                                    backgroundColor: parseInt(item?.aprovado) === 1 ? 'green' : 'transparent',
+                                                                                    borderRadius: 2,
+                                                                                    transition: '.3s',
+                                                                                    "&:hover": {
+                                                                                        opacity: 0.8,
+                                                                                        cursor: 'pointer',
+                                                                                        transform: 'scale(1.1, 1.1)'
+                                                                                    },
+                                                                                }} onClick={() => handleChangeStatusDiscipline(item?.id_disc_req_mat, 1)}>
+                                                                                    {parseInt(item?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />}
+                                                                                    <Text small style={{ color: parseInt(item?.aprovado) === 1 ? '#fff' : 'green' }}>
+                                                                                        {parseInt(item?.aprovado) === 1 ? 'Aprovado' : 'Aprovar'}
+                                                                                    </Text>
 
-                                                                        </Box>
-                                                                        <Box sx={{
-                                                                            display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid red',
-                                                                            backgroundColor: parseInt(item?.aprovado) === 0 ? 'red' : 'transparent',
-                                                                            transition: '.3s',
-                                                                            borderRadius: 2, "&:hover": {
-                                                                                opacity: 0.8,
-                                                                                cursor: 'pointer',
-                                                                                transform: 'scale(1.1, 1.1)'
-                                                                            },
-                                                                        }} onClick={() => handleChangeStatusDiscipline(item?.id_disc_req_mat, 0)}>
+                                                                                </Box>
+                                                                                <Box sx={{
+                                                                                    display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid red',
+                                                                                    backgroundColor: parseInt(item?.aprovado) === 0 ? 'red' : 'transparent',
+                                                                                    transition: '.3s',
+                                                                                    borderRadius: 2, "&:hover": {
+                                                                                        opacity: 0.8,
+                                                                                        cursor: 'pointer',
+                                                                                        transform: 'scale(1.1, 1.1)'
+                                                                                    },
+                                                                                }} onClick={() => handleChangeStatusDiscipline(item?.id_disc_req_mat, 0)}>
 
-                                                                            {parseInt(item?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 12 }} />}
-                                                                            <Text small style={{ color: parseInt(item?.aprovado) === 0 ? '#fff' : 'red' }}>
-                                                                                {parseInt(item?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
-                                                                            </Text>
+                                                                                    {parseInt(item?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 12 }} />}
+                                                                                    <Text small style={{ color: parseInt(item?.aprovado) === 0 ? '#fff' : 'red' }}>
+                                                                                        {parseInt(item?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            </Box>
+                                                                            {(parseInt(item?.aprovado) === 0) &&
+                                                                                <Box sx={{ display: 'flex', gap: 1, marginTop: 1, zIndex: 9999, width: 400 }}>
+                                                                                    <TextInput
+                                                                                        placeholder='Reprovado por falta de aderência das disciplinas cursadas anteriormente...'
+                                                                                        name='motivo_reprovado' onChange={(e) => handleChangeReasonStatusDiscipline(item?.id_disc_req_mat, e.target.value)}
+                                                                                        value={item?.motivo_reprovado || ''}
+                                                                                        label='Motivo:'
+                                                                                        multiline
+                                                                                        maxRows={4}
+                                                                                        rows={2}
+                                                                                        sx={{ width: 400 }} />
+                                                                                </Box>}
                                                                         </Box>
-                                                                    </Box>}
+                                                                    }
                                                                 </Box>
                                                             </div>
                                                         </Tooltip>
@@ -682,7 +757,7 @@ export default function RequerimentEnrollmentStudent(props) {
                             <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
                                 <Box sx={{
                                     display: 'flex', gap: 2, padding: '10px 12px', alignItems: 'center', border: '1px solid green',
-                                    backgroundColor: statusRequeriment === 1 ? 'green' : 'transparent',
+                                    backgroundColor: requerimentData?.aprovado === 1 ? 'green' : 'transparent',
                                     borderRadius: 2,
                                     transition: '.3s',
                                     "&:hover": {
@@ -691,21 +766,21 @@ export default function RequerimentEnrollmentStudent(props) {
                                         transform: 'scale(1.1, 1.1)'
                                     },
                                 }} onClick={() => {
-                                    if (parseInt(statusRequeriment) === 1) {
-                                        setStatusRequeriment()
+                                    if (parseInt(requerimentData?.aprovado) === 1) {
+                                        setRequerimentData({ ...requerimentData, aprovado: '' })
                                     } else {
-                                        setStatusRequeriment(1)
+                                        setRequerimentData({ ...requerimentData, aprovado: 1 })
                                     }
                                 }}>
-                                    {parseInt(statusRequeriment) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />}
-                                    <Text large style={{ color: parseInt(statusRequeriment) === 1 ? '#fff' : 'green' }}>
-                                        {parseInt(statusRequeriment) === 1 ? 'Aprovado' : 'Aprovar'}
+                                    {parseInt(requerimentData?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />}
+                                    <Text large style={{ color: parseInt(requerimentData?.aprovado) === 1 ? '#fff' : 'green' }}>
+                                        {parseInt(requerimentData?.aprovado) === 1 ? 'Aprovado' : 'Aprovar'}
                                     </Text>
 
                                 </Box>
                                 <Box sx={{
                                     display: 'flex', gap: 2, padding: '10px 12px', alignItems: 'center', border: '1px solid red',
-                                    backgroundColor: parseInt(statusRequeriment) === 0 ? 'red' : 'transparent',
+                                    backgroundColor: parseInt(requerimentData?.aprovado) === 0 ? 'red' : 'transparent',
                                     transition: '.3s',
                                     borderRadius: 2, "&:hover": {
                                         opacity: 0.8,
@@ -714,20 +789,20 @@ export default function RequerimentEnrollmentStudent(props) {
                                     },
                                 }}
                                     onClick={() => {
-                                        if (parseInt(statusRequeriment) === 0) {
-                                            setStatusRequeriment()
+                                        if (parseInt(requerimentData?.aprovado) === 0) {
+                                            setRequerimentData({ ...requerimentData, aprovado: '' })
                                         } else {
-                                            setStatusRequeriment(0)
+                                            setRequerimentData({ ...requerimentData, aprovado: 0 })
                                         }
                                     }}>
 
-                                    {parseInt(statusRequeriment) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
-                                    <Text large style={{ color: parseInt(statusRequeriment) === 0 ? '#fff' : 'red' }}>
-                                        {parseInt(statusRequeriment) === 0 ? 'Reprovado' : 'Reprovar'}
+                                    {parseInt(requerimentData?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
+                                    <Text large style={{ color: parseInt(requerimentData?.aprovado) === 0 ? '#fff' : 'red' }}>
+                                        {parseInt(requerimentData?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
                                     </Text>
                                 </Box>
                             </Box>
-                            {parseInt(statusRequeriment) === 0 &&
+                            {parseInt(requerimentData?.aprovado) === 0 &&
                                 <TextInput
                                     placeholder='Reprovado por falta de aderência das disciplinas cursadas anteriormente...'
                                     name='obs_status' onChange={(e) => setRequerimentData({ ...requerimentData, obs_status: e.target.value })} value={requerimentData?.obs_status || ''}
