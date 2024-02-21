@@ -2843,8 +2843,16 @@ export default function EditUser() {
                                         {
                                             arrayInterests?.map((interest, index) => {
                                                 const requeriments = interest?.requeriments?.some(item => item?.aprovado === 1);
+                                                const [isHaveRequeriment] = interest?.requeriments?.map(item => item?.id_req_matricula);
                                                 const approvedRequeriment = requeriments ? true : false;
                                                 const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
+                                                let linkRequeriment;
+                                                if (isHaveRequeriment) {
+                                                    linkRequeriment = `/secretary/studentDetails/requeriments/student/${isHaveRequeriment}`
+                                                } else {
+                                                    linkRequeriment = `/secretary/studentDetails/requeriments?userId=${userData?.id}&classId=${interest?.turma_id}&moduleEnrollment=1&courseId=${interest?.curso_id}`;
+                                                }
+
                                                 return (
                                                     <tr key={`${interest}-${index}`}>
                                                         <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
@@ -2875,19 +2883,22 @@ export default function EditUser() {
                                                                     getInterestEdit(interest.id_interesse)
                                                                     setShowSections({ ...showSections, viewInterest: true })
                                                                 }} />
-
-                                                                <Button disabled={!isPermissionEdit && true} small text="Requerimento" sx={{
-                                                                    // width: 25,
-                                                                    transition: '.3s',
-                                                                    zIndex: 999999999,
-                                                                    "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer'
-                                                                    }
-                                                                }} onClick={() =>
-                                                                    window.open(`/secretary/studentDetails/requeriments?userId=${userData?.id}&classId=${interest?.turma_id}&moduleEnrollment=1&courseId=${interest?.curso_id}`,
-                                                                        '_blank')} />
-
+                                                                <Tooltip title={isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
+                                                                    <div>
+                                                                        <Button disabled={!isPermissionEdit && true} 
+                                                                        secondary={isHaveRequeriment}
+                                                                        small text="Requerimento" sx={{
+                                                                            // width: 25,
+                                                                            transition: '.3s',
+                                                                            zIndex: 999999999,
+                                                                            "&:hover": {
+                                                                                opacity: 0.8,
+                                                                                cursor: 'pointer'
+                                                                            }
+                                                                        }} onClick={() =>
+                                                                            window.open(linkRequeriment, '_blank')} />
+                                                                    </div>
+                                                                </Tooltip>
                                                                 <Tooltip title={disable ? 'Necessário primeiro requerimento' : ''}>
                                                                     <div>
                                                                         <Button disabled={disable} small text="Matricular" sx={{
@@ -2987,8 +2998,14 @@ export default function EditUser() {
                                     />
                                     <Divider padding={0} />
                                     <Button disabled={!isPermissionEdit && true} small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
-                                        newUser ? addInterest() : handleAddInterest()
-                                        setShowSections({ ...showSections, addInterest: false })
+                                        let isClassExists = arrayInterests?.filter(item => item?.turma_id === interests?.turma_id)?.length > 0;
+                                        let isPeriodExists = arrayInterests?.filter(item => item?.periodo_interesse === interests?.periodo_interesse)?.length > 0;
+                                        if (isClassExists && isPeriodExists) {
+                                            alert.info('Já existe um interesse cadastrado com as mesmas informações')
+                                        } else {
+                                            newUser ? addInterest() : handleAddInterest()
+                                            setShowSections({ ...showSections, addInterest: false })
+                                        }
                                     }} />
                                 </ContentContainer>
                             }
