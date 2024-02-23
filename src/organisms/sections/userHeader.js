@@ -36,15 +36,13 @@ export const UserHeader = (props) => {
     const [showNotification, setShowNotification] = useState(false)
 
     const handleGoBack = () => {
-        router.back();
-
-        // if (lastPage > 0) {
-        //     routeParts[routeParts.length - 1] = 'list';
-        //     const newRoute = routeParts.join('/');
-        //     router.push(newRoute);
-        // } else {
-        //     router.back();
-        // }
+        if (lastPage > 0) {
+            routeParts[routeParts.length - 1] = 'list';
+            const newRoute = routeParts.join('/');
+            router.push(newRoute);
+        } else {
+            router.back();
+        }
     };
 
     return (
