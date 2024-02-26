@@ -161,7 +161,9 @@ export default function EditClassSchedule(props) {
             value: professor?.id
         }));
 
-        setProfessors(groupProfessor)
+        const sortedUsers = groupProfessor?.sort((a, b) => a.label.localeCompare(b.label))
+
+        setProfessors(sortedUsers)
     }
 
     useEffect(() => {
@@ -419,11 +421,11 @@ export default function EditClassSchedule(props) {
                                                 title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
-                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
+                                            <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
                                                 title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />
-                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
+                                            <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
                                                 title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             />

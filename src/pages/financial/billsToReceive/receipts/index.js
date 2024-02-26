@@ -185,7 +185,7 @@ export default function ListReceipts(props) {
     return (
         <>
             <SectionHeader
-                title={`Contas a receber (${installmentsList.filter(filter)?.length || '0'})`}
+                title={`Parcelas do Curso (${installmentsList.filter(filter)?.length || '0'})`}
             />
             <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
@@ -382,13 +382,32 @@ export default function ListReceipts(props) {
 
             </Box>
 
+            <Box sx={{
+                display: 'flex',
+                display: 'flex', gap: 2, flexWrap: 'wrap'
+            }}>
+                <Box sx={{
+                    width: '180px', height: '35px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: '.3s',
+                    cursor: 'pointer',
+                    "&:hover": {
+                        transform: 'scale(1.1, 1.1)',
+                        opacity: .8,
+
+                    }
+                }}>
+                    <Text bold small style={{ color: '#fff' }}>Lançar nova parcela</Text>
+                </Box>
+            </Box>
+
             {installmentsList.length > 0 ?
-                <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap', border: `1px solid ${colorPalette.textColor}` }}>
+                <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap', }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                         <thead>
-                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
+                            <tr style={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
                                 <th style={{ padding: '8px 0px', display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
-                                    Selecionar
+                                    Tudo
                                     <CheckBoxComponent
                                         disabled={!isPermissionEdit && true}
                                         boxGroup={[{ value: 'allSelect' }]}
@@ -407,20 +426,20 @@ export default function ListReceipts(props) {
                                         sx={{ display: 'flex', maxWidth: 25 }}
                                     />
                                 </th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Pagante</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Aluno</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Vencimento</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Data de Pagamento</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Valor</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '55px' }}>Nº parc.</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>C. Custo</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Forma de Pagamento</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Conta</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Obs</th>
-                                {/* <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Status BemPaggo</th> */}
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '120px' }}>Status Sistema</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>ID BemPaggo</th>
-                                <th style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '180px' }}>Protestada</th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Pagante</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Aluno</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Pagamento</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '55px' }}><Text bold>Parc.</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>C. Custo</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Forma</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Conta</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Obs</Text></th>
+                                {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Status BemPaggo</Text></th> */}
+                                <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Status</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>ID BemP</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '180px' }}><Text bold>Protestada</Text></th>
                             </tr>
                         </thead>
                         <tbody style={{ flex: 1, }}>
@@ -519,10 +538,11 @@ export default function ListReceipts(props) {
             }
 
             {(installmentsSelected && isPermissionEdit) && <>
-                <Box sx={{ display: 'flex', position: 'fixed', 
-                left: { xs: 20, sm: 20, md: 280, lg: 280, xl: 280 }, bottom: 20, display: 'flex', gap: 2, flexWrap: 'wrap'  }}>
-                    <Button text="Baixar" style={{ width: '120px', height: '40px' }} />
-                    <Button secondary text="Restaurar parcelas" style={{ width: '200px', height: '40px', backgroundColor: colorPalette.primary }} />
+                <Box sx={{
+                    display: 'flex', position: 'fixed',
+                    left: { xs: 20, sm: 20, md: 280, lg: 280, xl: 280 }, bottom: 20, display: 'flex', gap: 2, flexWrap: 'wrap'
+                }}>
+                    <Button text="Dar baixa" style={{ width: '120px', height: '40px' }} />
                     <Button secondary text="Excluir" style={{ width: '120px', height: '40px', backgroundColor: colorPalette.primary }} />
                 </Box>
                 <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2 }}>

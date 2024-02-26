@@ -73,15 +73,16 @@ export const Table_V1 = (props) => {
 
     return (
         <>
-            <Paper sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', ...sx }}>
+            <Box sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', ...sx }}>
                 <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
-                            <TableRow style={{ backgroundColor: colorPalette.buttonColor, transition: 'background-color 1s' }}>
+                            <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
                                 {columns.map((column) => (
                                     <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>
-                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                            {column.label}
+                                       
+                                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                        <Text bold>{column.label}</Text>
                                             {onFilter &&
                                                 <Box sx={{
                                                     ...styles.menuIcon,
@@ -105,25 +106,23 @@ export const Table_V1 = (props) => {
                                     </TableCell>
                                 ))}
                                 {columnActive &&
-                                    <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>Status</TableCell>
+                                    <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}> <Text bold>Status</Text></TableCell>
                                 }
                                 {onDelete &&
                                     <TableCell sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}></TableCell>
                                 }
                             </TableRow>
                         </TableHead>
-                        <TableBody>
+                        <TableBody sx={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
                             {data?.map((row, index) => (
                                 <TableRow key={row.id} onClick={() => {
                                     routerPush ? handleRowClick(row[columnId])
                                         : onSelect(row[columnId])
                                 }} sx={{
                                     ...styles.bodyRow,
-                                    transition: 'background-color 1s',
-                                    backgroundColor: getRowBackground(index),
                                     "&:hover": {
-                                        backgroundColor: colorPalette.primary + '99',
                                         cursor: 'pointer',
+                                        backgroundColor: colorPalette.primary + '88'
                                     },
                                 }}>
                                     {columns.map((column) => (
@@ -187,7 +186,7 @@ export const Table_V1 = (props) => {
                                                         )}
                                                         {(enrollmentsCount && row?.total_matriculas_em_andamento > 0 && column?.matricula) &&
                                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: '1px', backgroundColor: colorPalette?.buttonColor, width: 20, height: 20, borderRadius: 20 }}>
-                                                                <Text style={{textAlign: 'center'}} small bold>M</Text>
+                                                                <Text style={{ textAlign: 'center' }} small bold>M</Text>
                                                             </Box>
 
                                                         }
@@ -228,7 +227,7 @@ export const Table_V1 = (props) => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-            </Paper >
+            </Box >
         </>
     )
 }
@@ -245,7 +244,6 @@ export const IconStatus = (props) => {
 
 const styles = {
     cell: {
-        color: '#fff',
         fontWeight: 'bold',
     },
     bodyCell: {
@@ -253,6 +251,7 @@ const styles = {
     },
     bodyRow: {
         textOverflow: 'ellipsis',
+
     },
     menuIcon: {
         backgroundSize: 'cover',

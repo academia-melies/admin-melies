@@ -241,7 +241,7 @@ export default function ClassSheduleList(props) {
                                                         const isNotClassDay = (obsClassDay === 'Feriado' || obsClassDay === 'Não existe aula agendada para esse dia.') ? true : false
                                                         return (
                                                             <ContentContainer key={`${index}-${classData}`} sx={{
-                                                                height: '270px',
+                                                                height: '300px',
                                                                 transition: '0.3s',
                                                                 overflow: 'auto',
                                                                 minWidth: '180px',

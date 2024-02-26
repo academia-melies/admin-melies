@@ -235,19 +235,33 @@ export default function InterestEnroll() {
     async function handleSelectModule(turma_id, currentModule) {
         setLoading(true)
         try {
-            const response = await api.get(`/classSchedule/disciplines/${turma_id}/${currentModule}`)
-            const { data } = response
-            const groupDisciplines = data.map(disciplines => ({
-                label: disciplines.nome_disciplina,
+            const classScheduleResponse = await api.get(`/classSchedule/disciplines/${turma_id}/${currentModule}`);
+            const classScheduleData = classScheduleResponse?.data;
+
+            const groupDisciplines = classScheduleData.map(disciplines => ({
+                label: disciplines?.nome_disciplina,
                 value: disciplines?.id_disciplina.toString(),
 
             }));
 
-            const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
-            const flattenedDisciplinesSelected = disciplinesSelect.join(', ');
-            setQuantityDisciplinesModule(groupDisciplines?.length)
-            setDisciplinesSelected(flattenedDisciplinesSelected)
+            const requerimentResponse = await api.get(`/requeriment/disciplines/enrollment/${turma_id}/${currentModule}/${id}`);
+            const requerimentData = requerimentResponse?.data;
+
+            const groupDisciplinesDispensed = requerimentData?.map(discipline => ({
+                label: discipline?.disciplina_id,
+                value: discipline?.disciplina_id.toString(),
+            })) || [];
+
+
+            const flattenedDisciplinesDispensedReq = groupDisciplinesDispensed.map(discipline => discipline.value).join(', ');
+            const filteredDisciplines = groupDisciplines.filter(discipline =>
+                !flattenedDisciplinesDispensedReq.includes(discipline.value)
+            );
+
+            setQuantityDisciplinesModule(groupDisciplines?.length);
+            setDisciplinesSelected(filteredDisciplines?.map(discipline => discipline.value).join(', '));
             setDisciplines(groupDisciplines);
+
         } catch (error) {
             console.log(error)
             return error
@@ -1686,7 +1700,10 @@ export const Payment = (props) => {
                 const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
                 let payments = paymentsProfile?.map(item => item)[0]
 
-                let paymentForm = (globalTypePaymentsSelected === 'Cartão' && payments?.id_cartao_credito) || (globalTypePaymentsSelected === 'pix' && 'Pix') || (globalTypePaymentsSelected === 'Boleto' && 'Boleto')
+                let paymentForm = (globalTypePaymentsSelected === 'Cartão' && payments?.id_cartao_credito) ||
+                 (globalTypePaymentsSelected === 'pix' && 'Pix') ||
+                  (globalTypePaymentsSelected === 'Boleto' && 'Boleto') || 
+                   (globalTypePaymentsSelected === 'Boleto(PRAVALER)' && 'Boleto(PRAVALER)')
                 if (globalTypePaymentsSelected === 'Cartão' && paymentsProfile?.length <= 0) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
                 if (globalTypePaymentsSelected === 'Cartão' && paymentsProfile?.length > 0) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
                 updatedArray.push({
@@ -1748,7 +1765,10 @@ export const Payment = (props) => {
                 const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
                 let payments = paymentsProfile?.map(item => item)[0]
 
-                let paymentForm = (globalTypePaymentsSelectedTwo === 'Cartão' && payments?.id_cartao_credito) || (globalTypePaymentsSelectedTwo === 'Pix' && 'Pix') || (globalTypePaymentsSelectedTwo === 'Boleto' && 'Boleto')
+                let paymentForm = (globalTypePaymentsSelectedTwo === 'Cartão' && payments?.id_cartao_credito) || (globalTypePaymentsSelectedTwo === 'Pix' && 'Pix') ||
+                 (globalTypePaymentsSelectedTwo === 'Boleto' && 'Boleto') ||
+                 (globalTypePaymentsSelectedTwo === 'Boleto(PRAVALER)' && 'Boleto(PRAVALER)') 
+                 
                 if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile?.length <= 0) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
                 if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile?.length > 0) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
                 updatedArray.push({
@@ -2069,6 +2089,7 @@ export const Payment = (props) => {
 
     const listPaymentType = [
         { label: 'Boleto', value: 'Boleto' },
+        { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
         { label: 'Cartão', value: 'Cartão' },
         // { label: 'Pix', value: 'Pix' },
     ]

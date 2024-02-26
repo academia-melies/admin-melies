@@ -371,10 +371,10 @@ export default function ListInvoices(props) {
             </Backdrop>
 
             {invoicesList.length > 0 ?
-                <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap', border: `1px solid ${colorPalette.textColor}` }}>
-                    <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
+                <div style={{ borderRadius: '8px', overflowY: 'auto', marginTop: '10px', flexWrap: 'nowrap' }}>
+                    <table style={{ borderCollapse: 'collapse', width: '100%', overflowY: 'auto', }}>
                         <thead>
-                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
+                            <tr style={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
                                 <th style={{ padding: '4px 0px', display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
                                     Selecionar
                                     <CheckBoxComponent
@@ -395,16 +395,16 @@ export default function ListInvoices(props) {
                                         sx={{ display: 'flex', maxWidth: 25 }}
                                     />
                                 </th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Pagante</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>CPF</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Valor</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Vencimento</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '55px' }}>Nº parc.</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>C. Custo</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Parcela Paga</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '100px' }}>Emissão NFSe</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '80px' }}>NFSe PDF</th>
-                                <th style={{ padding: '4px 0px', fontSize: '14px', fontFamily: 'MetropolisBold', minWidth: '80px' }}>NFSe XML</th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Pagante</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>CPF</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '55px' }}><Text bold>Nº parc.</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>C. Custo</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Parcela Paga</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Emissão NFSe</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '80px' }}><Text bold>NFSe PDF</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '80px' }}><Text bold>NFSe XML</Text></th>
                             </tr>
                         </thead>
                         <tbody style={{ flex: 1, }}>
@@ -414,7 +414,7 @@ export default function ListInvoices(props) {
                                 const address = `${item?.rua}, ${item?.numero} - ${item?.bairro}, ${item?.cidade}-${item?.uf}`
                                 return (
                                     <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary }}>
-                                        <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                        <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: '1px solid lightgray' }}>
                                             <CheckBoxComponent
                                                 disabled={!isPermissionEdit && true}
                                                 boxGroup={groupSelect(item?.id_parcela_matr)}
