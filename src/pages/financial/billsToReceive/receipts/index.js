@@ -382,13 +382,32 @@ export default function ListReceipts(props) {
 
             </Box>
 
+            <Box sx={{
+                display: 'flex',
+                display: 'flex', gap: 2, flexWrap: 'wrap'
+            }}>
+                <Box sx={{
+                    width: '180px', height: '35px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: '.3s',
+                    cursor: 'pointer',
+                    "&:hover": {
+                        transform: 'scale(1.1, 1.1)',
+                        opacity: .8,
+
+                    }
+                }}>
+                    <Text bold small style={{ color: '#fff' }}>Lançar nova parcela</Text>
+                </Box>
+            </Box>
+
             {installmentsList.length > 0 ?
                 <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap', }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                         <thead>
                             <tr style={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
                                 <th style={{ padding: '8px 0px', display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
-                                    Selecionar
+                                    Tudo
                                     <CheckBoxComponent
                                         disabled={!isPermissionEdit && true}
                                         boxGroup={[{ value: 'allSelect' }]}
@@ -410,16 +429,16 @@ export default function ListReceipts(props) {
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Pagante</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Aluno</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
-                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Data de Pagamento</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Pagamento</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
-                                <th style={{ padding: '8px 0px', minWidth: '55px' }}><Text bold>Nº parc.</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '55px' }}><Text bold>Parc.</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>C. Custo</Text></th>
-                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Forma de Pagamento</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Forma</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Conta</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Obs</Text></th>
                                 {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Status BemPaggo</Text></th> */}
-                                <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Status Sistema</Text></th>
-                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>ID BemPaggo</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Status</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>ID BemP</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '180px' }}><Text bold>Protestada</Text></th>
                             </tr>
                         </thead>

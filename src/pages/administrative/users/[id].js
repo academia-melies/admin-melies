@@ -24,7 +24,22 @@ export default function EditUser() {
     const [perfil, setPerfil] = useState('')
     const [fileCallback, setFileCallback] = useState()
     const [bgPhoto, setBgPhoto] = useState({})
-    const [enrollmentRegisterData, setEnrollmentRegisterData] = useState({})
+    const [enrollmentRegisterData, setEnrollmentRegisterData] = useState({
+        turma_id: null,
+        modulo: null,
+        qnt_disci_dp: 0,
+        qnt_disci_disp: 0,
+        rematricula: null,
+        cursando_dp: null,
+        dt_inicio: null,
+        dt_final: null,
+        status: null,
+        motivo_desistencia: null,
+        dt_desistencia: null,
+        certificado_emitido: 0,
+        preferencia_pagamento: null
+    })
+    const [arrayEnrollmentRegisterData, setArrayEnrollmentRegisterData] = useState([])
     const [userData, setUserData] = useState({
         autista: null,
         superdotacao: null,
@@ -169,6 +184,7 @@ export default function EditUser() {
     const [highestModule, setHighestModule] = useState(null)
     const [showEditPhoto, setShowEditPhoto] = useState(false)
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [showEnrollmentsRegisters, setShowEnrollmentsRegisters] = useState({});
 
     const fetchPermissions = async () => {
         try {
@@ -183,6 +199,13 @@ export default function EditUser() {
             return error
         }
     }
+
+    const toggleEnrollmentRegisters = (index) => {
+        setShowEnrollmentsRegisters(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
+    };
 
     useEffect(() => {
         setPerfil()
@@ -1072,6 +1095,64 @@ export default function EditUser() {
             setOfficeHours(updatedOfficeHours)
         }
     }
+
+    const checkEnrollmentData = (enrollmentRegisterData) => {
+        const requiredFields = ['turma_id', 'modulo', 'dt_inicio', 'dt_final', 'status', 'preferencia_pagamento', 'rematricula', 'cursando_dp'];
+
+
+        for (const field of requiredFields) {
+            if (enrollmentRegisterData[field] === '' || enrollmentRegisterData[field] === null) {
+                alert.info('Preencha todos os campos obrigatórios antes de prosseguir.');
+                return false;
+            }
+        }
+
+        return true
+    }
+
+    const handleAddEnrollmentRegister = () => {
+        if (checkEnrollmentData(enrollmentRegisterData)) {
+
+            setArrayEnrollmentRegisterData((prevArray) => [...prevArray, {
+                turma_id: enrollmentRegisterData?.turma_id,
+                modulo: enrollmentRegisterData?.modulo,
+                qnt_disci_dp: enrollmentRegisterData?.qnt_disci_dp,
+                qnt_disci_disp: enrollmentRegisterData?.qnt_disci_disp,
+                rematricula: enrollmentRegisterData?.rematricula,
+                cursando_dp: enrollmentRegisterData?.cursando_dp,
+                dt_inicio: enrollmentRegisterData?.dt_inicio,
+                dt_final: enrollmentRegisterData?.dt_final,
+                status: enrollmentRegisterData?.status,
+                motivo_desistencia: enrollmentRegisterData?.motivo_desistencia,
+                dt_desistencia: enrollmentRegisterData?.dt_desistencia,
+                certificado_emitido: enrollmentRegisterData?.certificado_emitido,
+                preferencia_pagamento: enrollmentRegisterData?.preferencia_pagamento
+            }])
+            setEnrollmentRegisterData({
+                turma_id: null,
+                modulo: null,
+                qnt_disci_dp: 0,
+                qnt_disci_disp: 0,
+                rematricula: null,
+                cursando_dp: null,
+                dt_inicio: null,
+                dt_final: null,
+                status: null,
+                motivo_desistencia: null,
+                dt_desistencia: null,
+                certificado_emitido: 0,
+                preferencia_pagamento: null
+            })
+        }
+    }
+
+    const removeEnrollmentRegister = (index) => {
+        setArrayEnrollmentRegisterData((prevArray) => {
+            const newArray = [...prevArray];
+            newArray.splice(index, 1);
+            return newArray;
+        });
+    };
 
     const addDependent = () => {
         setArrayDependent((prevArray) => [...prevArray, { nome_dependente: dependent.nome_dependente }])
@@ -2414,64 +2495,185 @@ export default function EditUser() {
                             }} />
                         </Box>
                         {showEnrollmentAdd &&
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <Divider padding={0} />
-                                <Box sx={styles.inputSection}>
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={enrollmentRegisterData?.turma_id} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, turma_id: value })}
-                                        title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.modulo} label='Módulo/Semestre' sx={{ flex: 1, }} />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Qnt de Disciplina com DP' name='qnt_disci_dp' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.qnt_disci_dp} label='Qnt de Disciplina com DP' sx={{ flex: 1, }} />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Qnt de Disciplina Dispensada' name='qnt_disci_disp' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.qnt_disci_disp} label='Qnt de Disciplina Dispensada' sx={{ flex: 1, }} />
-                                </Box>
-                                <Box sx={styles.inputSection}>
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.rematricula} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, rematricula: value })}
-                                        title="Cursando Rematrícula?" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.cursando_dp} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, cursando_dp: value })}
-                                        title="Cursando alguma DP?" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
-                                </Box>
-                                <Box sx={styles.inputSection}>
-                                    <TextInput disabled={!isPermissionEdit && true} name='dt_inicio' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
-                                    <TextInput disabled={!isPermissionEdit && true} name='dt_final' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupSituation} valueSelection={enrollmentRegisterData?.status} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, status: value })}
-                                        title="Status/Situação" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    />
-                                </Box>
-                                {
-                                    enrollmentData.status?.includes('Desistente') &&
-                                    <>
+                            <>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    {arrayEnrollmentRegisterData?.length > 0 && arrayEnrollmentRegisterData?.map((item, index) => {
+                                        const initDate = formatTimeStamp(item?.dt_inicio)
+                                        const endDate = formatTimeStamp(item?.dt_final)
+                                        const className = classes?.filter(v => v.value === item?.turma_id)?.map(i => i.label)
+                                        const title = `${className}_${item?.modulo}º Módulo - ${initDate} á ${endDate} - ${item?.status}`
+                                        return (
+                                            <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'start', flexDirection: 'column', backgroundColor: colorPalette?.primary, borderRadius: 2, padding: '15px 20px' }}>
 
-                                        <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                            valueChecked={enrollmentRegisterData?.motivo_desistencia || ''}
-                                            boxGroup={groupReasonsDroppingOut}
-                                            title="Motivo da desistência"
-                                            horizontal={mobile ? false : true}
-                                            onSelect={(value) => setEnrollmentRegisterData({
-                                                ...enrollmentRegisterData,
-                                                motivo_desistencia: value
-                                            })}
-                                            sx={{ width: 1 }}
+                                                <Box sx={{
+                                                    display: 'flex', alignItems: 'center', padding: showEnrollmentsRegisters[index] ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    },
+                                                    justifyContent: 'space-between'
+                                                }} onClick={() => toggleEnrollmentRegisters(index)}>
+                                                    <Text bold title>{title}</Text>
+                                                    <Box sx={{
+                                                        ...styles.menuIcon,
+                                                        backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                        transform: showEnrollmentsRegisters[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                                        transition: '.3s',
+                                                        "&:hover": {
+                                                            opacity: 0.8,
+                                                            cursor: 'pointer'
+                                                        }
+                                                    }} />
+                                                </Box>
+                                                <Box sx={{
+                                                    display: showEnrollmentsRegisters[index] ? 'flex' : 'none', flexDirection: 'column', gap: 2, alignItems: 'start', backgroundColor: colorPalette?.primary, borderRadius: 2, padding: '15px 20px',
+                                                    width: '100%'
+                                                }}>
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Turma:</Text>
+                                                        <Text>{className}</Text>
+                                                    </Box>
+
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Módulo/Semestre:</Text>
+                                                        <Text>{item?.modulo}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Qnt de Disciplina com DP:</Text>
+                                                        <Text>{item?.qnt_disci_dp}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Qnt de Disciplina Dispensada:</Text>
+                                                        <Text>{item?.qnt_disci_disp}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Cursando Rematrícula:</Text>
+                                                        <Text>{groupEnrollment?.filter(v => v.value === item?.rematricula)?.map(i => i.label)}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Cursando alguma DP:</Text>
+                                                        <Text>{groupEnrollment?.filter(v => v.value === item?.cursando_dp)?.map(i => i.label)}</Text>
+                                                    </Box>
+
+
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Inicio:</Text>
+                                                        <Text>{initDate}</Text>
+                                                    </Box>
+
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Fim:</Text>
+                                                        <Text>{endDate}</Text>
+                                                    </Box>
+
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Status/Situação:</Text>
+                                                        <Text>{groupSituation?.filter(v => v.value === item?.status)?.map(i => i.label)}</Text>
+                                                    </Box>
+                                                    {
+                                                        enrollmentData.status?.includes('Desistente') &&
+                                                        <>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Motivo da desistência:</Text>
+                                                                <Text>{groupReasonsDroppingOut?.filter(v => v.value === item?.motivo_desistencia)?.map(i => i.label)}</Text>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Data da desistência:</Text>
+                                                                <Text>{item?.dt_desistencia}</Text>
+                                                            </Box>
+
+                                                        </>
+                                                    }
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Certificado emitido:</Text>
+                                                        <Text>{groupCertificate?.filter(v => v.value === item?.certificado_emitido)?.map(i => i.label)}</Text>
+                                                    </Box>
+                                                    <Divider padding={0} />
+                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                        <Text bold>Preferência de Pagamento:</Text>
+                                                        <Text>{grouPreferPayment?.filter(v => v.value === item?.preferencia_pagamento)?.map(i => i.label)}</Text>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-start' }}>
+                                                        <Button text="Remover" small onClick={() => removeEnrollmentRegister(index)} style={{ width: 120, height: 30 }} />
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        )
+                                    })}
+                                </Box>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Divider padding={0} />
+                                    <Text bold title>Nova Matrícula/Rematrícula</Text>
+                                    <Box sx={styles.inputSection}>
+                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={enrollmentRegisterData?.turma_id} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, turma_id: value })}
+                                            title="Turma " filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <TextInput disabled={!isPermissionEdit && true} name='dt_desistencia' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
-                                    </>
-                                }
-                                <RadioItem disabled={!isPermissionEdit && true} valueRadio={enrollmentRegisterData?.certificado_emitido}
-                                    group={groupCertificate}
-                                    title="Certificado emitido:"
-                                    horizontal={mobile ? false : true}
-                                    onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, certificado_emitido: parseInt(value) })} />
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.modulo} label='Módulo/Semestre *' sx={{ flex: 1, }} />
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Qnt de Disciplina com DP' name='qnt_disci_dp' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.qnt_disci_dp} label='Qnt de Disciplina com DP *' sx={{ flex: 1, }} />
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Qnt de Disciplina Dispensada' name='qnt_disci_disp' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.qnt_disci_disp} label='Qnt de Disciplina Dispensada *' sx={{ flex: 1, }} />
+                                    </Box>
+                                    <Box sx={styles.inputSection}>
+                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.rematricula} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, rematricula: value })}
+                                            title="Cursando Rematrícula? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.cursando_dp} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, cursando_dp: value })}
+                                            title="Cursando alguma DP? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                    </Box>
+                                    <Box sx={styles.inputSection}>
+                                        <TextInput disabled={!isPermissionEdit && true} name='dt_inicio' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_inicio)?.split('T')[0] || ''} label='Inicio *' sx={{ flex: 1, }} />
+                                        <TextInput disabled={!isPermissionEdit && true} name='dt_final' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_final)?.split('T')[0] || ''} label='Fim *' sx={{ flex: 1, }} />
+                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupSituation} valueSelection={enrollmentRegisterData?.status} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, status: value })}
+                                            title="Status/Situação *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                    </Box>
+                                    {
+                                        enrollmentData.status?.includes('Desistente') &&
+                                        <>
 
-                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={grouPreferPayment} valueSelection={enrollmentRegisterData?.preferencia_pagamento} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, preferencia_pagamento: value })}
-                                    title="Preferência de Pagamento:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                />
-                            </Box>
+                                            <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                                valueChecked={enrollmentRegisterData?.motivo_desistencia || ''}
+                                                boxGroup={groupReasonsDroppingOut}
+                                                title="Motivo da desistência"
+                                                horizontal={mobile ? false : true}
+                                                onSelect={(value) => setEnrollmentRegisterData({
+                                                    ...enrollmentRegisterData,
+                                                    motivo_desistencia: value
+                                                })}
+                                                sx={{ width: 1 }}
+                                            />
+                                            <TextInput disabled={!isPermissionEdit && true} name='dt_desistencia' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
+                                        </>
+                                    }
+                                    <RadioItem disabled={!isPermissionEdit && true} valueRadio={enrollmentRegisterData?.certificado_emitido}
+                                        group={groupCertificate}
+                                        title="Certificado emitido: *"
+                                        horizontal={mobile ? false : true}
+                                        onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, certificado_emitido: parseInt(value) })} />
+
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={grouPreferPayment} valueSelection={enrollmentRegisterData?.preferencia_pagamento} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, preferencia_pagamento: value })}
+                                        title="Preferência de Pagamento: *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                </Box>
+                                <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
+                                    <Button text="Adicionar" small onClick={() => handleAddEnrollmentRegister()} style={{ width: 120, height: 30 }} />
+                                </Box>
+                            </>
                         }
 
                     </ContentContainer >

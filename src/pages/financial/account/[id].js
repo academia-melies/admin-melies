@@ -1,5 +1,5 @@
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../../atoms"
@@ -299,7 +299,23 @@ export default function Editaccount(props) {
         }
     }
 
+    const containerRef = useRef(null);
 
+    useEffect(() => {
+        if (showDetailsHistoric?.active) {
+            const handleClickOutside = (event) => {
+                if (containerRef.current && !containerRef.current.contains(event.target)) {
+                    setShowDetailsHistoric({ active: false, id: null });
+                }
+            };
+
+            document.addEventListener('mousedown', handleClickOutside);
+
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }
+    }, [showDetailsHistoric?.active]);
 
 
     const groupStatus = [
@@ -331,10 +347,10 @@ export default function Editaccount(props) {
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
                             <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Conta</Text>
                         </Box>
-                        <Box sx={{ ...styles.inputSection, flexDirection: 'column' }}>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Ex: Banco itaú' name='nome_conta' onChange={handleChange} value={accountData?.nome_conta || ''} label='Nome:' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='1667' name='agencia' onChange={handleChange} value={accountData?.agencia || ''} label='Agência:' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='16770-01' name='conta' onChange={handleChange} value={accountData?.conta || ''} label='Conta:' sx={{ flex: 1, }} />
+                        <Box sx={{ ...styles.inputSection, flexDirection: 'column', justifyContent: 'flex-start' }}>
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Ex: Banco itaú' name='nome_conta' onChange={handleChange} value={accountData?.nome_conta || ''} label='Nome:' sx={{ width: '100%', }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='1667' name='agencia' onChange={handleChange} value={accountData?.agencia || ''} label='Agência:' sx={{ width: '100%', }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='16770-01' name='conta' onChange={handleChange} value={accountData?.conta || ''} label='Conta:' sx={{ width: '100%', }} />
                         </Box>
                         <RadioItem disabled={!isPermissionEdit && true} valueRadio={accountData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setAccountData({ ...accountData, ativo: parseInt(value) })} />
                     </ContentContainer>
@@ -343,82 +359,89 @@ export default function Editaccount(props) {
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
                             <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Histórico de transferência</Text>
                         </Box>
-                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column' }}>
-                            {accountHistoricList?.map((item, index) => {
-                                return (
-                                    <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
-                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column' }}>
-                                            <Box sx={{
-                                                ...styles.menuIcon,
-                                                backgroundImage: `url('/icons/bank-transfer.png')`,
-                                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                                                transition: '.3s',
-                                                width: 20, height: 20,
-                                                aspectRatio: '1/1'
-                                            }} />
-                                            <Box
-                                                sx={{
-                                                    borderLeft: "1px dashed #ccc",
-                                                    // height: "50px", // Ajuste 
-                                                    height: "40px",
-                                                }}
-                                            />
-                                        </Box>
-
-                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column', position: 'relative' }}>
-                                            <Text small light style={{ flexWrap: 'wrap', display: 'flex', maxWidth: 400 }}>{item?.descricao_evento}</Text>
-                                            <Box sx={{
-                                                display: 'flex', gap: 1, alignItems: 'center', display: 'flex', padding: '5px 8px', backgroundColor: colorPalette?.primary,
-                                                borderRadius: 2,
-                                                "&:hover": {
-                                                    opacity: 0.8,
-                                                    cursor: 'pointer'
-                                                }
-                                            }}>
-                                                <Text xsmall>Detalhes</Text>
+                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxHeight: 280, overflowX: 'auto' }}>
+                            {accountHistoricList?.length > 0 ?
+                                accountHistoricList?.map((item, index) => {
+                                    return (
+                                        <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
+                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column' }}>
                                                 <Box sx={{
                                                     ...styles.menuIcon,
-                                                    backgroundImage: `url('${icons?.gray_arrow_down}')`,
+                                                    backgroundImage: `url('/icons/bank-transfer.png')`,
                                                     filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                                                     transition: '.3s',
-                                                    width: 11, height: 11,
+                                                    width: 20, height: 20,
                                                     aspectRatio: '1/1'
-                                                }} onClick={() => {
-                                                    if ((showDetailsHistoric?.active && (showDetailsHistoric?.id === item?.id_hist_transf_conta))) {
-                                                        setShowDetailsHistoric({ active: true, id: null })
-                                                    } else {
-                                                        setShowDetailsHistoric({ active: true, id: item?.id_hist_transf_conta })
-                                                    }
                                                 }} />
-
+                                                <Box
+                                                    sx={{
+                                                        borderLeft: "1px dashed #ccc",
+                                                        // height: "50px", // Ajuste 
+                                                        height: "40px",
+                                                    }}
+                                                />
                                             </Box>
-                                            {(showDetailsHistoric?.active && showDetailsHistoric?.id === item?.id_hist_transf_conta) &&
-                                                <Box sx={{
-                                                    display: 'flex', gap: 1, position: 'absolute', top: 95, backgroundColor: colorPalette?.primary, zIndex: 999,
-                                                    padding: '5px 8px', borderRadius: 2
-                                                }}>
-                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                                                        <Text xsmall bold>Valor:</Text>
-                                                        <Text xsmall>{formatter.format(item?.valor_transferencia)}</Text>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                                                        <Text xsmall bold>Tipo:</Text>
-                                                        <Text xsmall>{item?.tipo_valor}</Text>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                                                        <Text xsmall bold>Conta Remetente:</Text>
-                                                        <Text xsmall>{item?.conta_remetente}</Text>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                                                        <Text xsmall bold>Conta Remetente:</Text>
-                                                        <Text xsmall>{item?.conta_destinada}</Text>
-                                                    </Box>
-                                                </Box>}
-                                        </Box>
 
-                                    </Box>
-                                )
-                            })}
+                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column', position: 'relative' }}>
+                                                <Text small light style={{ flexWrap: 'wrap', display: 'flex', maxWidth: 400 }}>{item?.descricao_evento}</Text>
+                                                <div ref={containerRef}>
+                                                    <Box sx={{
+                                                        display: 'flex', gap: 1, alignItems: 'center', display: 'flex', padding: '5px 8px', backgroundColor: colorPalette?.primary,
+                                                        borderRadius: 2,
+                                                        "&:hover": {
+                                                            opacity: 0.8,
+                                                            cursor: 'pointer'
+                                                        }
+                                                    }} onClick={() => {
+                                                        if ((showDetailsHistoric?.active && (showDetailsHistoric?.id === item?.id_hist_transf_conta))) {
+                                                            setShowDetailsHistoric({ active: false, id: null })
+                                                        } else {
+                                                            setShowDetailsHistoric({ active: true, id: item?.id_hist_transf_conta })
+                                                        }
+                                                    }}>
+                                                        <Text xsmall>Detalhes</Text>
+                                                        <Box sx={{
+                                                            ...styles.menuIcon,
+                                                            backgroundImage: `url('${icons?.gray_arrow_down}')`,
+                                                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                                            transition: '.3s',
+                                                            width: 11, height: 11,
+                                                            aspectRatio: '1/1'
+                                                        }} />
+
+                                                    </Box>
+                                                    {(showDetailsHistoric?.active && showDetailsHistoric?.id === item?.id_hist_transf_conta) &&
+
+                                                        <Box sx={{
+                                                            display: 'flex', gap: 1, position: 'absolute', top: 95, backgroundColor: colorPalette?.primary, zIndex: 999,
+                                                            padding: '8px 12px', borderRadius: 2, gap: 3
+                                                        }}>
+                                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                                                <Text xsmall bold>Valor:</Text>
+                                                                <Text xsmall>{formatter.format(item?.valor_transferencia)}</Text>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                                                <Text xsmall bold>Tipo:</Text>
+                                                                <Text xsmall>{item?.tipo_valor}</Text>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                                                <Text xsmall bold>Remetente:</Text>
+                                                                <Text xsmall>{item?.conta_remetente}</Text>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                                                <Text xsmall bold>Destinatário:</Text>
+                                                                <Text xsmall>{item?.conta_destinada}</Text>
+                                                            </Box>
+                                                        </Box>
+                                                    }
+                                                </div>
+                                            </Box>
+
+                                        </Box>
+                                    )
+                                })
+                                :
+                                <Text light>Não foi encontrado histórico de trasnferências</Text>}
                         </Box>
                     </ContentContainer>
                 </Box>
@@ -450,7 +473,7 @@ export default function Editaccount(props) {
             <Backdrop open={transferData?.active} sx={{ zIndex: 99 }}>
                 <ContentContainer>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
-                        <Text bold large>Dados da trasnferência</Text>
+                        <Text bold large>Dados da Transferência</Text>
                         <Box sx={{
                             ...styles.menuIcon,
                             width: 15, height: 15,
@@ -682,7 +705,7 @@ const styles = {
     inputSection: {
         flex: 1,
         display: 'flex',
-        justifyContent: 'space-around',
+        justifyContent: 'flex-start',
         gap: 1.8,
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
     }
