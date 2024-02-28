@@ -11,6 +11,7 @@ import { icons } from "../../../organisms/layout/Colors"
 import { formatTimeStamp, formatValueReal } from "../../../helpers"
 import { holidaysArray } from "../../../organisms/holidays/holidays"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function EditPricesCourse(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, theme, userPermissions, menuItemsList } = useAppContext()
@@ -847,8 +848,14 @@ export default function EditPricesCourse(props) {
                 title={(courses.filter(item => item.value === pricesCourseData?.curso_id).map(item => item.label)) || `Nova Taxa`}
                 saveButton={(menuSelected === 'Curso' && isPermissionEdit) ? true : false}
                 saveButtonAction={newPrice ? handleCreatePrices : handleEditPrices}
-                deleteButton={(!newPrice && menuSelected === 'Curso' && isPermissionEdit)}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeletePrices })}
+                inativeButton={(!newPrice && menuSelected === 'Curso' && isPermissionEdit)}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDeletePrices,
+                    title: 'Inativar Valores',
+                    message: 'Os valores cadastrador serão inativadaos, e ficará por um tempo no banco de dados, até que seja excluído.'
+                })}
             />
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
                 <Text light style={{ marginRight: 10 }}>vizualizar por:</Text>
@@ -880,8 +887,11 @@ export default function EditPricesCourse(props) {
                 <>
 
                     <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                        <Box>
-                            <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Valores do Curso</Text>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
+                            <Text title bold>Valores dos Cursos</Text>
+                            <IconStatus
+                                style={{ backgroundColor: pricesCourseData.ativo >= 1 ? 'green' : 'red', boxShadow: pricesCourseData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                            />
                         </Box>
                         <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
                             <SelectList disabled={!isPermissionEdit && true} fullWidth data={courses} valueSelection={pricesCourseData?.curso_id} onSelect={(value) => setPricesCourseData({ ...pricesCourseData, curso_id: value })}

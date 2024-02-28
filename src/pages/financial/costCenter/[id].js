@@ -8,6 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function EditCostCenter(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -171,14 +172,23 @@ export default function EditCostCenter(props) {
                 title={costCenterData?.nome_cc || `Novo Centro de Custo`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newCostCenter ? handleCreate : handleEdit}
-                deleteButton={!newCostCenter && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete, title: 'Deseja Prosseguir?', message: 'Tem certeza que deseja excluír o centro de custo? Uma vez excluído, não será possível recupera-lo.' })}
+                inativeButton={!newCostCenter && isPermissionEdit}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDelete,
+                    title: 'Inativar Centro de custo',
+                    message: 'O centro de custo será inativada, e ficará por um tempo no banco de dados, até que seja excluída.'
+                })}
             />
 
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Centro de Custo</Text>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
+                    <Text title bold>Dados do Centro de Custo</Text>
+                    <IconStatus
+                        style={{ backgroundColor: costCenterData.ativo >= 1 ? 'green' : 'red', boxShadow: costCenterData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                    />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Ex: Administrativo terceirizado' name='nome_cc' onChange={handleChange} value={costCenterData?.nome_cc || ''} label='Nome do CC:' sx={{ flex: 1, }} />

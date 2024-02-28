@@ -9,6 +9,7 @@ import { createClass, deleteClass, editClass } from "../../../validators/api-req
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function EditClass(props) {
     const { setLoading, alert, colorPalette, setShowConfirmationDialog, theme, userPermissions, menuItemsList } = useAppContext()
@@ -237,13 +238,22 @@ export default function EditClass(props) {
                 title={classData?.nome_turma || `Nova Turma`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newClass ? handleCreateClass : handleEditClass}
-                deleteButton={!newClass && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteClass })}
+                inativeButton={!newClass && isPermissionEdit}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
+                    title: 'Tem certeza que deseja desativar a Turma?',
+                    message: 'A turma será inativada, e ficará por um tempo no banco de dados, até que seja excluída.',
+                    active: true,
+                    event,
+                    acceptAction: handleDeleteClass
+                })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Turma</Text>
+                <Box sx={{display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px'}}>
+                    <Text title bold>Dados da Turma</Text>
+                    <IconStatus
+                        style={{ backgroundColor: classData.ativo >= 1 ? 'green' : 'red', boxShadow: classData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                    />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_turma' onChange={handleChange} value={classData?.nome_turma || ''} label='Nome' sx={{ flex: 1, }} />

@@ -176,7 +176,7 @@ export default function ClassSheduleList(props) {
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
             {dateClass?.length > 0 ? (
-                dateClass.map((item, index) => {
+                dateClass.filter(item => item?.ativo === 1).map((item, index) => {
                     const classScheduleData = item.aulas;
                     const name = item.nome_cronograma;
                     const idCronograma = item.id_cronograma
@@ -223,9 +223,10 @@ export default function ClassSheduleList(props) {
                             </Box>
                             {showClassSchedulesTable[index] && (
                                 <Box sx={{ ...styles.tableContainer, display: 'flex', maxHeight: '500px', overflow: 'auto', borderRadius: '12px' }}>
+
                                     {Object.entries(aulasPorDiaSemana).map(([diaSemana, aulas]) => {
                                         return (
-                                            <Box key={diaSemana} sx={{ padding: '0px 8px 0px 0px', flex: diaSemana.length > 3 && 1 }}>
+                                            <Box key={diaSemana} sx={{ padding: '0px 8px 0px 0px', flex: diaSemana.length > 3 && 1, }}>
                                                 <Text bold
                                                     style={{
                                                         textAlign: 'center',
@@ -239,12 +240,14 @@ export default function ClassSheduleList(props) {
                                                     {aulas.map((classData, index) => {
                                                         const obsClassDay = classData.observacao_dia
                                                         const isNotClassDay = (obsClassDay === 'Feriado' || obsClassDay === 'Não existe aula agendada para esse dia.') ? true : false
+                                                        const optative = parseInt(classData?.optativa) > 0;
                                                         return (
                                                             <ContentContainer key={`${index}-${classData}`} sx={{
                                                                 height: '300px',
                                                                 transition: '0.3s',
                                                                 overflow: 'auto',
                                                                 minWidth: '180px',
+                                                                backgroundColor: optative ? (colorPalette?.buttonColor + '88') : colorPalette?.secondary,
                                                                 opacity: isNotClassDay ? 0.3 : 1,
                                                                 boxShadow: isNotClassDay ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                                                                 "&:hover": {

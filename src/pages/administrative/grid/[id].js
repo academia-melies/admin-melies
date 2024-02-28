@@ -7,6 +7,7 @@ import { CheckBoxComponent, RadioItem, SectionHeader, SelectList } from "../../.
 import { useAppContext } from "../../../context/AppContext"
 import { createGrid, deleteGrid, editGrid } from "../../../validators/api-requests"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function EditGrid(props) {
     const { setLoading, alert, colorPalette, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -298,13 +299,22 @@ export default function EditGrid(props) {
                 title={gridData?.nome_grade || `Nova grade`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newGrid ? handleCreateGrid : handleEditGrid}
-                deleteButton={!newGrid && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteGrid })}
+                inativeButton={!newGrid && isPermissionEdit}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDeleteGrid,
+                    title: 'Inativar Grade',
+                    message: 'A Grade será inativada, e ficará por um tempo no banco de dados, até que seja excluída.'
+                })}
             />
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Grade</Text>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
+                    <Text title bold>Dados da Grade</Text>
+                    <IconStatus
+                        style={{ backgroundColor: gridData.ativo >= 1 ? 'green' : 'red', boxShadow: gridData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                    />
                 </Box>
                 <SelectList disabled={!isPermissionEdit && true} fullWidth data={courses} valueSelection={gridData?.curso_id} onSelect={(value) => handleChangeCourse(value)}
                     title="Curso" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}

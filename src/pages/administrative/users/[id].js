@@ -37,7 +37,8 @@ export default function EditUser() {
         motivo_desistencia: null,
         dt_desistencia: null,
         certificado_emitido: 0,
-        preferencia_pagamento: null
+        preferencia_pagamento: null,
+        disciplinesData: [],
     })
     const [arrayEnrollmentRegisterData, setArrayEnrollmentRegisterData] = useState([])
     const [userData, setUserData] = useState({
@@ -180,6 +181,7 @@ export default function EditUser() {
     const [enrollmentStudentEditId, setEnrollmentStudentEditId] = useState()
     const [enrollmentStudentEditData, setEnrollmentStudentEditData] = useState({})
     const [disciplines, setDisciplines] = useState([])
+    const [disciplinesEnrollmentRegister, setDisciplinesEnrollmentRegister] = useState([])
     const [currentModule, setCurrentModule] = useState(1)
     const [highestModule, setHighestModule] = useState(null)
     const [showEditPhoto, setShowEditPhoto] = useState(false)
@@ -682,6 +684,36 @@ export default function EditUser() {
         }))
     }
 
+
+    const handleChangeEnrollmentDisciplinesDataRegister = (disciplineId, field, value) => {
+
+        setEnrollmentRegisterData((prevValues) => {
+            const updatedDisciplinesData = prevValues?.disciplinesData?.map((item) => {
+                if (item?.disciplina_id === disciplineId) {
+                    return {
+                        ...item,
+                        [field]: value
+                    }
+                }
+                return item
+            })
+            return {
+                ...prevValues,
+                disciplinesData: updatedDisciplinesData
+            }
+        })
+    }
+
+    const handleCalculateFrequency = (presenca, falta) => {
+        const presencas = parseInt(presenca);
+        const faltas = parseInt(falta);
+        const totalAulas = (presencas + faltas) || 1;
+        const frequency = (presencas / totalAulas) * 100
+
+        return `${parseFloat(frequency || 0).toFixed(1)}%`
+    }
+
+
     const handleChangeHistoric = (value) => {
 
         setHistoricData((prevValues) => ({
@@ -964,8 +996,8 @@ export default function EditUser() {
                 const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
                 const { data } = response
                 if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
-                if (userData?.perfil?.includes('aluno') && enrollmentRegisterData?.turma_id) {
-                    await api.post(`/enrollment/student/register/${data?.userId}`), { enrollmentRegisterData }
+                if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
+                    await api.post(`/enrollment/student/register/${data?.userId}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
                 }
                 if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
                 if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
@@ -1112,7 +1144,6 @@ export default function EditUser() {
 
     const handleAddEnrollmentRegister = () => {
         if (checkEnrollmentData(enrollmentRegisterData)) {
-
             setArrayEnrollmentRegisterData((prevArray) => [...prevArray, {
                 turma_id: enrollmentRegisterData?.turma_id,
                 modulo: enrollmentRegisterData?.modulo,
@@ -1126,7 +1157,8 @@ export default function EditUser() {
                 motivo_desistencia: enrollmentRegisterData?.motivo_desistencia,
                 dt_desistencia: enrollmentRegisterData?.dt_desistencia,
                 certificado_emitido: enrollmentRegisterData?.certificado_emitido,
-                preferencia_pagamento: enrollmentRegisterData?.preferencia_pagamento
+                preferencia_pagamento: enrollmentRegisterData?.preferencia_pagamento,
+                disciplinesData: enrollmentRegisterData?.disciplinesData
             }])
             setEnrollmentRegisterData({
                 turma_id: null,
@@ -1141,7 +1173,8 @@ export default function EditUser() {
                 motivo_desistencia: null,
                 dt_desistencia: null,
                 certificado_emitido: 0,
-                preferencia_pagamento: null
+                preferencia_pagamento: null,
+                disciplinesData: []
             })
         }
     }
@@ -1404,6 +1437,31 @@ export default function EditUser() {
         }
     }
 
+    async function handleSelectModule(value) {
+
+        let moduleClass = value;
+        try {
+            const response = await api.get(`/classSchedule/disciplines/${enrollmentRegisterData?.turma_id}/${moduleClass}`)
+            const { data } = response
+            const groupDisciplines = data.map(disciplines => ({
+                nome_disciplina: disciplines.nome_disciplina,
+                disciplina_id: disciplines?.id_disciplina,
+                nt_final: 0,
+                qnt_presenca: 0,
+                qnt_falta: 0,
+                selecionada: 1
+            }));
+
+            setDisciplinesEnrollmentRegister(groupDisciplines);
+            setEnrollmentRegisterData({
+                ...enrollmentRegisterData,
+                disciplinesData: groupDisciplines
+            })
+        } catch (error) {
+            return error
+        }
+    }
+
     const groupPerfil = [
         { label: 'Funcionário', value: 'funcionario' },
         { label: 'Aluno', value: 'aluno' },
@@ -1601,6 +1659,9 @@ export default function EditUser() {
         { key: 'responsavel', label: 'Responsável' }
     ];
 
+
+    console.log(enrollmentRegisterData)
+
     return (
         <>
             <SectionHeader
@@ -1654,6 +1715,7 @@ export default function EditUser() {
                 </Box>
                 <Box sx={{ ...styles.inputSection, whiteSpace: 'nowrap', alignItems: 'end', gap: 4 }}>
                     <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
+                        {userData?.perfil?.includes('aluno') && <TextInput disabled={!isPermissionEdit && true} placeholder='cd_cliente antigo' name='cd_cliente_antigo' onChange={handleChange} value={userData?.cd_cliente_antigo || ''} label='CD_CLIENTE *' sx={{ flex: 1, }} />}
                         <Box sx={{ ...styles.inputSection }}>
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nome Completo' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome Completo *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nome Social' name='nome_social' onChange={isPermissionEdit && handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
@@ -2603,6 +2665,71 @@ export default function EditUser() {
                                                         <Text bold>Preferência de Pagamento:</Text>
                                                         <Text>{grouPreferPayment?.filter(v => v.value === item?.preferencia_pagamento)?.map(i => i.label)}</Text>
                                                     </Box>
+
+                                                    {item?.disciplinesData?.length > 0 &&
+                                                        <Box sx={{
+                                                            display: 'flex', width: '100%', flexDirection: 'column', gap: 1.8, marginTop: 2, borderRadius: 2, padding: '20px',
+                                                            border: `1px solid ${colorPalette?.buttonColor}`
+                                                        }}>
+                                                            <Text bold style={{ color: colorPalette?.buttonColor }}>Disciplinas referente ao Módulo Cursado: </Text>
+                                                            {item?.disciplinesData?.map((item, index) => (
+                                                                <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                                                    <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minWidth: 350 }}>
+                                                                            <Box sx={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                width: 16,
+                                                                                height: 16,
+                                                                                borderRadius: 16,
+                                                                                cursor: 'pointer',
+                                                                                transition: '.5s',
+                                                                                border: parseInt(item?.selecionada) > 0 ? '' : `1px solid ${colorPalette.textColor}`,
+                                                                                '&:hover': {
+                                                                                    opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
+                                                                                    boxShadow: parseInt(item?.selecionada) > 0 ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                                }
+                                                                            }}
+                                                                                onClick={() => {
+                                                                                    if (parseInt(item?.selecionada) > 0) {
+                                                                                        handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, 'selecionada', parseInt(0))
+                                                                                    } else {
+                                                                                        handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, 'selecionada', 1)
+                                                                                    }
+                                                                                }}>
+                                                                                {parseInt(item?.selecionada) > 0 ? (
+                                                                                    <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
+                                                                                ) : (
+                                                                                    <Box
+                                                                                        sx={{
+                                                                                            width: 11,
+                                                                                            height: 11,
+                                                                                            borderRadius: 11,
+                                                                                            cursor: 'pointer',
+                                                                                            '&:hover': {
+                                                                                                opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
+                                                                                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                                            },
+                                                                                        }}
+                                                                                    />
+                                                                                )}
+                                                                            </Box>
+                                                                            <Text bold small>{item?.nome_disciplina}</Text>
+                                                                        </Box>
+                                                                        <TextInput disabled={!isPermissionEdit && true} label="Nota Final" name='nt_final' value={item?.nt_final} sx={{ width: '120px' }} />
+                                                                        <TextInput disabled={!isPermissionEdit && true} label="Qnt Presenças" Ï name='qnt_presenca' value={item?.qnt_presenca} sx={{ width: '120px' }} />
+                                                                        <TextInput disabled={!isPermissionEdit && true} label="Qnt Faltas" name='qnt_falta' value={item?.qnt_falta} sx={{ width: '120px' }} />
+                                                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                                            <Text bold small>Frequência:</Text>
+                                                                            <Text bold small>{handleCalculateFrequency(item?.qnt_presenca, item?.qnt_falta)}</Text>
+                                                                        </Box>
+                                                                    </Box>
+                                                                    <Divider distance={0} />
+                                                                </Box>
+                                                            ))}
+                                                        </Box>}
+
                                                     <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-start' }}>
                                                         <Button text="Remover" small onClick={() => removeEnrollmentRegister(index)} style={{ width: 120, height: 30 }} />
                                                     </Box>
@@ -2619,7 +2746,7 @@ export default function EditUser() {
                                             title="Turma " filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.modulo} label='Módulo/Semestre *' sx={{ flex: 1, }} />
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.modulo} label='Módulo/Semestre *' sx={{ flex: 1, }} onBlur={(e) => handleSelectModule(e.target.value)} />
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Qnt de Disciplina com DP' name='qnt_disci_dp' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.qnt_disci_dp} label='Qnt de Disciplina com DP *' sx={{ flex: 1, }} />
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Qnt de Disciplina Dispensada' name='qnt_disci_disp' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.qnt_disci_disp} label='Qnt de Disciplina Dispensada *' sx={{ flex: 1, }} />
                                     </Box>
@@ -2669,6 +2796,95 @@ export default function EditUser() {
                                         title="Preferência de Pagamento: *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
+
+                                    {enrollmentRegisterData?.disciplinesData?.length > 0 &&
+                                        <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
+                                            <Text bold>Disciplinas referente ao Módulo Cursado</Text>
+                                            <Text small light style={{ color: 'red' }}>Inserir Nota Final e Frequência</Text>
+                                            {enrollmentRegisterData?.disciplinesData?.map((item, index) => (
+                                                <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                                    <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minWidth: 350 }}>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                width: 16,
+                                                                height: 16,
+                                                                borderRadius: 16,
+                                                                cursor: 'pointer',
+                                                                transition: '.5s',
+                                                                border: parseInt(item?.selecionada) > 0 ? '' : `1px solid ${colorPalette.textColor}`,
+                                                                '&:hover': {
+                                                                    opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
+                                                                    boxShadow: parseInt(item?.selecionada) > 0 ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                }
+                                                            }}
+                                                                onClick={() => {
+                                                                    if (parseInt(item?.selecionada) > 0) {
+                                                                        handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, 'selecionada', parseInt(0))
+                                                                    } else {
+                                                                        handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, 'selecionada', 1)
+                                                                    }
+                                                                }}>
+                                                                {parseInt(item?.selecionada) > 0 ? (
+                                                                    <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
+                                                                ) : (
+                                                                    <Box
+                                                                        sx={{
+                                                                            width: 11,
+                                                                            height: 11,
+                                                                            borderRadius: 11,
+                                                                            cursor: 'pointer',
+                                                                            '&:hover': {
+                                                                                opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
+                                                                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                            },
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                            </Box>
+                                                            <Text bold small>{item?.nome_disciplina}</Text>
+                                                        </Box>
+                                                        <TextInput
+                                                            InputProps={{
+                                                                style: { opacity: parseInt(item?.selecionada) < 1 ? .5 : 1 }
+                                                            }}
+                                                            InputLabelProps={{
+                                                                style: { opacity: parseInt(item?.selecionada) < 1 ? .5 : 1 }
+                                                            }}
+                                                            disabled={(parseInt(item?.selecionada) < 1 || !isPermissionEdit) && true}
+                                                            label="Nota Final"
+                                                            name='nt_final'
+                                                            value={item?.nt_final}
+                                                            sx={{ width: '120px' }}
+                                                            onChange={(e) => handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, e.target.name, e.target.value)} />
+                                                        <TextInput InputProps={{
+                                                            style: { opacity: parseInt(item?.selecionada) < 1 ? .5 : 1 }
+                                                        }}
+                                                            InputLabelProps={{
+                                                                style: { opacity: parseInt(item?.selecionada) < 1 ? .5 : 1 }
+                                                            }}
+                                                            disabled={(parseInt(item?.selecionada) < 1 || !isPermissionEdit) && true} label="Qnt Presenças" Ï name='qnt_presenca' value={item?.qnt_presenca || ''} sx={{ width: '120px' }} onChange={(e) => handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, e.target.name, e.target.value)} />
+                                                        <TextInput InputProps={{
+                                                            style: { opacity: parseInt(item?.selecionada) < 1 ? .5 : 1 }
+                                                        }}
+                                                            InputLabelProps={{
+                                                                style: { opacity: parseInt(item?.selecionada) < 1 ? .5 : 1 }
+                                                            }}
+                                                            disabled={(parseInt(item?.selecionada) < 1 || !isPermissionEdit) && true} label="Qnt Faltas" name='qnt_falta' value={item?.qnt_falta || ''} sx={{ width: '120px' }} onChange={(e) => handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, e.target.name, e.target.value)} />
+                                                        <Box sx={{
+                                                            display: 'flex', gap: 2, alignItems: 'center',
+                                                            opacity: parseInt(item?.selecionada) < 1 ? .5 : 1
+                                                        }}>
+                                                            <Text bold small>Frequência:</Text>
+                                                            <Text bold small>{handleCalculateFrequency(item?.qnt_presenca, item?.qnt_falta)}</Text>
+                                                        </Box>
+                                                    </Box>
+                                                    <Divider distance={0} />
+                                                </Box>
+                                            ))}
+                                        </Box>}
                                 </Box>
                                 <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
                                     <Button text="Adicionar" small onClick={() => handleAddEnrollmentRegister()} style={{ width: 120, height: 30 }} />
@@ -3170,22 +3386,22 @@ export default function EditUser() {
                                                 }
 
                                                 return (
-                                                    <tr key={`${interest}-${index}`}>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                    <tr key={`${interest}-${index}`} style={{ width: '100%' }}>
+                                                        <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
                                                             {interest?.nome_curso || '-'}
                                                         </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                        <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
                                                             {interest?.nome_turma || '-'}
                                                         </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                        <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
                                                             {interest?.periodo_interesse || '-'}
                                                         </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                        <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
                                                             {interest?.observacao_int || '-'}
                                                         </td>
-                                                        <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                        <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
 
-                                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', width: '100%' }}>
                                                                 <Button disabled={!isPermissionEdit && true} secondary small text="Editar" sx={{
                                                                     width: 40,
                                                                     transition: '.3s',

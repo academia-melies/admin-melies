@@ -8,6 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { formatCEP, formatCNPJ } from "../../../helpers"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import axios from "axios"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function EditInstitution(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -347,14 +348,23 @@ export default function EditInstitution(props) {
                 title={institutionData?.nome_curso || `Instituição`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newInstitution ? handleCreateInstitution : handleEditInstitution}
-                deleteButton={!newInstitution && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteInstitution })}
+                inativeButton={!newInstitution && isPermissionEdit}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDeleteInstitution,
+                    title: 'Inativar Instituição',
+                    message: 'A Instituição será inativada, e ficará por um tempo no banco de dados, até que seja excluída.'
+                })}
             />
 
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Instituição</Text>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
+                    <Text title bold>Dados da Instituição</Text>
+                    <IconStatus
+                        style={{ backgroundColor: institutionData.ativo >= 1 ? 'green' : 'red', boxShadow: institutionData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                    />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Mantenedora' name='mantenedora' onChange={handleChange} value={institutionData?.mantenedora || ''} label='Mantenedora' sx={{ flex: 1, }} />
