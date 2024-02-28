@@ -13,6 +13,8 @@ export const SectionHeader = (props) => {
       saveButtonAction = () => { },
       deleteButton = false,
       deleteButtonAction = () => { },
+      inativeButton = false,
+      inativeButtonAction = () => { },
       resetButton = false,
       resetButtonAction = () => { },
       customButton = false,
@@ -72,6 +74,7 @@ export const SectionHeader = (props) => {
                {saveButton && <Button text='Salvar' style={{ width: 150 }} onClick={saveButtonAction} />}
                {resetButton && <Button secondary text='Resetar senha' style={{ width: 150 }} onClick={resetButtonAction} />}
                {deleteButton && <Button secondary text='Excluir' style={{ width: 150 }} onClick={deleteButtonAction} />}
+               {inativeButton && <Button secondary text='Inativar' style={{ width: 150 }} onClick={inativeButtonAction} />}
                {customButton && <Button tertiary text={customButtonText} style={{ width: 150 }} onClick={customButtonAction} />}
             </Box>
          </Box>

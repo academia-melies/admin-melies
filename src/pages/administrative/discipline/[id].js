@@ -8,6 +8,7 @@ import { useAppContext } from "../../../context/AppContext"
 import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function EditDiscipline(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -351,20 +352,23 @@ export default function EditDiscipline(props) {
                 title={disciplineData?.nome_disciplina || `Nova Disciplina`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newDiscipline ? handleCreate : handleEdit}
-                deleteButton={!newDiscipline && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({
+                inativeButton={!newDiscipline && isPermissionEdit}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
                     active: true,
                     event,
                     acceptAction: handleDelete,
-                    title: 'Excluír Disciplina',
-                    message: 'Tem certeza que deseja excluír a disciplina? Uma vez excluído, não será possível reverter.'
+                    title: 'Inativar Disciplina',
+                    message: 'A disciplina será inativada, e ficará por um tempo no banco de dados, até que seja excluída.'
                 })}
             />
 
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Disciplina</Text>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
+                    <Text title bold>Dados da Disciplina</Text>
+                    <IconStatus
+                        style={{ backgroundColor: disciplineData.ativo >= 1 ? 'green' : 'red', boxShadow: disciplineData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                    />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_disciplina' onChange={handleChange} value={disciplineData?.nome_disciplina || ''} label='Nome' sx={{ flex: 1, }} />

@@ -11,6 +11,7 @@ import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
 import { icons } from "../../../organisms/layout/Colors"
 import { formatTimeStamp } from "../../../helpers"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function Editaccount(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList, theme } = useAppContext()
@@ -335,17 +336,26 @@ export default function Editaccount(props) {
                 title={accountData?.nome_conta || `Nova Conta`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newAccount ? handleCreate : handleEdit}
-                deleteButton={!newAccount && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDelete, title: 'Deseja Prosseguir?', message: 'Tem certeza que deseja excluír o Conta? Uma vez excluído, não será possível recupera-lo.' })}
+                inativeButton={!newAccount && isPermissionEdit}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDelete,
+                    title: 'Deseja Inativar a Conta?',
+                    message: 'A Conta será inativada, e ficará por um tempo no banco de dados, até que seja excluída.'
+                })}
             />
 
             {/* usuario */}
             <Box sx={{ display: 'flex', gap: 3, width: '100%', flexDirection: 'column' }}>
                 <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
                     <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, width: '65%' }}>
-                        <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
-                            <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Conta</Text>
+                            <Text title bold >Dados da Conta</Text>
+                            <IconStatus
+                                style={{ backgroundColor: accountData.ativo >= 1 ? 'green' : 'red', boxShadow: accountData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                            />
                         </Box>
                         <Box sx={{ ...styles.inputSection, flexDirection: 'column', justifyContent: 'flex-start' }}>
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Ex: Banco itaú' name='nome_conta' onChange={handleChange} value={accountData?.nome_conta || ''} label='Nome:' sx={{ width: '100%', }} />

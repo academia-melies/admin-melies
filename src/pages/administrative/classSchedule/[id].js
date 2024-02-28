@@ -2,11 +2,12 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button } from "../../../atoms"
 import { CheckBoxComponent, RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function EditClassSchedule(props) {
     const { setLoading, alert, colorPalette, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -28,6 +29,7 @@ export default function EditClassSchedule(props) {
     const [disciplines, setDisciplines] = useState([])
     const [professors, setProfessors] = useState([])
     const [classDaysAlternate, setClassDaysAlternate] = useState({});
+    const [classDaysOptative, setClassDaysOptative] = useState([]);
     const [titleSchedule, setTitleSchedule] = useState('')
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
@@ -239,7 +241,31 @@ export default function EditClassSchedule(props) {
         }))
     }
 
-    const handleDayDataChange = (dayWeek, field, value, isAlternate = false) => {
+    const addClassDayOptative = (dayWeek) => {
+        setClassDaysOptative((prevClassDays) => ([
+            ...prevClassDays,
+            {
+                [dayWeek]: {
+                    dia_semana: dayWeek,
+                    disciplina_id: null,
+                    professor1_id: null,
+                    professor2_id: null,
+                    key: Math.random().toString(36).substring(7),
+                }
+            },
+        ]));
+    };
+
+
+
+    const removeClassDayOptative = (index) => {
+        const newData = [...classDaysOptative];
+        newData.splice(index, 1);
+        setClassDaysOptative(newData);
+    };
+
+    const handleDayDataChange = (dayWeek, field, value, isAlternate = false, isOptative = false, key) => {
+
         if (isAlternate) {
             setClassDaysAlternate((prevClassDays) => ({
                 ...prevClassDays,
@@ -249,7 +275,24 @@ export default function EditClassSchedule(props) {
                     [field]: value,
                 },
             }));
-        } else {
+        } else if (isOptative) {
+            setClassDaysOptative((prevClassDays) => prevClassDays?.map((item) => {
+                console.log(item[dayWeek]?.key)
+                console.log(key)
+                if (item[dayWeek]?.dia_semana === dayWeek && item[dayWeek]?.key === key) {
+                    return {
+                        ...item,
+                        [dayWeek]: {
+                            ...item[dayWeek],
+                            dia_semana: dayWeek,
+                            [field]: value,
+                        },
+                    };
+                }
+                return item;
+            }));
+        }
+        else {
             setClassDays((prevClassDays) => ({
                 ...prevClassDays,
                 [dayWeek]: {
@@ -264,7 +307,7 @@ export default function EditClassSchedule(props) {
     const handleCreate = async () => {
         setLoading(true)
         try {
-            const response = await api.post(`/classSchedule/create`, { classScheduleData, classDays, classDaysAlternate });
+            const response = await api.post(`/classSchedule/create`, { classScheduleData, classDays, classDaysAlternate, classDaysOptative });
             if (response?.status === 201) {
                 alert.success('Cronograma cadastrado com sucesso.');
                 router.push(`/administrative/classSchedule/list`)
@@ -337,6 +380,8 @@ export default function EditClassSchedule(props) {
 
     const diasDaSemanaOrdenados = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
+    console.log(classDaysOptative)
+
     return (
         <>
             <SectionHeader
@@ -344,19 +389,22 @@ export default function EditClassSchedule(props) {
                 title={classScheduleData?.turma_id ? titleSchedule : 'Novo Cronograma'}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newClassSchedule ? handleCreate : handleEdit}
-                deleteButton={!newClassSchedule && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({
+                inativeButton={!newClassSchedule && isPermissionEdit}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
                     active: true,
                     event,
                     acceptAction: handleDelete,
-                    title: 'Realmente deseja prosseguir?',
-                    message: 'Afeterá as aulas, notas e chamada vinculádas a esse semestre.'
+                    title: 'Deseja Inativar o cronograma?',
+                    message: 'A Grade será inativada, e ficará por um tempo no banco de dados, até que seja excluída. Essa ação afeterá as aulas, notas e chamada vinculádas a esse semestre.'
                 })}
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Cronograma</Text>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
+                    <Text title bold>Cronograma</Text>
+                    <IconStatus
+                        style={{ backgroundColor: classScheduleData.ativo >= 1 ? 'green' : 'red', boxShadow: classScheduleData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                    />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={classScheduleData?.turma_id} onSelect={(value) => handleClassData(value)}
@@ -409,57 +457,146 @@ export default function EditClassSchedule(props) {
 
                     <Box sx={{ display: 'flex', gap: 2, justifyContent: 'start', flexDirection: 'column' }}>
                         {diasDaSemanaOrdenados.map((dayWeek) => {
+                            const classOptative = classDaysOptative?.map(item => item && item[dayWeek]?.dia_semana === dayWeek)
                             const isSelected = daysWeekSelected?.includes(dayWeek);
                             const lengthDays = daysWeekSelected?.split(',')
 
                             return isSelected ? (
-                                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'start', border: classDays[dayWeek]?.recorrencia === 14 && `1px solid ${colorPalette.buttonColor}`, borderRadius: classDays[dayWeek]?.recorrencia === 14 && '8px', padding: classDays[dayWeek]?.recorrencia === 14 && 1 }}>
-                                    <ContentContainer style={{ flex: 1 }} key={dayWeek}>
-                                        <Text bold title={true} style={{ color: colorPalette.buttonColor }}>{dayWeek}</Text>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.disciplina_id} onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value)}
-                                                title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
-                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                            />
-                                            <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
-                                                title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                            />
-                                            <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
-                                                title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                            />
-                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia || 7} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
-                                                title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                            />
-                                        </Box>
-                                    </ContentContainer>
-                                    {classDays[dayWeek]?.recorrencia === 14 &&
+                                <Box sx={{
+                                    display: 'flex', gap: 2, justifyContent: 'start',
+                                    // border: classDays[dayWeek]?.recorrencia === 14 && `1px solid ${colorPalette.buttonColor}`,
+                                    border: classOptative?.length > 0 && `1px solid ${colorPalette.buttonColor}`,
+                                    borderRadius: classDays[dayWeek]?.recorrencia === 14 && '8px', padding: classDays[dayWeek]?.recorrencia === 14 && 1,
+                                    flexDirection: 'column'
+                                }}>
+                                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'start', padding: classDays[dayWeek]?.recorrencia === 14 && 1, flex: 1 }}>
+
                                         <ContentContainer style={{ flex: 1 }} key={dayWeek}>
-                                            <Text bold title={true} style={{ color: colorPalette.buttonColor, display: 'flex', alignItems: 'end', gap: 5 }}>
-                                                {dayWeek}
-                                                <Text bold small style={{ padding: '0px 0px 5px 0px' }}>aula alternada</Text>
-                                            </Text>
+                                            <Text bold title={true} style={{ color: colorPalette.buttonColor }}>{dayWeek}</Text>
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines}
-                                                    valueSelection={classDaysAlternate[dayWeek]?.disciplina_id}
-                                                    onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value, true)}
+                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines} valueSelection={classDays[dayWeek]?.disciplina_id} onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value)}
                                                     title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 />
-                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors}
-                                                    valueSelection={classDaysAlternate[dayWeek]?.professor1_id}
-                                                    onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value, true)}
+                                                <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor1_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value)}
                                                     title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 />
-                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDaysAlternate[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, true)}
+                                                <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDays[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value)}
                                                     title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 />
+                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupFrequency} valueSelection={classDays[dayWeek]?.recorrencia || 7} onSelect={(value) => handleDayDataChange(dayWeek, 'recorrencia', value)}
+                                                    title="Frequência" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                />
+                                                <Box sx={{
+                                                    display: 'flex', gap: 1, alignItems: 'center', padding: '8px 12px', borderRadius: 2,
+                                                    border: `1px solid green`, width: 180, justifyContent: 'space-between',
+                                                    transition: '.3s',
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    }
+                                                }} onClick={() => addClassDayOptative(dayWeek)}>
+                                                    <Text bold>Adicionar optativa</Text>
+                                                    <Box sx={{
+                                                        backgroundSize: 'cover',
+                                                        backgroundRepeat: 'no-repeat',
+                                                        backgroundPosition: 'center',
+                                                        width: 20,
+                                                        height: 20,
+                                                        borderRadius: '50%',
+                                                        backgroundImage: `url(/icons/include_icon.png)`,
+                                                    }} />
+                                                </Box>
                                             </Box>
                                         </ContentContainer>
+                                        {classDays[dayWeek]?.recorrencia === 14 &&
+                                            <ContentContainer style={{ flex: 1 }} key={dayWeek}>
+                                                <Text bold title={true} style={{ color: colorPalette.buttonColor, display: 'flex', alignItems: 'end', gap: 5 }}>
+                                                    {dayWeek}
+                                                    <Text bold small style={{ padding: '0px 0px 5px 0px' }}>aula alternada</Text>
+                                                </Text>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines}
+                                                        valueSelection={classDaysAlternate[dayWeek]?.disciplina_id}
+                                                        onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value, true)}
+                                                        title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
+                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                    />
+                                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors}
+                                                        valueSelection={classDaysAlternate[dayWeek]?.professor1_id}
+                                                        onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value, true)}
+                                                        title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                    />
+                                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDaysAlternate[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, true)}
+                                                        title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                    />
+                                                </Box>
+
+                                            </ContentContainer>
+                                        }
+                                    </Box>
+                                    {
+
+                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                            {classDaysOptative?.map((item, index) => {
+                                                const classDay = item && item[dayWeek]?.dia_semana === dayWeek;
+
+                                                if (classDay) {
+                                                    return (
+                                                        <ContentContainer key={index} style={{ flex: 1 }}>
+                                                            <Text bold title={true} style={{ color: colorPalette.buttonColor, display: 'flex', alignItems: 'end', gap: 5 }}>
+                                                                {dayWeek}
+                                                                <Text bold small style={{ padding: '0px 0px 5px 0px' }}>{index + 1}º optativa</Text>
+                                                            </Text>
+                                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={disciplines}
+                                                                    valueSelection={item[dayWeek]?.disciplina_id}
+                                                                    onSelect={(value) => handleDayDataChange(dayWeek, 'disciplina_id', value, false, true, item[dayWeek]?.key)}
+                                                                    title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
+                                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                                />
+                                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors}
+                                                                    valueSelection={item[dayWeek]?.professor1_id}
+                                                                    onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value, false, true, item[dayWeek]?.key)}
+                                                                    title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                                />
+                                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={item[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, false, true, item[dayWeek]?.key)}
+                                                                    title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                                />
+                                                            </Box>
+                                                            <Box sx={{
+                                                                display: 'flex', gap: 1, alignItems: 'center', padding: '8px 12px', borderRadius: 2,
+                                                                border: `1px solid red`, width: 180, justifyContent: 'space-between',
+                                                                transition: '.3s',
+                                                                "&:hover": {
+                                                                    opacity: 0.8,
+                                                                    cursor: 'pointer'
+                                                                }
+                                                            }} onClick={() => removeClassDayOptative(index)}>
+                                                                <Text bold style={{ color: 'red' }}>Remover optativa</Text>
+                                                                <Box sx={{
+                                                                    backgroundSize: 'cover',
+                                                                    backgroundRepeat: 'no-repeat',
+                                                                    backgroundPosition: 'center',
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    backgroundImage: `url(/icons/exclude.png)`,
+                                                                }} />
+                                                            </Box>
+                                                        </ContentContainer>
+                                                    )
+                                                }
+                                            })}
+                                        </Box>
+
                                     }
                                 </Box>
                             ) : null

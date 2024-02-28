@@ -115,9 +115,8 @@ export default function ListInstitution(props) {
 
     const column = [
         { key: 'id_instituicao', label: 'ID' },
-        { key: 'nome_instituicao', label: 'Nome' },
-        { key: 'cnpj', label: 'CNPJ' },
         { key: 'mantenedora', label: 'Mantenedora' },
+        { key: 'cnpj', label: 'CNPJ' },
         { key: 'mantida', label: 'Mantida' },
         { key: 'dt_criacao', label: 'Criado em', date: true },
 

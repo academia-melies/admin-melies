@@ -10,6 +10,7 @@ import { createCourse, deleteCourse, editCourse } from "../../../validators/api-
 import { SelectList } from "../../../organisms/select/SelectList"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import { EditFile } from "../users/[id]"
+import { IconStatus } from "../../../organisms/Table/table"
 
 export default function EditCourse(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -328,20 +329,23 @@ export default function EditCourse(props) {
                 title={courseData?.nome_curso || `Novo Curso`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newCourse ? handleCreateCourse : handleEditCourse}
-                deleteButton={!newCourse && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({
+                inativeButton={!newCourse && isPermissionEdit}
+                inativeButtonAction={(event) => setShowConfirmationDialog({
                     active: true,
                     event,
                     acceptAction: handleDeleteCourse,
-                    title: 'Excluír Curso',
-                    message: 'Tem certeza que deseja excluír o Curso? Uma vez excluído, não será possível recupera-lo.'
+                    title: 'Inativar Curso',
+                    message: 'O curso será inativada, e ficará por um tempo no banco de dados, até que seja excluída.'
                 })}
             />
 
             {/* usuario */}
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box>
-                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados do Curso</Text>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
+                    <Text title bold>Dados do Curso</Text>
+                    <IconStatus
+                        style={{ backgroundColor: courseData.ativo >= 1 ? 'green' : 'red', boxShadow: courseData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
+                    />
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_curso' onChange={handleChange} value={courseData?.nome_curso || ''} label='Nome' sx={{ flex: 1, }} />
