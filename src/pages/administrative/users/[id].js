@@ -1448,7 +1448,7 @@ export default function EditUser() {
                 disciplina_id: disciplines?.id_disciplina,
                 nt_final: 0,
                 qnt_presenca: 0,
-                qnt_falta: 0,
+                qnt_falta: 0, 
                 selecionada: 1
             }));
 
