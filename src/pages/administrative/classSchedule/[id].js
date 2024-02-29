@@ -492,7 +492,7 @@ export default function EditClassSchedule(props) {
                                                 />
                                                 <Box sx={{
                                                     display: 'flex', gap: 1, alignItems: 'center', padding: '8px 12px', borderRadius: 2,
-                                                    border: `1px solid green`, width: 180, justifyContent: 'space-between',
+                                                    border: `1px solid green`, width: 220, justifyContent: 'space-between',
                                                     transition: '.3s',
                                                     "&:hover": {
                                                         opacity: 0.8,
@@ -525,13 +525,13 @@ export default function EditClassSchedule(props) {
                                                         title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
                                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                     />
-                                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors}
+                                                    <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors}
                                                         valueSelection={classDaysAlternate[dayWeek]?.professor1_id}
                                                         onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value, true)}
                                                         title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                     />
-                                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDaysAlternate[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, true)}
+                                                    <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={classDaysAlternate[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, true)}
                                                         title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                     />
@@ -560,20 +560,20 @@ export default function EditClassSchedule(props) {
                                                                     title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1, minWidth: lengthDays.length < 4 ? '200px' : '' }}
                                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                                 />
-                                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors}
+                                                                <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors}
                                                                     valueSelection={item[dayWeek]?.professor1_id}
                                                                     onSelect={(value) => handleDayDataChange(dayWeek, 'professor1_id', value, false, true, item[dayWeek]?.key)}
                                                                     title="1º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                                 />
-                                                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={item[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, false, true, item[dayWeek]?.key)}
+                                                                <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={professors} valueSelection={item[dayWeek]?.professor2_id} onSelect={(value) => handleDayDataChange(dayWeek, 'professor2_id', value, false, true, item[dayWeek]?.key)}
                                                                     title="2º Professor" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                                 />
                                                             </Box>
                                                             <Box sx={{
                                                                 display: 'flex', gap: 1, alignItems: 'center', padding: '8px 12px', borderRadius: 2,
-                                                                border: `1px solid red`, width: 180, justifyContent: 'space-between',
+                                                                border: `1px solid red`, width: 220, justifyContent: 'space-between',
                                                                 transition: '.3s',
                                                                 "&:hover": {
                                                                     opacity: 0.8,
