@@ -565,10 +565,11 @@ export default function EditTask(props) {
                                         title="Autor *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />}
-                                    {/* <SelectList fullWidth data={responsibleList} valueSelection={taskData?.responsavel_chamado} onSelect={(value) => setTaskData({ ...taskData, responsavel_chamado: value })}
+                                    {user?.area === 'TI - Suporte' && <SelectList 
+                                    onFilter filterValue="label" fullWidth data={usersList} valueSelection={taskData?.responsavel_chamado} onSelect={(value) => setTaskData({ ...taskData, responsavel_chamado: value })}
                                         title="Responsável *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                    /> */}
+                                    />}
                                 </Box>
                                 <TextInput placeholder='Resumo do problema/solicitação' name='titulo_chamado' onChange={handleChange} value={taskData?.titulo_chamado || ''} label='Título' sx={{ flex: 1, }} />
                                 <TextInput
