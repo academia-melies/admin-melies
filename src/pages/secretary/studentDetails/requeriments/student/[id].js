@@ -67,7 +67,8 @@ export default function RequerimentEnrollmentStudent(props) {
                 descricao_dp: disciplines?.descricao,
                 softwares: disciplines?.softwares,
                 aprovado: disciplines?.aprovado,
-                motivo_reprovado: disciplines?.motivo_reprovado
+                motivo_reprovado: disciplines?.motivo_reprovado,
+                nt_final_disc: disciplines?.nt_final_disc
             }));
 
 
@@ -165,6 +166,20 @@ export default function RequerimentEnrollmentStudent(props) {
         setDisciplines(updatedDisciplines);
     };
 
+    const handleChangeGradeDiscipline = async (disciplineId, value) => {
+        const updatedDisciplines = disciplines.map(discipline => {
+            if (discipline.id_disc_req_mat === disciplineId) {
+                return {
+                    ...discipline,
+                    nt_final_disc: value,
+                };
+            }
+            return discipline;
+        });
+
+        setDisciplines(updatedDisciplines);
+    };
+
 
     const handleChangeReasonStatusDiscipline = async (disciplineId, value) => {
         const updatedDisciplines = disciplines.map(discipline => {
@@ -246,7 +261,8 @@ export default function RequerimentEnrollmentStudent(props) {
                             status: statusDiscipline,
                             dispensado: discipline?.dispensado,
                             aprovado: discipline?.aprovado,
-                            motivo_reprovado: discipline?.motivo_reprovado
+                            motivo_reprovado: discipline?.motivo_reprovado,
+                            nt_final_disc: discipline?.nt_final_disc
                         }
                         await api.patch(`/requeriment/discipline/update/${disciplineId}`, { disciplineData })
                     }
@@ -727,7 +743,18 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                         maxRows={4}
                                                                                         rows={2}
                                                                                         sx={{ width: 400 }} />
-                                                                                </Box>}
+                                                                                </Box>
+                                                                            }
+                                                                            {(parseInt(item?.aprovado) === 1) &&
+                                                                                <Box sx={{ display: 'flex', gap: 1, marginTop: 1, zIndex: 9999, width: 400 }}>
+                                                                                    <TextInput
+                                                                                        label='Nota Disciplina:'
+                                                                                        name='nt_final_disc'
+                                                                                        value={item?.nt_final_disc || ''}
+                                                                                        onChange={(e) => handleChangeGradeDiscipline(item?.id_disc_req_mat, e.target.value)}
+                                                                                    />
+                                                                                </Box>
+                                                                            }
                                                                         </Box>
                                                                     }
                                                                 </Box>

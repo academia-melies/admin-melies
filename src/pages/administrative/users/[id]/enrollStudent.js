@@ -1701,9 +1701,9 @@ export const Payment = (props) => {
                 let payments = paymentsProfile?.map(item => item)[0]
 
                 let paymentForm = (globalTypePaymentsSelected === 'Cartão' && payments?.id_cartao_credito) ||
-                 (globalTypePaymentsSelected === 'pix' && 'Pix') ||
-                  (globalTypePaymentsSelected === 'Boleto' && 'Boleto') || 
-                   (globalTypePaymentsSelected === 'Boleto(PRAVALER)' && 'Boleto(PRAVALER)')
+                    (globalTypePaymentsSelected === 'pix' && 'Pix') ||
+                    (globalTypePaymentsSelected === 'Boleto' && 'Boleto') ||
+                    (globalTypePaymentsSelected === 'Boleto(PRAVALER)' && 'Boleto(PRAVALER)')
                 if (globalTypePaymentsSelected === 'Cartão' && paymentsProfile?.length <= 0) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
                 if (globalTypePaymentsSelected === 'Cartão' && paymentsProfile?.length > 0) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
                 updatedArray.push({
@@ -1766,9 +1766,9 @@ export const Payment = (props) => {
                 let payments = paymentsProfile?.map(item => item)[0]
 
                 let paymentForm = (globalTypePaymentsSelectedTwo === 'Cartão' && payments?.id_cartao_credito) || (globalTypePaymentsSelectedTwo === 'Pix' && 'Pix') ||
-                 (globalTypePaymentsSelectedTwo === 'Boleto' && 'Boleto') ||
-                 (globalTypePaymentsSelectedTwo === 'Boleto(PRAVALER)' && 'Boleto(PRAVALER)') 
-                 
+                    (globalTypePaymentsSelectedTwo === 'Boleto' && 'Boleto') ||
+                    (globalTypePaymentsSelectedTwo === 'Boleto(PRAVALER)' && 'Boleto(PRAVALER)')
+
                 if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile?.length <= 0) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
                 if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile?.length > 0) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
                 updatedArray.push({
