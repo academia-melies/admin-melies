@@ -87,21 +87,38 @@ export default function Editaccount(props) {
     const getExtract = async () => {
         try {
             const response = await api.get(`/account/extract/${id}`)
-            const { revenues, expenses, personal } = response?.data
-            const mappedRevenues = revenues.map(revenue => ({
-                id: revenue.id,
-                descricao: revenue.descricao,
-                vencimento: revenue.vencimento,
-                dt_pagamento: revenue.dt_pagamento,
-                status: revenue.status,
-                credito: revenue.valor,
+            const { installmentsCourse, expenses, personal, receiveds } = response?.data
+
+            const mappedReceiveds = receiveds.map(received => ({
+                id: received?.id,
+                descricao: received?.descricao,
+                vencimento: received?.dt_pagamento,
+                dt_pagamento: received?.dt_baixa,
+                status: received?.status,
+                credito: received?.valor,
                 debito: 0,
-                n_parcela: revenue.n_parcela,
-                forma_pagamento: revenue.forma_pagamento,
-                observacao: revenue.observacao,
-                c_custo: revenue.c_custo,
-                conta: revenue?.conta,
-                type: 'revenue'
+                n_parcela: 1,
+                forma_pagamento: received?.forma_pagamento,
+                observacao: received?.observacao,
+                c_custo: received?.c_custo,
+                conta: received?.conta,
+                type: 'received'
+            }));
+
+            const mappedInstallmentsCourse = installmentsCourse.map(parcel => ({
+                id: parcel.id,
+                descricao: parcel.descricao,
+                vencimento: parcel.vencimento,
+                dt_pagamento: parcel.dt_pagamento,
+                status: parcel.status,
+                credito: parcel.valor,
+                debito: 0,
+                n_parcela: parcel.n_parcela,
+                forma_pagamento: parcel.forma_pagamento,
+                observacao: parcel.observacao,
+                c_custo: parcel.c_custo,
+                conta: parcel?.conta,
+                type: 'installmentsCourse'
             }));
 
             const mappedExpenses = expenses.map(expense => ({
@@ -136,12 +153,13 @@ export default function Editaccount(props) {
                 type: 'personal'
             }));
 
-            const updatedSetAccountExtractData = [...mappedRevenues, ...mappedExpenses, ...mappedPersonal];
+            const updatedSetAccountExtractData = [...mappedInstallmentsCourse, ...mappedExpenses, ...mappedPersonal, ...mappedReceiveds];
             const totalValuesExpanses = mappedExpenses?.map(item => item.debito)?.reduce((acc, curr) => acc + curr, 0) || 0
             const totalValuesPersonal = mappedPersonal?.map(item => item.debito)?.reduce((acc, curr) => acc + curr, 0) || 0
-            const totalValuesRevenues = mappedRevenues?.map(item => item.credito)?.reduce((acc, curr) => acc + curr, 0) || 0
+            const totalValuesInstallmentCourse = mappedInstallmentsCourse?.map(item => item.credito)?.reduce((acc, curr) => acc + curr, 0) || 0
+            const totalValuesReceiveds = mappedReceiveds?.map(item => item.credito)?.reduce((acc, curr) => acc + curr, 0) || 0
 
-            const totalCredit = parseFloat(totalValuesRevenues) || 0;
+            const totalCredit = (parseFloat(totalValuesInstallmentCourse) + parseFloat(totalValuesReceiveds)) || 0;
             const totalDebit = (parseFloat(totalValuesExpanses) + parseFloat(totalValuesPersonal)) || 0;
             const saldo = (parseFloat(totalCredit) - parseFloat(totalDebit)) || 0;
             setSaldoAccount({ debit: totalDebit.toFixed(2), credit: totalCredit.toFixed(2), saldoAccount: saldo.toFixed(2) })
@@ -671,7 +689,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
                                                     backgroundImage: `url('/icons/arrow_down_red_icon.png')`,
                                                     transition: '.3s',
                                                 }} />
-                                                <Text>{formatter.format(-item?.debito) || '-'}</Text>
+                                                <Text>{formatter.format(item?.debito) || '-'}</Text>
                                             </Box>
 
                                         </TableCell>
