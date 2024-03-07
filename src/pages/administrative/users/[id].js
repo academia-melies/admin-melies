@@ -42,6 +42,7 @@ export default function EditUser() {
     })
     const [arrayEnrollmentRegisterData, setArrayEnrollmentRegisterData] = useState([])
     const [userData, setUserData] = useState({
+        cd_cliente: null,
         autista: null,
         superdotacao: null,
         cpf: null,
@@ -1715,7 +1716,7 @@ export default function EditUser() {
                 </Box>
                 <Box sx={{ ...styles.inputSection, whiteSpace: 'nowrap', alignItems: 'end', gap: 4 }}>
                     <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
-                        {userData?.perfil?.includes('aluno') && <TextInput disabled={!isPermissionEdit && true} placeholder='cd_cliente antigo' name='cd_cliente_antigo' onChange={handleChange} value={userData?.cd_cliente_antigo || ''} label='CD_CLIENTE *' sx={{ flex: 1, }} />}
+                        {userData?.perfil?.includes('aluno') && <TextInput disabled={!isPermissionEdit && true} placeholder='cd_cliente antigo' name='cd_cliente' onChange={handleChange} value={userData?.cd_cliente || ''} label='CD_CLIENTE *' sx={{ flex: 1, }} />}
                         <Box sx={{ ...styles.inputSection }}>
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nome Completo' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome Completo *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nome Social' name='nome_social' onChange={isPermissionEdit && handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
