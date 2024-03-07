@@ -1048,6 +1048,9 @@ export default function EditUser() {
                 if (contract) {
                     const contr = await editContract({ id, contract })
                 }
+                if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
+                    await api.post(`/enrollment/student/register/${id}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
+                }
                 if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
                     await api.post(`/officeHours/create/${id}`, { officeHours })
                 }
@@ -1449,7 +1452,7 @@ export default function EditUser() {
                 disciplina_id: disciplines?.id_disciplina,
                 nt_final: 0,
                 qnt_presenca: 0,
-                qnt_falta: 0, 
+                qnt_falta: 0,
                 selecionada: 1
             }));
 
