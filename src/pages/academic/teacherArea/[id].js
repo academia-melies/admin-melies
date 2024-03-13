@@ -322,7 +322,7 @@ export default function StudentData(props) {
         (data === 'Aguardando Aprovação' && 'yellow')
     )
 
-    const totalHoursApproved = activityList?.filter(item => item?.carga_hr && parseInt(item?.aprovado) === 1)?.map(item => parseInt(item?.carga_hr))
+    const totalHoursApproved = activityList?.length > 0 && activityList?.filter(item => item?.carga_hr && parseInt(item?.aprovado) === 1)?.map(item => parseInt(item?.carga_hr))
         ?.reduce((accumulator, currentValue) => accumulator += currentValue)
 
     return (
