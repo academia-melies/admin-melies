@@ -28,12 +28,30 @@ export default function ListStudents(props) {
     })
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-    const filter = (item) => {
-        if (filterAtive === 'todos') {
-            return item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase());
-        } else {
-            return item?.ativo === filterAtive && (item?.nome?.toLowerCase().includes(filterData?.toLowerCase()) || item?.cpf?.toLowerCase().includes(filterData?.toLowerCase()));
+    const filterFunctions = {
+        status: (item) => {
+            if (filterAtive === 'todos') {
+                return true
+            } else {
+                return item.ativo === filterAtive
+            }
         }
+    };
+
+
+    const filter = (item) => {
+        const normalizeString = (str) => {
+            return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        };
+
+        const normalizedFilterData = normalizeString(filterData);
+        const normalizedNome = normalizeString(item.nome);
+        const normalizedCPF = normalizeString(item.cpf);
+
+        return (
+            normalizedNome?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
+            normalizedCPF?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
+        ) && Object.values(filterFunctions).every(filterFunction => filterFunction(item));
     };
 
     useEffect(() => {
