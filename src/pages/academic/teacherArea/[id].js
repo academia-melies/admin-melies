@@ -198,7 +198,6 @@ export default function StudentData(props) {
         setLoading(true)
         try {
             let enrollmentData = showClass?.turma_id;
-            if (enrollmentData) {
                 await getStudent()
                 await getPhoto()
                 const enrollment = await getEnrollment(enrollmentData)
@@ -206,7 +205,6 @@ export default function StudentData(props) {
                 await getFrequency(showClass?.turma_id)
                 await getGrades(moduleStudent, showClass?.turma_id)
                 await getComplementaryActivities(moduleStudent, showClass?.turma_id)
-            }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
             console.log(error)
