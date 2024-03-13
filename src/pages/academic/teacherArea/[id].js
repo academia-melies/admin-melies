@@ -1,12 +1,15 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Avatar, useMediaQuery, useTheme } from "@mui/material"
+import { Avatar, Backdrop, CircularProgress, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../../atoms"
 import { RadioItem, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { formatDate, formatTimeStamp } from "../../../helpers"
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import Link from "next/link"
 
 export default function StudentData(props) {
     const { setLoading, alert, colorPalette, user } = useAppContext()
@@ -18,9 +21,13 @@ export default function StudentData(props) {
     const [showClass, setShowClass] = useState({ turma_id: null, nome_turma: null, modulo_turma: 1 })
     const [frequencyData, setFrequency] = useState([])
     const [gradesData, setGrades] = useState([])
+    const [activityList, setActivityList] = useState([])
     const [disciplines, setDisciplines] = useState([])
     const [enrollmentData, setEnrollment] = useState([])
     const [moduleStudent, setModuleStudent] = useState(1)
+    const [loadingActivities, setLoadingActivities] = useState(false)
+    const [showFiles, setShowFiles] = useState({ active: false, item: [] })
+    const [showComentaryReprovved, setShowComentaryReprovved] = useState({ active: false, item: [], commentary: '', onlyRead: false })
     const [isDp, setIsDp] = useState(false)
     const [bgPhoto, setBgPhoto] = useState({})
     const [statusGradeFinally, setStatusGradeFinally] = useState('Pendente')
@@ -118,6 +125,24 @@ export default function StudentData(props) {
     }
 
 
+    const getComplementaryActivities = async (moduleStudent, turma_id) => {
+        setLoadingActivities(true)
+        try {
+            if (turma_id) {
+                const response = await api.get(`/atividade-complementar/user/${id}/${turma_id}`)
+                const { data } = response
+                const sortedActivities = data.sort((a, b) => new Date(a.dt_criacao) - new Date(b.dt_criacao));
+                setActivityList(sortedActivities);
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoadingActivities(false)
+        }
+    }
+
+
 
     async function handleSelectModule(turma_id, moduleStudent) {
         try {
@@ -173,12 +198,15 @@ export default function StudentData(props) {
         setLoading(true)
         try {
             let enrollmentData = showClass?.turma_id;
-            await getStudent()
-            await getPhoto()
-            const enrollment = await getEnrollment(enrollmentData)
-            await handleSelectModule(showClass?.turma_id, moduleStudent)
-            await getFrequency(showClass?.turma_id)
-            await getGrades(moduleStudent, showClass?.turma_id)
+            if (enrollmentData) {
+                await getStudent()
+                await getPhoto()
+                const enrollment = await getEnrollment(enrollmentData)
+                await handleSelectModule(showClass?.turma_id, moduleStudent)
+                await getFrequency(showClass?.turma_id)
+                await getGrades(moduleStudent, showClass?.turma_id)
+                await getComplementaryActivities(moduleStudent, showClass?.turma_id)
+            }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
             console.log(error)
@@ -203,24 +231,32 @@ export default function StudentData(props) {
         return true
     }
 
-    const handleEdit = async () => {
-        if (checkRequiredFields()) {
-            setLoading(true)
-            try {
-                const response = await api.post(``)
-                if (response?.status === 201) {
-                    alert.success('Disciplina atualizado com sucesso.');
-                    handleItems()
-                    return
-                }
-                alert.error('Tivemos um problema ao atualizar Disciplina.');
-            } catch (error) {
-                alert.error('Tivemos um problema ao atualizar Disciplina.');
-            } finally {
-                setLoading(false)
+    const handleUpdateAprovvedActivity = async ({ activityId, aprovved, commentary = null }) => {
+        setLoading(true)
+        try {
+            const activityData = {
+                aprovado: aprovved,
+                comentario: commentary,
+                aprovado_por: user?.id
             }
+            const response = await api.patch(`/atividade-complementar/update/aprovved/${activityId}`, { activityData })
+            if (response?.status === 200) {
+                alert.success('Atividade Complementar atualizada com sucesso.');
+                setShowComentaryReprovved({ active: false, item: [], commentary: '' })
+                setShowFiles({ active: false, item: [] })
+                handleItems()
+                return
+            }
+            alert.error('Tivemos um problema ao atualizar Atividade Complementar.');
+        } catch (error) {
+            alert.error('Tivemos um problema ao atualizar Atividade Complementar.');
+        } finally {
+            setLoading(false)
         }
     }
+
+
+
 
 
     const getStatusGrade = (item) => {
@@ -278,6 +314,16 @@ export default function StudentData(props) {
         style: 'currency',
         currency: 'BRL'
     });
+
+
+    const statusColor = (data) => (
+        (data === 'Reprovado' && 'red') ||
+        (data === 'Aprovado' && 'green') ||
+        (data === 'Aguardando Aprovação' && 'yellow')
+    )
+
+    const totalHoursApproved = activityList?.filter(item => item?.carga_hr && parseInt(item?.aprovado) === 1)?.map(item => parseInt(item?.carga_hr))
+        ?.reduce((accumulator, currentValue) => accumulator += currentValue)
 
     return (
         <>
@@ -465,56 +511,65 @@ export default function StudentData(props) {
                             }}
                         />
                     </Box>
-                    {showBox?.frequency && (
-                        frequencyData?.length > 0 ?
-                            <Box sx={{ display: 'flex' }}>
+                    {showBox?.frequency &&
+                        <>
+                            {loadingActivities &&
+                                <ContentContainer>
+                                    <CircularProgress />
+                                    <Text bold>Buscando atividades...</Text>
+                                </ContentContainer>
+                            }
+                            {frequencyData?.length > 0 ?
+                                <Box sx={{ display: 'flex' }}>
 
-                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
-                                    <table style={{ borderCollapse: 'collapse', }}>
-                                        <thead>
-                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Matéria/Disciplina</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Presenças</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ausências</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Freqência</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Qnt Aulas</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody style={{ flex: 1 }}>
-                                            {
-                                                frequencyData?.map((item, index) => {
-                                                    const qntClass = (item?.quantidade_de_presencas + item?.quantidade_de_ausencias)
-                                                    return (
-                                                        <tr key={`${item}-${index}`}>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.nome_disciplina}
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.quantidade_de_presencas}
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.quantidade_de_ausencias}
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.frequencia_percentual_do_aluno}%
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {qntClass}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
+                                    <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                                        <table style={{ borderCollapse: 'collapse', }}>
+                                            <thead>
+                                                <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Matéria/Disciplina</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Presenças</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ausências</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Freqência</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Qnt Aulas</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody style={{ flex: 1 }}>
+                                                {
+                                                    frequencyData?.map((item, index) => {
+                                                        const qntClass = (item?.quantidade_de_presencas + item?.quantidade_de_ausencias)
+                                                        return (
+                                                            <tr key={`${item}-${index}`}>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.nome_disciplina}
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.quantidade_de_presencas}
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.quantidade_de_ausencias}
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.frequencia_percentual_do_aluno}%
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {qntClass}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })
 
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </Box>
-                            :
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                                <Text ligth>Não foi encontrado frequências lançadas.</Text>
-                            </Box>
-                    )}
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </Box>
+                                :
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                    <Text ligth>Não foi encontrado frequências lançadas.</Text>
+                                </Box>
+                            }
+                        </>
+                    }
                 </Box>
 
                 <Divider />
@@ -668,15 +723,299 @@ export default function StudentData(props) {
                         />
                     </Box>
                     {showBox?.additionalActivities && (
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                            <Text ligth>O aluno não possui atividades complementares.</Text>
-                        </Box>
+                        activityList?.length > 0 ?
+                            <Box sx={{ display: 'flex', flex: 1, gap: 3, marginTop: '10px', flexDirection: 'column' }}>
+                                <div style={{ borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colorPalette.textColor}`, }}>
+                                    <table style={{ borderCollapse: 'collapse', }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Atividade</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Título</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Qnt Horas</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Envio</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Módulo</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Arquivos</th>
+                                                <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Situação</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Comentários</th>
+                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ações</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody style={{ flex: 1 }}>
+                                            {
+                                                activityList?.map((item, index) => {
+                                                    const avaliationStatus = item?.aprovado === 1
+                                                    const status = item?.aprovado === null && 'Aguardando Aprovação'
+                                                        || parseInt(item?.aprovado) === 1 && 'Aprovado' || parseInt(item?.aprovado) === 0 && 'Reprovado'
+
+                                                    return (
+                                                        <tr key={`${item}-${index}`}>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.atividade || item?.tipo_atv || '-'}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.titulo || '-'}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.carga_hr || '-'}h
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {formatTimeStamp(item?.dt_criacao, true) || '-'}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.modulo_semestre || '-'}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.arquivos?.length > 0 ? <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                                    <Button small text="abrir" style={{ padding: '6px 5px', borderRadius: 2, width: 80 }}
+                                                                        onClick={() => setShowFiles({ active: true, item: item?.arquivos })} />
+                                                                </Box>
+                                                                    :
+                                                                    "-"}
+                                                            </td>
+
+                                                            <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                <Box
+                                                                    sx={{
+                                                                        display: 'flex',
+                                                                        height: 30,
+                                                                        backgroundColor: colorPalette.primary,
+                                                                        width: 100,
+                                                                        alignItems: 'center',
+                                                                        borderRadius: 2,
+                                                                        justifyContent: 'start',
+
+                                                                    }}
+                                                                >
+                                                                    <Box sx={{ display: 'flex', backgroundColor: statusColor(status), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                                                    <Text small bold style={{ textAlign: 'center', flex: 1 }}>{status}</Text>
+                                                                </Box>
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                {item?.comentario ? <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                                    <Button small text="vizualizar" style={{ padding: '6px 5px', borderRadius: 2, width: 120 }}
+                                                                        onClick={() => setShowComentaryReprovved({ active: true, item: item, commentary: '', onlyRead: true })} />
+                                                                </Box>
+                                                                    : '-'}
+                                                            </td>
+                                                            <td style={{ fontSize: '13px', padding: '8px 10px', border: '1px solid lightgray' }}>
+                                                                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                                    <Box sx={{
+                                                                        display: 'flex', gap: 1.5, alignItems: 'center', padding: '5px 8px',
+                                                                        border: `1px solid green`,
+                                                                        transition: '.3s',
+                                                                        backgroundColor: item?.aprovado === 1 ? 'green' : 'trasnparent', borderRadius: 2,
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer',
+                                                                            transform: 'scale(1.03, 1.03)'
+                                                                        },
+                                                                    }} onClick={() => {
+                                                                        if (item?.aprovado !== 1) {
+                                                                            handleUpdateAprovvedActivity({
+                                                                                activityId: item?.id_ativ_complementar,
+                                                                                aprovved: 1,
+                                                                                commentary: null
+                                                                            })
+                                                                        }
+                                                                    }}>
+                                                                        {item?.aprovado !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 13 }} />}
+                                                                        <Text bold style={{ color: item?.aprovado === 1 ? '#fff' : 'green' }}>{
+                                                                            item?.aprovado === 1 ? "Aprovado" : "Aprovar"
+                                                                        }</Text>
+                                                                    </Box>
+                                                                    <Box sx={{
+                                                                        display: 'flex', gap: 1.5, alignItems: 'center', padding: '5px 8px',
+                                                                        border: `1px solid red`,
+                                                                        backgroundColor: item?.aprovado === 0 ? 'red' : 'trasnparent', borderRadius: 2,
+                                                                        transition: '.3s',
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer',
+                                                                            transform: 'scale(1.03, 1.03)'
+                                                                        },
+                                                                    }} onClick={() => {
+                                                                        if (parseInt(item?.aprovado) !== 0) {
+                                                                            setShowComentaryReprovved({ active: true, item: item, commentary: '', onlyRead: false })
+                                                                        }
+                                                                    }}>
+                                                                        {item?.aprovado !== 0 && <CancelIcon style={{ color: 'red', fontSize: 13 }} />}
+                                                                        <Text bold style={{ color: item?.aprovado === 0 ? '#fff' : 'red' }}>{
+                                                                            item?.aprovado === 0 ? "Reprovado" : "Reprovar"
+                                                                        }</Text>
+                                                                    </Box>
+                                                                </Box>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <Box sx={{
+                                    display: 'flex', width: '100%', padding: '10px 30px', gap: 2, backgroundColor: colorPalette?.secondary,
+                                    justifyContent: 'space-between'
+                                }}>
+
+                                    <Box sx={{
+                                        display: 'flex', gap: .5, flexDirection: 'column', alignItems: 'center', borderBottom: `1px solid ${colorPalette?.buttonColor}`,
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Text light large>Total de Horas aprovadas:</Text>
+                                        <Text bold large>{totalHoursApproved} Horas</Text>
+                                    </Box>
+                                </Box>
+                            </Box>
+                            :
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                <Text ligth>O aluno não possui atividades complementares.</Text>
+                            </Box>
                     )}
                 </Box>
 
                 <Divider />
 
             </ContentContainer>
+
+            <Backdrop open={showFiles?.active}>
+                <ContentContainer>
+                    <Box sx={{ display: 'flex', gap: 3, padding: '0px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
+                        <Text bold title>Arquivos Anexados</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 15,
+                            height: 15,
+                            aspectRatio: '1:1',
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 9999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFiles({ active: false, item: [] })} />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 1, flexDirection: 'row', marginTop: 3, maxWidth: 500, flexWrap: 'wrap' }}>
+                        {showFiles?.item?.map((item, index) => {
+                            const nameFile = item?.name_file || item?.name;
+                            const typePdf = item?.name_file?.includes('pdf') || null;
+                            const fileUrl = item?.location || item?.preview || '';
+                            return (
+                                <Link key={index} href={fileUrl} target="_blank">
+                                    <Box sx={{ display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} >
+                                        <Box sx={{ display: 'flex', gap: 1, padding: '0px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
+                                            <Text small>{decodeURI(nameFile)}</Text>
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : fileUrl}')`,
+                                                backgroundSize: 'cover',
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'center center',
+                                                width: { xs: 200, sm: 350, md: 350, lg: 180, xl: 180 },
+                                                aspectRatio: '1/1',
+                                            }} />
+                                    </Box>
+                                </Link>
+                            )
+                        })}
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+
+
+            <Backdrop open={showComentaryReprovved?.active}>
+                <ContentContainer>
+                    <Box sx={{ display: 'flex', gap: 3, padding: '0px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
+                        <Text bold large>Motivo da Reprovação</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 15,
+                            height: 15,
+                            aspectRatio: '1:1',
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 9999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowComentaryReprovved({ active: false, item: [], commentary: '', onlyRead: false })} />
+                    </Box>
+                    <Divider />
+
+                    {showComentaryReprovved?.onlyRead &&
+                        <Box sx={{
+                            display: 'flex', gap: 1.5, alignItems: 'center',
+                            padding: '5px 8px',
+                            border: `1px solid red`,
+                            backgroundColor: 'trasnparent',
+                            borderRadius: 2
+                        }}>
+                            <CancelIcon style={{ color: 'red', fontSize: 13 }} />
+                            <Text bold style={{ color: 'red' }}>Reprovado</Text>
+                        </Box>
+                    }
+                    <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', marginTop: 3, maxWidth: 500 }}>
+                        <Box sx={{ display: 'flex', gap: .5, alignItems: 'center' }}>
+                            <Text bold>Atividade:</Text>
+                            <Text light>{showComentaryReprovved?.item?.atividade}</Text>
+                        </Box>
+                        <Divider distance={0} />
+                        <Box sx={{ display: 'flex', gap: .5, alignItems: 'center' }}>
+                            <Text bold>Título:</Text>
+                            <Text light>{showComentaryReprovved?.item?.titulo}</Text>
+                        </Box>
+                        <Divider distance={0} />
+                        <Box sx={{ display: 'flex', gap: .5, alignItems: 'center' }}>
+                            <Text bold>Horas:</Text>
+                            <Text light>{showComentaryReprovved?.item?.carga_hr}</Text>
+                        </Box>
+                        <Divider distance={0} />
+                        <Box sx={{ display: 'flex', gap: .5, alignItems: 'center' }}>
+                            <Text bold>Data do envio:</Text>
+                            <Text light>{formatTimeStamp(showComentaryReprovved?.item?.dt_criacao, true)}</Text>
+                        </Box>
+                        <Divider distance={0} />
+                        <Box sx={{ display: 'flex', gap: .5, alignItems: 'start', flexDirection: 'column' }}>
+                            <Text bold>Motivo/Comentário:</Text>
+                            {showComentaryReprovved?.onlyRead ?
+                                <Text light>{showComentaryReprovved?.item?.comentario}</Text>
+                                :
+                                <TextInput
+                                    placeholder='Escreva o motivo da reprovação'
+                                    name='comentario'
+                                    onChange={(e) => setShowComentaryReprovved({ ...showComentaryReprovved, commentary: e.target.value })}
+                                    value={showComentaryReprovved?.commentary || ''}
+                                    multiline
+                                    maxRows={8}
+                                    rows={4}
+                                    sx={{}} />
+                            }
+                        </Box>
+                    </Box>
+                    {!showComentaryReprovved?.onlyRead &&
+                        <>
+                            <Divider />
+                            <Box sx={{ display: 'flex', width: '100%', gap: 2, alignItems: 'center', justifyContent: 'flex-end' }}>
+                                <Button small text="Enviar" onClick={() => {
+                                    if (showComentaryReprovved?.commentary === '') {
+                                        alert.info('Preencha o campo de comentário/motivo antes de reprovar.')
+                                    } else {
+                                        handleUpdateAprovvedActivity({ activityId: showComentaryReprovved?.item?.id_ativ_complementar, aprovved: 0, commentary: showComentaryReprovved?.commentary })
+                                    }
+                                }} />
+                                <Button secondary small text="Cancelar" onClick={() => setShowComentaryReprovved({ active: false, item: [], commentary: '' })} />
+                            </Box>
+                        </>
+                    }
+                </ContentContainer>
+            </Backdrop>
         </>
     )
 }
