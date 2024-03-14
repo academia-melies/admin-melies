@@ -324,6 +324,7 @@ export default function Login() {
                 </Box>
                 <Box sx={{
                     display: showMenu ? 'flex' : 'none',
+                    borderRadius: 2,
                     backgroundColor: colorPalette.secondary,
                     padding: '8px 10px',
                     marginTop: '5px',
@@ -334,8 +335,8 @@ export default function Login() {
                         cursor: 'pointer'
                     }
                 }}>
-                    <Link href='https://github.com/academia-melies/api' target="_blank">
-                        <Text small>Documentação da API</Text>
+                    <Link href='https://documentacao-melies.vercel.app' target="_blank">
+                        <Text small>Documentação</Text>
                     </Link>
                 </Box>
             </Box>

@@ -2106,6 +2106,73 @@ export default function EditUser() {
                         </Box>
 
                         <Box sx={styles.inputSection}>
+                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, rg: value })}
+                                style={{ border: filesUser?.filter((file) => file.campo === 'rg').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
+                                <EditFile
+                                    isPermissionEdit={isPermissionEdit}
+                                    columnId="id_doc_usuario"
+                                    open={showEditFile.rg}
+                                    newUser={newUser}
+                                    onSet={(set) => {
+                                        setShowEditFiles({ ...showEditFile, rg: set })
+                                    }}
+                                    title='RG - Frente e verso'
+                                    text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
+                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                    fileData={filesUser?.filter((file) => file.campo === 'rg')}
+                                    usuarioId={id}
+                                    campo='rg'
+                                    tipo='documento usuario'
+                                    callback={(file) => {
+                                        if (file.status === 201 || file.status === 200) {
+                                            if (!newUser) { handleItems() }
+                                            else {
+                                                handleChangeFilesUser('rg', file.fileId, file.filePreview)
+                                            }
+                                        }
+                                    }}
+                                />
+                            </FileInput>
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='UF' name='uf_rg' onChange={handleChange} value={userData?.uf_rg || ''} label='UF RG *' sx={{ flex: 1, }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Expedição' name='expedicao' onChange={handleChange} type="date" value={(userData?.expedicao)?.split('T')[0] || ''} label='Expedição *' sx={{ flex: 1, }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão *' sx={{ flex: 1, }} />
+                        </Box>
+                        <Box sx={styles.inputSection}>
+                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, titleDoc: value })}
+                                style={{ border: filesUser?.filter((file) => file.campo === 'titulo').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
+                                <EditFile
+                                    isPermissionEdit={isPermissionEdit}
+                                    columnId="id_doc_usuario"
+                                    open={showEditFile.titleDoc}
+                                    newUser={newUser}
+                                    onSet={(set) => {
+                                        setShowEditFiles({ ...showEditFile, titleDoc: set })
+                                    }}
+                                    title='Título de Eleitor'
+                                    text='Faça o upload do seu título, depois clique em salvar.'
+                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                    fileData={filesUser?.filter((file) => file.campo === 'titulo')}
+                                    usuarioId={id}
+                                    campo='titulo'
+                                    tipo='documento usuario'
+                                    callback={(file) => {
+                                        if (file.status === 201 || file.status === 200) {
+                                            if (!newUser) { handleItems() }
+                                            else {
+                                                handleChangeFilesUser('titulo', file.fileId, file.filePreview)
+                                            }
+                                        }
+                                    }}
+                                />
+
+                            </FileInput>
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Zona' name='zona' onChange={handleChange} value={userData?.zona || ''} label='Zona' sx={{ flex: 1, }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='Seção' name='secao' onChange={handleChange} value={userData?.secao || ''} label='Seção' sx={{ flex: 1, }} />
+                        </Box>
+
+                        <Box sx={styles.inputSection}>
 
                             <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupRacaCor} valueSelection={userData.cor_raca} onSelect={(value) => setUserData({ ...userData, cor_raca: value })}
                                 title="Cor/raça *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -2225,29 +2292,29 @@ export default function EditUser() {
                                     </Box>
                                 </>
                             ))}
-                            {isPermissionEdit && <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente`} onChange={handleChangeDependent} value={dependent?.nome_dependente} sx={{ flex: 1 }} />
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente`} onChange={handleChangeDependent} value={dependent?.cpf_dependente} sx={{ flex: 1 }} />
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente`} onChange={handleChangeDependent} type="date" value={(dependent?.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
-                                <Box sx={{
-                                    backgroundSize: 'cover',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                    width: 25,
-                                    height: 25,
-                                    borderRadius: '50%',
-                                    backgroundImage: `url(/icons/include_icon.png)`,
-                                    transition: '.3s',
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => {
-                                    newUser ? addDependent() : handleAddDependent()
-                                }} />
-                            </Box>}
+                            {isPermissionEdit &&
+                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente`} onChange={handleChangeDependent} value={dependent?.nome_dependente} sx={{ flex: 1 }} />
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente`} onChange={handleChangeDependent} value={dependent?.cpf_dependente} sx={{ flex: 1 }} />
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente`} onChange={handleChangeDependent} type="date" value={(dependent?.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
+                                    <Box sx={{
+                                        backgroundSize: 'cover',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
+                                        width: 25,
+                                        height: 25,
+                                        borderRadius: '50%',
+                                        backgroundImage: `url(/icons/include_icon.png)`,
+                                        transition: '.3s',
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        }
+                                    }} onClick={() => {
+                                        newUser ? addDependent() : handleAddDependent()
+                                    }} />
+                                </Box>}
                         </Box>
-
 
                         <Box sx={styles.inputSection}>
                             {userData?.estado_civil === 'Casado' && <TextInput disabled={!isPermissionEdit && true} placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
@@ -2352,73 +2419,6 @@ export default function EditUser() {
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Bairro' name='bairro' onChange={handleChange} value={userData?.bairro || ''} label='Bairro *' sx={{ flex: 1, }} />
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' sx={{ flex: 1, }} />
                         </Box>
-                        <Box sx={styles.inputSection}>
-                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, rg: value })}
-                                style={{ border: filesUser?.filter((file) => file.campo === 'rg').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
-                                <EditFile
-                                    isPermissionEdit={isPermissionEdit}
-                                    columnId="id_doc_usuario"
-                                    open={showEditFile.rg}
-                                    newUser={newUser}
-                                    onSet={(set) => {
-                                        setShowEditFiles({ ...showEditFile, rg: set })
-                                    }}
-                                    title='RG - Frente e verso'
-                                    text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
-                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
-                                    fileData={filesUser?.filter((file) => file.campo === 'rg')}
-                                    usuarioId={id}
-                                    campo='rg'
-                                    tipo='documento usuario'
-                                    callback={(file) => {
-                                        if (file.status === 201 || file.status === 200) {
-                                            if (!newUser) { handleItems() }
-                                            else {
-                                                handleChangeFilesUser('rg', file.fileId, file.filePreview)
-                                            }
-                                        }
-                                    }}
-                                />
-                            </FileInput>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='UF' name='uf_rg' onChange={handleChange} value={userData?.uf_rg || ''} label='UF RG *' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Expedição' name='expedicao' onChange={handleChange} type="date" value={(userData?.expedicao)?.split('T')[0] || ''} label='Expedição *' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão *' sx={{ flex: 1, }} />
-                        </Box>
-                        <Box sx={styles.inputSection}>
-                            <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, titleDoc: value })}
-                                style={{ border: filesUser?.filter((file) => file.campo === 'titulo').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
-                                <EditFile
-                                    isPermissionEdit={isPermissionEdit}
-                                    columnId="id_doc_usuario"
-                                    open={showEditFile.titleDoc}
-                                    newUser={newUser}
-                                    onSet={(set) => {
-                                        setShowEditFiles({ ...showEditFile, titleDoc: set })
-                                    }}
-                                    title='Título de Eleitor'
-                                    text='Faça o upload do seu título, depois clique em salvar.'
-                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
-                                    fileData={filesUser?.filter((file) => file.campo === 'titulo')}
-                                    usuarioId={id}
-                                    campo='titulo'
-                                    tipo='documento usuario'
-                                    callback={(file) => {
-                                        if (file.status === 201 || file.status === 200) {
-                                            if (!newUser) { handleItems() }
-                                            else {
-                                                handleChangeFilesUser('titulo', file.fileId, file.filePreview)
-                                            }
-                                        }
-                                    }}
-                                />
-
-                            </FileInput>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Zona' name='zona' onChange={handleChange} value={userData?.zona || ''} label='Zona' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Seção' name='secao' onChange={handleChange} value={userData?.secao || ''} label='Seção' sx={{ flex: 1, }} />
-                        </Box>
-
                     </>
                 }
             </ContentContainer>
