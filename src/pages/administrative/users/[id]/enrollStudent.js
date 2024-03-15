@@ -690,7 +690,7 @@ export default function InterestEnroll() {
 
             payment?.filter(pay => pay?.valor_parcela)?.map((item) => ({
                 usuario_id: id,
-                pagante: item?.pagante || userData?.nome,
+                resp_pagante_id: item?.resp_pagante_id,
                 aluno: userData?.nome,
                 vencimento: formattedStringInDate(item?.data_pagamento),
                 dt_pagamento: null,
@@ -713,7 +713,7 @@ export default function InterestEnroll() {
 
             paymentEntryData = {
                 usuario_id: id,
-                pagante: responsiblePayerData?.nome_resp || userData?.nome,
+                resp_pagante_id: responsiblePayerData?.id_resp_pag,
                 aluno: userData?.nome,
                 vencimento: dateForPaymentEntry,
                 dt_pagamento: dateForPaymentEntry,
@@ -836,7 +836,7 @@ export default function InterestEnroll() {
 
             payment?.filter(pay => pay?.valor_parcela)?.map((item) => ({
                 usuario_id: id,
-                pagante: item?.pagante || userData?.nome,
+                resp_pagante_id: item?.resp_pagante_id,
                 aluno: userData?.nome,
                 vencimento: formattedStringInDate(item?.data_pagamento),
                 dt_pagamento: null,
@@ -859,7 +859,7 @@ export default function InterestEnroll() {
 
             paymentEntryData = {
                 usuario_id: id,
-                pagante: responsiblePayerData?.nome_resp || userData?.nome,
+                resp_pagante_id: responsiblePayerData?.id_resp_pag,
                 aluno: userData?.nome,
                 vencimento: dateForPaymentEntry,
                 dt_pagamento: dateForPaymentEntry,
@@ -1711,7 +1711,7 @@ export const Payment = (props) => {
                     tipo: globalTypePaymentsSelected,
                     valor_parcela: paymentFirst,
                     data_pagamento: formattedPaymentDate,
-                    pagante: userData?.nome,
+                    resp_pagante_id: null,
                     n_parcela: i + 1,
                 });
             }
@@ -1776,7 +1776,7 @@ export const Payment = (props) => {
                     tipo: globalTypePaymentsSelectedTwo,
                     valor_parcela: paymentTwo,
                     data_pagamento: formattedPaymentDate,
-                    pagante: responsiblePayerData?.nome_resp,
+                    resp_pagante_id: responsiblePayerData?.id_resp_pag,
                     n_parcela: i + 1,
                 });
             }
