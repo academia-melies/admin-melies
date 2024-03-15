@@ -185,6 +185,11 @@ export default function ListBillsReceived(props) {
         }
     }
 
+    const pusBillId = async (item) => {
+        let itemId = item?.id_recebiveis;
+        let queryRoute = `/financial/billsToReceive/billsReceived/${itemId}`
+        router.push(queryRoute)
+    }
 
     const priorityColor = (data) => (
         ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||

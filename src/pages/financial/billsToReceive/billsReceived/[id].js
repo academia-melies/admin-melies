@@ -43,7 +43,7 @@ export default function EditBillsReceived(props) {
         try {
             const response = await api.get(`/received/${id}`);
             const { data } = response;
-            if (data?.length > 0) {
+            if (data) {
                 setReceivedData({
                     ...data,
                     valor: isNaN(data?.valor) ? data?.valor : data?.valor.toFixed(2)
@@ -55,6 +55,7 @@ export default function EditBillsReceived(props) {
             setLoading(false);
         }
     }
+
 
     // const handleHistoric = async () => {
     //     try {
