@@ -5,7 +5,7 @@ import { useAppContext } from "../../../../../context/AppContext";
 import { api } from "../../../../../api/api";
 import { useEffect, useRef, useState } from "react";
 import { formatTimeStamp } from "../../../../../helpers";
-import { CheckBoxComponent, DeclarationPayment, SectionHeader } from "../../../../../organisms";
+import { CheckBoxComponent, DeclarationPayment, SectionHeader, SelectList } from "../../../../../organisms";
 import { icons } from "../../../../../organisms/layout/Colors";
 import { Backdrop } from "@mui/material";
 import { useReactToPrint } from "react-to-print";
@@ -14,11 +14,22 @@ import axios from "axios";
 export default function StuatusPayment() {
     const router = useRouter();
     const { id, enrollmentId } = router.query;
-    const { setLoading, colorPalette, alert, theme } = useAppContext()
+    const { setLoading, colorPalette, alert, theme, user } = useAppContext()
     const [userData, setUserData] = useState({})
     const [enrollmentData, setEnrollmentData] = useState({})
     const [responsiblePayerData, setResponsiblePayerData] = useState({})
+    const [costCenterList, setCostCenterList] = useState([])
+    const [accountList, setAccountList] = useState([])
     const [installmentsData, setInstallmentsData] = useState([])
+    const [newInstallment, setNewInstallment] = useState({
+        vencimento: '',
+        valor_parcela: '',
+        n_parcela: 0,
+        c_custo: '',
+        forma_pagamento: '',
+        conta: ''
+    })
+    const [showNewParcel, setShowNewParcel] = useState(false)
     const [showDeclatation, setShowDeclaration] = useState({
         filterDate: false,
         paymentVoucher: false
@@ -119,6 +130,30 @@ export default function StuatusPayment() {
         }
     }
 
+
+    async function listCostCenter() {
+        const response = await api.get(`/costCenters`)
+        const { data } = response
+        const groupCostCenter = data?.map(cc => ({
+            label: cc.nome_cc,
+            value: cc?.id_centro_custo
+        }));
+
+        setCostCenterList(groupCostCenter)
+    }
+
+
+    async function listAccounts() {
+        const response = await api.get(`/accounts`)
+        const { data } = response
+        const groupCostCenter = data?.map(cc => ({
+            label: cc.nome_conta,
+            value: cc?.id_conta
+        }));
+
+        setAccountList(groupCostCenter)
+    }
+
     const handleItems = async () => {
         setLoading(true)
         try {
@@ -127,6 +162,8 @@ export default function StuatusPayment() {
                 await handleEnrollment()
                 await handleReponsiblePayment()
                 await handleInstallmentEnrollment()
+                await listCostCenter()
+                await listAccounts()
             }
         } catch (error) {
             return error
@@ -134,6 +171,7 @@ export default function StuatusPayment() {
             setLoading(false)
         }
     }
+
 
     useEffect(() => {
         handleItems()
@@ -212,6 +250,105 @@ export default function StuatusPayment() {
     }
 
 
+    const checkValuesNewInstallment = async () => {
+
+        if (newInstallment?.vencimento === '' || newInstallment?.vencimento === null) {
+            alert.info(`A data do vencimento da parcela deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.valor_parcela === '' || newInstallment?.valor_parcela === null) {
+            alert.info(`O valor da Parcela deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.c_custo === '' || newInstallment?.c_custo === null) {
+            alert.info(`O centro de custo deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.n_parcela === '' || newInstallment?.n_parcela === null) {
+            alert.info(`O número da parcela deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.forma_pagamento === '' || newInstallment?.forma_pagamento === null) {
+            alert.info(`A forma de pagamento deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.conta === '' || newInstallment?.conta === null) {
+            alert.info(`O conta de recebimento deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+
+        return true
+    }
+
+    const handleAddInstallment = async () => {
+        if (await checkValuesNewInstallment()) {
+            try {
+                setLoading(true)
+                const installmentData = {
+                    usuario_id: id,
+                    matricula_id: enrollmentId,
+                    cartao_credito_id: '',
+                    resp_pagante_id: responsiblePayerData?.id_resp_pag || userData?.id,
+                    aluno: userData?.nome,
+                    vencimento: newInstallment?.vencimento,
+                    valor_parcela: newInstallment?.valor_parcela,
+                    n_parcela: newInstallment?.n_parcela,
+                    c_custo: newInstallment?.c_custo,
+                    forma_pagamento: newInstallment?.forma_pagamento,
+                    conta: newInstallment?.conta,
+                    obs_pagamento: 'Nova parcela lançada.',
+                    status_parcela: 'Pendente',
+                    usuario_resp: user?.id
+                }
+                const response = await api.post(`/student/installment/add/new`, { installmentData, userData })
+                console.log(response)
+                if (response.status === 201) {
+                    alert.success('Parcela lançada.')
+                    return
+                }
+
+                alert.error('Ocorreu um erro ao lançar parcela.')
+                return
+            } catch (error) {
+                console.log(error)
+                return error
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+
+    const handleChange = async (event) => {
+
+        if (event.target.name === 'valor_parcela') {
+            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                event.target.value = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                event.target.value = formattedValue;
+
+            }
+        }
+
+        setNewInstallment((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }))
+    }
+
+    const listPayment = [
+        { label: 'Boleto', value: 'Boleto' },
+    ]
 
     return (
         <>
@@ -292,9 +429,7 @@ export default function StuatusPayment() {
                 <ContentContainer style={{ maxWidth: '1200px', }}>
                     <Text large bold>Dados do pagamento</Text>
                     <Box sx={{ display: 'flex', gap: 1, height: 30 }}>
-                        <Button small text="Lançar nova parcela" style={{ width: 180, height: '30px', borderRadius: '6px' }} />
-                        <Button small secondary text="Crédito do aluno" style={{ width: 180, height: '30px', borderRadius: '6px' }} />
-                        <Button small secondary text="Financiamento curso" style={{ width: 180, height: '30px', borderRadius: '6px' }} />
+                        <Button small text="Lançar nova parcela" style={{ width: 180, height: '30px', borderRadius: '6px' }} onClick={() => setShowNewParcel(true)} />
                     </Box>
                     {installmentsData?.length > 0 ?
                         <>
@@ -410,7 +545,7 @@ export default function StuatusPayment() {
                                                                                 opacity: 0.8,
                                                                                 cursor: 'pointer'
                                                                             }
-                                                                        }} onClick={() => sendEmailBoleto(item)}/>
+                                                                        }} onClick={() => sendEmailBoleto(item)} />
                                                                         {groupStates[index]?.sendEmail &&
                                                                             <Box sx={{
                                                                                 position: 'absolute',
@@ -508,10 +643,72 @@ export default function StuatusPayment() {
                     filterDate={filterDate}
                     showDeclatation={showDeclatation} />
             </Backdrop>
+
+            <Backdrop open={showNewParcel} sx={{ zIndex: 999, overflow: 'auto', }}>
+                <ContentContainer>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Text bold large>Lançar nova parcela</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setShowNewParcel(false)
+                            setNewInstallment({})
+                        }} />
+                    </Box>
+                    <Divider padding={0} />
+                    <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
+                        <Box sx={{ display: 'flex', gap: 1.8 }}>
+                            <TextInput placeholder='Dt Vencimento' name='vencimento' type="date" onChange={handleChange} value={newInstallment?.vencimento || ''}
+                                label='Dt Vencimento' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Valor' name='valor_parcela' type="coin" onChange={handleChange} value={newInstallment?.valor_parcela || ''}
+                                label='Valor' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nº Parcela' name='n_parcela' type="number" onChange={handleChange} value={newInstallment?.n_parcela || ''}
+                                label='Nº Parcela' sx={{ flex: 1, }} />
+                        </Box>
+                        <SelectList fullWidth data={costCenterList} valueSelection={newInstallment?.c_custo} onSelect={(value) => setNewInstallment({ ...newInstallment, c_custo: value })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth data={listPayment} valueSelection={newInstallment?.forma_pagamento || ''} onSelect={(value) => setNewInstallment({ ...newInstallment, forma_pagamento: value })}
+                            filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                            title="Selecione a forma de pagamento *"
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            clean={false}
+                        />
+                        <SelectList fullWidth data={accountList} valueSelection={newInstallment?.conta} onSelect={(value) => setNewInstallment({ ...newInstallment, conta: value })}
+                            title="Conta do recebimento" filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <TextInput placeholder='Observações' name='obs_pagamento' onChange={handleChange}
+                            value={newInstallment?.obs_pagamento || ''}
+                            multiline
+                            maxRows={5}
+                            rows={3}
+                            label='Observações' sx={{ flex: 1, }} />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <Button text="Lançar" small style={{ width: 120, height: 35 }} onClick={handleAddInstallment} />
+                        <Button text="Cancelar" secondary small onClick={() => {
+                            setShowNewParcel(false)
+                            setNewInstallment({})
+                        }} style={{ width: 120, height: 35 }} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+
         </>
     )
 
 }
+
 
 const DeclarationDocument = ({ installmentsData, filterDate, contractEnrollment, userData, setShowDeclaration, showDeclatation }) => {
 

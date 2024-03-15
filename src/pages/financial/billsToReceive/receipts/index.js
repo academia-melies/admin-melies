@@ -13,10 +13,24 @@ import { icons } from "../../../../organisms/layout/Colors"
 export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList, user, alert } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [filterPayment, setFilterPayment] = useState('todos')
     const [installmentsSelected, setInstallmentsSelected] = useState(null);
+    const [newInstallment, setNewInstallment] = useState({
+        vencimento: '',
+        valor_parcela: '',
+        n_parcela: 0,
+        c_custo: '',
+        forma_pagamento: '',
+        conta: ''
+    })
+    const [showNewParcel, setShowNewParcel] = useState(false)
+    const [responsiblePayerData, setResponsiblePayerData] = useState({})
+    const [costCenterList, setCostCenterList] = useState([])
+    const [accountList, setAccountList] = useState([])
+    const [usersList, setUsersList] = useState([])
+    const [enrollments, setEnrollments] = useState([])
     const [allSelected, setAllSelected] = useState();
     const router = useRouter()
     const [page, setPage] = useState(0);
@@ -57,9 +71,79 @@ export default function ListReceipts(props) {
     };
 
 
+    async function listCostCenter() {
+        const response = await api.get(`/costCenters`)
+        const { data } = response
+        const groupCostCenter = data?.map(cc => ({
+            label: cc.nome_cc,
+            value: cc?.id_centro_custo
+        }));
+
+        setCostCenterList(groupCostCenter)
+    }
+
+
+    async function listAccounts() {
+        const response = await api.get(`/accounts`)
+        const { data } = response
+        const groupCostCenter = data?.map(cc => ({
+            label: cc.nome_conta,
+            value: cc?.id_conta
+        }));
+
+        setAccountList(groupCostCenter)
+    }
+
+
+    async function listUsers() {
+        try {
+            const response = await api.get(`/users`)
+            const { data } = response
+            const groupUserBy = data?.filter(item => item.perfil?.includes('aluno'))?.map(responsible => ({
+                label: responsible.nome,
+                value: responsible?.id,
+                area: responsible?.area
+            }));
+
+            const sortedUsers = groupUserBy?.sort((a, b) => a.label.localeCompare(b.label));
+            setUsersList(sortedUsers)
+        } catch (error) {
+            return error
+        }
+    }
+
+
+    async function listEnrollments(userId) {
+        try {
+            let resp_pagante_id = userId
+
+            const response = await api.get(`/student/enrrolments/${userId}`)
+            const { data } = response
+            const groupEneollment = data?.map(enrollment => ({
+                label: `${enrollment?.nome_curso}_${enrollment?.modalidade_curso}-${enrollment?.nome_turma} ${enrollment?.modulo}º Módulo`,
+                value: enrollment?.id_matricula
+            }));
+
+            const responsiblePayer = await api.get(`/responsible/${userId}`)
+            if (responsiblePayer?.data) {
+                resp_pagante_id = responsiblePayer?.data?.id_resp_pag;
+            }
+
+            const sortedEnrollments = groupEneollment?.sort((a, b) => a.label.localeCompare(b.label));
+            setEnrollments(sortedEnrollments)
+            setNewInstallment({ ...newInstallment, usuario_id: userId, resp_pagante_id })
+        } catch (error) {
+            return error
+        }
+    }
+
+    console.log(newInstallment)
     useEffect(() => {
         fetchPermissions()
         getInstallments();
+        listCostCenter()
+        listAccounts()
+        listUsers()
     }, []);
 
     const getInstallments = async () => {
@@ -100,9 +184,106 @@ export default function ListReceipts(props) {
         });
     };
 
+    const checkValuesNewInstallment = async () => {
+
+        if (newInstallment?.vencimento === '' || newInstallment?.vencimento === null) {
+            alert.info(`A data do vencimento da parcela deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.valor_parcela === '' || newInstallment?.valor_parcela === null) {
+            alert.info(`O valor da Parcela deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.c_custo === '' || newInstallment?.c_custo === null) {
+            alert.info(`O centro de custo deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.n_parcela === '' || newInstallment?.n_parcela === null) {
+            alert.info(`O número da parcela deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.forma_pagamento === '' || newInstallment?.forma_pagamento === null) {
+            alert.info(`A forma de pagamento deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+        if (newInstallment?.conta === '' || newInstallment?.conta === null) {
+            alert.info(`O conta de recebimento deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
+            return false
+        }
+
+        return true
+    }
+
+    const handleAddInstallment = async () => {
+        if (await checkValuesNewInstallment()) {
+            try {
+                setLoading(true)
+                const alunoName = await usersList?.filter(item => item.id === newInstallment?.usuario_id)?.map(item => item?.label)
+                const installmentData = {
+                    usuario_id: newInstallment?.usuario_id,
+                    matricula_id: newInstallment?.matricula_id,
+                    cartao_credito_id: '',
+                    resp_pagante_id: newInstallment?.resp_pagante_id,
+                    aluno: alunoName,
+                    vencimento: newInstallment?.vencimento,
+                    valor_parcela: newInstallment?.valor_parcela,
+                    n_parcela: newInstallment?.n_parcela,
+                    c_custo: newInstallment?.c_custo,
+                    forma_pagamento: newInstallment?.forma_pagamento,
+                    conta: newInstallment?.conta,
+                    obs_pagamento: 'Nova parcela lançada.',
+                    status_parcela: 'Pendente',
+                    usuario_resp: user?.id
+                }
+                const response = await api.post(`/student/installment/add/new`, { installmentData, userData })
+                console.log(response)
+                if (response.status === 201) {
+                    alert.success('Parcela lançada.')
+                    return
+                }
+
+                alert.error('Ocorreu um erro ao lançar parcela.')
+                return
+            } catch (error) {
+                console.log(error)
+                return error
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
     useEffect(() => {
         setShowFilterMobile(false)
     }, [filterPayment, filterAtive])
+
+
+    const handleChange = async (event) => {
+
+        if (event.target.name === 'valor_parcela') {
+            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                event.target.value = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                event.target.value = formattedValue;
+
+            }
+        }
+
+        setNewInstallment((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }))
+    }
 
     const priorityColor = (data) => (
         ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
@@ -396,7 +577,7 @@ export default function ListReceipts(props) {
                         opacity: .8,
 
                     }
-                }}>
+                }} onClick={() => setShowNewParcel(true)}>
                     <Text bold small style={{ color: '#fff' }}>Lançar nova parcela</Text>
                 </Box>
             </Box>
@@ -550,6 +731,85 @@ export default function ListReceipts(props) {
                 </Box>
             </>
             }
+
+            <Backdrop open={showNewParcel} sx={{ zIndex: 999, overflow: 'auto', }}>
+                <ContentContainer>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Text bold large>Lançar nova parcela</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setShowNewParcel(false)
+                            setNewInstallment({})
+                        }} />
+                    </Box>
+                    <Divider padding={0} />
+                    <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
+
+                        <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true}
+                            fullWidth data={usersList} valueSelection={newInstallment?.usuario_id}
+                            onSelect={(value) => listEnrollments(value)}
+                            title="Busque pelo aluno" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+
+                        {newInstallment?.usuario_id &&
+                            <SelectList disabled={!isPermissionEdit && true}
+                                fullWidth data={enrollments} valueSelection={newInstallment?.matricula_id}
+                                onSelect={(value) => setNewInstallment({ ...newInstallment, matricula_id: value })}
+                                title="Seleciona em qual matrícula irá lançar:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            />}
+
+
+
+                        <Box sx={{ display: 'flex', gap: 1.8 }}>
+                            <TextInput placeholder='Dt Vencimento' name='vencimento' type="date" onChange={handleChange} value={newInstallment?.vencimento || ''}
+                                label='Dt Vencimento' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Valor' name='valor_parcela' type="coin" onChange={handleChange} value={newInstallment?.valor_parcela || ''}
+                                label='Valor' sx={{ flex: 1, }} />
+                            <TextInput placeholder='Nº Parcela' name='n_parcela' type="number" onChange={handleChange} value={newInstallment?.n_parcela || ''}
+                                label='Nº Parcela' sx={{ flex: 1, }} />
+                        </Box>
+                        <SelectList fullWidth data={costCenterList} valueSelection={newInstallment?.c_custo}
+                            onSelect={(value) => setNewInstallment({ ...newInstallment, c_custo: value })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth data={listPayment} valueSelection={newInstallment?.forma_pagamento || ''} onSelect={(value) => setNewInstallment({ ...newInstallment, forma_pagamento: value })}
+                            filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                            title="Selecione a forma de pagamento *"
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                            clean={false}
+                        />
+                        <SelectList fullWidth data={accountList} valueSelection={newInstallment?.conta} onSelect={(value) => setNewInstallment({ ...newInstallment, conta: value })}
+                            title="Conta do recebimento" filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <TextInput placeholder='Observações' name='obs_pagamento' onChange={handleChange}
+                            value={newInstallment?.obs_pagamento || ''}
+                            multiline
+                            maxRows={5}
+                            rows={3}
+                            label='Observações' sx={{ flex: 1, }} />
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <Button text="Lançar" small style={{ width: 120, height: 35 }} onClick={handleAddInstallment} />
+                        <Button text="Cancelar" secondary small onClick={() => {
+                            setShowNewParcel(false)
+                            setNewInstallment({})
+                        }} style={{ width: 120, height: 35 }} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
         </>
     )
 }
