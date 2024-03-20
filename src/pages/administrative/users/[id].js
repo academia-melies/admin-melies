@@ -811,15 +811,18 @@ export default function EditUser() {
             return
         }
 
+        console.log(arrayInterests)
         setArrayInterests((prevArray) => [
             ...prevArray,
             {
-                curso_id: interests.curso_id,
-                turma_id: interests.turma_id,
-                nome_curso: interests.nome_curso,
-                nome_turma: interests.nome_turma,
-                periodo_interesse: interests.periodo_interesse,
-                observacao_int: interests.observacao_int || '',
+                curso_id: interests?.curso_id,
+                turma_id: interests?.turma_id,
+                nome_curso: interests?.nome_curso,
+                nome_turma: interests?.nome_turma,
+                periodo_interesse: interests?.periodo_interesse,
+                observacao_int: interests?.observacao_int || '',
+                inscricao: {},
+                requeriments: []
             }
         ]);
 
@@ -1060,6 +1063,28 @@ export default function EditUser() {
                 }
                 if (arrayDependent?.length > 0) {
                     await api.patch(`/user/dependent/update`, { arrayDependent })
+                }
+
+                if (arrayInterests?.length > 0) {
+                    for (let interest of arrayInterests) {
+                        const subscription = interest?.inscricao;
+
+                        if (subscription) {
+                            if (subscription?.id_inscricao) {
+                                await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription })
+                            } else if (subscription?.forma_ingresso) {
+                                await api.post(`/subscription/create`, {
+                                    subscriptionData: {
+                                        ...subscription,
+                                        turma_id: interest?.turma_id,
+                                        usuario_id: id,
+                                        interesse_id: interest?.id_interesse
+                                    }
+                                })
+                            }
+
+                        }
+                    }
                 }
                 if (response?.status === 201) {
                     alert.success('Usuário atualizado com sucesso.');
@@ -1476,6 +1501,31 @@ export default function EditUser() {
         }
     }
 
+
+
+
+    const handleChangeSubscriptionData = ({ interestId, field, value }) => {
+        console.log(interestId, field, value)
+
+        setArrayInterests((prevClassDays) =>
+            prevClassDays?.map((item) => {
+
+                if (item?.id_interesse === interestId) {
+                    const updatedItem = { ...item };
+
+                    console.log(updatedItem)
+
+                    updatedItem.inscricao[field] = value;
+                    return updatedItem;
+                } else {
+                    return item;
+                }
+            }))
+    }
+
+    console.log(arrayInterests)
+
+
     const groupPerfil = [
         { label: 'Funcionário', value: 'funcionario' },
         { label: 'Aluno', value: 'aluno' },
@@ -1511,6 +1561,13 @@ export default function EditUser() {
         { label: 'Nota do Enem', value: 'Nota do Enem' },
         { label: 'Segunda Graduação', value: 'Segunda Graduação' },
         { label: 'Trânsferência', value: 'Trânsferência' },
+    ]
+
+    const groupContact = [
+        { label: 'WhatsApp', value: 'WhatsApp' },
+        { label: 'E-mail', value: 'E-mail' },
+        { label: 'Ligação', value: 'Ligação' },
+        { label: 'Visita presencial ao Campus (São Paulo)', value: 'Visita presencial ao Campus (São Paulo)' },
     ]
 
     const groupProfessor = [
@@ -3249,7 +3306,7 @@ export default function EditUser() {
                             },
                             justifyContent: 'space-between'
                         }} onClick={() => setShowSelectiveProcess(!showSelectiveProcess)}>
-                            <Text title bold>Processo Seletivo</Text>
+                            <Text title bold>Inscrições</Text>
                             <Box sx={{
                                 ...styles.menuIcon,
                                 backgroundImage: `url(${icons.gray_arrow_down})`,
@@ -3266,17 +3323,18 @@ export default function EditUser() {
                                 <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
                                     {
                                         arrayInterests?.map((interest, index) => {
-                                            const requeriments = interest?.requeriments?.some(item => item?.aprovado === 1);
-                                            const [isHaveRequeriment] = interest?.requeriments?.map(item => item?.id_req_matricula);
-                                            const [isRequerimentoAproved] = interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
+                                            const requeriments = interest?.requeriments && interest?.requeriments?.some(item => item?.aprovado === 1);
+                                            const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula);
+                                            const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
                                             const approvedRequeriment = requeriments ? true : false;
                                             const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
                                             const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}`;
+                                            const subscription = interest?.inscricao;
                                             let linkRequeriment;
                                             if (isHaveRequeriment) {
                                                 linkRequeriment = `/secretary/studentDetails/requeriments/student/${isHaveRequeriment}`
                                             } else {
-                                                linkRequeriment = `/secretary/studentDetails/requeriments?userId=${userData?.id}&classId=${interest?.turma_id}&moduleEnrollment=1&courseId=${interest?.curso_id}`;
+                                                linkRequeriment = `/secretary/studentDetails/requeriments?userId=${userData?.id}&classId=${interest?.turma_id}&moduleEnrollment=1&courseId=${interest?.curso_id}&formaIngresso=${subscription?.forma_ingresso}`;
                                             }
 
                                             return (
@@ -3301,10 +3359,20 @@ export default function EditUser() {
                                                     <Box sx={{ display: showSelectiveProcessTable[index] ? 'flex' : 'none', gap: 3, flex: 1, flexDirection: 'column' }}>
                                                         <Divider padding={0} />
 
-                                                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={selectiveProcessData?.forma_ingresso} group={groupIngresso} title="Forma de Ingresso:" horizontal={mobile ? false : true}
-                                                            onSelect={(value) => setSelectiveProcessData({ ...selectiveProcessData, forma_ingresso: value })} />
+                                                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={subscription?.forma_ingresso} group={groupIngresso} title="Forma de Ingresso:" horizontal={mobile ? false : true}
+                                                            onSelect={(value) => handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'forma_ingresso', value })} />
 
-                                                        {selectiveProcessData?.forma_ingresso === 'Nota do Enem' &&
+                                                        <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                                            valueChecked={subscription?.forma_contato || ''}
+                                                            boxGroup={groupContact}
+                                                            title="Forma de contato:"
+                                                            horizontal={mobile ? false : true}
+                                                            onSelect={(value) =>
+                                                                handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'forma_contato', value })}
+                                                            sx={{ width: 1 }}
+                                                        />
+
+                                                        {subscription?.forma_ingresso === 'Nota do Enem' &&
                                                             <>
                                                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
                                                                     <Text bold>Boletim de resultados do ENEM:</Text>
@@ -3345,11 +3413,14 @@ export default function EditUser() {
                                                                 />
                                                             </>
                                                         }
-                                                        {selectiveProcessData?.forma_ingresso === 'Redação Online' &&
+                                                        {subscription?.forma_ingresso === 'Redação Online' &&
                                                             <>
                                                                 <Divider padding={0} />
                                                                 <Box sx={{ ...styles.inputSection, maxWidth: 280 }}>
-                                                                    <TextInput disabled={!isPermissionEdit && true} name='agendamento_processo' onChange={handleChangeSelectiveProcess} type="datetime-local" value={(selectiveProcessData?.agendamento_processo) || ''} label='Data do agendamento' sx={{ flex: 1, }} />
+                                                                    <TextInput disabled={!isPermissionEdit && true} name='agendamento_processo' onChange={(e) =>
+                                                                        handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
+                                                                        type="datetime-local" value={(subscription?.agendamento_processo) || ''}
+                                                                        label='Data do agendamento' sx={{ flex: 1, }} />
                                                                 </Box>
                                                                 <Divider padding={0} />
                                                                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
@@ -3374,21 +3445,29 @@ export default function EditUser() {
                                                                 </Box>
                                                                 <Divider padding={0} />
                                                                 <Box sx={styles.inputSection}>
-                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nota_processo' onBlur={handleBlurNota} type="number" onChange={handleChangeSelectiveProcess} value={selectiveProcessData?.nota_processo || ''} label='Nota da prova' sx={{ flex: 1, }} />
+                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_redacao' onBlur={handleBlurNota}
+                                                                        type="number" onChange={(e) =>
+                                                                            handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
+                                                                        value={subscription?.nt_redacao || ''} label='Nota da prova' sx={{ flex: 1, }} />
                                                                 </Box>
                                                             </>}
                                                         <>
-                                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupStatusProcess} valueSelection={selectiveProcessData?.status_processo} onSelect={(value) => setSelectiveProcessData({ ...selectiveProcessData, status_processo: value })}
+                                                            {subscription?.forma_ingresso === 'Nota do Enem'
+                                                                && <Box sx={styles.inputSection}>
+                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_enem' onBlur={handleBlurNota}
+                                                                        type="number" onChange={(e) =>
+                                                                            handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
+                                                                        value={subscription?.nt_enem || ''} label='Nota da prova' sx={{ flex: 1, }} />
+                                                                </Box>}
+                                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupStatusProcess}
+                                                                valueSelection={subscription?.status_processo_sel} onSelect={(value) =>
+                                                                    handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value })}
                                                                 title="Status processo seletivo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                             />
                                                             <Divider padding={0} />
-                                                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
+                                                            {!newUser && <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
                                                                 <Text bold>Requerimento de Matrícula/Cadastro:</Text>
-                                                                {/* <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                                    <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveProcess('pre-cadastro')} style={{ width: 120, height: 30 }} />
-                                                                    <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" onClick={() => handleSendSelectiveProcess('pre-cadastro')} style={{ width: 120, height: 30 }} />
-                                                                </Box> */}
                                                                 <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
                                                                     <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
                                                                         <div>
@@ -3420,8 +3499,14 @@ export default function EditUser() {
                                                                                             opacity: 0.8,
                                                                                             cursor: 'pointer'
                                                                                         }
-                                                                                    }} onClick={() =>
-                                                                                        window.open(linkRequeriment, '_blank')} />
+                                                                                    }} onClick={() => {
+                                                                                        if (subscription?.forma_ingresso) {
+                                                                                            window.open(linkRequeriment, '_blank')
+                                                                                        } else {
+                                                                                            alert.info('Preencha primeiro a forma de ingresso do candidato.')
+                                                                                        }
+                                                                                    }}
+                                                                                />
                                                                             }
                                                                         </div>
                                                                     </Tooltip>
@@ -3439,7 +3524,7 @@ export default function EditUser() {
                                                                         </div>
                                                                     </Tooltip>
                                                                 </Box>
-                                                            </Box>
+                                                            </Box>}
                                                         </>
                                                     </Box>
                                                 </ContentContainer>
@@ -3497,9 +3582,9 @@ export default function EditUser() {
                                     <tbody style={{ flex: 1 }}>
                                         {
                                             arrayInterests?.map((interest, index) => {
-                                                const requeriments = interest?.requeriments?.some(item => item?.aprovado === 1);
-                                                const [isHaveRequeriment] = interest?.requeriments?.map(item => item?.id_req_matricula);
-                                                const [isRequerimentoAproved] = interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
+                                                const requeriments = interest?.requeriments && interest?.requeriments?.some(item => item?.aprovado === 1);
+                                                const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula);
+                                                const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
                                                 const approvedRequeriment = requeriments ? true : false;
                                                 const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
                                                 let linkRequeriment;
@@ -3526,84 +3611,89 @@ export default function EditUser() {
                                                         <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
 
                                                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', width: '100%' }}>
-                                                                <Button disabled={!isPermissionEdit && true} secondary small text="Editar" sx={{
-                                                                    width: 40,
-                                                                    transition: '.3s',
-                                                                    zIndex: 999999999,
-                                                                    "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer'
-                                                                    }
-                                                                }} onClick={() => {
-                                                                    setValueIdInterst(interest.id_interesse)
-                                                                    getInterestEdit(interest.id_interesse)
-                                                                    setShowSections({ ...showSections, viewInterest: true })
-                                                                }} />
-                                                                <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
-                                                                    <div>
-                                                                        {isRequerimentoAproved ?
-                                                                            < Box sx={{
-                                                                                display: 'flex', gap: 1, padding: '6px 8px', alignItems: 'center', border: '1px solid green',
-                                                                                backgroundColor: 'transparent',
-                                                                                borderRadius: `100px`,
-                                                                                justifyContent: 'space-around',
-                                                                                transition: '.3s',
-                                                                                "&:hover": {
-                                                                                    opacity: 0.8,
-                                                                                    cursor: 'pointer'
-                                                                                },
-                                                                            }} onClick={() => window.open(linkRequeriment, '_blank')}>
-                                                                                <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />
-                                                                                <Text style={{ color: 'green' }}>
-                                                                                    Requerimento
-                                                                                </Text>
-                                                                            </Box>
-                                                                            :
-                                                                            <Button disabled={!isPermissionEdit && true}
-                                                                                secondary={isHaveRequeriment}
-                                                                                small text="Requerimento" sx={{
-                                                                                    // width: 25,
-                                                                                    transition: '.3s',
-                                                                                    zIndex: 999999999,
-                                                                                    "&:hover": {
-                                                                                        opacity: 0.8,
-                                                                                        cursor: 'pointer'
-                                                                                    }
-                                                                                }} onClick={() =>
-                                                                                    window.open(linkRequeriment, '_blank')} />
-                                                                        }
-                                                                    </div>
-                                                                </Tooltip>
-                                                                <Tooltip title={disable ? 'Necessário primeiro requerimento' : ''}>
-                                                                    <div>
-                                                                        <Button disabled={disable} small text="Matricular" sx={{
-                                                                            // width: 25,
+
+                                                                {newUser ?
+                                                                    (
+                                                                        <Box sx={{
+                                                                            backgroundSize: 'cover',
+                                                                            backgroundRepeat: 'no-repeat',
+                                                                            backgroundPosition: 'center',
+                                                                            width: 25,
+                                                                            height: 25,
+                                                                            backgroundImage: `url(/icons/remove_icon.png)`,
                                                                             transition: '.3s',
                                                                             zIndex: 999999999,
                                                                             "&:hover": {
                                                                                 opacity: 0.8,
                                                                                 cursor: 'pointer'
                                                                             }
-                                                                        }} onClick={() => handleEnrollment(interest)} />
-                                                                    </div>
-                                                                </Tooltip>
-                                                                {newUser &&
-                                                                    <Box sx={{
-                                                                        backgroundSize: 'cover',
-                                                                        backgroundRepeat: 'no-repeat',
-                                                                        backgroundPosition: 'center',
-                                                                        width: 25,
-                                                                        height: 25,
-                                                                        backgroundImage: `url(/icons/remove_icon.png)`,
-                                                                        transition: '.3s',
-                                                                        zIndex: 999999999,
-                                                                        "&:hover": {
-                                                                            opacity: 0.8,
-                                                                            cursor: 'pointer'
-                                                                        }
-                                                                    }} onClick={() => {
-                                                                        deleteInterest(index)
-                                                                    }} />
+                                                                        }} onClick={() => {
+                                                                            deleteInterest(index)
+                                                                        }} />
+                                                                    ) : (
+                                                                        <>
+                                                                            <Button disabled={!isPermissionEdit && true} secondary small text="Editar" sx={{
+                                                                                width: 40,
+                                                                                transition: '.3s',
+                                                                                zIndex: 999999999,
+                                                                                "&:hover": {
+                                                                                    opacity: 0.8,
+                                                                                    cursor: 'pointer'
+                                                                                }
+                                                                            }} onClick={() => {
+                                                                                setValueIdInterst(interest?.id_interesse)
+                                                                                getInterestEdit(interest?.id_interesse)
+                                                                                setShowSections({ ...showSections, viewInterest: true })
+                                                                            }} />
+                                                                            <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
+                                                                                <div>
+                                                                                    {isRequerimentoAproved ?
+                                                                                        < Box sx={{
+                                                                                            display: 'flex', gap: 1, padding: '6px 8px', alignItems: 'center', border: '1px solid green',
+                                                                                            backgroundColor: 'transparent',
+                                                                                            borderRadius: `100px`,
+                                                                                            justifyContent: 'space-around',
+                                                                                            transition: '.3s',
+                                                                                            "&:hover": {
+                                                                                                opacity: 0.8,
+                                                                                                cursor: 'pointer'
+                                                                                            },
+                                                                                        }} onClick={() => window.open(linkRequeriment, '_blank')}>
+                                                                                            <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />
+                                                                                            <Text style={{ color: 'green' }}>
+                                                                                                Requerimento
+                                                                                            </Text>
+                                                                                        </Box>
+                                                                                        :
+                                                                                        <Button disabled={!isPermissionEdit && true}
+                                                                                            secondary={isHaveRequeriment}
+                                                                                            small text="Requerimento" sx={{
+                                                                                                // width: 25,
+                                                                                                transition: '.3s',
+                                                                                                zIndex: 999999999,
+                                                                                                "&:hover": {
+                                                                                                    opacity: 0.8,
+                                                                                                    cursor: 'pointer'
+                                                                                                }
+                                                                                            }} onClick={() =>
+                                                                                                window.open(linkRequeriment, '_blank')} />
+                                                                                    }
+                                                                                </div>
+                                                                            </Tooltip>
+                                                                            <Tooltip title={disable ? 'Necessário primeiro requerimento' : ''}>
+                                                                                <div>
+                                                                                    <Button disabled={disable} small text="Matricular" sx={{
+                                                                                        // width: 25,
+                                                                                        transition: '.3s',
+                                                                                        zIndex: 999999999,
+                                                                                        "&:hover": {
+                                                                                            opacity: 0.8,
+                                                                                            cursor: 'pointer'
+                                                                                        }
+                                                                                    }} onClick={() => handleEnrollment(interest)} />
+                                                                                </div>
+                                                                            </Tooltip>
+                                                                        </>)
                                                                 }
                                                             </Box>
                                                         </td>
