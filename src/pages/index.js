@@ -706,16 +706,13 @@ function Home() {
                   </ContentContainer>
                   <Backdrop open={showClassDay?.active} sx={{ zIndex: 9999 }}>
                      <ContentContainer>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'start', width: '100%', position: 'relative' }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4, alignItems: 'start', width: '100%', position: 'relative' }}>
                            <Text bold>Descrição da Aula</Text>
                            <Box sx={{
                               ...styles.menuIcon,
+                              width: 17, height: 17,
                               backgroundImage: `url(${icons.gray_close})`,
                               transition: '.3s',
-                              zIndex: 999999999,
-                              position: 'absolute',
-                              right: 5,
-                              top: 2,
                               "&:hover": {
                                  opacity: 0.8,
                                  cursor: 'pointer'
