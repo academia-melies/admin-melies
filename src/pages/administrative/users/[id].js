@@ -179,6 +179,7 @@ export default function EditUser() {
         { dia_semana: 'Sábado', ent1: null, sai1: null, ent2: null, sai2: null, ent3: null, sai3: null },
     ]);
     const [showEnrollTable, setShowEnrollTable] = useState({})
+    const [showSelectiveProcessTable, setShowSelectiveProcessTable] = useState({})
     const [enrollmentStudentEditId, setEnrollmentStudentEditId] = useState()
     const [enrollmentStudentEditData, setEnrollmentStudentEditData] = useState({})
     const [disciplines, setDisciplines] = useState([])
@@ -810,15 +811,18 @@ export default function EditUser() {
             return
         }
 
+        console.log(arrayInterests)
         setArrayInterests((prevArray) => [
             ...prevArray,
             {
-                curso_id: interests.curso_id,
-                turma_id: interests.turma_id,
-                nome_curso: interests.nome_curso,
-                nome_turma: interests.nome_turma,
-                periodo_interesse: interests.periodo_interesse,
-                observacao_int: interests.observacao_int || '',
+                curso_id: interests?.curso_id,
+                turma_id: interests?.turma_id,
+                nome_curso: interests?.nome_curso,
+                nome_turma: interests?.nome_turma,
+                periodo_interesse: interests?.periodo_interesse,
+                observacao_int: interests?.observacao_int || '',
+                inscricao: {},
+                requeriments: []
             }
         ]);
 
@@ -1060,6 +1064,28 @@ export default function EditUser() {
                 if (arrayDependent?.length > 0) {
                     await api.patch(`/user/dependent/update`, { arrayDependent })
                 }
+
+                if (arrayInterests?.length > 0) {
+                    for (let interest of arrayInterests) {
+                        const subscription = interest?.inscricao;
+
+                        if (subscription) {
+                            if (subscription?.id_inscricao) {
+                                await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription })
+                            } else if (subscription?.forma_ingresso) {
+                                await api.post(`/subscription/create`, {
+                                    subscriptionData: {
+                                        ...subscription,
+                                        turma_id: interest?.turma_id,
+                                        usuario_id: id,
+                                        interesse_id: interest?.id_interesse
+                                    }
+                                })
+                            }
+
+                        }
+                    }
+                }
                 if (response?.status === 201) {
                     alert.success('Usuário atualizado com sucesso.');
                     handleItems()
@@ -1294,6 +1320,15 @@ export default function EditUser() {
     };
 
 
+
+    const toggleProcessSectiveTable = (index) => {
+        setShowSelectiveProcessTable(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
+    };
+
+
     const handleEnrollStudentById = async (id) => {
         setLoading(true)
         try {
@@ -1466,6 +1501,31 @@ export default function EditUser() {
         }
     }
 
+
+
+
+    const handleChangeSubscriptionData = ({ interestId, field, value }) => {
+        console.log(interestId, field, value)
+
+        setArrayInterests((prevClassDays) =>
+            prevClassDays?.map((item) => {
+
+                if (item?.id_interesse === interestId) {
+                    const updatedItem = { ...item };
+
+                    console.log(updatedItem)
+
+                    updatedItem.inscricao[field] = value;
+                    return updatedItem;
+                } else {
+                    return item;
+                }
+            }))
+    }
+
+    console.log(arrayInterests)
+
+
     const groupPerfil = [
         { label: 'Funcionário', value: 'funcionario' },
         { label: 'Aluno', value: 'aluno' },
@@ -1494,6 +1554,20 @@ export default function EditUser() {
     const groupStatus = [
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
+    ]
+
+    const groupIngresso = [
+        { label: 'Redação Online', value: 'Redação Online' },
+        { label: 'Nota do Enem', value: 'Nota do Enem' },
+        { label: 'Segunda Graduação', value: 'Segunda Graduação' },
+        { label: 'Trânsferência', value: 'Trânsferência' },
+    ]
+
+    const groupContact = [
+        { label: 'WhatsApp', value: 'WhatsApp' },
+        { label: 'E-mail', value: 'E-mail' },
+        { label: 'Ligação', value: 'Ligação' },
+        { label: 'Visita presencial ao Campus (São Paulo)', value: 'Visita presencial ao Campus (São Paulo)' },
     ]
 
     const groupProfessor = [
@@ -1578,9 +1652,9 @@ export default function EditUser() {
     ]
 
     const groupStatusProcess = [
-        { label: 'Aprovado - pré-matricula', value: 'Aprovado - pré-matricula' },
-        { label: 'Reprovado', value: 'Reprovado' },
-        { label: 'Pendente de nota', value: 'Pendente de nota' },
+        { label: 'Classificado', value: 'Classificado' },
+        { label: 'Desclassificado', value: 'Desclassificado' },
+        { label: 'Pendente', value: 'Pendente' },
     ]
 
     const grouperiod = [
@@ -2898,175 +2972,176 @@ export default function EditUser() {
 
                     </ContentContainer >
 
-                    {!newUser && <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>
-                        <Box sx={{
-                            display: 'flex', alignItems: 'center', padding: showEnrollment ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
-                                opacity: 0.8,
-                                cursor: 'pointer'
-                            },
-                            justifyContent: 'space-between'
-                        }} onClick={() => setShowEnrollment(!showEnrollment)}>
-                            <Text title bold >Matrículas</Text>
+                    {!newUser &&
+                        <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>
                             <Box sx={{
-                                ...styles.menuIcon,
-                                backgroundImage: `url(${icons.gray_arrow_down})`,
-                                transform: showEnrollment ? 'rotate(0deg)' : 'rotate(-90deg)',
-                                transition: '.3s',
-                                "&:hover": {
+                                display: 'flex', alignItems: 'center', padding: showEnrollment ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
                                     opacity: 0.8,
                                     cursor: 'pointer'
-                                }
-                            }} />
-                        </Box>
-                        {showEnrollment &&
-                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                                },
+                                justifyContent: 'space-between'
+                            }} onClick={() => setShowEnrollment(!showEnrollment)}>
+                                <Text title bold >Matrículas</Text>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(${icons.gray_arrow_down})`,
+                                    transform: showEnrollment ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} />
+                            </Box>
+                            {showEnrollment &&
+                                <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
 
-                                {enrollmentData.length > 0 ?
-                                    enrollmentData?.map((item, index) => {
-                                        const isReenrollment = item.status === "Concluído" &&
-                                            item.modulo === highestModule;
-                                        const isDp = item.cursando_dp === 1;
-                                        const className = item?.nome_turma;
-                                        const courseName = item?.nome_curso;
-                                        const period = item?.periodo;
-                                        let datePeriod = new Date(item?.dt_inicio_cronograma || item?.dt_inicio)
-                                        let year = datePeriod.getFullYear()
-                                        let month = datePeriod.getMonth()
-                                        let moduloYear = month >= 6 ? '2' : '1';
-                                        let periodEnrollment = `${year}.${moduloYear}`
-                                        const startDate = formatDate(item?.dt_inicio_cronograma || item?.dt_inicio)
-                                        const title = `${periodEnrollment} - ${className}_${item?.modulo}SEM_${courseName}_${startDate}_${period}`
-                                        const enrollmentId = item?.id_matricula;
-                                        const files = contractStudent?.filter((file) => file?.matricula_id === item?.id_matricula);
-                                        const bgImagePdf = files?.filter(file => file.matricula_id === item?.id_matricula)?.name_file?.includes('pdf') ? '/icons/pdf_icon.png' : files?.location
+                                    {enrollmentData.length > 0 ?
+                                        enrollmentData?.map((item, index) => {
+                                            const isReenrollment = item.status === "Concluído" &&
+                                                item.modulo === highestModule;
+                                            const isDp = item.cursando_dp === 1;
+                                            const className = item?.nome_turma;
+                                            const courseName = item?.nome_curso;
+                                            const period = item?.periodo;
+                                            let datePeriod = new Date(item?.dt_inicio_cronograma || item?.dt_inicio)
+                                            let year = datePeriod.getFullYear()
+                                            let month = datePeriod.getMonth()
+                                            let moduloYear = month >= 6 ? '2' : '1';
+                                            let periodEnrollment = `${year}.${moduloYear}`
+                                            const startDate = formatDate(item?.dt_inicio_cronograma || item?.dt_inicio)
+                                            const title = `${periodEnrollment} - ${className}_${item?.modulo}SEM_${courseName}_${startDate}_${period}`
+                                            const enrollmentId = item?.id_matricula;
+                                            const files = contractStudent?.filter((file) => file?.matricula_id === item?.id_matricula);
+                                            const bgImagePdf = files?.filter(file => file.matricula_id === item?.id_matricula)?.name_file?.includes('pdf') ? '/icons/pdf_icon.png' : files?.location
 
-                                        return (
+                                            return (
 
-                                            <ContentContainer key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 2, border: isReenrollment && `1px solid ${colorPalette.buttonColor}` }}>
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'start',
-                                                        gap: 4,
-                                                        maxWidth: '90%',
-                                                        "&:hover": {
-                                                            opacity: 0.8,
-                                                            cursor: 'pointer'
-                                                        }
-                                                    }}
-                                                    onClick={() => toggleEnrollTable(index)}
-                                                >
+                                                <ContentContainer key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 2, border: isReenrollment && `1px solid ${colorPalette.buttonColor}` }}>
                                                     <Box
                                                         sx={{
-                                                            ...styles.menuIcon,
-                                                            backgroundImage: `url(${icons.gray_arrow_down})`,
-                                                            transform: showEnrollTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
-                                                            transition: '.3s',
-                                                            width: 17,
-                                                            height: 17
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'start',
+                                                            gap: 4,
+                                                            maxWidth: '90%',
+                                                            "&:hover": {
+                                                                opacity: 0.8,
+                                                                cursor: 'pointer'
+                                                            }
                                                         }}
-                                                    />
-                                                    <Text bold style={{ color: colorPalette.buttonColor }}>{title}</Text>
-                                                    {isReenrollment && <Box sx={{ padding: '5px 15px', backgroundColor: colorPalette.buttonColor, borderRadius: 2 }}>
-                                                        <Text bold small style={{ color: '#fff' }}>Pendente de Rematrícula - {item?.modulo + 1} Semetre/Módulo</Text>
-                                                    </Box>}
-                                                    {isDp && <Box sx={{ padding: '5px 15px', backgroundColor: 'red', borderRadius: 2 }}>
-                                                        <Text bold small style={{ color: '#fff' }}>Cursando DP</Text>
-                                                    </Box>}
-                                                </Box>
-                                                {showEnrollTable[index] && (
-                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '20px 0px 0px 0px' }}>
-                                                        <Divider padding={0} />
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Turma:</Text>
-                                                            <Text light>{item?.nome_turma}</Text>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Pendências:</Text>
-                                                            <Text light>{item?.qnt_disci_dp || 0}</Text>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Semestre/Módulo cursando:</Text>
-                                                            <Text light>{item?.modulo}º Módulo</Text>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        <Box sx={styles.inputSection}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1 }}>
-                                                                <Text bold>Contrato do aluno:</Text>
-                                                                <Box sx={{
-                                                                    ...styles.menuIcon,
-                                                                    backgroundImage: `url('${icons.file}')`,
-                                                                    transition: '.3s',
-                                                                    "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer'
-                                                                    }
-                                                                }} onClick={() => setShowEditFiles({ ...showEditFile, contractStudent: true })} />
-                                                                <Box sx={{
-                                                                    ...styles.menuIcon,
-                                                                    width: 22,
-                                                                    height: 22,
-                                                                    backgroundImage: `url('${icons.print}')`,
-                                                                    transition: '.3s',
-                                                                    "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer'
-                                                                    }
-                                                                }} />
-                                                                <Box sx={{
-                                                                    ...styles.menuIcon,
-                                                                    width: 22,
-                                                                    height: 22,
-                                                                    backgroundImage: `url('${icons.send}')`,
-                                                                    transition: '.3s',
-                                                                    "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer'
-                                                                    }
-                                                                }} />
-                                                                <EditFile
-                                                                    isPermissionEdit={isPermissionEdit}
-                                                                    columnId="id_contrato_aluno"
-                                                                    open={showEditFile.contractStudent}
-                                                                    newUser={newUser}
-                                                                    onSet={(set) => {
-                                                                        setShowEditFiles({ ...showEditFile, contractStudent: set })
-                                                                    }}
-                                                                    title='Contrato do aluno'
-                                                                    text='Faça o upload do contrato do aluno, depois clique em salvar.'
-                                                                    textDropzone='Arraste ou clique para selecionar a foto/arquivo que deseja'
-                                                                    fileData={contractStudent?.filter((file) => file?.matricula_id === enrollmentId)}
-                                                                    usuarioId={id}
-                                                                    matriculaId={enrollmentId}
-                                                                    bgImage={bgImagePdf}
-                                                                    callback={(file) => {
-                                                                        if (file.status === 201 || file.status === 200) {
-                                                                            handleItems()
-                                                                        }
-                                                                    }}
-                                                                />
+                                                        onClick={() => toggleEnrollTable(index)}
+                                                    >
+                                                        <Box
+                                                            sx={{
+                                                                ...styles.menuIcon,
+                                                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                                transform: showEnrollTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
+                                                                transition: '.3s',
+                                                                width: 17,
+                                                                height: 17
+                                                            }}
+                                                        />
+                                                        <Text bold style={{ color: colorPalette.buttonColor }}>{title}</Text>
+                                                        {isReenrollment && <Box sx={{ padding: '5px 15px', backgroundColor: colorPalette.buttonColor, borderRadius: 2 }}>
+                                                            <Text bold small style={{ color: '#fff' }}>Pendente de Rematrícula - {item?.modulo + 1} Semetre/Módulo</Text>
+                                                        </Box>}
+                                                        {isDp && <Box sx={{ padding: '5px 15px', backgroundColor: 'red', borderRadius: 2 }}>
+                                                            <Text bold small style={{ color: '#fff' }}>Cursando DP</Text>
+                                                        </Box>}
+                                                    </Box>
+                                                    {showEnrollTable[index] && (
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '20px 0px 0px 0px' }}>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Turma:</Text>
+                                                                <Text light>{item?.nome_turma}</Text>
                                                             </Box>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Data de Início:</Text>
-                                                            <Text light>{formatTimeStamp(item?.dt_inicio_cronograma)}</Text>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Data Final:</Text>
-                                                            <Text light>{formatTimeStamp(item?.dt_fim_cronograma)}</Text>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Status/Situação:</Text>
-                                                            <Text light>{item?.status}</Text>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        {/* <Box sx={styles.inputSection}>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Pendências:</Text>
+                                                                <Text light>{item?.qnt_disci_dp || 0}</Text>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Semestre/Módulo cursando:</Text>
+                                                                <Text light>{item?.modulo}º Módulo</Text>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={styles.inputSection}>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1 }}>
+                                                                    <Text bold>Contrato do aluno:</Text>
+                                                                    <Box sx={{
+                                                                        ...styles.menuIcon,
+                                                                        backgroundImage: `url('${icons.file}')`,
+                                                                        transition: '.3s',
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer'
+                                                                        }
+                                                                    }} onClick={() => setShowEditFiles({ ...showEditFile, contractStudent: true })} />
+                                                                    <Box sx={{
+                                                                        ...styles.menuIcon,
+                                                                        width: 22,
+                                                                        height: 22,
+                                                                        backgroundImage: `url('${icons.print}')`,
+                                                                        transition: '.3s',
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer'
+                                                                        }
+                                                                    }} />
+                                                                    <Box sx={{
+                                                                        ...styles.menuIcon,
+                                                                        width: 22,
+                                                                        height: 22,
+                                                                        backgroundImage: `url('${icons.send}')`,
+                                                                        transition: '.3s',
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer'
+                                                                        }
+                                                                    }} />
+                                                                    <EditFile
+                                                                        isPermissionEdit={isPermissionEdit}
+                                                                        columnId="id_contrato_aluno"
+                                                                        open={showEditFile.contractStudent}
+                                                                        newUser={newUser}
+                                                                        onSet={(set) => {
+                                                                            setShowEditFiles({ ...showEditFile, contractStudent: set })
+                                                                        }}
+                                                                        title='Contrato do aluno'
+                                                                        text='Faça o upload do contrato do aluno, depois clique em salvar.'
+                                                                        textDropzone='Arraste ou clique para selecionar a foto/arquivo que deseja'
+                                                                        fileData={contractStudent?.filter((file) => file?.matricula_id === enrollmentId)}
+                                                                        usuarioId={id}
+                                                                        matriculaId={enrollmentId}
+                                                                        bgImage={bgImagePdf}
+                                                                        callback={(file) => {
+                                                                            if (file.status === 201 || file.status === 200) {
+                                                                                handleItems()
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </Box>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Data de Início:</Text>
+                                                                <Text light>{formatTimeStamp(item?.dt_inicio_cronograma)}</Text>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Data Final:</Text>
+                                                                <Text light>{formatTimeStamp(item?.dt_fim_cronograma)}</Text>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Status/Situação:</Text>
+                                                                <Text light>{item?.status}</Text>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            {/* <Box sx={styles.inputSection}>
                                                         <TextInput disabled={!isPermissionEdit && true} name='dt_inicio' type="date" value={(item?.dt_inicio)?.split('T')[0] || ''} label='Inicio' sx={{ flex: 1, }} />
                                                         <TextInput disabled={!isPermissionEdit && true} name='dt_final' type="date" value={(item?.dt_final)?.split('T')[0] || ''} label='Fim' sx={{ flex: 1, }} />
                                                         <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupSituation} valueSelection={item?.status} clean={false}
@@ -3075,81 +3150,81 @@ export default function EditUser() {
                                                         />
                                                     </Box>
                                                     <Divider padding={0} /> */}
-                                                        {
-                                                            enrollmentData.status?.includes('Desistente') &&
-                                                            <>
+                                                            {
+                                                                enrollmentData.status?.includes('Desistente') &&
+                                                                <>
 
-                                                                <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                                                    valueChecked={item?.motivo_desistencia || ''}
-                                                                    boxGroup={groupReasonsDroppingOut}
-                                                                    title="Motivo da desistência"
-                                                                    horizontal={mobile ? false : true}
-                                                                    sx={{ width: 1 }}
-                                                                />
-                                                                <TextInput disabled={!isPermissionEdit && true} name='dt_desistencia' type="date" value={(item?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
-                                                                <Divider padding={0} />
-                                                            </>
-                                                        }
-
-
-                                                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.certificado_emitido}
-                                                            group={groupCertificate}
-                                                            title="Certificado emitido:"
-                                                            horizontal={mobile ? false : true}
-                                                        />
-                                                        <Divider padding={0} />
-
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Usuário responsável:</Text>
-                                                            <Text light>{item?.nome_usuario_resp}</Text>
-                                                        </Box>
-                                                        <Divider padding={0} />
-
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Data de criação:</Text>
-                                                            <Text light>{formatTimeStamp(item?.dt_criacao)}</Text>
-                                                        </Box>
-                                                        <Divider padding={0} />
-
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Notas, frequências, atividades complementares:</Text>
-                                                            <Link href={`/academic/teacherArea/${id}`} target="_blank">
-                                                                <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
-                                                            </Link>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Text bold>Situação dos pagamentos:</Text>
-                                                            <Link href={`/administrative/users/${id}/statusPayment?enrollmentId=${enrollmentId}`} target="_blank">
-                                                                <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
-                                                            </Link>
-                                                        </Box>
-                                                        <Divider padding={0} />
-                                                        <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                            <Button disabled={!isPermissionEdit && true} secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
-                                                                setEnrollmentStudentEditId(item?.id_matricula)
-                                                                handleEnrollStudentById(item?.id_matricula)
-                                                                setShowSections({ ...showSections, editEnroll: true })
-                                                            }} />
-                                                            {isReenrollment &&
-                                                                <Link href={`/administrative/users/${id}/enrollStudent?classId=${item?.turma_id}&courseId=${item?.curso_id}&reenrollment=true`} target="_blank">
-                                                                    <Button disabled={!isPermissionEdit && true} small text="rematrícula" style={{ width: 140, height: 30, alignItems: 'center' }} />
-                                                                </Link>
+                                                                    <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                                                        valueChecked={item?.motivo_desistencia || ''}
+                                                                        boxGroup={groupReasonsDroppingOut}
+                                                                        title="Motivo da desistência"
+                                                                        horizontal={mobile ? false : true}
+                                                                        sx={{ width: 1 }}
+                                                                    />
+                                                                    <TextInput disabled={!isPermissionEdit && true} name='dt_desistencia' type="date" value={(item?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
+                                                                    <Divider padding={0} />
+                                                                </>
                                                             }
+
+
+                                                            <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.certificado_emitido}
+                                                                group={groupCertificate}
+                                                                title="Certificado emitido:"
+                                                                horizontal={mobile ? false : true}
+                                                            />
+                                                            <Divider padding={0} />
+
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Usuário responsável:</Text>
+                                                                <Text light>{item?.nome_usuario_resp}</Text>
+                                                            </Box>
+                                                            <Divider padding={0} />
+
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Data de criação:</Text>
+                                                                <Text light>{formatTimeStamp(item?.dt_criacao)}</Text>
+                                                            </Box>
+                                                            <Divider padding={0} />
+
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Notas, frequências, atividades complementares:</Text>
+                                                                <Link href={`/academic/teacherArea/${id}`} target="_blank">
+                                                                    <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
+                                                                </Link>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Situação dos pagamentos:</Text>
+                                                                <Link href={`/administrative/users/${id}/statusPayment?enrollmentId=${enrollmentId}`} target="_blank">
+                                                                    <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
+                                                                </Link>
+                                                            </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Button disabled={!isPermissionEdit && true} secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
+                                                                    setEnrollmentStudentEditId(item?.id_matricula)
+                                                                    handleEnrollStudentById(item?.id_matricula)
+                                                                    setShowSections({ ...showSections, editEnroll: true })
+                                                                }} />
+                                                                {isReenrollment &&
+                                                                    <Link href={`/administrative/users/${id}/enrollStudent?classId=${item?.turma_id}&courseId=${item?.curso_id}&reenrollment=true`} target="_blank">
+                                                                        <Button disabled={!isPermissionEdit && true} small text="rematrícula" style={{ width: 140, height: 30, alignItems: 'center' }} />
+                                                                    </Link>
+                                                                }
+                                                            </Box>
                                                         </Box>
-                                                    </Box>
-                                                )}
-                                            </ContentContainer>
+                                                    )}
+                                                </ContentContainer>
 
-                                        )
-                                    })
-                                    :
-                                    <Text light> Não encontramos matrículas cadastradas.</Text>}
-                                {/* <Button disabled={!isPermissionEdit && true} text="Nova matrícula" style={{ width: 150, marginTop: 3 }} onClick={() => setShowSections({ ...showSections, interest: true })} /> */}
-                            </Box>
-                        }
+                                            )
+                                        })
+                                        :
+                                        <Text light> Não encontramos matrículas cadastradas.</Text>}
+                                    {/* <Button disabled={!isPermissionEdit && true} text="Nova matrícula" style={{ width: 150, marginTop: 3 }} onClick={() => setShowSections({ ...showSections, interest: true })} /> */}
+                                </Box>
+                            }
 
-                    </ContentContainer >}
+                        </ContentContainer >}
                 </>
             }
 
@@ -3231,7 +3306,7 @@ export default function EditUser() {
                             },
                             justifyContent: 'space-between'
                         }} onClick={() => setShowSelectiveProcess(!showSelectiveProcess)}>
-                            <Text title bold >Processo Seletivo</Text>
+                            <Text title bold>Inscrições</Text>
                             <Box sx={{
                                 ...styles.menuIcon,
                                 backgroundImage: `url(${icons.gray_arrow_down})`,
@@ -3245,88 +3320,218 @@ export default function EditUser() {
                         </Box>
                         {showSelectiveProcess &&
                             <>
-                                <Box sx={{ display: 'flex', gap: 3, flex: 1, flexDirection: 'column' }}>
-                                    <Divider padding={0} />
-                                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
-                                        <Text bold>Boletim de resultados do ENEM:</Text>
-                                        <Box sx={{
-                                            ...styles.menuIcon,
-                                            backgroundImage: `url('${icons.file}')`,
-                                            transition: '.3s',
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: 'pointer'
+                                <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
+                                    {
+                                        arrayInterests?.map((interest, index) => {
+                                            const requeriments = interest?.requeriments && interest?.requeriments?.some(item => item?.aprovado === 1);
+                                            const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula);
+                                            const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
+                                            const approvedRequeriment = requeriments ? true : false;
+                                            const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
+                                            const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}`;
+                                            const subscription = interest?.inscricao;
+                                            let linkRequeriment;
+                                            if (isHaveRequeriment) {
+                                                linkRequeriment = `/secretary/studentDetails/requeriments/student/${isHaveRequeriment}`
+                                            } else {
+                                                linkRequeriment = `/secretary/studentDetails/requeriments?userId=${userData?.id}&classId=${interest?.turma_id}&moduleEnrollment=1&courseId=${interest?.curso_id}&formaIngresso=${subscription?.forma_ingresso}`;
                                             }
-                                        }} onClick={() => setShowEditFiles({ ...showEditFile, enem: true })} />
-                                    </Box>
-                                    <EditFile
-                                        isPermissionEdit={isPermissionEdit}
-                                        columnId="id_doc_usuario"
-                                        open={showEditFile.enem}
-                                        newUser={newUser}
-                                        onSet={(set) => {
-                                            setShowEditFiles({ ...showEditFile, enem: set })
-                                        }}
-                                        title='Boletim de resultados do ENEM'
-                                        text='Faça o upload do seu Boletim, depois clique em salvar.'
-                                        textDropzone='Arraste ou clique para selecionar a Foto que deseja'
-                                        fileData={filesUser?.filter((file) => file.campo === 'enem')}
-                                        usuarioId={id}
-                                        campo='enem'
-                                        tipo='documento usuario'
-                                        callback={(file) => {
-                                            if (file.status === 201 || file.status === 200) {
-                                                if (!newUser) { handleItems() }
-                                                else {
-                                                    handleChangeFilesUser('enem', file.fileId, file.filePreview)
-                                                }
-                                            }
-                                        }}
-                                    />
-                                    <Divider padding={0} />
-                                    <Box sx={{ ...styles.inputSection, maxWidth: 280 }}>
-                                        <TextInput disabled={!isPermissionEdit && true} name='agendamento_processo' onChange={handleChangeSelectiveProcess} type="datetime-local" value={(selectiveProcessData?.agendamento_processo) || ''} label='Data do agendamento' sx={{ flex: 1, }} />
-                                    </Box>
-                                    <Divider padding={0} />
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
-                                        <Text bold>Redação:</Text>
-                                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                            <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
-                                            <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
-                                        </Box>
-                                    </Box>
 
-                                    <>
-                                        <Divider padding={0} />
-                                        <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
-                                            <Text bold>Prova - Redação:</Text>
-                                            <Box sx={{
-                                                ...styles.menuIcon,
-                                                backgroundImage: `url('${icons.file}')`,
-                                                transition: '.3s',
-                                                "&:hover": {
-                                                    opacity: 0.8,
-                                                    cursor: 'pointer'
-                                                }
-                                            }} onClick={() => console.log('redação')} />
-                                        </Box>
-                                        <Divider padding={0} />
-                                        <Box sx={styles.inputSection}>
-                                            <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nota_processo' onBlur={handleBlurNota} type="number" onChange={handleChangeSelectiveProcess} value={selectiveProcessData?.nota_processo || ''} label='Nota da prova' sx={{ flex: 1, }} />
-                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupStatusProcess} valueSelection={selectiveProcessData?.status_processo} onSelect={(value) => setSelectiveProcessData({ ...selectiveProcessData, status_processo: value })}
-                                                title="Status processo seletivo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                            />
-                                        </Box>
-                                        <Divider padding={0} />
-                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
-                                            <Text bold>Pré-Matrícula/Cadastro:</Text>
-                                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveProcess('pre-cadastro')} style={{ width: 120, height: 30 }} />
-                                                <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" onClick={() => handleSendSelectiveProcess('pre-cadastro')} style={{ width: 120, height: 30 }} />
-                                            </Box>
-                                        </Box>
-                                    </>
+                                            return (
+                                                <ContentContainer key={`${interest}-${index}`} style={{ width: '100%' }}>
+                                                    <Box sx={{
+                                                        display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'center',
+                                                        transition: '.3s',
+                                                        '&:hover': {
+                                                            opacity: .7,
+                                                            cursor: 'pointer'
+                                                        }
+                                                    }}
+                                                        onClick={() => toggleProcessSectiveTable(index)}>
+                                                        <Text bold>{interestTitle}</Text>
+                                                        <Box sx={{
+                                                            ...styles.menuIcon,
+                                                            backgroundImage: `url(${icons.gray_arrow_down})`,
+                                                            transform: showSelectiveProcessTable[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                                            transition: '.3s',
+                                                        }} />
+                                                    </Box>
+                                                    <Box sx={{ display: showSelectiveProcessTable[index] ? 'flex' : 'none', gap: 3, flex: 1, flexDirection: 'column' }}>
+                                                        <Divider padding={0} />
+
+                                                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={subscription?.forma_ingresso} group={groupIngresso} title="Forma de Ingresso:" horizontal={mobile ? false : true}
+                                                            onSelect={(value) => handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'forma_ingresso', value })} />
+
+                                                        <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                                            valueChecked={subscription?.forma_contato || ''}
+                                                            boxGroup={groupContact}
+                                                            title="Forma de contato:"
+                                                            horizontal={mobile ? false : true}
+                                                            onSelect={(value) =>
+                                                                handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'forma_contato', value })}
+                                                            sx={{ width: 1 }}
+                                                        />
+
+                                                        {subscription?.forma_ingresso === 'Nota do Enem' &&
+                                                            <>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
+                                                                    <Text bold>Boletim de resultados do ENEM:</Text>
+                                                                    <Box sx={{
+                                                                        ...styles.menuIcon,
+                                                                        backgroundImage: `url('${icons.file}')`,
+                                                                        transition: '.3s',
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer'
+                                                                        }
+                                                                    }} onClick={() => setShowEditFiles({ ...showEditFile, enem: true })} />
+                                                                </Box>
+
+                                                                <EditFile
+                                                                    isPermissionEdit={isPermissionEdit}
+                                                                    columnId="id_doc_usuario"
+                                                                    open={showEditFile.enem}
+                                                                    newUser={newUser}
+                                                                    onSet={(set) => {
+                                                                        setShowEditFiles({ ...showEditFile, enem: set })
+                                                                    }}
+                                                                    title='Boletim de resultados do ENEM'
+                                                                    text='Faça o upload do seu Boletim, depois clique em salvar.'
+                                                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                                                    fileData={filesUser?.filter((file) => file.campo === 'enem')}
+                                                                    usuarioId={id}
+                                                                    campo='enem'
+                                                                    tipo='documento usuario'
+                                                                    callback={(file) => {
+                                                                        if (file.status === 201 || file.status === 200) {
+                                                                            if (!newUser) { handleItems() }
+                                                                            else {
+                                                                                handleChangeFilesUser('enem', file.fileId, file.filePreview)
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        }
+                                                        {subscription?.forma_ingresso === 'Redação Online' &&
+                                                            <>
+                                                                <Divider padding={0} />
+                                                                <Box sx={{ ...styles.inputSection, maxWidth: 280 }}>
+                                                                    <TextInput disabled={!isPermissionEdit && true} name='agendamento_processo' onChange={(e) =>
+                                                                        handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
+                                                                        type="datetime-local" value={(subscription?.agendamento_processo) || ''}
+                                                                        label='Data do agendamento' sx={{ flex: 1, }} />
+                                                                </Box>
+                                                                <Divider padding={0} />
+                                                                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
+                                                                    <Text bold>Redação:</Text>
+                                                                    <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
+                                                                        <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
+                                                                        <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
+                                                                    </Box>
+                                                                </Box>
+                                                                <Divider padding={0} />
+                                                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
+                                                                    <Text bold>Prova - Redação:</Text>
+                                                                    <Box sx={{
+                                                                        ...styles.menuIcon,
+                                                                        backgroundImage: `url('${icons.file}')`,
+                                                                        transition: '.3s',
+                                                                        "&:hover": {
+                                                                            opacity: 0.8,
+                                                                            cursor: 'pointer'
+                                                                        }
+                                                                    }} onClick={() => console.log('redação')} />
+                                                                </Box>
+                                                                <Divider padding={0} />
+                                                                <Box sx={styles.inputSection}>
+                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_redacao' onBlur={handleBlurNota}
+                                                                        type="number" onChange={(e) =>
+                                                                            handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
+                                                                        value={subscription?.nt_redacao || ''} label='Nota da prova' sx={{ flex: 1, }} />
+                                                                </Box>
+                                                            </>}
+                                                        <>
+                                                            {subscription?.forma_ingresso === 'Nota do Enem'
+                                                                && <Box sx={styles.inputSection}>
+                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_enem' onBlur={handleBlurNota}
+                                                                        type="number" onChange={(e) =>
+                                                                            handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
+                                                                        value={subscription?.nt_enem || ''} label='Nota da prova' sx={{ flex: 1, }} />
+                                                                </Box>}
+                                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupStatusProcess}
+                                                                valueSelection={subscription?.status_processo_sel} onSelect={(value) =>
+                                                                    handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value })}
+                                                                title="Status processo seletivo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                            />
+                                                            <Divider padding={0} />
+                                                            {!newUser && <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
+                                                                <Text bold>Requerimento de Matrícula/Cadastro:</Text>
+                                                                <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
+                                                                    <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
+                                                                        <div>
+                                                                            {isRequerimentoAproved ?
+                                                                                < Box sx={{
+                                                                                    display: 'flex', gap: 1, padding: '6px 8px', alignItems: 'center', border: '1px solid green',
+                                                                                    backgroundColor: 'transparent',
+                                                                                    borderRadius: `100px`,
+                                                                                    justifyContent: 'space-around',
+                                                                                    transition: '.3s',
+                                                                                    "&:hover": {
+                                                                                        opacity: 0.8,
+                                                                                        cursor: 'pointer'
+                                                                                    },
+                                                                                }} onClick={() => window.open(linkRequeriment, '_blank')}>
+                                                                                    <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />
+                                                                                    <Text style={{ color: 'green' }}>
+                                                                                        Ver Requerimento
+                                                                                    </Text>
+                                                                                </Box>
+                                                                                :
+                                                                                <Button disabled={!isPermissionEdit && true}
+                                                                                    secondary={isHaveRequeriment}
+                                                                                    small text={isHaveRequeriment ? 'Ver Requerimento' : "Enviar Requerimento"} sx={{
+                                                                                        // width: 25,
+                                                                                        transition: '.3s',
+                                                                                        zIndex: 999999999,
+                                                                                        "&:hover": {
+                                                                                            opacity: 0.8,
+                                                                                            cursor: 'pointer'
+                                                                                        }
+                                                                                    }} onClick={() => {
+                                                                                        if (subscription?.forma_ingresso) {
+                                                                                            window.open(linkRequeriment, '_blank')
+                                                                                        } else {
+                                                                                            alert.info('Preencha primeiro a forma de ingresso do candidato.')
+                                                                                        }
+                                                                                    }}
+                                                                                />
+                                                                            }
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                    <Tooltip title={disable ? 'Necessário primeiro requerimento' : ''}>
+                                                                        <div>
+                                                                            <Button disabled={disable} small text="Matricular" sx={{
+                                                                                // width: 25,
+                                                                                transition: '.3s',
+                                                                                zIndex: 999999999,
+                                                                                "&:hover": {
+                                                                                    opacity: 0.8,
+                                                                                    cursor: 'pointer'
+                                                                                }
+                                                                            }} onClick={() => handleEnrollment(interest)} />
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                </Box>
+                                                            </Box>}
+                                                        </>
+                                                    </Box>
+                                                </ContentContainer>
+                                            );
+                                        })
+
+                                    }
                                 </Box>
                             </>
                         }
@@ -3377,9 +3582,9 @@ export default function EditUser() {
                                     <tbody style={{ flex: 1 }}>
                                         {
                                             arrayInterests?.map((interest, index) => {
-                                                const requeriments = interest?.requeriments?.some(item => item?.aprovado === 1);
-                                                const [isHaveRequeriment] = interest?.requeriments?.map(item => item?.id_req_matricula);
-                                                const [isRequerimentoAproved] = interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
+                                                const requeriments = interest?.requeriments && interest?.requeriments?.some(item => item?.aprovado === 1);
+                                                const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula);
+                                                const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
                                                 const approvedRequeriment = requeriments ? true : false;
                                                 const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
                                                 let linkRequeriment;
@@ -3406,84 +3611,89 @@ export default function EditUser() {
                                                         <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
 
                                                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', width: '100%' }}>
-                                                                <Button disabled={!isPermissionEdit && true} secondary small text="Editar" sx={{
-                                                                    width: 40,
-                                                                    transition: '.3s',
-                                                                    zIndex: 999999999,
-                                                                    "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer'
-                                                                    }
-                                                                }} onClick={() => {
-                                                                    setValueIdInterst(interest.id_interesse)
-                                                                    getInterestEdit(interest.id_interesse)
-                                                                    setShowSections({ ...showSections, viewInterest: true })
-                                                                }} />
-                                                                <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
-                                                                    <div>
-                                                                        {isRequerimentoAproved ?
-                                                                            < Box sx={{
-                                                                                display: 'flex', gap: 1, padding: '6px 8px', alignItems: 'center', border: '1px solid green',
-                                                                                backgroundColor: 'transparent',
-                                                                                borderRadius: `100px`,
-                                                                                justifyContent: 'space-around',
-                                                                                transition: '.3s',
-                                                                                "&:hover": {
-                                                                                    opacity: 0.8,
-                                                                                    cursor: 'pointer'
-                                                                                },
-                                                                            }} onClick={() => window.open(linkRequeriment, '_blank')}>
-                                                                                <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />
-                                                                                <Text style={{ color: 'green' }}>
-                                                                                    Requerimento
-                                                                                </Text>
-                                                                            </Box>
-                                                                            :
-                                                                            <Button disabled={!isPermissionEdit && true}
-                                                                                secondary={isHaveRequeriment}
-                                                                                small text="Requerimento" sx={{
-                                                                                    // width: 25,
-                                                                                    transition: '.3s',
-                                                                                    zIndex: 999999999,
-                                                                                    "&:hover": {
-                                                                                        opacity: 0.8,
-                                                                                        cursor: 'pointer'
-                                                                                    }
-                                                                                }} onClick={() =>
-                                                                                    window.open(linkRequeriment, '_blank')} />
-                                                                        }
-                                                                    </div>
-                                                                </Tooltip>
-                                                                <Tooltip title={disable ? 'Necessário primeiro requerimento' : ''}>
-                                                                    <div>
-                                                                        <Button disabled={disable} small text="Matricular" sx={{
-                                                                            // width: 25,
+
+                                                                {newUser ?
+                                                                    (
+                                                                        <Box sx={{
+                                                                            backgroundSize: 'cover',
+                                                                            backgroundRepeat: 'no-repeat',
+                                                                            backgroundPosition: 'center',
+                                                                            width: 25,
+                                                                            height: 25,
+                                                                            backgroundImage: `url(/icons/remove_icon.png)`,
                                                                             transition: '.3s',
                                                                             zIndex: 999999999,
                                                                             "&:hover": {
                                                                                 opacity: 0.8,
                                                                                 cursor: 'pointer'
                                                                             }
-                                                                        }} onClick={() => handleEnrollment(interest)} />
-                                                                    </div>
-                                                                </Tooltip>
-                                                                {newUser &&
-                                                                    <Box sx={{
-                                                                        backgroundSize: 'cover',
-                                                                        backgroundRepeat: 'no-repeat',
-                                                                        backgroundPosition: 'center',
-                                                                        width: 25,
-                                                                        height: 25,
-                                                                        backgroundImage: `url(/icons/remove_icon.png)`,
-                                                                        transition: '.3s',
-                                                                        zIndex: 999999999,
-                                                                        "&:hover": {
-                                                                            opacity: 0.8,
-                                                                            cursor: 'pointer'
-                                                                        }
-                                                                    }} onClick={() => {
-                                                                        deleteInterest(index)
-                                                                    }} />
+                                                                        }} onClick={() => {
+                                                                            deleteInterest(index)
+                                                                        }} />
+                                                                    ) : (
+                                                                        <>
+                                                                            <Button disabled={!isPermissionEdit && true} secondary small text="Editar" sx={{
+                                                                                width: 40,
+                                                                                transition: '.3s',
+                                                                                zIndex: 999999999,
+                                                                                "&:hover": {
+                                                                                    opacity: 0.8,
+                                                                                    cursor: 'pointer'
+                                                                                }
+                                                                            }} onClick={() => {
+                                                                                setValueIdInterst(interest?.id_interesse)
+                                                                                getInterestEdit(interest?.id_interesse)
+                                                                                setShowSections({ ...showSections, viewInterest: true })
+                                                                            }} />
+                                                                            <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
+                                                                                <div>
+                                                                                    {isRequerimentoAproved ?
+                                                                                        < Box sx={{
+                                                                                            display: 'flex', gap: 1, padding: '6px 8px', alignItems: 'center', border: '1px solid green',
+                                                                                            backgroundColor: 'transparent',
+                                                                                            borderRadius: `100px`,
+                                                                                            justifyContent: 'space-around',
+                                                                                            transition: '.3s',
+                                                                                            "&:hover": {
+                                                                                                opacity: 0.8,
+                                                                                                cursor: 'pointer'
+                                                                                            },
+                                                                                        }} onClick={() => window.open(linkRequeriment, '_blank')}>
+                                                                                            <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />
+                                                                                            <Text style={{ color: 'green' }}>
+                                                                                                Requerimento
+                                                                                            </Text>
+                                                                                        </Box>
+                                                                                        :
+                                                                                        <Button disabled={!isPermissionEdit && true}
+                                                                                            secondary={isHaveRequeriment}
+                                                                                            small text="Requerimento" sx={{
+                                                                                                // width: 25,
+                                                                                                transition: '.3s',
+                                                                                                zIndex: 999999999,
+                                                                                                "&:hover": {
+                                                                                                    opacity: 0.8,
+                                                                                                    cursor: 'pointer'
+                                                                                                }
+                                                                                            }} onClick={() =>
+                                                                                                window.open(linkRequeriment, '_blank')} />
+                                                                                    }
+                                                                                </div>
+                                                                            </Tooltip>
+                                                                            <Tooltip title={disable ? 'Necessário primeiro requerimento' : ''}>
+                                                                                <div>
+                                                                                    <Button disabled={disable} small text="Matricular" sx={{
+                                                                                        // width: 25,
+                                                                                        transition: '.3s',
+                                                                                        zIndex: 999999999,
+                                                                                        "&:hover": {
+                                                                                            opacity: 0.8,
+                                                                                            cursor: 'pointer'
+                                                                                        }
+                                                                                    }} onClick={() => handleEnrollment(interest)} />
+                                                                                </div>
+                                                                            </Tooltip>
+                                                                        </>)
                                                                 }
                                                             </Box>
                                                         </td>
