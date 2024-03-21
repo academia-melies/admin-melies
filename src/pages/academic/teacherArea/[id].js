@@ -198,13 +198,13 @@ export default function StudentData(props) {
         setLoading(true)
         try {
             let enrollmentData = showClass?.turma_id;
-                await getStudent()
-                await getPhoto()
-                const enrollment = await getEnrollment(enrollmentData)
-                await handleSelectModule(showClass?.turma_id, moduleStudent)
-                await getFrequency(showClass?.turma_id)
-                await getGrades(moduleStudent, showClass?.turma_id)
-                await getComplementaryActivities(moduleStudent, showClass?.turma_id)
+            await getStudent()
+            await getPhoto()
+            const enrollment = await getEnrollment(enrollmentData)
+            await handleSelectModule(showClass?.turma_id, moduleStudent)
+            await getFrequency(showClass?.turma_id)
+            await getGrades(moduleStudent, showClass?.turma_id)
+            await getComplementaryActivities(moduleStudent, showClass?.turma_id)
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar a Disciplina')
             console.log(error)
@@ -321,7 +321,7 @@ export default function StudentData(props) {
     )
 
     const totalHoursApproved = activityList?.length > 0 && activityList?.filter(item => item?.carga_hr && parseInt(item?.aprovado) === 1)?.map(item => parseInt(item?.carga_hr))
-        ?.reduce((accumulator, currentValue) => accumulator += currentValue)
+        ?.reduce((accumulator, currentValue) => accumulator += currentValue, 0)
 
     return (
         <>
@@ -439,7 +439,7 @@ export default function StudentData(props) {
                         disciplines?.length > 0 ?
                             <Box sx={{ display: 'flex' }}>
 
-                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                                <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', }}>
                                     <table style={{ borderCollapse: 'collapse', }}>
                                         <thead>
                                             <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
@@ -511,16 +511,10 @@ export default function StudentData(props) {
                     </Box>
                     {showBox?.frequency &&
                         <>
-                            {loadingActivities &&
-                                <ContentContainer>
-                                    <CircularProgress />
-                                    <Text bold>Buscando atividades...</Text>
-                                </ContentContainer>
-                            }
                             {frequencyData?.length > 0 ?
                                 <Box sx={{ display: 'flex' }}>
 
-                                    <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', border: `1px solid ${colorPalette.textColor}`, }}>
+                                    <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px', }}>
                                         <table style={{ borderCollapse: 'collapse', }}>
                                             <thead>
                                                 <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
@@ -601,7 +595,7 @@ export default function StudentData(props) {
                         gradesData?.length > 0 ?
                             <Box sx={{ display: 'flex', flex: 1, gap: 3, marginTop: '10px', }}>
 
-                                <div style={{ borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colorPalette.textColor}`, }}>
+                                <div style={{ borderRadius: '8px', overflow: 'hidden', }}>
                                     <table style={{ borderCollapse: 'collapse', }}>
                                         <thead>
                                             <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
@@ -673,7 +667,7 @@ export default function StudentData(props) {
                                     </table>
                                 </div>
                                 <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column' }}>
-                                    <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'center', width: '130px', border: `1px solid ${colorPalette.textColor}`, borderRadius: 2, padding: '4px 4px' }}>
+                                    <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'center', width: '130px', borderRadius: 2, padding: '4px 4px' }}>
                                         <Box sx={{
                                             backgroundColor: (statusGradeFinally === 'Pendente' && 'gray') ||
                                                 (statusGradeFinally === 'Reprovado' && 'red') || (statusGradeFinally === 'Aprovado' && 'green')
@@ -721,157 +715,168 @@ export default function StudentData(props) {
                         />
                     </Box>
                     {showBox?.additionalActivities && (
-                        activityList?.length > 0 ?
-                            <Box sx={{ display: 'flex', flex: 1, gap: 3, marginTop: '10px', flexDirection: 'column' }}>
-                                <div style={{ borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colorPalette.textColor}`, }}>
-                                    <table style={{ borderCollapse: 'collapse', }}>
-                                        <thead>
-                                            <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Atividade</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Título</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Qnt Horas</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Envio</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Módulo</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Arquivos</th>
-                                                <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Situação</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Comentários</th>
-                                                <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ações</th>
 
-                                            </tr>
-                                        </thead>
-                                        <tbody style={{ flex: 1 }}>
-                                            {
-                                                activityList?.map((item, index) => {
-                                                    const avaliationStatus = item?.aprovado === 1
-                                                    const status = item?.aprovado === null && 'Aguardando Aprovação'
-                                                        || parseInt(item?.aprovado) === 1 && 'Aprovado' || parseInt(item?.aprovado) === 0 && 'Reprovado'
+                        <>
+                            {loadingActivities &&
+                                <ContentContainer>
+                                    <CircularProgress />
+                                    <Text bold>Buscando atividades...</Text>
+                                </ContentContainer>
+                            }
+                            {activityList?.length > 0 ?
+                                <Box sx={{ display: 'flex', gap: 3, marginTop: '10px', flexDirection: 'column' }}>
+                                    <div style={{ borderRadius: '8px', overflow: 'hidden' }}>
+                                        <table style={{ borderCollapse: 'collapse', }}>
+                                            <thead>
+                                                <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff', }}>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Atividade</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Título</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Qnt Horas</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Data de Envio</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Módulo</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Arquivos</th>
+                                                    <th style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Situação</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Comentários</th>
+                                                    <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ações</th>
 
-                                                    return (
-                                                        <tr key={`${item}-${index}`}>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.atividade || item?.tipo_atv || '-'}
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.titulo || '-'}
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.carga_hr || '-'}h
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {formatTimeStamp(item?.dt_criacao, true) || '-'}
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.modulo_semestre || '-'}
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.arquivos?.length > 0 ? <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                                    <Button small text="abrir" style={{ padding: '6px 5px', borderRadius: 2, width: 80 }}
-                                                                        onClick={() => setShowFiles({ active: true, item: item?.arquivos })} />
-                                                                </Box>
-                                                                    :
-                                                                    "-"}
-                                                            </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {
+                                                    activityList?.map((item, index) => {
+                                                        const avaliationStatus = item?.aprovado === 1
+                                                        const status = item?.aprovado === null && 'Aguardando Aprovação'
+                                                            || parseInt(item?.aprovado) === 1 && 'Aprovado' || parseInt(item?.aprovado) === 0 && 'Reprovado'
 
-                                                            <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                <Box
-                                                                    sx={{
-                                                                        display: 'flex',
-                                                                        height: 30,
-                                                                        backgroundColor: colorPalette.primary,
-                                                                        width: 100,
-                                                                        alignItems: 'center',
-                                                                        borderRadius: 2,
-                                                                        justifyContent: 'start',
-
-                                                                    }}
-                                                                >
-                                                                    <Box sx={{ display: 'flex', backgroundColor: statusColor(status), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                                    <Text small bold style={{ textAlign: 'center', flex: 1 }}>{status}</Text>
-                                                                </Box>
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.comentario ? <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                                    <Button small text="vizualizar" style={{ padding: '6px 5px', borderRadius: 2, width: 120 }}
-                                                                        onClick={() => setShowComentaryReprovved({ active: true, item: item, commentary: '', onlyRead: true })} />
-                                                                </Box>
-                                                                    : '-'}
-                                                            </td>
-                                                            <td style={{ fontSize: '13px', padding: '8px 10px', border: '1px solid lightgray' }}>
-                                                                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                                                    <Box sx={{
-                                                                        display: 'flex', gap: 1.5, alignItems: 'center', padding: '5px 8px',
-                                                                        border: `1px solid green`,
-                                                                        transition: '.3s',
-                                                                        backgroundColor: item?.aprovado === 1 ? 'green' : 'trasnparent', borderRadius: 2,
-                                                                        "&:hover": {
-                                                                            opacity: 0.8,
-                                                                            cursor: 'pointer',
-                                                                            transform: 'scale(1.03, 1.03)'
-                                                                        },
-                                                                    }} onClick={() => {
-                                                                        if (item?.aprovado !== 1) {
-                                                                            handleUpdateAprovvedActivity({
-                                                                                activityId: item?.id_ativ_complementar,
-                                                                                aprovved: 1,
-                                                                                commentary: null
-                                                                            })
-                                                                        }
-                                                                    }}>
-                                                                        {item?.aprovado !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 13 }} />}
-                                                                        <Text bold style={{ color: item?.aprovado === 1 ? '#fff' : 'green' }}>{
-                                                                            item?.aprovado === 1 ? "Aprovado" : "Aprovar"
-                                                                        }</Text>
+                                                        return (
+                                                            <tr key={`${item}-${index}`}>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.atividade || item?.tipo_atv || '-'}
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.titulo || '-'}
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.carga_hr || '-'}h
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {formatTimeStamp(item?.dt_criacao, true) || '-'}
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.modulo_semestre || '-'}
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.arquivos?.length > 0 ? <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                                        <Button small text="abrir" style={{ padding: '6px 5px', borderRadius: 2, width: 80 }}
+                                                                            onClick={() => setShowFiles({ active: true, item: item?.arquivos })} />
                                                                     </Box>
-                                                                    <Box sx={{
-                                                                        display: 'flex', gap: 1.5, alignItems: 'center', padding: '5px 8px',
-                                                                        border: `1px solid red`,
-                                                                        backgroundColor: item?.aprovado === 0 ? 'red' : 'trasnparent', borderRadius: 2,
-                                                                        transition: '.3s',
-                                                                        "&:hover": {
-                                                                            opacity: 0.8,
-                                                                            cursor: 'pointer',
-                                                                            transform: 'scale(1.03, 1.03)'
-                                                                        },
-                                                                    }} onClick={() => {
-                                                                        if (parseInt(item?.aprovado) !== 0) {
-                                                                            setShowComentaryReprovved({ active: true, item: item, commentary: '', onlyRead: false })
-                                                                        }
-                                                                    }}>
-                                                                        {item?.aprovado !== 0 && <CancelIcon style={{ color: 'red', fontSize: 13 }} />}
-                                                                        <Text bold style={{ color: item?.aprovado === 0 ? '#fff' : 'red' }}>{
-                                                                            item?.aprovado === 0 ? "Reprovado" : "Reprovar"
-                                                                        }</Text>
+                                                                        :
+                                                                        "-"}
+                                                                </td>
+
+                                                                <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    <Box
+                                                                        sx={{
+                                                                            display: 'flex',
+                                                                            height: 30,
+                                                                            backgroundColor: colorPalette.primary,
+                                                                            width: 100,
+                                                                            alignItems: 'center',
+                                                                            borderRadius: 2,
+                                                                            justifyContent: 'start',
+
+                                                                        }}
+                                                                    >
+                                                                        <Box sx={{ display: 'flex', backgroundColor: statusColor(status), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                                                        <Text small bold style={{ textAlign: 'center', flex: 1 }}>{status}</Text>
                                                                     </Box>
-                                                                </Box>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                    {item?.comentario ? <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                                        <Button small text="vizualizar" style={{ padding: '6px 5px', borderRadius: 2, width: 120 }}
+                                                                            onClick={() => setShowComentaryReprovved({ active: true, item: item, commentary: '', onlyRead: true })} />
+                                                                    </Box>
+                                                                        : '-'}
+                                                                </td>
+                                                                <td style={{ fontSize: '13px', padding: '8px 10px', border: '1px solid lightgray' }}>
+                                                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                                        <Box sx={{
+                                                                            display: 'flex', gap: 1.5, alignItems: 'center', padding: '5px 8px',
+                                                                            border: `1px solid green`,
+                                                                            transition: '.3s',
+                                                                            backgroundColor: item?.aprovado === 1 ? 'green' : 'trasnparent', borderRadius: 2,
+                                                                            "&:hover": {
+                                                                                opacity: 0.8,
+                                                                                cursor: 'pointer',
+                                                                                transform: 'scale(1.03, 1.03)'
+                                                                            },
+                                                                        }} onClick={() => {
+                                                                            if (item?.aprovado !== 1) {
+                                                                                handleUpdateAprovvedActivity({
+                                                                                    activityId: item?.id_ativ_complementar,
+                                                                                    aprovved: 1,
+                                                                                    commentary: null
+                                                                                })
+                                                                            }
+                                                                        }}>
+                                                                            {item?.aprovado !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 13 }} />}
+                                                                            <Text bold style={{ color: item?.aprovado === 1 ? '#fff' : 'green' }}>{
+                                                                                item?.aprovado === 1 ? "Aprovado" : "Aprovar"
+                                                                            }</Text>
+                                                                        </Box>
+                                                                        <Box sx={{
+                                                                            display: 'flex', gap: 1.5, alignItems: 'center', padding: '5px 8px',
+                                                                            border: `1px solid red`,
+                                                                            backgroundColor: item?.aprovado === 0 ? 'red' : 'trasnparent', borderRadius: 2,
+                                                                            transition: '.3s',
+                                                                            "&:hover": {
+                                                                                opacity: 0.8,
+                                                                                cursor: 'pointer',
+                                                                                transform: 'scale(1.03, 1.03)'
+                                                                            },
+                                                                        }} onClick={() => {
+                                                                            if (parseInt(item?.aprovado) !== 0) {
+                                                                                setShowComentaryReprovved({ active: true, item: item, commentary: '', onlyRead: false })
+                                                                            }
+                                                                        }}>
+                                                                            {item?.aprovado !== 0 && <CancelIcon style={{ color: 'red', fontSize: 13 }} />}
+                                                                            <Text bold style={{ color: item?.aprovado === 0 ? '#fff' : 'red' }}>{
+                                                                                item?.aprovado === 0 ? "Reprovado" : "Reprovar"
+                                                                            }</Text>
+                                                                        </Box>
+                                                                    </Box>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })
 
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <Box sx={{
-                                    display: 'flex', width: '100%', padding: '10px 30px', gap: 2, backgroundColor: colorPalette?.secondary,
-                                    justifyContent: 'space-between'
-                                }}>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
 
                                     <Box sx={{
-                                        display: 'flex', gap: .5, flexDirection: 'column', alignItems: 'center', borderBottom: `1px solid ${colorPalette?.buttonColor}`,
-                                        justifyContent: 'center'
+                                        display: 'flex', width: '100%', padding: '10px 30px', gap: 2, backgroundColor: colorPalette?.secondary,
+                                        justifyContent: 'space-between'
                                     }}>
-                                        <Text light large>Total de Horas aprovadas:</Text>
-                                        <Text bold large>{totalHoursApproved} Horas</Text>
+
+                                        <Box sx={{
+                                            display: 'flex', gap: .5, flexDirection: 'column', alignItems: 'center', borderBottom: `1px solid ${colorPalette?.buttonColor}`,
+                                            justifyContent: 'center'
+                                        }}>
+                                            <Text light large>Total de Horas aprovadas:</Text>
+                                            <Text bold large>{totalHoursApproved} Horas</Text>
+                                        </Box>
                                     </Box>
                                 </Box>
-                            </Box>
-                            :
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                                <Text ligth>O aluno não possui atividades complementares.</Text>
-                            </Box>
-                    )}
+                                :
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
+                                    <Text ligth>O aluno não possui atividades complementares.</Text>
+                                </Box>
+                            }
+                        </>
+                    )
+                    }
                 </Box>
 
                 <Divider />
