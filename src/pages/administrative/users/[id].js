@@ -1402,6 +1402,26 @@ export default function EditUser() {
         }
     }
 
+
+    const handleSendRequeriment = async ({ classId, courseId, entryForm = null }) => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/requeriment/subscription/create`, { classId, courseId, entryForm, userData, moduleEnrollment: 1, userResp: user?.id })
+            if (response?.status === 201) {
+                alert.success('Requerimento enviado com sucesso.')
+                handleItems()
+            } else {
+                alert.error('Ocorreu um erro interno ao enviar o requerimento. Tente novamente ou consulte o Suporte.')
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+
+    }
+
     const verifyDataToGetway = () => {
 
         if (!userData?.nome) {
@@ -3500,8 +3520,12 @@ export default function EditUser() {
                                                                                             cursor: 'pointer'
                                                                                         }
                                                                                     }} onClick={() => {
-                                                                                        if (subscription?.forma_ingresso) {
-                                                                                            window.open(linkRequeriment, '_blank')
+                                                                                        if (subscription?.forma_ingresso && subscription?.id_inscricao) {
+                                                                                            if (isHaveRequeriment) {
+                                                                                                window.open(linkRequeriment, '_blank')
+                                                                                            } else {
+                                                                                                handleSendRequeriment({ classId: interest?.turma_id, courseId: interest?.curso_id, entryForm: subscription?.forma_ingresso })
+                                                                                            }
                                                                                         } else {
                                                                                             alert.info('Preencha primeiro a forma de ingresso do candidato.')
                                                                                         }
@@ -3587,6 +3611,7 @@ export default function EditUser() {
                                                 const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
                                                 const approvedRequeriment = requeriments ? true : false;
                                                 const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
+                                                const subscription = interest?.inscricao;
                                                 let linkRequeriment;
                                                 if (isHaveRequeriment) {
                                                     linkRequeriment = `/secretary/studentDetails/requeriments/student/${isHaveRequeriment}`
@@ -3649,9 +3674,11 @@ export default function EditUser() {
                                                                                 <div>
                                                                                     {isRequerimentoAproved ?
                                                                                         < Box sx={{
-                                                                                            display: 'flex', gap: 1, padding: '6px 8px', alignItems: 'center', border: '1px solid green',
+                                                                                            display: 'flex', gap: 1, padding: '6px 8px',
+                                                                                            alignItems: 'center', border: '1px solid green',
                                                                                             backgroundColor: 'transparent',
                                                                                             borderRadius: `100px`,
+                                                                                            width: 140,
                                                                                             justifyContent: 'space-around',
                                                                                             transition: '.3s',
                                                                                             "&:hover": {
@@ -3660,23 +3687,26 @@ export default function EditUser() {
                                                                                             },
                                                                                         }} onClick={() => window.open(linkRequeriment, '_blank')}>
                                                                                             <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />
-                                                                                            <Text style={{ color: 'green' }}>
-                                                                                                Requerimento
+                                                                                            <Text small style={{ color: 'green' }}>
+                                                                                                Ver Requerimento
                                                                                             </Text>
                                                                                         </Box>
                                                                                         :
                                                                                         <Button disabled={!isPermissionEdit && true}
                                                                                             secondary={isHaveRequeriment}
-                                                                                            small text="Requerimento" sx={{
-                                                                                                // width: 25,
-                                                                                                transition: '.3s',
-                                                                                                zIndex: 999999999,
-                                                                                                "&:hover": {
-                                                                                                    opacity: 0.8,
-                                                                                                    cursor: 'pointer'
+                                                                                            small text={isHaveRequeriment ? 'Ver Requerimento' : "Enviar Requerimento"}
+                                                                                            style={{ width: 160 }} onClick={() => {
+                                                                                                if (subscription?.forma_ingresso && subscription?.id_inscricao) {
+                                                                                                    if (isHaveRequeriment) {
+                                                                                                        window.open(linkRequeriment, '_blank')
+                                                                                                    } else {
+                                                                                                        handleSendRequeriment({ classId: interest?.turma_id, courseId: interest?.curso_id, entryForm: subscription?.forma_ingresso })
+                                                                                                    }
+                                                                                                } else {
+                                                                                                    alert.info('Preencha primeiro a forma de ingresso do candidato.')
                                                                                                 }
-                                                                                            }} onClick={() =>
-                                                                                                window.open(linkRequeriment, '_blank')} />
+                                                                                            }}
+                                                                                        />
                                                                                     }
                                                                                 </div>
                                                                             </Tooltip>
