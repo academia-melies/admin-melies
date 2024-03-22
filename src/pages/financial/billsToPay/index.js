@@ -101,8 +101,9 @@ export default function ListBillsToPay(props) {
 
     const handleLoadData = () => {
         getExpenses()
-        getPersonalExpenses('personal')
+        getPersonalExpenses()
         listAccounts()
+        setMenuSelected('Despesas')
     }
 
     useEffect(() => {
@@ -217,10 +218,11 @@ export default function ListBillsToPay(props) {
         setLoading(true)
         try {
             const queryType = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.key);
+            let query = queryType === 'personal' ? `/expense/personal/delete` : `/expense/delete`;
             const idsToDelete = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
             let allStatus200 = true;
             for (const idDelte of idsToDelete) {
-                const response = await api.delete(`/expenses/${queryType}/delete/${idDelte}`)
+                const response = await api.delete(`${query}/${idDelte}`)
                 if (response.status !== 200) {
                     allStatus200 = false;
                 }
