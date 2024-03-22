@@ -26,7 +26,7 @@ export const LeftMenu = ({ }) => {
    const [showMenuMobile, setShowMenuMobile] = useState(false)
    const [showChangePassword, setShowChangePassword] = useState(false)
    const [showDialogEditUser, setShowDialogEditUser] = useState(false)
-
+   const [showSubMenu, setShowSubMenu] = useState(false)
    const containerRef = useRef(null);
    const [menuItems, setMenuItems] = useState([]);
 
@@ -123,6 +123,17 @@ export const LeftMenu = ({ }) => {
 
    return (
       <>
+         {showSubMenu &&
+            <Box sx={{
+               position: 'fixed',
+               top: 0,
+               left: 0,
+               width: '100%',
+               height: '100%',
+               backgroundColor: '#0E0D15', 
+               opacity: 0.7,
+               zIndex: 9999999,
+            }} />}
          <Box sx={{
             ...styles.leftMenuMainContainer, backgroundColor: colorPalette.secondary, border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, transition: 'background-color 1s', ...(showMenuMobile && { display: 'flex' }),
             width: { xs: '214px', sm: '214px', md: '180px', lg: '180px', xl: '214px' },
@@ -247,8 +258,18 @@ export const LeftMenu = ({ }) => {
                      if (visibleItems.length > 0) {
                         return (
                            <Box key={`${group}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, color: '#f0f0f0' + '77', }}
-                              onMouseEnter={() => !showMenuMobile && handleGroupMouseEnter(index)}
-                              onMouseLeave={() => !showMenuMobile && handleGroupMouseLeave(index)}
+                              onMouseEnter={() => {
+                                 if (!showMenuMobile) {
+                                    handleGroupMouseEnter(index)
+                                    setShowSubMenu(true)
+                                 }
+                              }}
+                              onMouseLeave={() => {
+                                 if (!showMenuMobile) {
+                                    handleGroupMouseLeave(index)
+                                    setShowSubMenu(false)
+                                 }
+                              }}
                               onClick={() => showMenuMobile && handleGroupClick(index)}>
                               {/* {index !== 0 && <Box sx={{ width: '100%', height: `1px`, backgroundColor: '#e4e4e4', margin: `16px 0px`, }} />} */}
                               <Box sx={{
@@ -256,7 +277,7 @@ export const LeftMenu = ({ }) => {
                                  alignItems: 'center',
                                  justifyContent: 'space-between',
                                  gap: 0.5,
-                                 padding: `5px 5px`,
+                                 padding: `10px 5px`,
                                  width: '100%',
                                  borderRadius: 2,
                                  opacity: 0.8,
@@ -286,17 +307,44 @@ export const LeftMenu = ({ }) => {
                                     }
                                  }} />
                               </Box>
-                              {(!showMenuMobile && groupStates[index]) ?
+                              {(!showMenuMobile) ?
                                  <Box sx={{
                                     display: 'flex', flexDirection: 'column', position: 'absolute',
-                                    marginLeft: { md: 16, lg: 16, xl: 20 }, padding: '8px'
+                                    justifyContent: 'center',
+                                    top: -50,
+                                    width: (!showMenuMobile && groupStates[index]) ? 300 : 0,
+                                    padding: 0,
+                                    transition: '.3s',
+                                    height: '110%',
+                                    zIndex: -10,
+                                    gap: 2,
+                                    marginLeft: { md: 16, lg: 16, xl: 21 },
+                                    overflow: 'hidden'
                                  }}>
                                     <Box sx={{
                                        marginLeft: 4,
-                                       boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`
-                                       , border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, backgroundColor: colorPalette.secondary
+                                       boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
+                                       border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, backgroundColor: colorPalette.secondary,
+                                       height: '100%',
+                                       padding: (!showMenuMobile && groupStates[index]) ? '30px 20px' : '0',
+                                       justifyContent: 'center',
+                                       alignItems: 'center',
                                     }}>
-                                       {groupStates[index] && (
+                                       <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1.5, marginTop: 5 }}>
+                                          <Box sx={{
+                                             ...styles.icon, backgroundImage: `url(${group?.icon})`,
+                                             width: (!showMenuMobile && groupStates[index]) ? 25 : 0,
+                                             height: 'auto',
+                                             filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                             transition: 'background-color 1s',
+                                             aspectRatio: '1/1'
+                                          }} />
+                                          <Text bold large style={{ color: colorPalette.buttonColor, transition: 'background-color 1s', }}>
+                                             {group.text}
+                                          </Text>
+                                       </Box>
+                                       <Divider distance={3} />
+                                       {
                                           group.items.filter(item =>
                                              item.permissoes.some(permission => userPermissions.some(userPerm => userPerm.id_grupo_perm === permission.grupo_perm_id)))
                                              .map((item, index) => {
@@ -318,7 +366,8 @@ export const LeftMenu = ({ }) => {
 
                                                 )
                                              }
-                                             ))}
+                                             )
+                                       }
                                     </Box>
                                  </Box>
                                  : <>
@@ -398,74 +447,15 @@ export const LeftMenu = ({ }) => {
                />
             </Box>
          </Box>
-         {showDialogEditUser && (
-            <DialogUserEdit
-               onClick={(value) => setShowDialogEditUser(value)}
-               value={showDialogEditUser}
-            />
-         )}
+         {
+            showDialogEditUser && (
+               <DialogUserEdit
+                  onClick={(value) => setShowDialogEditUser(value)}
+                  value={showDialogEditUser}
+               />
+            )
+         }
 
-         {/* <Backdrop open={showVersion || user?.at_versao > 0} sx={{ zIndex: 999 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400 }}>
-               <ContentContainer>
-                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
-                     <Text large bold>Atualização de Versão</Text>
-                     <Box sx={{
-                        ...styles.menuIcon,
-                        backgroundImage: `url(${icons.gray_close})`,
-                        transition: '.3s',
-                        zIndex: 999999999,
-                        "&:hover": {
-                           opacity: 0.8,
-                           cursor: 'pointer'
-                        }
-                     }} onClick={() => {
-                        setShowVersion(false)
-                        if (user?.at_versao > 0) {
-                           handleAttMsgVersion()
-                           setUser({...user, at_versao: 0})
-                        }
-                     }} />
-                  </Box>
-                  <Divider distance={0} />
-                  <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', marginTop: 2 }}>
-                     <Text bold>Versão em produção - {latestVersion?.version} ({latestVersion?.build})</Text>
-                     <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                        <Text bold>Alterações realizadas</Text>
-                        <Text>{latestVersion?.msg}</Text>
-                     </Box>
-                     <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                        <Text bold>Algumas mudanças:</Text>
-
-                        {latestVersion?.listChanges?.map((item, index) => {
-                           return (
-                              <Box key={index} sx={{
-                                 display: 'flex', gap: 1, color: 'rgb(75 85 99)', "&:hover": {
-                                    opacity: 0.8,
-                                    transform: 'scale(1.1)',
-                                    transition: '.5s',
-                                    color: colorPalette.buttonColor,
-                                    fontWeight: 'bold'
-                                 },
-                                 marginTop: 1
-                              }}>
-                                 <Box sx={{
-                                    ...styles.menuIcon,
-                                    aspectRatio: '1/1',
-                                    backgroundImage: `url('/icons/topic_icon.png')`,
-                                    filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                                    transition: '.3s',
-                                 }} />
-                                 <Text small bold style={{ color: 'inherit', fontWeight: 'inherit' }}>{item?.change}</Text>
-                              </Box>
-                           )
-                        })}
-                     </Box>
-                  </Box>
-               </ContentContainer>
-            </Box>
-
-         </Backdrop> */}
       </>
    )
 }
@@ -513,11 +503,12 @@ const MenuItem = (props) => {
             ?
             <Box
                onClick={(e) => handleClick(e)}
-               style={{ display: 'flex', width: 'auto', padding: `8px 8px 8px 16px`, minWidth: 110, position: 'relative' }}
+               style={{ display: 'flex', width: '100%', padding: `8px 8px 8px 16px`, minWidth: 110, position: 'relative' }}
             >
                {<Box sx={{ display: 'flex', position: 'absolute', height: '105%', width: 2, backgroundColor: colorPalette.primary, left: 1 }} />}
                <Box sx={{
                   display: 'flex',
+                  alignItems: 'center',
                   width: '100%',
                   borderRadius: 2,
                   color: 'inherit',
@@ -541,10 +532,9 @@ const MenuItem = (props) => {
                      }),
                }}>
 
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit', justifyContent: 'space-between', width: '100%' }}>
                      {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
                      <Text
-                        small
                         sx={{
                            color: colorPalette.textColor,
                            transition: 'background-color 1s',
@@ -581,12 +571,14 @@ const MenuItem = (props) => {
                      boxShadow: { xs: 'none', md: 'none', lg: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, xl: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, },
                   }}>
                      <Box sx={{
-                        position: { xs: 'relative', md: 'absolute', lg: 'absolute', xl: 'absolute' }, marginLeft: { md: 11, lg: 10, xl: 11.5 },
+                        position: { xs: 'relative', md: 'absolute', lg: 'absolute', xl: 'absolute' },
+                        marginLeft: { md: 11, lg: 10, xl: 11.5 },
                         boxShadow: { xs: 'none', md: 'none', lg: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, xl: `rgba(149, 157, 165, 0.17) 0px 6px 24px` },
                         marginTop: (subitem?.length > 0 && showSubItems) ? '5px' : 0,
                         display: 'flex', flexDirection: 'column'
                      }}>
-                        {subitem?.length > 0 && showSubItems && <Box sx={{ display: 'flex', position: 'absolute', height: '100%', width: 2, backgroundColor: colorPalette.primary }} />}
+                        {subitem?.length > 0 && showSubItems &&
+                           <Box sx={{ display: 'flex', position: 'absolute', height: '100%', width: 2, backgroundColor: colorPalette.primary }} />}
                         {showSubItems &&
                            [...new Set(subitem?.map(item => item.to))].map((to, index) => {
                               const item = subitem?.find(item => item.to === to);
@@ -649,6 +641,7 @@ const MenuItem = (props) => {
                      display: 'flex',
                      width: '100%',
                      borderRadius: 2,
+                     flexDirection: 'column', gap: 1,
                      color: 'inherit',
                      transition: '.2s',
                      ...(currentPage && to != null ?
@@ -666,12 +659,13 @@ const MenuItem = (props) => {
                            }
                         }),
                   }}>
+                     {subitem?.length > 0 && <Divider />}
                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit', justifyContent: 'space-between' }}>
                         {/* <Box sx={{ ...styles.icon, backgroundImage: `url(/icons/${icon})`, width: 18, height: 18, filter: 'brightness(0) invert(1)', }} /> */}
-                        <Text
-                           small
+                        <Text bold={subitem?.length > 0}
+                           small={subitem?.length < 1}
                            sx={{
-                              color: colorPalette.textColor,
+                              color: subitem?.length > 0 ? colorPalette?.buttonColor : 'rgb(107 114 128)',
                               transition: 'background-color 1s',
                               "&:hover": {
                                  color: colorPalette.buttonColor,
@@ -684,7 +678,7 @@ const MenuItem = (props) => {
                            }}>
                            {text}
                         </Text>
-                        {subitem?.length > 0 &&
+                        {/* {subitem?.length > 0 &&
                            <Box sx={{
                               ...styles.menuIcon,
                               backgroundImage: `url(${icons.gray_arrow_down})`,
@@ -699,50 +693,58 @@ const MenuItem = (props) => {
                                  opacity: 0.8,
                                  cursor: 'pointer'
                               }
-                           }} />}
+                           }} />} */}
                      </Box>
-                     <Box sx={{ position: 'absolute', marginLeft: { md: 11, lg: 10, xl: 11.5 }, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
-                        {showSubItems &&
-                           [...new Set(subitem?.map(item => item.to))].map((to, index) => {
-                              const item = subitem?.find(item => item.to === to);
-                              const currentPage = item.to === pathname;
-                              const key = `${index}_${item.id_subitem}`;
 
-                              return (
-                                 <Link key={key}
-                                    href={item.to || '/#'}
-                                    style={{ display: 'flex', width: '100%', backgroundColor: colorPalette.secondary, boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}
-                                 >
-                                    <Box sx={{
-                                       display: 'flex',
-                                       padding: `8px 18px`,
-                                       width: '100%',
-                                       borderRadius: 2,
-                                       color: 'inherit',
-                                       transition: '.2s',
-                                       ...(currentPage && item.to != null ?
-                                          { color: colorPalette.buttonColor } : {}),
-                                    }}>
-                                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
-                                          <Text
-                                             small
-                                             sx={{
-                                                color: colorPalette.textColor,
-                                                transition: 'background-color 1s',
-                                                "&:hover": {
-                                                   color: colorPalette.buttonColor,
-                                                },
-                                                ...(currentPage && item.to != null && { color: colorPalette.buttonColor }
-                                                ),
-                                             }}>
-                                             {item.text}
-                                          </Text>
+                     {subitem?.length > 0 &&
+                        <Box sx={{
+                           position: 'relative',
+                           width: '100%',
+                        }}>
+                           {
+                              [...new Set(subitem?.map(item => item.to))].map((to, index) => {
+                                 const item = subitem?.find(item => item.to === to);
+                                 const currentPage = item.to === pathname;
+                                 const key = `${index}_${item.id_subitem}`;
+
+                                 return (
+                                    <Link key={key}
+                                       href={item.to || '/#'}
+                                       style={{ display: 'flex', width: '100%' }}
+                                    >
+                                       <Box sx={{
+                                          display: 'flex',
+                                          padding: `8px 18px`,
+                                          width: '100%',
+                                          borderRadius: 2,
+                                          color: 'inherit',
+                                          transition: '.2s',
+                                          ...(currentPage && item.to != null ?
+                                             { color: colorPalette.buttonColor } : {}),
+                                       }}>
+                                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'inherit' }}>
+                                             <Text
+                                                small
+                                                sx={{
+                                                   color: 'rgb(107 114 128)',
+                                                   transition: 'background-color 1s',
+                                                   "&:hover": {
+                                                      color: colorPalette.buttonColor,
+                                                   },
+                                                   ...(currentPage && item.to != null && { color: colorPalette.buttonColor }
+                                                   ),
+                                                }}>
+                                                {item.text}
+                                             </Text>
+                                          </Box>
                                        </Box>
-                                    </Box>
-                                 </Link>
-                              );
-                           })}
-                     </Box>
+                                    </Link>
+                                 );
+                              })
+                           }
+                           < Divider />
+                        </Box>
+                     }
 
                   </Box>
                </Link>
@@ -769,7 +771,6 @@ const styles = {
    boxMenu: {
       display: 'flex',
       flexDirection: 'column',
-      gap: 1,
       marginTop: 10,
       overflowStyle: 'marquee,panner',
       maxHeight: '50%',
