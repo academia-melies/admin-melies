@@ -433,7 +433,7 @@ export default function EditBillToPay(props) {
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição' name='descricao' onChange={handleChange} value={billToPayData?.descricao || ''} label='Descrição:' sx={{}} />
                     <Box sx={styles.inputSection}>
                         <TextInput disabled={!isPermissionEdit && true} placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento:' sx={{ flex: 1, }} />
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nº Lançamentos' name='n_lancamento' onChange={handleChange} value={billToPayData?.n_lancamento || ''} type="number" label='Nº Lançamentos:' sx={{ width: 150, }} />
+                        {newBill && <TextInput disabled={!isPermissionEdit && true} placeholder='Nº Lançamentos' name='n_lancamento' onChange={handleChange} value={billToPayData?.n_lancamento || ''} type="number" label='Nº Lançamentos:' sx={{ width: 150, }} />}
                         <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupRecorrency} valueSelection={billToPayData?.recorrencia} onSelect={(value) => setBillToPayData({ ...billToPayData, recorrencia: value })}
                             title="Recorrência: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
