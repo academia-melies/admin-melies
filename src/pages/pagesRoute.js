@@ -2,7 +2,7 @@ import Head from 'next/head'
 import { Box } from '../atoms'
 import { useAppContext } from '../context/AppContext'
 import { ProtectRoute } from '../context/ProtectRoute'
-import { Colors, LeftMenu, UserHeader } from '../organisms'
+import { Colors, LeftMenu, UserHeader, WorkChat } from '../organisms'
 // import { menuItems } from '../permissions'
 import '../styles/Home.module.css'
 import { useEffect, useState } from 'react'
@@ -26,6 +26,7 @@ const PagesRoute = ({ Component, pageProps }) => {
                 <Box sx={{ ...styles.bodyContainer, backgroundColor: colorPalette.primary }}>
                     <LeftMenu />
                     <UserHeader />
+                    <WorkChat />
                     <Box sx={{
                         ...styles.contentContainer, backgroundColor: colorPalette.primary, transition: 'background-color 1s',
                         padding: removePadding ? '0' : { xs: `30px 30px 85px 30px`, xm: `25px`, md: `120px 65px`, lg: `120px 65px` }
