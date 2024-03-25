@@ -32,11 +32,11 @@ export const TextInput = (props) => {
                   fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',
                   backgroundColor: colorPalette.inputColor,
                   color: colorPalette.textColor,
-                  ...InputProps?.style,
                   height: props.multiline ? 'none' : '45px',
                   '&.disabled': {
                      color: 'white', // Cor do texto quando desabilitado
                   },
+                  ...InputProps?.style,
                },
 
                startAdornment: props.type === "coin"

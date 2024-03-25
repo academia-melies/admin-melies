@@ -14,8 +14,9 @@ export { TableOfficeHours } from "./TableOffice/tableOffice";
 export { SelectList } from './select/SelectList'
 export { Holidays } from './holidays/holidays'
 export { DialogUserEdit } from './userEdit/dialogEditUser'
-export { ContainDropzone} from './containDropzone/ContainDropzone'
-export { DeclarationPayment} from './contractStudent/declarationPayment'
+export { ContainDropzone } from './containDropzone/ContainDropzone'
+export { DeclarationPayment } from './contractStudent/declarationPayment'
+export { WorkChat } from './chat/chat'
 
 
 
