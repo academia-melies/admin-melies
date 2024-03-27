@@ -16,7 +16,7 @@ export const Carousel = (props) => {
             modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay ]}
             loop
             slidesPerView={1}
-            navigation
+            // navigation
             pagination={{ clickable: true }}
             autoplay={{ delay: 8000, disableOnInteraction: false }}
         >
