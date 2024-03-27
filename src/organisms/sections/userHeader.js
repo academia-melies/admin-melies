@@ -113,31 +113,6 @@ export const UserHeader = (props) => {
                             }} />
                             <Text small sx={{}}>Voltar</Text>
                         </Box>}
-                    <Text small light>Último acesso em: {formatTimeStamp(user?.ultimo_acesso, true)}</Text>
-                </Box>
-                <Link style={{ display: 'flex' }} target="_blank" href={'https://www.figma.com/file/HPpREYZoNogzU0laydrXL4/Fluxograma---Adm-Telas?type=design&node-id=0%3A1&mode=design&t=0G7h5zNFmYW6q7PS-1'}>
-                    <Box sx={{ gap: 1, display: 'flex', alignItems: 'center', transition: '.3s', backgroundColor: colorPalette.primary, padding: '5px 8px', borderRadius: 2, cursor: 'pointer', "&:hover": { opacity: 0.6 } }}>
-                        <Box sx={{
-                            ...styles.menuIcon,
-                            backgroundImage: `url('/icons/manual_icon.png')`,
-                            // width: 15,
-                            // height: 15,
-                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                            transition: 'background-color 1s'
-                        }} />
-                        <Text bold small style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>Fluxograma do Sistema</Text>
-                    </Box>
-                </Link>
-                <Box sx={{ gap: 1, display: 'flex', alignItems: 'center', transition: '.3s', backgroundColor: colorPalette.primary, padding: '5px 8px', borderRadius: 2, cursor: 'pointer', "&:hover": { opacity: 0.6 } }} onClick={() => router.push('/ourTeam')}>
-                    <Box sx={{
-                        ...styles.menuIcon,
-                        backgroundImage: `url('/icons/org_icon.png')`,
-                        width: 15,
-                        height: 15,
-                        filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                        transition: 'background-color 1s'
-                    }} />
-                    <Text bold small style={{ color: colorPalette.textColor, transition: 'background-color 1s' }}>Equipe Méliès</Text>
                 </Box>
                 <Box sx={{ gap: 1, display: 'flex', alignItems: 'center', transition: '.3s', backgroundColor: colorPalette.primary, padding: '5px 8px', borderRadius: 2, cursor: 'pointer', "&:hover": { opacity: 0.6 } }}
                     onClick={() => router.push('/suport/tasks/list')}>
@@ -216,7 +191,7 @@ const styles = {
     header: {
         display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex' },
         width: '100%',
-        padding: `3px 32px 3px 32px`,
+        padding: `6px 32px 6px 32px`,
         alignItems: 'center',
         justifyContent: 'flex-end',
         boxSizing: 'border-box',
