@@ -334,18 +334,31 @@ function Home() {
             <meta charset="utf-8" />
             <link rel="icon" href="https://adm-melies.s3.amazonaws.com/logo_vermelho_linhas_brancas.svg" />
          </Head>
+         <Box sx={{ display: 'flex', marginTop: '50px', width: '96%' }}>
+            <Carousel
+               data={imagesList || backgroundHome}
+               style={{
+                  backgroundColor: colorPalette.secondary,
+                  borderRadius: '8px',
+                  boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+               }}
+               heigth={{ xs: 200, xm: 480, md: 200, lg: 300, xl: 400 }}
+               width={'auto'}
+            />
+         </Box>
          <Box sx={{ display: 'flex', gap: 1, flexDirection: 'row' }}>
             <Box sx={{
-               display: 'flex', flexDirection: 'column', width: showMenuHelp ? { xs: '100%', xm: '100%', md: '75%', lg: '75%' } : { xs: '100%', xm: '96%', md: '96%', lg: '96%' }, transition: '0.5s', marginTop: 10,
+               display: 'flex', flexDirection: 'column', width: showMenuHelp ? { xs: '100%', xm: '100%', md: '75%', lg: '75%' } : { xs: '100%', xm: '96%', md: '96%', lg: '96%' },
+               transition: '0.5s',
                padding: { xs: '10px 15px', xm: '10px 50px', md: '10px 50px', lg: '10px 50px' }
             }}>
                <Box>
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' }, alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: .5 }}>
                      <Text
                         bold
                         veryLarge
                         style={{
-                           padding: { xs: '0', xm: '10px 0px 10px 0px', md: '10px 0px 10px 0px', lg: '10px 0px 10px 0px' }, display: 'flex',
+                           display: 'flex',
                            flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' }, gap: 8
                         }}>
                         Bem-vindo,
@@ -353,22 +366,346 @@ function Home() {
                            {user?.nome}!
                         </Text>
                      </Text>
-                     <Text bold small>Se liga nas novidades...</Text>
+                     <Text small light>Último acesso em: {formatTimeStamp(user?.ultimo_acesso, true)}</Text>
                   </Box>
-                  <Carousel
-                     data={imagesList || backgroundHome}
-                     style={{
+
+
+                  <Box sx={{ display: 'flex', gap: 2, marginTop: 5 }}>
+                     <Link style={{ display: 'flex' }} target="_blank" href={'https://www.figma.com/file/HPpREYZoNogzU0laydrXL4/Fluxograma---Adm-Telas?type=design&node-id=0%3A1&mode=design&t=0G7h5zNFmYW6q7PS-1'}>
+                        <Box sx={{
+                           gap: 1, display: 'flex', alignItems: 'center',
+                           transition: '.3s',
+                           backgroundColor: colorPalette.secondary,
+                           padding: '15px 18px',
+                           borderRadius: 2,
+                           boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                           cursor: 'pointer',
+                           "&:hover": {
+                              opacity: 0.6,
+                              transform: 'scale(1.03, 1.03)'
+                           }
+                        }}>
+                           <Box sx={{
+                              ...styles.menuIcon,
+                              backgroundImage: `url('/icons/manual_icon.png')`,
+                              width: 25,
+                              height: 25,
+                              filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                              transition: 'background-color 1s'
+                           }} />
+                           <Text bold large style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>Fluxograma do Sistema</Text>
+                        </Box>
+                     </Link>
+
+                     <Box sx={{
+                        gap: 1, display: 'flex', alignItems: 'center',
+                        transition: '.3s',
                         backgroundColor: colorPalette.secondary,
-                        borderRadius: '8px',
-                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                     }}
-                     heigth={{ xs: 200, xm: 480, md: 200, lg: 280, xl: 400 }}
-                     width={'auto'}
-                  />
+                        padding: '15px 18px',
+                        borderRadius: 2,
+                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                        cursor: 'pointer',
+                        "&:hover": {
+                           opacity: 0.6,
+                           transform: 'scale(1.03, 1.03)'
+                        }
+                     }} onClick={() => router.push('/ourTeam')}>
+                        <Box sx={{
+                           ...styles.menuIcon,
+                           backgroundImage: `url('/icons/org_icon.png')`,
+                           width: 25,
+                           height: 25,
+                           filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                           transition: 'background-color 1s'
+                        }} />
+                        <Text bold large style={{ color: colorPalette.textColor, transition: 'background-color 1s' }}>Equipe Méliès</Text>
+                     </Box>
+
+                     <Box sx={{
+                        gap: 1, display: 'flex', alignItems: 'center',
+                        transition: '.3s',
+                        backgroundColor: colorPalette.secondary,
+                        padding: '15px 18px',
+                        borderRadius: 2,
+                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                        cursor: 'pointer',
+                        "&:hover": {
+                           opacity: 0.6,
+                           transform: 'scale(1.03, 1.03)'
+                        }
+                     }} onClick={() => router.push('/suport/tasks/list')}>
+                        <Box sx={{
+                           ...styles.menuIcon,
+                           width: 25,
+                           height: 25,
+                           backgroundImage: `url('/icons/support-icon.png')`,
+                           filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                           transition: '.3s',
+                           aspectRatio: '1/1'
+                        }} />
+                        <Text bold large>Suporte</Text>
+                     </Box>
+                  </Box>
                </Box>
                <Box sx={{ display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' } }}>
                   <Divider distance={5} />
                </Box>
+
+               <Box sx={{ display: 'flex', gap: 2, marginTop: 5,  }}>
+
+                  <ContentContainer fullWidth style={{ boxShadow: 'none', backgroundColor: 'none', }}>
+
+                     {isProfessor ?
+                        (<Box sx={{
+                           display: 'flex', gap: 5, justifyContent: 'flex-start', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' },
+                           display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' },
+                           width: '100%',
+                        }}>
+                           {menuProfessor?.map((group, index) => {
+
+                              return (
+                                 <ContentContainer key={`${group}-${index}`} sx={{
+                                    alignItems: 'center', backgroundColor: colorPalette.buttonColor,
+                                    width: '100%',
+                                    transition: '.5s',
+                                    justifyContent: 'center',
+                                    "&:hover": {
+                                       cursor: 'pointer',
+                                       opacity: 0.8,
+                                       transform: 'scale(1.1)',
+                                    }
+                                 }} onClick={() => {
+                                    group.query ?
+                                       router.push(`${group.to}?id=${userId}`) : router.push(`${group.to}`)
+                                 }}>
+                                    <Text bold style={{ color: '#fff', transition: 'background-color 1s', textAlign: 'center' }}>
+                                       {group.text}
+                                    </Text>
+                                 </ContentContainer>
+                              )
+                           })}
+
+                        </Box>
+                        )
+                        :
+                        (
+                           <Box sx={{
+                              display: 'flex', gap: 2, justifyContent: 'flex-start',
+                              width: '100%',
+                              flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' },
+                              display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' }
+                           }}>
+                              {menu?.map((group, index) =>
+                                 <Box key={`${group}-${index}`} sx={{
+                                    alignItems: 'center',
+                                    backgroundColor: colorPalette.secondary,
+                                    flexDirection: 'row',
+                                    width: '100%',
+                                    padding: '12px 20px',
+                                    gap: 2,
+                                    borderRadius: 2,
+                                    transition: '.5s',
+                                    "&:hover": {
+                                       cursor: 'pointer',
+                                       opacity: 0.8,
+                                       transform: 'scale(1.03, 1.03)',
+                                    }
+                                 }} onClick={() => router.push(group.to)}>
+                                    <Box sx={{
+                                       ...styles.icon, backgroundImage: `url(${group?.icon_dark})`,
+                                       width: 25, height: 25,
+                                       flexDirection: 'column',
+                                       // filter: 'brightness(0) invert(1)',
+                                       transition: 'background-color 1s'
+                                    }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                       <Text bold title style={{ transition: 'background-color 1s', }}>
+                                          {group.text}
+                                       </Text>
+                                       <Text light>Descircao do menu de facil acesso...</Text>
+                                    </Box>
+                                 </Box>
+                              )}
+
+                           </Box>
+                        )
+                     }
+                  </ContentContainer>
+                  <ContentContainer gap={5} style={{
+                     padding: { xs: '10px', xm: '30px 0px', md: '30px 0px', lg: '30px 0px' },
+                     flexDirection: 'column',
+                     display: 'flex', backgroundColor: 'none',
+                     boxShadow: 'none', position: 'relative', alignItems: 'start',
+                     justifyContent: 'start'
+                  }}>
+
+                     <Box sx={{
+                        padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
+                        alignItems: 'start', gap: 1,
+                        height: 400, overflowY: 'auto',
+                        width: '100%',
+                        backgroundColor: colorPalette?.secondary,
+                        borderRadius: 2,
+                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                     }}>
+                        <Text title bold style={{ textAlign: 'center' }}>Aniversáriantes de {formattedMonth} 🎉🎉</Text>
+                        <Box sx={{
+                           display: 'flex', justifyContent: 'center', width: '100%',
+                        }}>
+                           {listBirthDay.length > 0 ?
+                              <Box sx={{ borderRadius: '8px', width: '100%', display: 'flex', flexDirection: 'column', gap: 1, }}>
+                                 {listBirthDay?.map((item, index) => {
+                                    const date = item?.nascimento?.split('T')[0]
+                                    const day = date?.split('-')[2]
+                                    const month = date?.split('-')[1]
+                                    return (
+                                       <Box key={index} sx={{
+                                          display: 'flex',
+                                          backgroundColor: colorPalette?.primary,
+                                          position: 'relative',
+                                          boxShadow: 'none',
+                                          alignItems: 'center', width: '100%', padding: '20px',
+                                          borderRadius: 2,
+                                          gap: 2
+                                       }}>
+                                          <Box sx={{
+                                             display: 'flex', borderRadius: 40, backgroundColor: colorPalette?.buttonColor,
+                                             height: { xs: 30, sm: 40, md: 40, lg: 40 },
+                                             width: { xs: 30, sm: 40, md: 40, lg: 40 },
+                                             padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: 15, left: 10, zIndex: 999
+                                          }}>
+                                             <Text bold small style={{ color: '#fff' }}>{day}/{month}</Text>
+                                          </Box>
+                                          <Avatar src={item?.location} sx={{
+                                             height: { xs: 40, sm: 65, md: 65, lg: 65 },
+                                             width: { xs: 40, sm: 65, md: 65, lg: 65 },
+                                          }} variant="circular"
+                                          />
+                                          <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                             <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Text light bold>{item?.nome}</Text>
+                                                <Text light>{item?.funcao || 'Nenhum(a)'}</Text>
+                                             </Box>
+                                          </Box>
+                                          <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
+                                             <Button small secondary text="Dar parabéns" onClick={() => {
+                                                setIdSelected(item?.id)
+                                                setShowMessageBirthDay(true)
+                                             }} />
+                                          </Box>
+                                       </Box>
+                                    )
+                                 })}
+                              </Box>
+                              :
+                              <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
+                                 <Text >Não existem aniversáriantes nesse mês</Text>
+                              </Box>
+                           }
+                        </Box>
+                        <Backdrop open={showMessageBirthDay} sx={{ zIndex: 9999 }}>
+                           <BirthDateDiaog idSelected={idSelected} setShowMessageBirthDay={setShowMessageBirthDay} userBirthDay={listBirthDay} />
+                        </Backdrop>
+                     </Box>
+
+                     <Box sx={{
+                        padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
+                        alignItems: 'start', gap: 1,
+                        height: 400, overflowY: 'auto',
+                        backgroundColor: colorPalette?.secondary,
+                        borderRadius: 2,
+                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                     }}>
+                        <Text title bold style={{ textAlign: 'start' }}>Aulas do dia</Text>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                           {listClassesDay.length > 0 ?
+                              <Box sx={{ borderRadius: '8px', width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                 {listClassesDay?.map((item, index) => {
+                                    const date = formatDate(item?.dt_aula)
+                                    const classDay = `${item?.nome_turma} - ${item?.nome_disciplina}`;
+                                    return (
+                                       <Box key={index} sx={{
+                                          display: 'flex', flexDirection: 'column', position: 'relative',
+                                          "&:hover": {
+                                             opacity: 0.8,
+                                             cursor: 'pointer'
+                                          }
+                                       }} onClick={() => setShowClassDay({ active: true, item })}>
+                                          <ContentContainer row style={{
+                                             display: 'flex',
+                                             backgroundColor: colorPalette?.primary, boxShadow: 'none',
+                                             alignItems: 'center',
+                                             maxHeight: 100,
+                                             padding: '20px'
+                                          }}>
+                                             <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', width: '100%' }}>
+                                                <Box sx={{
+                                                   display: 'flex', borderRadius: 5,
+                                                   backgroundColor: colorPalette?.buttonColor,
+                                                   padding: '5px 5px',
+                                                   position: 'absolute',
+                                                   top: -5,  // Ajuste aqui para mover para cima
+                                                   right: -10, // Ajuste aqui para mover para a esquerda
+                                                   zIndex: 999
+                                                }}>
+                                                   <Text bold xsmall style={{ color: '#fff' }}>{date}</Text>
+                                                </Box>
+                                                <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                   <Text light bold>{classDay}</Text>
+                                                   <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                      {item?.professor1 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                         <Text bold>1º professor: </Text>
+                                                         <Text light>{item?.professor1}</Text>
+                                                      </Box>}
+                                                      {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                         <Text bold>2º professor: </Text>
+                                                         <Text light>{item?.professor2}</Text>
+                                                      </Box>}
+                                                   </Box>
+                                                </Box>
+                                             </Box>
+                                          </ContentContainer>
+                                       </Box>
+                                    )
+                                 })}
+                              </Box>
+                              :
+                              <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
+                                 <Text >Não existem aulas cadastradas hoje.</Text>
+                              </Box>
+                           }
+                        </Box>
+                     </Box>
+                     <Backdrop open={showClassDay?.active} sx={{ zIndex: 9999 }}>
+                        <ContentContainer>
+                           <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4, alignItems: 'start', width: '100%', position: 'relative' }}>
+                              <Text bold>Descrição da Aula</Text>
+                              <Box sx={{
+                                 ...styles.menuIcon,
+                                 width: 17, height: 17,
+                                 backgroundImage: `url(${icons.gray_close})`,
+                                 transition: '.3s',
+                                 "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                 }
+                              }} onClick={() => setShowClassDay({ active: false, item: {} })} />
+                           </Box>
+                           <Divider />
+                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 350 }}>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                 <Text bold>Resumo da aula:</Text>
+                                 <Text>{showClassDay?.item?.resumo_aula}</Text>
+                              </Box>
+                              <Link href={showClassDay?.item?.link_aula || ''} target='_blank'>
+                                 <Button small disabled={showClassDay?.item?.link_aula ? false : true} text="Assistir aula" />
+                              </Link>
+                           </Box>
+                        </ContentContainer>
+                     </Backdrop>
+                  </ContentContainer>
+               </Box>
+
 
                <Box sx={{ padding: '20px 15px', borderRadius: 2, display: { xs: 'flex', xm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', backgroundColor: colorPalette.secondary }}>
                   <Box sx={{
@@ -528,213 +865,13 @@ function Home() {
                   }
                </Box>
 
-               <ContentContainer style={{ marginTop: '30px', boxShadow: 'none', backgroundColor: 'none', }}>
-                  <Divider />
-                  <Text bold title={true} sx={{ padding: { xs: '0px 0px 20px 20px', xm: '0px 0px 20px 40px', md: '0px 0px 30px 0px', lg: '0px 0px 20px 80px' } }}>
-                     Menu de fácil acesso..</Text>
-                  {isProfessor ?
-                     (<Box sx={{ display: 'flex', gap: 5, justifyContent: 'flex-start', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' } }}>
-                        {menuProfessor?.map((group, index) => {
-
-                           return (
-                              <ContentContainer key={`${group}-${index}`} sx={{
-                                 alignItems: 'center', backgroundColor: colorPalette.buttonColor,
-                                 width: '200px',
-                                 transition: '.5s',
-                                 justifyContent: 'center',
-                                 "&:hover": {
-                                    cursor: 'pointer',
-                                    opacity: 0.8,
-                                    transform: 'scale(1.1)',
-                                 }
-                              }} onClick={() => {
-                                 group.query ?
-                                    router.push(`${group.to}?id=${userId}`) : router.push(`${group.to}`)
-                              }}>
-                                 <Text bold style={{ color: '#fff', transition: 'background-color 1s', textAlign: 'center' }}>
-                                    {group.text}
-                                 </Text>
-                              </ContentContainer>
-                           )
-                        })}
-
-                     </Box>
-                     )
-                     :
-                     (<Box sx={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' }, display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' } }}>
-
-                        {menu?.map((group, index) =>
-                           <ContentContainer key={`${group}-${index}`} sx={{
-                              alignItems: 'center', backgroundColor: colorPalette.buttonColor,
-                              width: { xs: '120px', xm: '180px', md: '180px', lg: '180px' },
-                              transition: '.5s',
-                              "&:hover": {
-                                 cursor: 'pointer',
-                                 opacity: 0.8,
-                                 transform: 'scale(1.1)',
-                              }
-                           }} onClick={() => router.push(group.to)}>
-                              <Box sx={{ ...styles.icon, backgroundImage: `url(${group?.icon_dark})`, width: group?.text === 'Administrativo' ? 15 : 18, height: group.text === 'Administrativo' ? 24 : 18, filter: 'brightness(0) invert(1)', transition: 'background-color 1s' }} />
-                              <Text bold style={{ color: '#fff', transition: 'background-color 1s', }}>
-                                 {group.text}
-                              </Text>
-                           </ContentContainer>
-                        )}
-
-                     </Box>
-                     )
-                  }
-               </ContentContainer>
                <Divider />
-               <ContentContainer row style={{
-                  padding: { xs: '10px', xm: '30px', md: '30px', lg: '30px' },
-                  flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' },
-                  display: 'flex', marginTop: 5, backgroundColor: 'none', boxShadow: 'none', position: 'relative', alignItems: 'start', justifyContent: 'start'
-               }}>
-
-                  <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 1, maxHeight: 350, overflowY: 'auto' }}>
-                     <Text large bold style={{ textAlign: 'center' }}>Aniversáriantes de {formattedMonth} 🎉🎉</Text>
-                     <Box sx={{ display: 'flex', justifyContent: 'center', }}>
-                        {listBirthDay.length > 0 ?
-                           <Box sx={{ borderRadius: '8px', minWidth: { xs: '100px', xm: '400px', md: '400px', lg: '400px' }, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                              {listBirthDay?.map((item, index) => {
-                                 const date = item?.nascimento?.split('T')[0]
-                                 const day = date?.split('-')[2]
-                                 const month = date?.split('-')[1]
-                                 return (
-                                    <ContentContainer row key={index} style={{ display: 'flex', backgroundColor: colorPalette?.primary, position: 'relative', boxShadow: 'none', alignItems: 'center', maxHeight: 100 }}>
-                                       <Box sx={{
-                                          display: 'flex', borderRadius: 40, backgroundColor: colorPalette?.buttonColor,
-                                          height: { xs: 30, sm: 40, md: 40, lg: 40 },
-                                          width: { xs: 30, sm: 40, md: 40, lg: 40 },
-                                          padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: 15, left: 10, zIndex: 999
-                                       }}>
-                                          <Text bold small style={{ color: '#fff' }}>{day}/{month}</Text>
-                                       </Box>
-                                       <Avatar src={item?.location} sx={{
-                                          height: { xs: 40, sm: 65, md: 65, lg: 65 },
-                                          width: { xs: 40, sm: 65, md: 65, lg: 65 },
-                                       }} variant="circular"
-                                       />
-                                       <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                          <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
-                                             <Text light bold>{item?.nome}</Text>
-                                             <Text light>{item?.funcao || 'Nenhum(a)'}</Text>
-                                          </Box>
-                                       </Box>
-                                       <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
-                                          <Button small secondary text="Dar parabéns" onClick={() => {
-                                             setIdSelected(item?.id)
-                                             setShowMessageBirthDay(true)
-                                          }} />
-                                       </Box>
-                                    </ContentContainer>
-                                 )
-                              })}
-                           </Box>
-                           :
-                           <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
-                              <Text >Não existem aniversáriantes nesse mês</Text>
-                           </Box>
-                        }
-                     </Box>
-                     <Backdrop open={showMessageBirthDay} sx={{ zIndex: 9999 }}>
-                        <BirthDateDiaog idSelected={idSelected} setShowMessageBirthDay={setShowMessageBirthDay} userBirthDay={listBirthDay} />
-                     </Backdrop>
-                  </ContentContainer>
-
-                  <ContentContainer sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'start', alignItems: 'center', gap: 1, maxWidth: 500, maxHeight: 300, overflowY: 'auto' }}>
-                     <Text large bold style={{ textAlign: 'center' }}>Aulas do dia</Text>
-                     <Box sx={{ display: 'flex', justifyContent: 'center', }}>
-                        {listClassesDay.length > 0 ?
-                           <Box sx={{ borderRadius: '8px', minWidth: '400px', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                              {listClassesDay?.map((item, index) => {
-                                 const date = formatDate(item?.dt_aula)
-                                 const classDay = `${item?.nome_turma} - ${item?.nome_disciplina}`;
-                                 return (
-                                    <Box key={index} sx={{
-                                       display: 'flex', flexDirection: 'column', position: 'relative',
-                                       "&:hover": {
-                                          opacity: 0.8,
-                                          cursor: 'pointer'
-                                       }
-                                    }} onClick={() => setShowClassDay({ active: true, item })}>
-                                       <ContentContainer row style={{
-                                          display: 'flex',
-                                          backgroundColor: colorPalette?.primary, boxShadow: 'none',
-                                          alignItems: 'center',
-                                          maxHeight: 100,
-                                          padding: '20px'
-                                       }}>
-                                          <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', width: '100%' }}>
-                                             <Box sx={{
-                                                display: 'flex', borderRadius: 5,
-                                                backgroundColor: colorPalette?.buttonColor,
-                                                padding: '5px 5px',
-                                                position: 'absolute',
-                                                top: -5,  // Ajuste aqui para mover para cima
-                                                right: -10, // Ajuste aqui para mover para a esquerda
-                                                zIndex: 999
-                                             }}>
-                                                <Text bold xsmall style={{ color: '#fff' }}>{date}</Text>
-                                             </Box>
-                                             <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                <Text light bold>{classDay}</Text>
-                                                <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
-                                                   {item?.professor1 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                      <Text bold>1º professor: </Text>
-                                                      <Text light>{item?.professor1}</Text>
-                                                   </Box>}
-                                                   {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                      <Text bold>2º professor: </Text>
-                                                      <Text light>{item?.professor2}</Text>
-                                                   </Box>}
-                                                </Box>
-                                             </Box>
-                                          </Box>
-                                       </ContentContainer>
-                                    </Box>
-                                 )
-                              })}
-                           </Box>
-                           :
-                           <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
-                              <Text >Não existem aulas cadastradas hoje.</Text>
-                           </Box>
-                        }
-                     </Box>
-                  </ContentContainer>
-                  <Backdrop open={showClassDay?.active} sx={{ zIndex: 9999 }}>
-                     <ContentContainer>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4, alignItems: 'start', width: '100%', position: 'relative' }}>
-                           <Text bold>Descrição da Aula</Text>
-                           <Box sx={{
-                              ...styles.menuIcon,
-                              width: 17, height: 17,
-                              backgroundImage: `url(${icons.gray_close})`,
-                              transition: '.3s',
-                              "&:hover": {
-                                 opacity: 0.8,
-                                 cursor: 'pointer'
-                              }
-                           }} onClick={() => setShowClassDay({ active: false, item: {} })} />
-                        </Box>
-                        <Divider />
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 350 }}>
-                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                              <Text bold>Resumo da aula:</Text>
-                              <Text>{showClassDay?.item?.resumo_aula}</Text>
-                           </Box>
-                           <Link href={showClassDay?.item?.link_aula || ''} target='_blank'>
-                              <Button small disabled={showClassDay?.item?.link_aula ? false : true} text="Assistir aula" />
-                           </Link>
-                        </Box>
-                     </ContentContainer>
-                  </Backdrop>
-               </ContentContainer>
             </Box>
 
-            <Box sx={{ position: 'fixed', width: showMenuHelp ? '22%' : 60, transition: '.5s', overflowY: 'auto', height: 1000, right: 0, display: { xs: 'none', xm: 'none', md: 'flex', lg: 'flex' }, flexDirection: 'column', flex: 1, paddingTop: 10, backgroundColor: colorPalette?.secondary, boxShadow: `rgba(149, 157, 165, 0.5) 0px 6px 24px`, }}>
+            <Box sx={{
+               position: 'fixed', width: showMenuHelp ? '22%' : 60, transition: '.5s', overflowY: 'auto', height: 1000, right: 0, display: { xs: 'none', xm: 'none', md: 'flex', lg: 'flex' }, flexDirection: 'column', flex: 1, paddingTop: 10, backgroundColor: colorPalette?.secondary, boxShadow: `rgba(149, 157, 165, 0.5) 0px 6px 24px`,
+               top: 10, zIndex: 99999
+            }}>
                <Box sx={{ position: 'absolute', left: 5, top: 40 }}>
                   <Hamburger
                      toggled={showMenuHelp}
@@ -1035,7 +1172,7 @@ function Home() {
                   </Box>
                </>}
             </Box>
-         </Box>
+         </Box >
       </>
    )
 
