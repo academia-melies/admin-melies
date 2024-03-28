@@ -35,9 +35,6 @@ export const WorkChat = () => {
         userWritingPhoto: null
     })
     const [loadingChat, setLoadingChat] = useState(false)
-    const socket = io(process.env.NEXT_PUBLIC_API_URL, {
-        transports: ["websocket"]
-    });
 
     const messagesContainerRef = useRef(null);
 
@@ -146,6 +143,10 @@ export const WorkChat = () => {
 
 
     useEffect(() => {
+        const socket = io(process.env.NEXT_PUBLIC_API_URL, {
+            transports: ["websocket"]
+        });
+
         socket.on('connect', () => {
             setOnline(true);
             socket.emit('updateStatusOnline', { userId: user.id, status: 1 }); // Emite evento apenas quando conectado
@@ -272,6 +273,10 @@ export const WorkChat = () => {
     // }, [writing?.active])
 
     useEffect(() => {
+
+        const socket = io(process.env.NEXT_PUBLIC_API_URL, {
+            transports: ["websocket"]
+        });
 
         socket.on('newMessage', async (newMessage) => {
             if (!conversationData?.messages?.some(msg => msg.id_mensagem === newMessage?.id_mensagem)) {
