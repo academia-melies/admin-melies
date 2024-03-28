@@ -5,7 +5,7 @@ import { IconStatus } from "../Table/table"
 import { api } from "../../api/api"
 import { Avatar, CircularProgress, Tooltip } from "@mui/material"
 import { icons } from "../layout/Colors"
-import io from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { formatTimeStamp, getRandomInt } from "../../helpers"
 import Dropzone from "react-dropzone"
 import { BsPaperclip } from 'react-icons/bs';
@@ -28,7 +28,6 @@ export const WorkChat = () => {
     const [conversationData, setConversation] = useState({ url_key: '', messages: [] })
     let fotoPerfil = user?.getPhoto?.location || '';
     const [filterData, setFilterData] = useState('')
-    const socket = io(process.env.NEXT_PUBLIC_API_URL);
     const [message, setMessage] = useState()
     const [writing, setWriting] = useState({
         active: false, conversa_id: null, userWriting: null,
@@ -36,6 +35,9 @@ export const WorkChat = () => {
         userWritingPhoto: null
     })
     const [loadingChat, setLoadingChat] = useState(false)
+    const socket = io(process.env.NEXT_PUBLIC_API_URL, {
+        transports: ["websocket"]
+    });
 
     const messagesContainerRef = useRef(null);
 
@@ -232,42 +234,42 @@ export const WorkChat = () => {
     document.title = newMessages > 0 ? `(${newMessages}) - Administrativo Méliès` : originalTitle;
 
 
-    useEffect(() => {
-        let writingData = {}
-        if (message !== '') {
-            writingData = {
-                active: true, conversa_id: conversationData?.id_conversa,
-                userWriting: user?.id,
-                userWritingName: user?.nome,
-                userWritingPhoto: user?.getPhoto?.location
-            }
-        } else {
-            writingData = {
-                active: false, conversa_id: conversationData?.id_conversa,
-                userWriting: user?.id,
-                userWritingName: user?.nome,
-                userWritingPhoto: user?.getPhoto?.location
-            }
-        }
-        socket.emit('userWriting', writingData);
+    // useEffect(() => {
+    //     let writingData = {}
+    //     if (message !== '') {
+    //         writingData = {
+    //             active: true, conversa_id: conversationData?.id_conversa,
+    //             userWriting: user?.id,
+    //             userWritingName: user?.nome,
+    //             userWritingPhoto: user?.getPhoto?.location
+    //         }
+    //     } else {
+    //         writingData = {
+    //             active: false, conversa_id: conversationData?.id_conversa,
+    //             userWriting: user?.id,
+    //             userWritingName: user?.nome,
+    //             userWritingPhoto: user?.getPhoto?.location
+    //         }
+    //     }
+    //     socket.emit('userWriting', writingData);
 
-    }, [message])
+    // }, [message])
 
-    useEffect(() => {
-        socket.on('userWriting', (writing) => {
-            setWriting({
-                active: writing?.active,
-                userWriting: writing?.userWriting,
-                id_conversa: writing?.id_conversa,
-                userWritingName: writing?.userWritingName,
-                userWritingPhoto: writing?.userWritingPhoto
-            })
-        })
+    // useEffect(() => {
+    //     socket.on('userWriting', (writing) => {
+    //         setWriting({
+    //             active: writing?.active,
+    //             userWriting: writing?.userWriting,
+    //             id_conversa: writing?.id_conversa,
+    //             userWritingName: writing?.userWritingName,
+    //             userWritingPhoto: writing?.userWritingPhoto
+    //         })
+    //     })
 
-        return () => {
-            socket.off('userWriting'); // Remove o listener quando o componente for desmontado
-        };
-    }, [writing?.active])
+    //     return () => {
+    //         socket.off('userWriting'); // Remove o listener quando o componente for desmontado
+    //     };
+    // }, [writing?.active])
 
     useEffect(() => {
 
@@ -607,11 +609,12 @@ const CardConversation = ({ conversation, setConversationChat, users, setMessage
             },
         }} onClick={() => {
             setConversationChat({
-            active: true,
-            user: userFinded,
-            messages: []
-        })
-        setMessage('')}}>
+                active: true,
+                user: userFinded,
+                messages: []
+            })
+            setMessage('')
+        }}>
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-start', alignItems: 'start', width: '100%', padding: '0px 12px' }}>
                 <Box sx={{ display: 'flex', gap: 1, position: 'relative', width: 40 }}>
                     <Avatar
