@@ -30,6 +30,11 @@ export const WorkChat = () => {
     const [filterData, setFilterData] = useState('')
     const socket = io(process.env.NEXT_PUBLIC_API_URL);
     const [message, setMessage] = useState()
+    const [writing, setWriting] = useState({
+        active: false, conversa_id: null, userWriting: null,
+        userWritingName: null,
+        userWritingPhoto: null
+    })
     const [loadingChat, setLoadingChat] = useState(false)
 
     const messagesContainerRef = useRef(null);
@@ -225,6 +230,44 @@ export const WorkChat = () => {
 
     const originalTitle = document.title;
     document.title = newMessages > 0 ? `(${newMessages}) - Administrativo Méliès` : originalTitle;
+
+
+    useEffect(() => {
+        let writingData = {}
+        if (message !== '') {
+            writingData = {
+                active: true, conversa_id: conversationData?.id_conversa,
+                userWriting: user?.id,
+                userWritingName: user?.nome,
+                userWritingPhoto: user?.getPhoto?.location
+            }
+        } else {
+            writingData = {
+                active: false, conversa_id: conversationData?.id_conversa,
+                userWriting: user?.id,
+                userWritingName: user?.nome,
+                userWritingPhoto: user?.getPhoto?.location
+            }
+        }
+        socket.emit('userWriting', writingData);
+
+    }, [message])
+
+    useEffect(() => {
+        socket.on('userWriting', (writing) => {
+            setWriting({
+                active: writing?.active,
+                userWriting: writing?.userWriting,
+                id_conversa: writing?.id_conversa,
+                userWritingName: writing?.userWritingName,
+                userWritingPhoto: writing?.userWritingPhoto
+            })
+        })
+
+        return () => {
+            socket.off('userWriting'); // Remove o listener quando o componente for desmontado
+        };
+    }, [writing?.active])
 
     useEffect(() => {
 
@@ -424,6 +467,7 @@ export const WorkChat = () => {
                                 return (
                                     <CardUser
                                         key={index}
+                                        setMessage={setMessage}
                                         user={user}
                                         setConversationChat={setConversationChat}
                                     />
@@ -434,6 +478,7 @@ export const WorkChat = () => {
                                 return (
                                     <CardConversation
                                         key={index}
+                                        setMessage={setMessage}
                                         conversation={chat}
                                         setConversationChat={setConversationChat}
                                         conversationChat={conversationChat}
@@ -448,6 +493,7 @@ export const WorkChat = () => {
 
             {(conversationChat?.active && conversationChat?.user) &&
                 <ChatUser
+                    writing={writing}
                     conversationChat={conversationChat}
                     setConversationChat={setConversationChat}
                     message={message}
@@ -465,7 +511,7 @@ export const WorkChat = () => {
 }
 
 
-const CardUser = ({ user, setConversationChat }) => {
+const CardUser = ({ user, setConversationChat, setMessage }) => {
 
     const name = user?.nome?.split(' ');
     const firstName = name[0];
@@ -483,7 +529,10 @@ const CardUser = ({ user, setConversationChat }) => {
                 backgroundColor: colorPalette.primary + '77',
                 cursor: 'pointer'
             },
-        }} onClick={() => setConversationChat({ active: true, user: user, messages: [] })}>
+        }} onClick={() => {
+            setConversationChat({ active: true, user: user, messages: [] })
+            setMessage('')
+        }}>
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-start', alignItems: 'start', width: '100%', padding: '0px 12px' }}>
                 <Box sx={{ display: 'flex', gap: 1, position: 'relative', width: 40 }}>
                     {user?.mensagensChat > 0 && <Box sx={{
@@ -519,7 +568,7 @@ const CardUser = ({ user, setConversationChat }) => {
     )
 }
 
-const CardConversation = ({ conversation, setConversationChat, users, conversationChat }) => {
+const CardConversation = ({ conversation, setConversationChat, users, setMessage }) => {
     const { colorPalette, theme, setLoading, user } = useAppContext()
     const [userOnline, setUserOnline] = useState(0)
     const [userFinded, setUserFinded] = useState({})
@@ -556,11 +605,13 @@ const CardConversation = ({ conversation, setConversationChat, users, conversati
                 backgroundColor: colorPalette.primary + '77',
                 cursor: 'pointer'
             },
-        }} onClick={() => setConversationChat({
+        }} onClick={() => {
+            setConversationChat({
             active: true,
             user: userFinded,
             messages: []
-        })}>
+        })
+        setMessage('')}}>
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-start', alignItems: 'start', width: '100%', padding: '0px 12px' }}>
                 <Box sx={{ display: 'flex', gap: 1, position: 'relative', width: 40 }}>
                     <Avatar
@@ -602,7 +653,7 @@ const CardConversation = ({ conversation, setConversationChat, users, conversati
 }
 
 const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat, message, setMessage, conversationData, handleSendMessage, setConversation,
-    setFilesConversation, filesConversation }) => {
+    setFilesConversation, filesConversation, writing }) => {
 
     const name = conversationChat?.user && conversationChat?.user?.nome?.split(' ');
     const firstName = name && name[0];
@@ -740,6 +791,7 @@ const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat,
                         }
                     }} onClick={async () => {
                         setConversationChat({ active: false, user: {}, messages: [] })
+                        setMessage('')
                         await markMessagesAsViewed(conversationData?.messages)
 
                     }} />
@@ -806,6 +858,7 @@ const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat,
                                                 </Box>
                                             </Box>
                                         )}
+
                                         <Box sx={{ width: '90%', justifyContent: isOwner ? 'flex-end' : 'flex-start', display: 'flex', gap: 1 }}>
                                             {!isOwner && <Avatar sx={{ width: '35px', height: '35px', border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }} src={senderAvatar} />}
                                             <Box sx={{
@@ -827,6 +880,14 @@ const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat,
                                     </Box>
                                 );
                             })}
+
+                            {(writing?.active && writing.userWriting !== user?.id) &&
+                                <Box sx={{ display: 'flex', gap: .5, justifyContent: 'flex-start', alignItems: 'end', width: '100%', flexDirection: 'column' }}>
+                                    <Avatar sx={{ width: '35px', height: '35px', border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }}
+                                        src={writing?.userWritingPhoto || ''} />
+                                    <Text small light>{writing?.userWritingName} está digitando...</Text>
+                                </Box>
+                            }
                         </Box>
                     )}
                 </div>
