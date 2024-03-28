@@ -8,8 +8,6 @@ import { icons } from "../layout/Colors"
 import { io } from 'socket.io-client';
 import { formatTimeStamp, getRandomInt } from "../../helpers"
 import Dropzone from "react-dropzone"
-import { BsPaperclip } from 'react-icons/bs';
-import { IoHappyOutline } from 'react-icons/io5';
 
 
 export const WorkChat = () => {
@@ -35,9 +33,11 @@ export const WorkChat = () => {
         userWritingPhoto: null
     })
     const [loadingChat, setLoadingChat] = useState(false)
-
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const messagesContainerRef = useRef(null);
-
+    const socket = io(procAPI_URL, {
+        transports: ["websocket"]
+    });
     const filter = (item) => {
         const normalizeString = (str) => {
             return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -49,6 +49,18 @@ export const WorkChat = () => {
             normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
         )
     };
+
+
+    useEffect(() => {
+        const socket = io(API_URL, {
+            transports: ["websocket"]
+        });
+        socket.on("connect", (socket) => console.log(socket));
+        socket.on("error", (error) => console.log(error));
+
+        return () => socket.disconnect();
+
+    }, [])
 
     const audioRef = useRef(null);
 
@@ -143,10 +155,6 @@ export const WorkChat = () => {
 
 
     useEffect(() => {
-        const socket = io(process.env.NEXT_PUBLIC_API_URL, {
-            transports: ["websocket"]
-        });
-
         socket.on('connect', () => {
             setOnline(true);
             socket.emit('updateStatusOnline', { userId: user.id, status: 1 }); // Emite evento apenas quando conectado
@@ -273,10 +281,6 @@ export const WorkChat = () => {
     // }, [writing?.active])
 
     useEffect(() => {
-
-        const socket = io(process.env.NEXT_PUBLIC_API_URL, {
-            transports: ["websocket"]
-        });
 
         socket.on('newMessage', async (newMessage) => {
             if (!conversationData?.messages?.some(msg => msg.id_mensagem === newMessage?.id_mensagem)) {
