@@ -35,7 +35,7 @@ export const WorkChat = () => {
     const [loadingChat, setLoadingChat] = useState(false)
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const messagesContainerRef = useRef(null);
-    const socket = io(procAPI_URL, {
+    const socket = io(API_URL, {
         transports: ["websocket"]
     });
     const filter = (item) => {
