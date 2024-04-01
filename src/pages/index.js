@@ -35,6 +35,17 @@ const menuProfessor = [
    { id: '05', icon: '', text: 'Cronograma', to: '/administrative/classSchedule/list', query: false },
 ]
 
+const menuApoio = [
+   { id: '01', icon: '/icons/users_icon_home.png', text: 'Usuários', to: '/administrative/users/list', description: 'Lista de todos os usuários, alunos e funcionários.' },
+   { id: '02', icon: '/icons/calendar_icon_home.png', text: 'Calendário', to: '/administrative/calendar/calendar', description: 'Calendário administrativo e acadêmico.' },
+   { id: '03', icon: '/icons/help-desk_icon_home.png', text: 'Chamados/Ajuda', to: '/suport/tasks/list', description: 'Abra uma chamado para tirar qualquer dúvida, ou obter ajuda ou suporte.' },
+   { id: '04', icon: '/icons/aulas_icon_home.png', text: 'Aulas por Turma', to: '/academic/classesDay', description: 'Consulte as aulas por turma, disciplina e módulo/semeste.' },
+   { id: '05', icon: '/icons/cursos_icon_home.png', text: 'Cursos', to: '/administrative/course/list', description: 'Lista de todos os cursos da Faculdade.' },
+   { id: '06', icon: '/icons/turmas_icon_home.png', text: 'Turmas', to: '/administrative/class/list', description: 'Lista de todas as turmas da Faculdade.' },
+   { id: '07', icon: '/icons/student_icon_home.png', text: 'Área do Aluno', to: '/academic/teacherArea/list', description: 'Acesse o resumo do aluno, para vizualizar suas notas, disciplinas matrículadas, atividades complementares, entre outras.' },
+   { id: '08', icon: '/icons/cronograma_icon_home.png', text: 'Cronograma', to: '/administrative/classSchedule/list', description: 'Lista de cronogramas de aulas por módulo.' },
+]
+
 const birthDate = [
    { id: '01', name: 'Marcus Silva', day: 1, function: 'Desenvolvedor' },
    { id: '02', name: 'Felipe Bomfim', day: 13, function: 'Suporte' },
@@ -393,7 +404,7 @@ function Home() {
                               filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                               transition: 'background-color 1s'
                            }} />
-                           <Text bold large style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>Fluxograma do Sistema</Text>
+                           <Text bold  style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>Fluxograma do Sistema</Text>
                         </Box>
                      </Link>
 
@@ -418,7 +429,7 @@ function Home() {
                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                            transition: 'background-color 1s'
                         }} />
-                        <Text bold large style={{ color: colorPalette.textColor, transition: 'background-color 1s' }}>Equipe Méliès</Text>
+                        <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s' }}>Equipe Méliès</Text>
                      </Box>
 
                      <Box sx={{
@@ -443,7 +454,7 @@ function Home() {
                            transition: '.3s',
                            aspectRatio: '1/1'
                         }} />
-                        <Text bold large>Suporte</Text>
+                        <Text bold>Suporte</Text>
                      </Box>
                   </Box>
                </Box>
@@ -453,7 +464,7 @@ function Home() {
 
                <Box sx={{ display: 'flex', gap: 2, marginTop: 5,  }}>
 
-                  <ContentContainer fullWidth style={{ boxShadow: 'none', backgroundColor: 'none', }}>
+                  <Box sx={{ padding: '30px 0px', width: '100%' }}>
 
                      {isProfessor ?
                         (<Box sx={{
@@ -492,16 +503,18 @@ function Home() {
                            <Box sx={{
                               display: 'flex', gap: 2, justifyContent: 'flex-start',
                               width: '100%',
+                              backgroundColor: 'none',
                               flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' },
                               display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' }
                            }}>
-                              {menu?.map((group, index) =>
+                              {menuApoio?.map((group, index) =>
                                  <Box key={`${group}-${index}`} sx={{
                                     alignItems: 'center',
+                                    display: 'flex',
                                     backgroundColor: colorPalette.secondary,
                                     flexDirection: 'row',
                                     width: '100%',
-                                    padding: '12px 20px',
+                                    padding: '20px 30px',
                                     gap: 2,
                                     borderRadius: 2,
                                     transition: '.5s',
@@ -512,17 +525,18 @@ function Home() {
                                     }
                                  }} onClick={() => router.push(group.to)}>
                                     <Box sx={{
-                                       ...styles.icon, backgroundImage: `url(${group?.icon_dark})`,
-                                       width: 25, height: 25,
+                                       ...styles.icon, backgroundImage: `url(${group?.icon})`,
+                                       width: 40, height: 40,
+                                       aspectRatio: '1/1',
                                        flexDirection: 'column',
                                        // filter: 'brightness(0) invert(1)',
                                        transition: 'background-color 1s'
                                     }} />
                                     <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
                                        <Text bold title style={{ transition: 'background-color 1s', }}>
-                                          {group.text}
+                                          {group?.text}
                                        </Text>
-                                       <Text light>Descircao do menu de facil acesso...</Text>
+                                       <Text light small>{group?.description}</Text>
                                     </Box>
                                  </Box>
                               )}
@@ -530,10 +544,11 @@ function Home() {
                            </Box>
                         )
                      }
-                  </ContentContainer>
-                  <ContentContainer gap={5} style={{
+                  </Box>
+                  <Box gap={2} sx={{
                      padding: { xs: '10px', xm: '30px 0px', md: '30px 0px', lg: '30px 0px' },
                      flexDirection: 'column',
+                     width: '40%',
                      display: 'flex', backgroundColor: 'none',
                      boxShadow: 'none', position: 'relative', alignItems: 'start',
                      justifyContent: 'start'
@@ -548,7 +563,7 @@ function Home() {
                         borderRadius: 2,
                         boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
                      }}>
-                        <Text title bold style={{ textAlign: 'center' }}>Aniversáriantes de {formattedMonth} 🎉🎉</Text>
+                        <Text large bold style={{ textAlign: 'center' }}>Aniversáriantes de {formattedMonth} 🎉🎉</Text>
                         <Box sx={{
                            display: 'flex', justifyContent: 'center', width: '100%',
                         }}>
@@ -564,17 +579,17 @@ function Home() {
                                           backgroundColor: colorPalette?.primary,
                                           position: 'relative',
                                           boxShadow: 'none',
-                                          alignItems: 'center', width: '100%', padding: '20px',
+                                          alignItems: 'center', width: '100%', padding: '10px',
                                           borderRadius: 2,
                                           gap: 2
                                        }}>
                                           <Box sx={{
-                                             display: 'flex', borderRadius: 40, backgroundColor: colorPalette?.buttonColor,
-                                             height: { xs: 30, sm: 40, md: 40, lg: 40 },
-                                             width: { xs: 30, sm: 40, md: 40, lg: 40 },
-                                             padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: 15, left: 10, zIndex: 999
+                                             display: 'flex', borderRadius: 35, backgroundColor: colorPalette?.buttonColor,
+                                             height: { xs: 30, sm: 35, md: 35, lg: 35 },
+                                             width: { xs: 30, sm: 35, md: 35, lg: 35 },
+                                             padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: -1, left: 2, zIndex: 999
                                           }}>
-                                             <Text bold small style={{ color: '#fff' }}>{day}/{month}</Text>
+                                             <Text bold xsmall style={{ color: '#fff' }}>{day}/{month}</Text>
                                           </Box>
                                           <Avatar src={item?.location} sx={{
                                              height: { xs: 40, sm: 65, md: 65, lg: 65 },
@@ -616,7 +631,7 @@ function Home() {
                         borderRadius: 2,
                         boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
                      }}>
-                        <Text title bold style={{ textAlign: 'start' }}>Aulas do dia</Text>
+                        <Text large bold style={{ textAlign: 'start' }}>Aulas do dia</Text>
                         <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                            {listClassesDay.length > 0 ?
                               <Box sx={{ borderRadius: '8px', width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -636,7 +651,7 @@ function Home() {
                                              backgroundColor: colorPalette?.primary, boxShadow: 'none',
                                              alignItems: 'center',
                                              maxHeight: 100,
-                                             padding: '20px'
+                                             padding: '10px'
                                           }}>
                                              <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', width: '100%' }}>
                                                 <Box sx={{
@@ -703,7 +718,7 @@ function Home() {
                            </Box>
                         </ContentContainer>
                      </Backdrop>
-                  </ContentContainer>
+                  </Box>
                </Box>
 
 

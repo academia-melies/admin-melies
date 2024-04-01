@@ -724,7 +724,7 @@ export default function ListReceipts(props) {
                     left: { xs: 20, sm: 20, md: 280, lg: 280, xl: 280 }, bottom: 20, display: 'flex', gap: 2, flexWrap: 'wrap'
                 }}>
                     <Button text="Dar baixa" style={{ width: '120px', height: '40px' }} />
-                    <Button secondary text="Excluir" style={{ width: '120px', height: '40px', backgroundColor: colorPalette.primary }} />
+                    <Button secondary text="Cancelar" style={{ width: '120px', height: '40px', backgroundColor: colorPalette.primary }} />
                 </Box>
                 <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2 }}>
                     <Button text="Salvar" style={{ width: '120px', height: '40px' }} />
