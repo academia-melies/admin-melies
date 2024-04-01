@@ -500,23 +500,24 @@ export const WorkChat = () => {
                         </>
                     )}
                 </Box>
+                {(conversationChat?.active && conversationChat?.user) &&
+                    <ChatUser
+                        writing={writing}
+                        conversationChat={conversationChat}
+                        setConversationChat={setConversationChat}
+                        message={message}
+                        setMessage={setMessage}
+                        handleSendMessage={handleSendMessage}
+                        conversationData={conversationData}
+                        setConversation={setConversation}
+                        filesConversation={filesConversation}
+                        setFilesConversation={setFilesConversation}
+                        messagesContainerRef={messagesContainerRef}
+                    />
+                }
             </Box>
 
-            {(conversationChat?.active && conversationChat?.user) &&
-                <ChatUser
-                    writing={writing}
-                    conversationChat={conversationChat}
-                    setConversationChat={setConversationChat}
-                    message={message}
-                    setMessage={setMessage}
-                    handleSendMessage={handleSendMessage}
-                    conversationData={conversationData}
-                    setConversation={setConversation}
-                    filesConversation={filesConversation}
-                    setFilesConversation={setFilesConversation}
-                    messagesContainerRef={messagesContainerRef}
-                />
-            }
+
         </>
     )
 }
@@ -683,18 +684,6 @@ const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat,
         }
     };
 
-    const handleToggleEmojiPicker = () => {
-        setShowEmojiPicker(!showEmojiPicker);
-    };
-
-    const handleToggleIconPicker = () => {
-        setShowIconPicker(!showIconPicker);
-    };
-
-    const handleSelectEmoji = (emoji) => {
-        // Lógica para inserir o emoji selecionado no texto
-        console.log('Emoji selecionado:', emoji);
-    };
 
     const markMessagesAsViewed = async (menssagemData) => {
         try {
@@ -750,6 +739,7 @@ const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat,
         scrollToBottom();
     }, [conversationData?.messages?.length || 0, conversationChat.active, conversationChat.user]);
 
+    scrollToBottom();
 
     return (
         <Box sx={{
@@ -760,7 +750,7 @@ const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat,
             zIndex: 99999,
             borderRadius: '8px 8px 0px 0px',
             bottom: 0,
-            right: 450,
+            right: 600,
             height: 520, width: '480px',
             border: `1px solid ${theme ? '#eaeaea' : '#404040'}`,
             backgroundColor: colorPalette.secondary, boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
@@ -810,11 +800,11 @@ const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat,
 
                 </Box>
 
-                <div style={{
+                <div ref={messagesContainerRef} style={{
                     display: 'flex',
                     flexDirection: 'column',
                     maxHeight: '260px', overflowY: 'auto',
-                    justifyContent: 'flex-end',
+                    // justifyContent: 'flex-end',
                 }}>
                     {loadingMessages ? (
                         <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column' }}>
@@ -1058,7 +1048,7 @@ const styles = {
         position: 'fixed',
         zIndex: 99999,
         bottom: 0,
-        right: 120,
+        right: 250,
         padding: '10px 20px',
         justifyContent: 'flex-start',
         borderRadius: '8px 8px 0px 0px',
