@@ -267,8 +267,8 @@ export const UpdateVersion = ({ user, showVersion, setShowVersion, latestVersion
     }
 
     return (
-        <Backdrop open={showVersion || user?.at_versao > 0} sx={{ zIndex: 999 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400 }}>
+        <Backdrop open={showVersion || user?.at_versao === 0} sx={{ zIndex: 999 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600, maxHeight: 800, overflow: 'auto' }}>
                 <ContentContainer>
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
                         <Text large bold>Atualização de Versão</Text>
@@ -283,9 +283,9 @@ export const UpdateVersion = ({ user, showVersion, setShowVersion, latestVersion
                             }
                         }} onClick={() => {
                             setShowVersion(false)
-                            if (user?.at_versao > 0) {
+                            if (user?.at_versao === 0) {
                                 handleAttMsgVersion()
-                                setUser({ ...user, at_versao: 0 })
+                                setUser({ ...user, at_versao: 1 })
                             }
                         }} />
                     </Box>

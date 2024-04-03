@@ -43,13 +43,13 @@ export default function ListInvoices(props) {
     }
 
     const filterFunctions = {
-        parcel: (item) => filters.parcel === 'todos' || item.status_parcela === filters.parcel,
-        nfse: (item) => filters.nfse === 'todos' || item.status_nfse === filters.nfse,
-        date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item.vencimento, filters?.startDate, filters?.endDate) : item,
+        parcel: (item) => filters.parcel === 'todos' || item?.status_parcela === filters.parcel,
+        nfse: (item) => filters.nfse === 'todos' || item?.status_nfse === filters.nfse,
+        date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
         search: (item) => {
-            const normalizedSearchTerm = removeAccents(filters.search.toLowerCase());
-            const normalizedItemName = removeAccents(item.pagante.toLowerCase());
-            return normalizedItemName.includes(normalizedSearchTerm);
+            const normalizedSearchTerm = removeAccents(filters?.search.toLowerCase());
+            const normalizedItemName = item?.pagante ? removeAccents(item?.pagante?.toLowerCase()) : removeAccents(item?.aluno?.toLowerCase());
+            return normalizedItemName && normalizedItemName?.includes(normalizedSearchTerm)
         },
     };
 
@@ -78,6 +78,7 @@ export default function ListInvoices(props) {
         setLoading(true)
         try {
             const response = await api.get('/student/installments/invoices')
+            console.log(response)
             const { data } = response;
             const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
             setAllSelected(groupIds)
