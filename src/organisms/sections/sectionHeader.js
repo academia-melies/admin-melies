@@ -60,7 +60,7 @@ export const SectionHeader = (props) => {
                display: 'flex',
                position: 'fixed',
                justifyContent: { xs: 'center', sm: 'end', md: 'end', lg: 'end' },
-               bottom: { xs: 0, sm: 20, md: 20, lg: 20, xl: 50 },
+               bottom: { xs: 0, sm: 20, md: 20, lg: 55, xl: 50 },
                right: { xs: 0, sm: 20, md: 40, lg: 60, xl: 60 },
                maxWidth: '350px',
                // margin: { xs: 'auto' },

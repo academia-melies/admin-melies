@@ -318,7 +318,7 @@ export const LeftMenu = ({ }) => {
                                     height: '110%',
                                     zIndex: -10,
                                     gap: 2,
-                                    marginLeft: { md: 16, lg: 16, xl: 21 },
+                                    marginLeft: { md: 16, lg: 17, xl: 21 },
                                     overflow: 'hidden'
                                  }}>
                                     <Box sx={{
