@@ -1478,11 +1478,18 @@ export default function EditUser() {
         return true
     }
 
-    const handleSendSelectiveProcess = async (type) => {
+    const handleSendSelectiveEssayWriting = async (interest) => {
         try {
             setLoading(true)
-            const result = await api.post(`/user/selectProcess/send/${userData?.id}?type=${type}`)
-            if (result.status !== 200) {
+            const result = await api.post(`/redacao-online/create`, {
+                essayData: {
+                    usuario_id: id,
+                    interesse_id: interest?.id_interesse,
+                    curso_id: interest?.curso_id,
+                    usuario_resp: user?.id
+                }
+            })
+            if (result.status !== 201) {
                 alert.error('Houve um erro ao enviar e-mail.')
                 return
             } else {
@@ -3446,22 +3453,25 @@ export default function EditUser() {
                                                                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
                                                                     <Text bold>Redação:</Text>
                                                                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                                        <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
-                                                                        <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" onClick={() => handleSendSelectiveProcess('redação')} style={{ width: 120, height: 30 }} />
+                                                                        <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveEssayWriting(interest)} style={{ width: 120, height: 30 }} />
+                                                                        <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" style={{ width: 120, height: 30 }} />
                                                                     </Box>
                                                                 </Box>
                                                                 <Divider padding={0} />
                                                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
                                                                     <Text bold>Prova - Redação:</Text>
-                                                                    <Box sx={{
-                                                                        ...styles.menuIcon,
-                                                                        backgroundImage: `url('${icons.file}')`,
-                                                                        transition: '.3s',
-                                                                        "&:hover": {
-                                                                            opacity: 0.8,
-                                                                            cursor: 'pointer'
-                                                                        }
-                                                                    }} onClick={() => console.log('redação')} />
+                                                                    {interest?.id_redacao &&
+                                                                        <Link href={`http://localhost:3000/?key_writing_user=${interest?.id_redacao}`} target="_blank">
+                                                                            <Box sx={{
+                                                                                ...styles.menuIcon,
+                                                                                backgroundImage: `url('${icons.file}')`,
+                                                                                transition: '.3s',
+                                                                                "&:hover": {
+                                                                                    opacity: 0.8,
+                                                                                    cursor: 'pointer'
+                                                                                }
+                                                                            }} />
+                                                                        </Link>}
                                                                 </Box>
                                                                 <Divider padding={0} />
                                                                 <Box sx={styles.inputSection}>
