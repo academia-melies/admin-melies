@@ -99,7 +99,8 @@ function Home() {
       setLoading(true)
       try {
          const response = await api.get(`/user/list/birthdates`)
-         setListBirthDay(response?.data)
+         const sorted = response?.data?.sort((a, b) => new Date(a?.nascimento) - new Date(b?.nascimento))
+         setListBirthDay(sorted)
       } catch (error) {
          return error
       } finally {
@@ -404,7 +405,7 @@ function Home() {
                               filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                               transition: 'background-color 1s'
                            }} />
-                           <Text bold  style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>Fluxograma do Sistema</Text>
+                           <Text bold style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>Fluxograma do Sistema</Text>
                         </Box>
                      </Link>
 
@@ -462,7 +463,7 @@ function Home() {
                   <Divider distance={5} />
                </Box>
 
-               <Box sx={{ display: 'flex', gap: 2, marginTop: 5,  }}>
+               <Box sx={{ display: 'flex', gap: 2, marginTop: 5, }}>
 
                   <Box sx={{ padding: '30px 0px', width: '100%' }}>
 
@@ -603,7 +604,7 @@ function Home() {
                                              </Box>
                                           </Box>
                                           <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
-                                             <Button small secondary text="Dar parabéns" onClick={() => {
+                                             <Button small secondary text="Parabenizar" style={{ backgroundColor: colorPalette?.secondary }} onClick={() => {
                                                 setIdSelected(item?.id)
                                                 setShowMessageBirthDay(true)
                                              }} />
@@ -1268,14 +1269,24 @@ const BirthDateDiaog = ({ idSelected, setShowMessageBirthDay, userBirthDay }) =>
          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             <Text bold xsmall>Mensagens pré-montadas:</Text>
             <Box sx={{
-               display: 'flex', padding: '5px 15px', backgroundColor: colorPalette?.buttonColor, alignItems: 'center', justifyContent: 'center', borderRadius: 8,
+               display: 'flex', padding: '5px 15px', border: `1px solid ${colorPalette?.buttonColor}`, alignItems: 'center', justifyContent: 'center', borderRadius: 8,
                "&:hover": {
                   opacity: 0.8,
                   cursor: 'pointer'
                }
             }}
-               onClick={() => setMessage(`${user?.nome} te desejou muitas felicidades no seu dia!`)}>
-               <Text xsmall style={{ color: '#fff', }}>{user?.nome} te desejou muitas felicidades no seu dia!</Text>
+               onClick={() => setMessage(`Feliz aniversário, ${nameBirthDay}. Te desejo muitas felicidades no seu dia!`)}>
+               <Text xsmall>Feliz aniversário, {nameBirthDay}. Te desejo muitas felicidades no seu dia!</Text>
+            </Box>
+            <Box sx={{
+               display: 'flex', padding: '5px 15px', border: `1px solid ${colorPalette?.buttonColor}`, alignItems: 'center', justifyContent: 'center', borderRadius: 8,
+               "&:hover": {
+                  opacity: 0.8,
+                  cursor: 'pointer'
+               }
+            }}
+               onClick={() => setMessage(`Parabéns, ${nameBirthDay}!`)}>
+               <Text xsmall>Parabéns, {nameBirthDay}!</Text>
             </Box>
          </Box>
          <Divider distance={0} />

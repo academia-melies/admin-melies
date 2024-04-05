@@ -177,7 +177,7 @@ export default function StudentDetailsMEC(props) {
     const menuUserStudent = [
         { id: '01', icon: '/icons/folder_icon.png', text: 'Prontuário do Aluno', to: '/academic/frequency/list', query: true },
         { id: '02', icon: '/icons/folder_icon.png', text: 'Requerimento de Matrícula', to: `/secretary/studentDetails/requeriments/student`, query: true },
-
+        { id: '03', icon: '/icons/folder_icon.png', text: 'Redações Online', to: `/secretary/essayWriting`, query: true },
     ]
 
     const listAtivo = [

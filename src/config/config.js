@@ -58,4 +58,21 @@ export const versions = [
             { change: 'Adicionado opção do usuário editar seus dados.' },
         ]
     },
+
+    {
+        version: '1.3.2', build: '05/04/2024',
+        status: 'lançada',
+        msg: 'Novas correções de Bugs e permormace. Layout atualizados, em menus, pagina do Usuário e Home. E muito mais!',
+        listChanges: [
+            { change: 'Novo Layout do menu lateral, com mais facilidade para selecionar o menu ou submenu.' },
+            { change: 'Novas funcionalidades em "Secretaria".' },
+            { change: 'Novo layout no cadastro do Usuário em "Administrativo>Usuarios> Tela do usuário."' },
+            { change: 'Novo menu na tela de usuários por aba.' },
+            { change: 'Novas telas e funcionalidades em "Financeiro"' },
+            { change: 'Novos Banners de entrada!' },
+            { change: 'Novo layout na Home principal, com melhorias e um design mais moderno.' },
+            { change: 'Checkagem de segurança de autenticação, com tempo limite de 1hr de expiração. (Segurança do Sistema)' },
+            { change: 'Novas funcionalidades de segurança e performace do sistema, para trazer mais agilidade e velocidade de atualização e vizualização dos dados.' },
+        ]
+    },
 ]
