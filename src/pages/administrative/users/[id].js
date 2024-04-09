@@ -1170,6 +1170,11 @@ export default function EditUser() {
             }
         }
 
+        if (arrayEnrollmentRegisterData?.filter(item => (item.turma_id === enrollmentRegisterData?.turma_id) && item?.modulo === enrollmentRegisterData?.modulo)?.length > 0) {
+            alert.info('Já foi adicionado uma matrícula com a turma e módulo selecionados. Verifique nas matriculas já incluídas acima, para que não haja duplicidade.')
+            return false;
+        }
+
         return true
     }
 
@@ -1802,7 +1807,7 @@ export default function EditUser() {
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 {menuUser?.map((item, index) => {
                     const isScreen = item?.screen === menuView;
-                    const userProfiles = userData?.perfil?.includes(',') ? userData?.perfil?.split(',').map(profile => profile.trim()) : userData?.perfil?.trim(); 
+                    const userProfiles = userData?.perfil?.includes(',') ? userData?.perfil?.split(',').map(profile => profile.trim()) : userData?.perfil?.trim();
                     const showMenu = item?.perfil.some(profile => userProfiles?.includes(profile));
                     return (
                         <Box key={index} sx={{
@@ -2766,6 +2771,7 @@ export default function EditUser() {
                         {showEnrollmentAdd &&
                             <>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Text bold large style={{ color: colorPalette?.buttonColor }}>Matrículas Incluídas:</Text>
                                     {arrayEnrollmentRegisterData?.length > 0 && arrayEnrollmentRegisterData?.map((item, index) => {
                                         const initDate = formatTimeStamp(item?.dt_inicio)
                                         const endDate = formatTimeStamp(item?.dt_final)

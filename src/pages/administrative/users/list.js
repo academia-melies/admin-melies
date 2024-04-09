@@ -45,12 +45,15 @@ export default function ListUsers(props) {
         };
 
         const normalizedFilterData = normalizeString(filterData);
+        const normalizedUserId = item?.id?.toString();
 
         return (
             Object.values(userFilterFunctions).every(userFilterFunction => userFilterFunction(item)) &&
             (
                 normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
-                normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
+                // normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
+                normalizedUserId?.includes(filterData.toString())
+                
             )
         );
     };
@@ -182,7 +185,7 @@ export default function ListUsers(props) {
                         <Text style={{ color: '#d6d6d6' }} light>usuários</Text>
                     </Box>
                 </Box>
-                <TextInput placeholder="Buscar pelo nome.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <TextInput placeholder="Buscar pelo nome ou pelo ID.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
@@ -246,7 +249,7 @@ export default function ListUsers(props) {
             </ContentContainer>
 
             <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
-                <TextInput placeholder="Buscar pelo nome.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{
+                <TextInput placeholder="Buscar pelo nome ou pelo ID.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{
                     flex: 1,
                 }} />
                 <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
