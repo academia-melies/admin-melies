@@ -1018,6 +1018,9 @@ export default function EditUser() {
                     alert.success('Usuário cadastrado com sucesso.');
                     if (data?.userId) router.push(`/administrative/users/list`)
                 }
+                if (response?.status === 422) {
+                    return alert.error('O CPF já está cadastrado.');
+                }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
                 console.log(error)

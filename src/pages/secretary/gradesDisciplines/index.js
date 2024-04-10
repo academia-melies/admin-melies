@@ -232,7 +232,6 @@ export default function ClassDay(props) {
                 <Divider distance={0} />
             </Box>
 
-
             <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
                 <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
