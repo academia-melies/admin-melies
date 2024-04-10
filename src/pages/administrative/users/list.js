@@ -24,7 +24,7 @@ export default function ListUsers(props) {
     })
     const [filtersField, setFiltersField] = useState({
         enrollmentSituation: 'todos',
-        status: 'todos',
+        status: 1,
         userPerfil: 'todos',
     })
     const [page, setPage] = useState(0);

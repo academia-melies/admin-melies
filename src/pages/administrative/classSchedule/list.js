@@ -16,6 +16,7 @@ export default function ClassSheduleList(props) {
     const [classDaySelect, setClassDaySelect] = useState([]);
     const [showClassDay, setShowClassDay] = useState(false);
     const [classScheduleId, setClassScheduleId] = useState();
+    const [filterData, setFilterData] = useState('')
     const [disciplines, setDisciplines] = useState([])
     const [professors, setProfessors] = useState([])
     const { setLoading, colorPalette, matches, alert, userPermissions, menuItemsList } = useAppContext()
@@ -35,6 +36,11 @@ export default function ClassSheduleList(props) {
         }
     }
 
+    const filter = (item) => {
+        return item?.ativo === 1 && item?.nome_cronograma?.toLowerCase().includes(filterData?.toLowerCase());
+
+    };
+
     const toggleClassTable = (index) => {
         setShowClassSchedulesTable(prevState => ({
             ...prevState,
@@ -47,7 +53,11 @@ export default function ClassSheduleList(props) {
         try {
             const response = await api.get(`/classSchedules`)
             const { data } = response
-            setDateClass(data)
+            let classScheduleData = data;
+            if(data?.length > 0){
+                classScheduleData = classScheduleData?.sort((a, b) => a.nome_cronograma.localeCompare(b.nome_cronograma))
+            }
+            setDateClass(classScheduleData)
         } catch (error) {
             console.log(error)
             return
@@ -171,12 +181,15 @@ export default function ClassSheduleList(props) {
     return (
         <>
             <SectionHeader
-                title="Cronograma de aulas"
+                title={`Cronograma de aulas (${dateClass?.length})`}
                 newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/administrative/${pathname}/new`)}
             />
+            <TextInput placeholder="Buscar por Grade.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }}
+                InputProps={{ style: { backgroundColor: colorPalette?.secondary } }} />
+
             {dateClass?.length > 0 ? (
-                dateClass.filter(item => item?.ativo === 1).map((item, index) => {
+                dateClass.filter(filter).map((item, index) => {
                     const classScheduleData = item.aulas;
                     const name = item.nome_cronograma;
                     const idCronograma = item.id_cronograma

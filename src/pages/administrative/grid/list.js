@@ -14,7 +14,7 @@ export default function ListGrid(props) {
     const [filterData, setFilterData] = useState('')
     const [showGridTable, setShowGridTable] = useState({});
     const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
-    const [filterAtive, setFilterAtive] = useState('todos')
+    const [filterAtive, setFilterAtive] = useState(1)
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const router = useRouter()
