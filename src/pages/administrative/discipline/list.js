@@ -18,7 +18,7 @@ export default function ListDiscipline(props) {
     const [disciplineList, setDiscipline] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
-    const [filterAtive, setFilterAtive] = useState('todos')
+    const [filterAtive, setFilterAtive] = useState(1)
     const [firstRender, setFirstRender] = useState(true)
     const [filters, setFilters] = useState({
         filterName: 'nome_disciplina',

@@ -281,6 +281,7 @@ export default function EditUser() {
                 const highestModule = data[data.length - 1].modulo;
                 setHighestModule(highestModule);
             }
+            console.log(data)
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)
@@ -459,7 +460,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/courses`)
             const { data } = response
-            const groupCourses = data.map(course => ({
+            const groupCourses = data?.filter(item => item.ativo === 1)?.map(course => ({
                 label: `${course.nome_curso}_${course?.modalidade_curso}`,
                 value: course?.id_curso
             }));
@@ -475,12 +476,12 @@ export default function EditUser() {
             const response = await api.get(`/classes`)
 
             const { data = [] } = response
-            const groupClass = data.map(turma => ({
+            const groupClass = data.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma.nome_turma,
                 value: turma?.id_turma
             }));
 
-            const groupPeriod = data.map(turma => ({
+            const groupPeriod = data.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma?.periodo,
                 value: turma?.periodo,
                 idClass: turma?.id_turma
@@ -500,12 +501,12 @@ export default function EditUser() {
         try {
             const response = await api.get(`/class/course/${id_course}`)
             const { data = [] } = response
-            const groupClass = data.map(turma => ({
+            const groupClass = data.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma.nome_turma,
                 value: turma?.id_turma
             }));
 
-            const groupPeriod = data.map(turma => ({
+            const groupPeriod = data.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma?.periodo,
                 value: turma?.periodo
             }));
@@ -537,7 +538,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/disciplines/active`)
             const { data } = response
-            const groupDisciplines = data.map(disciplines => ({
+            const groupDisciplines = data.filter(item => item.ativo === 1)?.map(disciplines => ({
                 label: disciplines.nome_disciplina,
                 value: disciplines?.id_disciplina
             }));
