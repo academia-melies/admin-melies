@@ -68,8 +68,8 @@ export default function EditClassSchedule(props) {
         try {
             const response = await api.get(`/classes`)
             const { data } = response
-            const groupClasses = data.map(course => ({
-                label: course.nome_turma,
+            const groupClasses = data.filter(item => item.ativo === 1)?.map(course => ({
+                label: course?.nome_turma,
                 value: course?.id_turma,
             }));
 

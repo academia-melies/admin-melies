@@ -17,7 +17,7 @@ export default function ListClasses(props) {
     const [classesList, setClasses] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette, userPermissions, menuItemsList } = useAppContext()
-    const [filterAtive, setFilterAtive] = useState('todos')
+    const [filterAtive, setFilterAtive] = useState(1)
     const [firstRender, setFirstRender] = useState(true)
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);

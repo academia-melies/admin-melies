@@ -98,7 +98,7 @@ export default function ClassDay(props) {
         try {
             const response = await api.get(`/classes`)
             const { data = [] } = response;
-            const groupClasses = data.map(classes => ({
+            const groupClasses = data.filter(item => item.ativo === 1)?.map(classes => ({
                 label: classes?.nome_turma,
                 value: classes?.id_turma
             }));
