@@ -373,7 +373,7 @@ function Home() {
                            display: 'flex',
                            flexDirection: { xs: 'column', xm: 'row', md: 'row', lg: 'row' }, gap: 8
                         }}>
-                        Bem-vindo,
+                        Bem-vindoo,
                         <Text bold veryLarge style={{ color: colorPalette.buttonColor }}>
                            {user?.nome}!
                         </Text>
