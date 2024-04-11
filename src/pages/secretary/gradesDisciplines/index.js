@@ -18,7 +18,7 @@ import Link from "next/link"
 export default function ClassDay(props) {
     const [classDayList, setClassDay] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, alert, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette, alert, userPermissions, menuItemsList, setShowConfirmationDialog, user } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [showEditClassDay, setShowEditClassDay] = useState(false)
@@ -116,8 +116,6 @@ export default function ClassDay(props) {
             const { classId, moduleSelected } = filters
             try {
                 const response = await api.get(`/student/grades/disciplines/${moduleSelected}/${classId}`)
-
-                console.log(response)
                 const { data = [] } = response;
                 setIsFind(true)
                 setListGradesByDisciplines(data)
@@ -128,6 +126,25 @@ export default function ClassDay(props) {
             }
         }
     }
+
+    const handleProcessGrades = async () => {
+        setLoading(true)
+        try {
+            const response = await api.patch(`/student/update/grades/disciplines/${user?.id}`, { listGradesByDisciplines })
+            if (response.status === 200) {
+                alert.success('Notas lançadas e atualizadas.')
+                handleClasses()
+            } else {
+                alert.error('Ocorreu um erro ao lançar notas.')
+                return
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
     const handleModule = async (turmaId) => {
 
@@ -407,7 +424,7 @@ export default function ClassDay(props) {
 
             </Backdrop>
 
-            <Box sx={{
+            {(showClasses && isFind && listGradesByDisciplines?.length > 0) && <Box sx={{
                 display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
                 position: 'fixed', right: 50, bottom: 50,
                 padding: '6px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
@@ -417,7 +434,13 @@ export default function ClassDay(props) {
                     opacity: .7,
                     transform: 'scale(1.03, 1.03)'
                 }
-            }} >
+            }} onClick={(event) => setShowConfirmationDialog({
+                active: true,
+                event,
+                acceptAction: handleProcessGrades,
+                title: 'Lançar notas.',
+                message: 'Tem certeza que deseja atualizar as notas alteradas?'
+            })}>
                 <Box sx={{
                     ...styles.menuIcon,
                     width: 28, height: 28, aspectRatio: '1/1',
@@ -425,7 +448,7 @@ export default function ClassDay(props) {
                     transition: '.3s',
                 }} />
                 <Text large bold style={{ color: '#fff' }}>Processar notas</Text>
-            </Box>
+            </Box>}
         </>
     )
 }
@@ -436,13 +459,15 @@ const TableClasses = ({ data = [], setListGradesByDisciplines, showEditClassDay,
 
     const handleChangeGradesDisciplines = (disciplineId, userId, value) => {
 
+        let replaceValue = value?.replace(',', '.')
+
         setListGradesByDisciplines((prevValues) =>
             prevValues?.map(item => {
                 if (item?.usuario_id === userId) {
                     return {
                         ...item,
                         disciplinas: item?.disciplinas?.map(disc =>
-                            disc?.id_disciplina === disciplineId ? { ...disc, nt_final: value } : disc)
+                            disc?.id_disciplina === disciplineId ? { ...disc, nt_final: replaceValue } : disc)
                     }
                 }
                 return item
@@ -486,6 +511,7 @@ const TableClasses = ({ data = [], setListGradesByDisciplines, showEditClassDay,
                                             }}>{item?.status || '-'}</Text>
                                         </td>
                                         {item?.disciplinas?.map((disc, index) => {
+                                            
                                             return (
                                                 <td key={index} style={{ padding: '8px 10px', textAlign: 'center' }}>
                                                     <TextInput
