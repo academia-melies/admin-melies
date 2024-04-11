@@ -206,7 +206,7 @@ export default function StudentData(props) {
             await getGrades(moduleStudent, showClass?.turma_id)
             await getComplementaryActivities(moduleStudent, showClass?.turma_id)
         } catch (error) {
-            alert.error('Ocorreu um arro ao carregar a Disciplina')
+            alert.error('Ocorreu um arro ao carregar a Dados')
             console.log(error)
         } finally {
             setLoading(false)
@@ -322,6 +322,15 @@ export default function StudentData(props) {
 
     const totalHoursApproved = activityList?.length > 0 && activityList?.filter(item => item?.carga_hr && parseInt(item?.aprovado) === 1)?.map(item => parseInt(item?.carga_hr))
         ?.reduce((accumulator, currentValue) => accumulator += currentValue, 0)
+
+
+    const calculationEndEnrollment = () => {
+        let [endDate] = enrollmentData?.length > 0 && (enrollmentData?.filter(item => item?.turma_id === showClass?.turma_id && item.modulo === moduleStudent)?.map(item => item?.dt_fim_cronograma || item?.dt_final) || '')
+        let currentDate = new Date();
+        const endEnrollment = currentDate > new Date(endDate);
+        return endEnrollment
+    }
+
 
     return (
         <>
@@ -615,6 +624,7 @@ export default function StudentData(props) {
                                                 gradesData?.map((item, index) => {
                                                     const avaliationStatus = item?.avaliacao_status === 1 ? 'Sim' : 'Não'
                                                     const statusGrade = getStatusGrade(item)
+                                                    const formattedGrade = (grade) => grade ? parseFloat(grade).toFixed(1) : '-'
                                                     const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
 
                                                     return (
@@ -626,16 +636,16 @@ export default function StudentData(props) {
                                                                 {avaliationStatus}
                                                             </td>
                                                             <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.nt_avaliacao_sem || '-'}
+                                                                {formattedGrade(item?.nt_avaliacao_sem)}
                                                             </td>
                                                             <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.nt_substitutiva || '-'}
+                                                                {formattedGrade(item?.nt_substitutiva)}
                                                             </td>
                                                             <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.nt_exame || '-'}
+                                                                {formattedGrade(item?.nt_exame)}
                                                             </td>
                                                             <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.nt_final || '-'}
+                                                                {formattedGrade(item?.nt_final)}
                                                             </td>
 
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
@@ -677,7 +687,7 @@ export default function StudentData(props) {
                                         </Box>
                                         <Text bold small>Status geral</Text>
                                     </Box>
-                                    {statusGradeFinally === 'Aprovado' && <Button text="rematrícular" />}
+                                    {(statusGradeFinally === 'Aprovado' && calculationEndEnrollment()) && <Button text="rematrícular" />}
                                 </Box>
                             </Box>
                             :
