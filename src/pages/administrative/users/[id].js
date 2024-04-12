@@ -106,12 +106,15 @@ export default function EditUser() {
         agencia_2: null,
         tipo_conta_2: null,
         cartao_ponto: null,
+        superior: null,
+        nivel_cargo: null
     })
     const [enrollmentData, setEnrollmentData] = useState([])
     const [countries, setCountries] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
     const [period, setPeriod] = useState([])
+    const [usersForCoordinator, setUsersForCoordinator] = useState([])
     const [periodSelected, setPeriodSelected] = useState([])
     const [classesInterest, setClassesInterest] = useState([])
     const [groupPermissions, setGroupPermissions] = useState([])
@@ -265,6 +268,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/contract/${id}`)
             const { data } = response
+            await listUserByArea(data?.area)
             setContract(data)
         } catch (error) {
             console.log(error)
@@ -560,6 +564,25 @@ export default function EditUser() {
                 firstEmail = `${firstName}01@melies.com.br`;
             }
         } catch (error) {
+        }
+    }
+
+
+    async function listUserByArea(userArea) {
+        try {
+            const response = await api.get(`/users`)
+            const { data } = response
+
+            const groupUser = data.filter(item => userArea ? item.area === userArea : item.area)?.map(responsible => ({
+                label: responsible.nome,
+                value: responsible?.id,
+                area: responsible?.area
+            }));
+
+            const sortedUsers = groupUser?.sort((a, b) => a.label.localeCompare(b.label));
+            setUsersForCoordinator(sortedUsers)
+        } catch (error) {
+            return error
         }
     }
 
@@ -1674,6 +1697,13 @@ export default function EditUser() {
         { label: 'Bradesco', value: 'Bradesco' },
     ]
 
+
+    const groupLevelEmployee = [
+        { label: 'Junior', value: 'Junior' },
+        { label: 'Pleno', value: 'Pleno' },
+        { label: 'Sénior', value: 'Sénior' }
+    ]
+
     const groupArea = [
         { label: 'Financeiro', value: 'Financeiro' },
         { label: 'Biblioteca', value: 'Biblioteca' },
@@ -2662,13 +2692,25 @@ export default function EditUser() {
                             <>
                                 <Box sx={styles.inputSection}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Função' name='funcao' onChange={handleChangeContract} value={contract?.funcao || ''} label='Função' sx={{ flex: 1, }} />
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupArea} valueSelection={contract?.area} onSelect={(value) => setContract({ ...contract, area: value })}
-                                        title="Área de atuação" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupLevelEmployee} valueSelection={contract?.nivel_cargo} onSelect={(value) => setContract({ ...contract, nivel_cargo: value })}
+                                        title="Nível do cargo:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Cartão de Ponto' name='cartao_ponto' onChange={handleChangeContract} value={contract?.cartao_ponto || ''} label='Cartão de Ponto' sx={{ flex: 1, }} />
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupArea} valueSelection={contract?.area} onSelect={(value) => {
+                                        setContract({ ...contract, area: value })
+                                        listUserByArea(value)
+                                    }}
+                                        title="Área de atuação:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                    <SelectList onFilter={true} filterValue="label" disabled={!isPermissionEdit && true} fullWidth data={usersForCoordinator} valueSelection={contract?.superior} onSelect={(value) => setContract({ ...contract, superior: value })}
+                                        title="Superior Responsável:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
                                 </Box>
                                 <Box sx={styles.inputSection}>
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Cartão de Ponto' name='cartao_ponto' onChange={handleChangeContract} value={contract?.cartao_ponto || ''} label='Cartão de Ponto' sx={{ flex: 1, }} />
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Admissão' name='admissao' type="date" onChange={handleChangeContract} value={(contract?.admissao)?.split('T')[0] || ''} label='Admissão' sx={{ flex: 1, }} />
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Desligamento' name='desligamento' type="date" onChange={handleChangeContract} value={contract?.desligamento?.split('T')[0] || ''} label='Desligamento' sx={{ flex: 1, }} onBlur={() => {
                                         new Date(contract?.desligamento) > new Date(1001, 0, 1) &&

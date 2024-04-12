@@ -20,6 +20,7 @@ export default function Editaccount(props) {
     const { id } = router.query;
     const newAccount = id === 'new';
     const [accountHistoricList, setAccountHistoricList] = useState([])
+    const [startSearch, setStartSearch] = useState(false)
     const [showDetailsHistoric, setShowDetailsHistoric] = useState({ active: false, id: null })
     const [accountData, setAccountData] = useState({
         nome_conta: null,
@@ -34,6 +35,19 @@ export default function Editaccount(props) {
     const [transferData, setTransferData] = useState({ active: false, data: {} })
     const [accountToTransfer, setAccountToTransfer] = useState()
     const [accountList, setAccountList] = useState([])
+    const [filters, setFilters] = useState({
+        search: '',
+        startDate: '',
+        endDate: ''
+    })
+    const filterFunctions = {
+        date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
+        search: (item) => {
+            const normalizedSearchTerm = removeAccents(filters?.search.toLowerCase());
+            const normalizedItemName = item?.pagante ? removeAccents(item?.pagante?.toLowerCase()) : removeAccents(item?.aluno?.toLowerCase());
+            return normalizedItemName && normalizedItemName?.includes(normalizedSearchTerm)
+        },
+    };
 
     const fetchPermissions = async () => {
         try {
@@ -43,6 +57,15 @@ export default function Editaccount(props) {
             console.log(error)
             return error
         }
+    }
+
+
+    const rangeDate = (dateString, startDate, endDate) => {
+        const date = new Date(dateString);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        return date >= start && date <= end;
     }
 
     useEffect(() => {
@@ -86,7 +109,8 @@ export default function Editaccount(props) {
 
     const getExtract = async () => {
         try {
-            const response = await api.get(`/account/extract/${id}`)
+            const response = await api.get(`/account/extract/${id}?startDate=${filters?.startDate}&endDate=${filters?.endDate}`)
+            console.log(response)
             const { installmentsCourse, expenses, personal, receiveds } = response?.data
 
             const mappedReceiveds = receiveds.map(received => ({
@@ -171,6 +195,22 @@ export default function Editaccount(props) {
         }
     }
 
+    const handleSearchExtractAccounts = async () => {
+        if (filters?.startDate && filters?.endDate) {
+            try {
+                setLoading(true)
+                await getExtract()
+            } catch (error) {
+                console.log(error)
+                return error
+            } finally {
+                setLoading(false)
+                setStartSearch(true)
+            }
+        } else {
+            alert.info('Preencha as datas de Ínicio e Fim, antes de buscar.')
+        }
+    }
 
     const mapExpenseData = (data, field) => {
         return data?.map(item => ({
@@ -197,7 +237,6 @@ export default function Editaccount(props) {
         try {
             await getAccount()
             await getHistoricAccount()
-            await getExtract()
             await listAccounts()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar o Conta')
@@ -354,13 +393,13 @@ export default function Editaccount(props) {
                 title={accountData?.nome_conta || `Nova Conta`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newAccount ? handleCreate : handleEdit}
-                inativeButton={!newAccount && isPermissionEdit}
-                inativeButtonAction={(event) => setShowConfirmationDialog({
+                deleteButton={!newAccount && isPermissionEdit}
+                deleteButtonAction={(event) => setShowConfirmationDialog({
                     active: true,
                     event,
                     acceptAction: handleDelete,
-                    title: 'Deseja Inativar a Conta?',
-                    message: 'A Conta será inativada, e ficará por um tempo no banco de dados, até que seja excluída.'
+                    title: 'Deseja excluír a Conta?',
+                    message: 'A Conta será excluída do sistema, sem chance de recuperação.'
                 })}
             />
 
@@ -479,22 +518,43 @@ export default function Editaccount(props) {
                         <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
                         <Text bold title>Extrato da conta</Text>
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
 
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
-                            <Text bold>Crédito:</Text>
-                            <Text>{(formatter.format(saldoAccount?.credit))}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
-                            <Text bold>Débito:</Text>
-                            <Text>{formatter.format(-saldoAccount?.debit)}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
-                            <Text bold>Saldo:</Text>
-                            <Text>{formatter.format(saldoAccount?.saldoAccount)}</Text>
-                        </Box>
+                    <Box sx={{ ...styles.inputSection, gap: 1, padding: '20px 0px' }}>
+                        <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
+                        <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
+                        <Button text="Buscar" style={{ borderRadius: 2, width: 130 }} onClick={() => handleSearchExtractAccounts()} />
                     </Box>
-                    <TableExtract data={extractAccount} setTransferData={setTransferData} />
+                    {startSearch &&
+                        <>
+                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
+                                    <Text bold>Crédito:</Text>
+                                    <Text>{(formatter.format(saldoAccount?.credit))}</Text>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
+                                    <Text bold>Débito:</Text>
+                                    <Text>{formatter.format(-saldoAccount?.debit)}</Text>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
+                                    <Text bold>Saldo:</Text>
+                                    <Text>{formatter.format(saldoAccount?.saldoAccount)}</Text>
+                                </Box>
+                            </Box>
+                            {extractAccount?.length > 0 ?
+                                <TableExtract data={extractAccount} setTransferData={setTransferData} />
+                                :
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text large light>Não foi possível encontrar movimentações na conta.</Text>
+                                    <Box sx={{
+                                        backgroundSize: 'cover',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
+                                        width: 350, height: 250,
+                                        backgroundImage: `url('/background/no_results.png')`,
+                                    }} />
+                                </Box>}
+                        </>}
 
                 </ContentContainer>}
             </Box>
