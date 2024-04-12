@@ -75,4 +75,19 @@ export const versions = [
             { change: 'Novas funcionalidades de segurança e performace do sistema, para trazer mais agilidade e velocidade de atualização e vizualização dos dados.' },
         ]
     },
+    {
+        version: '1.4.0', build: '15/04/2024',
+        status: 'em construcao',
+        msg: 'Novas correções de Bugs e permormace. Layout atualizados, em menus, e páginas do Sistema. E muito mais!',
+        listChanges: [
+            { change: 'Novo Layout do menu lateral, com mais facilidade para selecionar o menu ou submenu.' },
+            { change: 'Novas funcionalidades em "Financeiro".' },
+            { change: 'Novo layout na HOME."' },
+            { change: 'Novas telas e funcionalidades em "Financeiro"' },
+            { change: 'Lançamento de notas por turma, personalizado em Secretaria!' },
+            { change: 'Botões de fácil acesso das rotinas, como marcar ponto, holerite e muito mais.' },
+            { change: 'Checkagem de segurança de autenticação, com tempo limite de 1hr de expiração. (Segurança do Sistema)' },
+            { change: 'Novas funcionalidades de segurança e performace do sistema, para trazer mais agilidade e velocidade de atualização e vizualização dos dados.' },
+        ]
+    },
 ]

@@ -46,11 +46,21 @@ const menuApoio = [
    { id: '08', icon: '/icons/cronograma_icon_home.png', text: 'Cronograma', to: '/administrative/classSchedule/list', description: 'Lista de cronogramas de aulas por módulo.' },
 ]
 
-const birthDate = [
-   { id: '01', name: 'Marcus Silva', day: 1, function: 'Desenvolvedor' },
-   { id: '02', name: 'Felipe Bomfim', day: 13, function: 'Suporte' },
-   { id: '03', name: 'Fulano Silva', day: 15, function: 'Suporte' },
-   { id: '04', name: 'Renato Miranda', day: 5, function: 'Gerente Suporte' }
+const accessButons = [
+   {
+      id: '04', title: 'Consultar Holerite', icon: '/icons/holerite.png', link: 'https://app.contadoronline.contmatic.com.br/colaboradores/funcionario',
+      target: true
+   },
+   {
+      id: '05', title: 'Marcar o Ponto', icon: '/icons/marcar_ponto.png', link: 'https://centraldofuncionario.com.br/40890/incluir-ponto',
+      target: true
+   },
+   {
+      id: '01', title: 'Fluxograma do Sistema', icon: '/icons/manual_icon.png', link: 'https://www.figma.com/file/HPpREYZoNogzU0laydrXL4/Fluxograma---Adm-Telas?type=design&node-id=0%3A1&mode=design&t=0G7h5zNFmYW6q7PS-1',
+      target: true
+   },
+   { id: '02', title: 'Equipe Méliès', icon: '/icons/org_icon.png', link: '/ourTeam', target: false },
+   { id: '03', title: 'Suporte', icon: '/icons/help-desk_icon_home.png', link: '/suport/tasks/list', target: false },
 ]
 
 function Home() {
@@ -382,80 +392,67 @@ function Home() {
                   </Box>
 
 
-                  <Box sx={{ display: 'flex', gap: 2, marginTop: 5 }}>
-                     <Link style={{ display: 'flex' }} target="_blank" href={'https://www.figma.com/file/HPpREYZoNogzU0laydrXL4/Fluxograma---Adm-Telas?type=design&node-id=0%3A1&mode=design&t=0G7h5zNFmYW6q7PS-1'}>
-                        <Box sx={{
-                           gap: 1, display: 'flex', alignItems: 'center',
-                           transition: '.3s',
-                           backgroundColor: colorPalette.secondary,
-                           padding: '15px 18px',
-                           borderRadius: 2,
-                           boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
-                           cursor: 'pointer',
-                           "&:hover": {
-                              opacity: 0.6,
-                              transform: 'scale(1.03, 1.03)'
-                           }
-                        }}>
-                           <Box sx={{
-                              ...styles.menuIcon,
-                              backgroundImage: `url('/icons/manual_icon.png')`,
-                              width: 25,
-                              height: 25,
-                              filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                              transition: 'background-color 1s'
-                           }} />
-                           <Text bold style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>Fluxograma do Sistema</Text>
-                        </Box>
-                     </Link>
-
-                     <Box sx={{
-                        gap: 1, display: 'flex', alignItems: 'center',
-                        transition: '.3s',
-                        backgroundColor: colorPalette.secondary,
-                        padding: '15px 18px',
-                        borderRadius: 2,
-                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
-                        cursor: 'pointer',
-                        "&:hover": {
-                           opacity: 0.6,
-                           transform: 'scale(1.03, 1.03)'
-                        }
-                     }} onClick={() => router.push('/ourTeam')}>
-                        <Box sx={{
-                           ...styles.menuIcon,
-                           backgroundImage: `url('/icons/org_icon.png')`,
-                           width: 25,
-                           height: 25,
-                           filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                           transition: 'background-color 1s'
-                        }} />
-                        <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s' }}>Equipe Méliès</Text>
-                     </Box>
-
-                     <Box sx={{
-                        gap: 1, display: 'flex', alignItems: 'center',
-                        transition: '.3s',
-                        backgroundColor: colorPalette.secondary,
-                        padding: '15px 18px',
-                        borderRadius: 2,
-                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
-                        cursor: 'pointer',
-                        "&:hover": {
-                           opacity: 0.6,
-                           transform: 'scale(1.03, 1.03)'
-                        }
-                     }} onClick={() => router.push('/suport/tasks/list')}>
-                        <Box sx={{
-                           ...styles.menuIcon,
-                           width: 25,
-                           height: 25,
-                           backgroundImage: `url('/icons/support-icon.png')`,
-                           filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                           transition: '.3s',
-                           aspectRatio: '1/1'
-                        }} />
-                        <Text bold>Suporte</Text>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 5 }}>
+                     <Text light>Minhas Ferramentas:</Text>
+                     <Box sx={{ display: 'flex', gap: 2 }}>
+                        {accessButons?.map((item, index) => {
+                           const route = item?.link;
+                           return (
+                              <Box key={index}>
+                                 {!item?.target ?
+                                    <Box sx={{
+                                       gap: 1, display: 'flex', alignItems: 'center',
+                                       transition: '.3s',
+                                       backgroundColor: colorPalette.secondary,
+                                       padding: '15px 18px',
+                                       borderRadius: 2,
+                                       boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                                       cursor: 'pointer',
+                                       "&:hover": {
+                                          opacity: 0.6,
+                                          transform: 'scale(1.03, 1.03)'
+                                       }
+                                    }} onClick={() => router.push(route)}>
+                                       <Box sx={{
+                                          ...styles.menuIcon,
+                                          backgroundImage: `url(${item?.icon})`,
+                                          width: 25,
+                                          height: 25,
+                                          transition: 'background-color 1s'
+                                       }} />
+                                       <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s' }}>
+                                          {item?.title}</Text>
+                                    </Box>
+                                    :
+                                    <Link style={{ display: 'flex' }} target="_blank" href={item?.link}>
+                                       <Box sx={{
+                                          gap: 1, display: 'flex', alignItems: 'center',
+                                          transition: '.3s',
+                                          backgroundColor: colorPalette.secondary,
+                                          padding: '15px 18px',
+                                          borderRadius: 2,
+                                          boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                                          cursor: 'pointer',
+                                          "&:hover": {
+                                             opacity: 0.6,
+                                             transform: 'scale(1.03, 1.03)'
+                                          }
+                                       }}>
+                                          <Box sx={{
+                                             ...styles.menuIcon,
+                                             backgroundImage: `url(${item?.icon})`,
+                                             width: 25,
+                                             height: 25,
+                                             transition: 'background-color 1s'
+                                          }} />
+                                          <Text bold style={{ color: colorPalette.buttonColor, transition: 'background-color 1s' }}>
+                                             {item?.title}</Text>
+                                       </Box>
+                                    </Link>
+                                 }
+                              </Box>
+                           )
+                        })}
                      </Box>
                   </Box>
                </Box>
