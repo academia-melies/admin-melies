@@ -23,6 +23,7 @@ export default function EditBillsReceived(props) {
     const [listHistoric, setListHistoric] = useState([])
     const [usersList, setUsers] = useState([])
     const [costCenterList, setCostCenterList] = useState([])
+    const [accountTypesList, setAccountTypesList] = useState([])
     const [accountList, setAccountList] = useState([])
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
@@ -97,6 +98,7 @@ export default function EditBillsReceived(props) {
         listUsers()
         listCostCenter()
         listAccounts()
+        listAccountTypes()
     }, [])
 
     async function listUsers() {
@@ -113,7 +115,7 @@ export default function EditBillsReceived(props) {
     async function listCostCenter() {
         const response = await api.get(`/costCenters`)
         const { data } = response
-        const groupCostCenter = data?.map(cc => ({
+        const groupCostCenter = data?.filter(item => newReceived ? item.ativo === 1 : item)?.map(cc => ({
             label: cc.nome_cc,
             value: cc?.id_centro_custo
         }));
@@ -122,10 +124,23 @@ export default function EditBillsReceived(props) {
     }
 
 
+
+    async function listAccountTypes() {
+        const response = await api.get(`/account/types`)
+        const { data } = response
+        const groupCostCenter = data?.filter(item => newReceived ? item.ativo === 1 : item)?.map(cc => ({
+            label: cc.nome_tipo,
+            value: cc?.id_tipo
+        }));
+
+        setAccountTypesList(groupCostCenter)
+    }
+
+
     async function listAccounts() {
         const response = await api.get(`/accounts`)
         const { data } = response
-        const groupCostCenter = data?.map(cc => ({
+        const groupCostCenter = data?.filter(item => newReceived ? item.ativo === 1 : item)?.map(cc => ({
             label: cc.nome_conta,
             value: cc?.id_conta
         }));
@@ -387,7 +402,7 @@ export default function EditBillsReceived(props) {
                         value={(receivedData?.valor) || ''}
                         label='Valor Total:' sx={{ flex: 1, }}
                     />
-                    <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupType} valueSelection={receivedData?.tipo} onSelect={(value) => setReceivedData({ ...receivedData, tipo: value })}
+                    <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountTypesList} valueSelection={receivedData?.tipo} onSelect={(value) => setReceivedData({ ...receivedData, tipo: value })}
                         title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />

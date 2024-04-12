@@ -1,63 +1,37 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
-import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
-import { api } from "../../../api/api"
-import { useAppContext } from "../../../context/AppContext"
-import { SelectList } from "../../../organisms/select/SelectList"
-import { formatDate, formatTimeStamp } from "../../../helpers"
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
+import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
+import { api } from "../../../../api/api"
+import { useAppContext } from "../../../../context/AppContext"
+import { SelectList } from "../../../../organisms/select/SelectList"
+import { formatDate, formatTimeStamp } from "../../../../helpers"
 import { Avatar, Backdrop, TablePagination } from "@mui/material"
 import Link from "next/link"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
-import { icons } from "../../../organisms/layout/Colors"
+import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
+import { icons } from "../../../../organisms/layout/Colors"
 
-const monthFilter = [
-    { month: 'Jan', value: 0 },
-    { month: 'Fev', value: 1 },
-    { month: 'Mar', value: 2 },
-    { month: 'Abr', value: 3 },
-    { month: 'Mai', value: 4 },
-    { month: 'Jun', value: 5 },
-    { month: 'Jul', value: 6 },
-    { month: 'Ago', value: 7 },
-    { month: 'Set', value: 8 },
-    { month: 'Out', value: 9 },
-    { month: 'Nov', value: 10 },
-    { month: 'Dez', value: 11 },
-]
 
-const menusFilters = [
-    { id: '01', text: 'Despesas', value: 'Despesas', key: 'bills' },
-    // { id: '02', text: 'Despesas Variáveis', value: 'Despesas Variáveis', key: 'variable' },
-    { id: '03', text: 'Folha de Pagamento', value: 'Folha de Pagamento', key: 'personal' },
-]
-
-export default function ListBillsToPay(props) {
+export default function ListPayroll(props) {
     const [expensesData, setExpensesData] = useState([])
     const [personalExpenses, setPersonalExpenses] = useState([])
     const [filters, setFilters] = useState({
-        status: 'todos'
+        status: 'todos',
+        startDate: '',
+        endDate: ''
     })
-
-    const [expensesList, setExpensesList] = useState([])
     const [dissidioPorcent, setDissidioPorcent] = useState(0)
     const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_pagamento: '' })
     const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
-    const [filterYear, setFilterYear] = useState(2024)
-    const [filterMonth, setFilterMonth] = useState(9)
     const [expensesSelected, setExpensesSelected] = useState(null);
     const [allSelected, setAllSelected] = useState();
     const router = useRouter()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [billstToReceive, setBillstToReceive] = useState([]);
-    const [menuSelected, setMenuSelected] = useState('Despesas')
-    const [columnTable, setColumnTable] = useState([])
     const [showDissidioBox, setShowDissidioBox] = useState(false)
     const [showBaixa, setShowBaixa] = useState(false)
     const [accountList, setAccountList] = useState([])
-
-
+    const [filterData, setFilterData] = useState('')
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
 
     const fetchPermissions = async () => {
@@ -71,16 +45,26 @@ export default function ListBillsToPay(props) {
     }
 
     const filter = (item) => {
-        let dateFilter = menuSelected === 'Folha de Pagamento' ? item?.dt_pagamento : item?.dt_vencimento;
-        let date = new Date(dateFilter);
-        let monthSelect = date.getMonth();
-        let yearSelect = date.getFullYear();
-        let filterYearNumber = parseInt(filterYear, 10);
-        let filterData = filterMonth === 'todos' ? item : monthSelect === filterMonth;
+        let date = new Date(item?.dt_pagamento);
+        let filteredDate = (filters?.startDate !== '' && filters?.endDate !== '') ?
+            rangeDate(date, filters?.startDate, filters?.endDate) :
+            item;
         let filterStatus = filters?.status.includes('todos') ? item : filters?.status.includes(item?.status)
+        const normalizedFilterData = normalizeString(filterData);
 
+        return (filteredDate && filterStatus && normalizeString(item?.funcionario)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()));
+    }
 
-        return (filterData && yearSelect === filterYearNumber && filterStatus);
+    const normalizeString = (str) => {
+        return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    };
+
+    const rangeDate = (dateString, startDate, endDate) => {
+        const date = new Date(dateString);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        return date >= start && date <= end;
     }
 
     useEffect(() => {
@@ -100,62 +84,10 @@ export default function ListBillsToPay(props) {
     }
 
     const handleLoadData = () => {
-        getExpenses()
         getPersonalExpenses()
         listAccounts()
-        setMenuSelected('Despesas')
     }
 
-    useEffect(() => {
-        if (menuSelected === 'Despesas') getExpenses();
-        // if (menuSelected === 'Despesas Variáveis') { getVariableExpenses('variable') }
-        if (menuSelected === 'Folha de Pagamento') { getPersonalExpenses('personal') }
-    }, [menuSelected]);
-
-
-
-    useEffect(() => {
-        if (menuSelected === 'Despesas') {
-
-            setColumnTable([
-                { key: 'id_despesa', label: 'id' },
-                { key: 'descricao', label: 'Descrição' },
-                { key: 'valor_desp', label: 'Valor', price: true },
-                { key: 'dt_vencimento', label: 'Vencimento', date: true },
-                { key: 'nome_cc', label: 'Centro de Custo' },
-                { key: 'nome_conta', label: 'Conta' },
-                { key: 'dt_pagamento', label: 'Dt Baixa', date: true },
-                { key: 'status', label: 'Status', status: true },
-            ])
-        }
-        const dateNow = new Date()
-        let monthNow = dateNow.getMonth()
-        setFilterMonth(monthNow)
-        getBillsToReceive()
-    }, []);
-
-
-    const getExpenses = async () => {
-        setLoading(true)
-        try {
-            const response = await api.get(`/expenses`)
-            const { data } = response;
-            if (data.length > 0) {
-                setExpensesList(data)
-                setExpensesData(data.map(item => {
-                    const valorDesp = parseFloat(item.valor_desp);
-                    return {
-                        ...item,
-                        valor_tipo: isNaN(valorDesp) ? item.valor_desp : valorDesp.toFixed(2)
-                    };
-                }));
-            }
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setLoading(false)
-        }
-    }
 
     const getPersonalExpenses = async () => {
         setLoading(true)
@@ -164,6 +96,9 @@ export default function ListBillsToPay(props) {
             const { data } = response;
             if (data?.length > 0) {
                 setPersonalExpenses(data)
+
+                let allInstallmentSelected = data?.map(item => item?.id_pagamento_folha)
+                setAllSelected(allInstallmentSelected?.toString())
 
                 setExpensesData(data.map(item => {
                     const valorDesp = parseFloat(item.vl_pagamento);
@@ -180,19 +115,6 @@ export default function ListBillsToPay(props) {
         }
     }
 
-    const getBillsToReceive = async () => {
-        setLoading(true)
-        try {
-            const response = await api.get('/student/installments')
-            const { data } = response;
-            setBillstToReceive(data)
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -202,27 +124,13 @@ export default function ListBillsToPay(props) {
         setPage(0);
     };
 
-
-    const handleChangeValueListData = (setValue, installmentId, field, value) => {
-        setValue(prevInstallments => {
-            return prevInstallments?.map(installment => {
-                if (installment.id_parcela_matr === installmentId) {
-                    return { ...installment, [field]: value };
-                }
-                return installment;
-            });
-        });
-    };
-
     const handleDelete = async () => {
         setLoading(true)
         try {
-            const queryType = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.key);
-            let query = queryType === 'personal' ? `/expense/personal/delete` : `/expense/delete`;
             const idsToDelete = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
             let allStatus200 = true;
             for (const idDelte of idsToDelete) {
-                const response = await api.delete(`${query}/${idDelte}`)
+                const response = await api.delete(`/expense/personal/delete/${idDelte}`)
                 if (response.status !== 200) {
                     allStatus200 = false;
                 }
@@ -245,21 +153,16 @@ export default function ListBillsToPay(props) {
     const handleBaixa = async () => {
         if (expensesSelected && baixaData?.conta_pagamento !== '' && baixaData?.dt_baixa !== '') {
             setLoading(true)
-            let query = '/expense'
-            const [queryType] = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.key);
-            if (queryType === 'personal') { query = query += `/personal` }
             const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
-
             try {
-                const response = await api.patch(`${query}/baixa`, { isToUpdate, baixaData })
+                const response = await api.patch(`/expense/personal/baixa`, { isToUpdate, baixaData })
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
                     setExpensesSelected('');
                     setShowBaixa(false)
                     setBaixaData({ dt_baixa: '', conta_pagamento: '' });
-                    setMenuSelected('Despesas')
-                    getExpenses()
+                    getPersonalExpenses()
                     return
                 }
                 alert.error('Tivemos um problema ao efetivar as Baixa.');
@@ -278,49 +181,28 @@ export default function ListBillsToPay(props) {
 
 
     const handleDissidio = async () => {
-        if (menuSelected === 'Folha de Pagamento') {
-            setLoading(true)
-            const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
+        setLoading(true)
+        const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
 
-            try {
-                const response = await api.patch(`/expense/personal/reajustment/dissidio`, { isToUpdate, userId: user?.id, dissidioPorcent })
-                const { status } = response?.data
-                if (status) {
-                    alert.success('Dissídio aplicado para todos.');
-                    setExpensesSelected('');
-                    setShowDissidioBox(false)
-                    setMenuSelected('Despesas')
-                    getExpenses()
-                    return
-                }
-                alert.error('Tivemos um problema ao aplicado dissídio.');
-            } catch (error) {
-                alert.error('Tivemos um problema ao aplicado dissídio.');
-                console.log(error)
-                return error
-
-            } finally {
-                setLoading(false)
+        try {
+            const response = await api.patch(`/expense/personal/reajustment/dissidio`, { isToUpdate, userId: user?.id, dissidioPorcent })
+            const { status } = response?.data
+            if (status) {
+                alert.success('Dissídio aplicado para todos.');
+                setExpensesSelected('');
+                setShowDissidioBox(false)
+                getPersonalExpenses()
+                return
             }
-        } else {
-            alert.info('Selecione um item antes de dar baixa.')
+            alert.error('Tivemos um problema ao aplicado dissídio.');
+        } catch (error) {
+            alert.error('Tivemos um problema ao aplicado dissídio.');
+            console.log(error)
+            return error
+
+        } finally {
+            setLoading(false)
         }
-    }
-
-
-    const pusNewBill = async () => {
-        const routePush = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.id);
-        let queryRoute = `/financial/billsToPay/new?bill=${routePush}`
-        router.push(queryRoute)
-    }
-
-    const pusBillId = async (item) => {
-        let itemId = 'new';
-        if (menuSelected === 'Despesas') itemId = item?.id_despesa;
-        if (menuSelected === 'Folha de Pagamento') itemId = item?.id_pagamento_folha
-        const routePush = await menusFilters?.filter(item => item.value === menuSelected)?.map(item => item.id);
-        let queryRoute = `/financial/billsToPay/${itemId}?bill=${routePush}`
-        router.push(queryRoute)
     }
 
     const priorityColor = (data) => (
@@ -335,17 +217,6 @@ export default function ListBillsToPay(props) {
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-    const columnExpense = [
-        { key: 'id_despesa', label: 'id' },
-        { key: 'descricao', label: 'Descrição' },
-        { key: 'valor_desp', label: 'Valor', price: true },
-        { key: 'dt_vencimento', label: 'Vencimento', date: true },
-        { key: 'nome_cc', label: 'Centro de Custo' },
-        { key: 'nome_conta', label: 'Conta' },
-        { key: 'dt_pagamento', label: 'Dt Baixa', date: true },
-        { key: 'status', label: 'Status', status: true },
-    ];
-
     const columnPersonal = [
         { key: 'id_pagamento_folha', label: 'id' },
         { key: 'funcionario', label: 'Funcionário' },
@@ -357,27 +228,6 @@ export default function ListBillsToPay(props) {
         { key: 'vl_pagamento', label: 'Salário', price: true },
         { key: 'status', label: 'Status', status: true },
     ];
-
-    const listAtivo = [
-        { label: 'Todos', value: 'todos' },
-        { label: 'Pendente', value: 'Pendente' },
-        { label: 'Inativa', value: 'Inativa' },
-        { label: 'Aprovado', value: 'Aprovado' },
-        { label: 'Pago', value: 'Pago' },
-        { label: 'Cancelada', value: 'Cancelada' },
-        { label: 'Pagamento reprovado', value: 'Pagamento reprovado' },
-        { label: 'Em processamento', value: 'Em processamento' },
-        { label: 'Estornada', value: 'Estornada' },
-        { label: 'Não Autorizado', value: 'Não Autorizado' },
-
-    ]
-
-    const listPayment = [
-        { label: 'Todos', value: 'todos' },
-        { label: 'Cartão de crédito', value: 'Cartão' },
-        { label: 'Boleto', value: 'Boleto' },
-        { label: 'Pix', value: 'Pix' },
-    ]
 
     const groupSelect = (id) => [
         {
@@ -392,41 +242,21 @@ export default function ListBillsToPay(props) {
         { label: 'Cancelado', value: 'Cancelado' }
     ]
 
-    const groupProstated = [
-        { label: 'sim', value: 1 },
-        { label: 'não', value: 0 },
-    ]
-
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
     });
 
-    const years = [
-        { label: '2023', value: 2023 },
-        { label: '2024', value: 2024 },
-        { label: '2025', value: 2025 },
-    ]
 
-
-    let valueExpenses = expensesList?.map(item => parseFloat(item.valor_desp))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
     let valuePersonal = personalExpenses?.map(item => parseFloat(item.vl_pagamento))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-
-    let totalExpenses = parseFloat(valueExpenses) + parseFloat(valuePersonal)
+    let totalExpenses = parseFloat(valuePersonal)
     let totalExpensesView = expensesData?.filter(filter)?.map(item => parseFloat(item.valor_tipo)).reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-
-    let saldoAtual = billstToReceive?.filter(item => (item.status_parcela === 'Pago' || item.status_parcela === 'Aprovado'))
-        .map(item => parseFloat(item?.valor_parcela))
-        ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-
-    let caixaResult = parseFloat(saldoAtual) - totalExpenses;
     const percentualExpenses = (parseFloat(totalExpensesView) / totalExpenses) * 100;
 
     return (
         <>
             <SectionHeader
-                title="Contas a pagar"
-                perfil={menuSelected}
+                title="Folha de Pagamento"
             />
             <Box sx={{
                 display: 'flex', width: '100%', gap: 2,
@@ -445,45 +275,12 @@ export default function ListBillsToPay(props) {
                                     width: 18,
                                     height: 18,
                                     aspectRatio: '1/1',
-                                    backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
-                                    transition: '.3s',
-                                }} />
-                                <Text bold title style={{ color: 'green' }}>{formatter.format(parseFloat(saldoAtual))}</Text>
-                            </Box>
-                            <Text light>Receita</Text>
-                        </Box>
-                    </ContentContainer>
-                    <ContentContainer row style={{ justifyContent: 'center' }}>
-                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                <Box sx={{
-                                    ...styles.menuIcon,
-                                    width: 18,
-                                    height: 18,
-                                    aspectRatio: '1/1',
                                     backgroundImage: `url('/icons/arrow_down_red_icon.png')`,
                                     transition: '.3s',
                                 }} />
                                 <Text bold title style={{ color: 'red' }}>{formatter.format(parseFloat(totalExpenses))}</Text>
                             </Box>
-                            <Text light>Despesa</Text>
-                        </Box>
-                    </ContentContainer>
-                    <ContentContainer row style={{ justifyContent: 'center' }}>
-                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-
-                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                <Box sx={{
-                                    ...styles.menuIcon,
-                                    width: 18,
-                                    height: 18,
-                                    aspectRatio: '1/1',
-                                    backgroundImage: caixaResult < 0 ? `url('/icons/arrow_down_red_icon.png')` : `url('/icons/arrow_up_green_icon.png')`,
-                                    transition: '.3s',
-                                }} />
-                                <Text bold title style={{ color: caixaResult < 0 ? 'red' : 'green' }}>{formatter.format(caixaResult)}</Text>
-                            </Box>
-                            <Text light>Saldo Caixa</Text>
+                            <Text light>Folha de Pagamento</Text>
                         </Box>
                     </ContentContainer>
                 </Box>
@@ -506,122 +303,69 @@ export default function ListBillsToPay(props) {
                     </Box>
                 </ContentContainer>
             </Box>
-            <Box sx={{
-                display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
-                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
-            }}>
-                <TextInput
-                    name="year"
-                    value={filterYear || ''}
-                    label='Ano:'
-                    onChange={(event) => setFilterYear(event.target.value)}
-                    sx={{ width: 200 }}
-                    InputProps={{
-                        style: {
-                            backgroundColor: colorPalette.secondary
-                        }
-                    }}
-                    type="number"
-                />
-                <Box sx={{ display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' } }}>
-                    {monthFilter?.map((item, index) => {
-                        const monthSelected = item?.value === filterMonth;
-                        return (
-                            <Box key={index} sx={{
-                                display: 'flex',
-                                padding: { xs: '7px 17px', sm: '7px 17px', md: '7px 17px', lg: '7px 17px', xl: '7px 28px' },
-                                backgroundColor: monthSelected ? colorPalette.buttonColor : colorPalette.secondary,
-                                border: `1px solid ${colorPalette.primary}`,
-                                "&:hover": {
-                                    opacity: 0.8,
-                                    cursor: 'pointer'
-                                },
-                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                            }} onClick={() => {
-                                if (monthSelected) {
-                                    setFilterMonth('todos')
-                                }
-                                else {
-                                    setFilterMonth(item?.value)
-                                }
-                            }}>
-                                <Text large style={{ color: monthSelected ? '#fff' : colorPalette.textColor }}>{item?.month}</Text>
-                            </Box>
-                        )
-                    })}
+
+            <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column', padding: '30px 30px', backgroundColor: colorPalette?.secondary, borderRadius: 2 }}>
+                <Text bold large>Filtros:</Text>
+                <Box sx={{
+                    display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center',
+                    flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
+                }}>
+                    <TextInput placeholder="Buscar pelo nome do Funcionário" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                    <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
+                    <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
+                    <Button text="Limpar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => {
+                        setFilters({
+                            status: 'todos',
+                            startDate: '',
+                            endDate: ''
+                        })
+                        setFilterData('')
+                    }} />
                 </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <CheckBoxComponent disabled={!isPermissionEdit && true}
+                        boxGroup={groupStatus}
+                        valueChecked={filters?.status}
+                        horizontal={true}
+                        onSelect={(value) => {
+                            setFilters({ ...filters, status: value })
+                        }}
+                        sx={{ width: 1 }} />
+                </Box>
+
+
             </Box>
 
             <Box sx={{ overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap' }}>
-                <Box sx={{ display: 'flex', }}>
-                    {menusFilters?.map((item, index) => {
-                        const menu = item?.value === menuSelected;
-                        return (
-                            <Box key={index} sx={{
-                                display: 'flex',
-                                padding: '5px 28px',
-                                backgroundColor: menu ? colorPalette.secondary : colorPalette.primary,
-                                borderTop: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
-                                borderRight: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
-                                borderLeft: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
-                                "&:hover": {
-                                    opacity: !menu && 0.8,
-                                    cursor: 'pointer'
-                                },
-                                borderRadius: '5px 5px 0px 0px',
-                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                            }} onClick={() => {
-                                setMenuSelected(item?.value)
-                                setColumnTable(
-                                    (item?.value === 'Despesas' && columnExpense) ||
-                                    // (item?.value === 'Despesas Variáveis' && columnVariable) ||
-                                    (item?.value === 'Folha de Pagamento' && columnPersonal)
-                                )
-                            }}>
-                                <Text large style={{ color: colorPalette.textColor }}>{item?.text}</Text>
-                            </Box>
-                        )
-                    })}
-                </Box>
 
                 <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
 
-                    <Box sx={{ display: 'flex', padding: '20px 40px', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <CheckBoxComponent disabled={!isPermissionEdit && true}
-                            boxGroup={groupStatus}
-                            valueChecked={filters?.status}
-                            horizontal={true}
-                            onSelect={(value) => {
-                                setFilters({ ...filters, status: value })
+
+                    <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', paddingTop: '20px', paddingRight: '20px' }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new`)} />
+                        <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
+                            active: true,
+                            event,
+                            acceptAction: handleDelete,
+                            title: `Excluir Pagamento selecionado?`,
+                            message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
+                        })} />
+                        <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => setShowBaixa(true)} />
+
+                        <Button disabled={!isPermissionEdit && true} small secondary text="aplicar dissídio para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }}
+                            onClick={() => {
+                                if (expensesSelected) {
+                                    setShowDissidioBox(true)
+                                } else {
+                                    alert.info('Selecione um item para aplicar o dissídio')
+                                }
+
                             }}
-                            sx={{ width: 1 }} />
-
-                        <Box sx={{ display: 'flex', gap: 1, }}>
-                            <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => pusNewBill()} />
-                            <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
-                                active: true,
-                                event,
-                                acceptAction: handleDelete,
-                                title: `Excluir ${menuSelected}`,
-                                message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
-                            })} />
-                            <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
-                                onClick={() => setShowBaixa(true)} />
-
-                            {menuSelected === 'Folha de Pagamento' && <Button disabled={!isPermissionEdit && true} small secondary text="aplicar dissídio para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }}
-                                onClick={() => {
-                                    if (expensesSelected) {
-                                        setShowDissidioBox(true)
-                                    } else {
-                                        alert.info('Selecione um item para aplicar o dissídio')
-                                    }
-
-                                }}
-                            />
-                            }
-                        </Box>
-
+                        />
                     </Box>
+
                     <div style={{ borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
                         {expensesData?.filter(filter).length > 0 ?
                             <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
@@ -634,8 +378,8 @@ export default function ListBillsToPay(props) {
                                                 valueChecked={'select'}
                                                 horizontal={true}
                                                 onSelect={() => {
-                                                    if (expensesSelected?.length < allSelected?.length) {
-                                                        let allInstallmentSelected = expensesData?.filter(filter)?.map(item => item?.id_despesa_f)
+                                                    if ((expensesSelected?.length < allSelected?.length)) {
+                                                        let allInstallmentSelected = expensesData?.map(item => item?.id_pagamento_folha)
                                                         setExpensesSelected(allInstallmentSelected?.toString())
                                                     } else {
                                                         setExpensesSelected(null)
@@ -646,17 +390,14 @@ export default function ListBillsToPay(props) {
                                                 sx={{ display: 'flex', maxWidth: 15 }}
                                             />
                                         </th>
-                                        {columnTable?.map((item, index) => (
+                                        {columnPersonal?.map((item, index) => (
                                             <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>{item.label}</th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody style={{ flex: 1, }}>
-                                    {expensesData?.filter(filter)?.map((item, index) => {
-                                        let itemId;
-                                        if (menuSelected === 'Despesas') itemId = item?.id_despesa;
-                                        // if (menuSelected === 'Despesas Variáveis') itemId = item?.id_despesa_v
-                                        if (menuSelected === 'Folha de Pagamento') itemId = item?.id_pagamento_folha
+                                    {expensesData?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
+                                        let itemId = item?.id_pagamento_folha
                                         const isSelected = expensesSelected?.includes(itemId) || null;
 
                                         return (
@@ -679,13 +420,13 @@ export default function ListBillsToPay(props) {
                                                         sx={{ display: 'flex', maxWidth: 15 }}
                                                     />
                                                 </td>
-                                                {columnTable?.map((column, colIndex) => (
+                                                {columnPersonal?.map((column, colIndex) => (
                                                     <td key={colIndex} style={{
                                                         textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}`,
                                                         minWidth: column?.label === 'id' ? 60 : 0
                                                     }}
                                                         onClick={(e) => {
-                                                            column?.label === 'id' ? pusBillId(item)
+                                                            column?.label === 'id' ? router.push(`/financial/billsToPay/payroll/${item?.id_pagamento_folha}`)
                                                                 :
                                                                 e.preventDefault()
                                                             e.stopPropagation()
@@ -731,8 +472,15 @@ export default function ListBillsToPay(props) {
                                 </tbody>
                             </table>
                             :
-                            <Box sx={{ display: 'flex', flex: 1 }}>
-                                <Text light>Não existem dados para o mês selecionado</Text>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
+                                <Text large light>Não foi possível encontrar Pagamentos.</Text>
+                                <Box sx={{
+                                    backgroundSize: 'cover',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                    width: 350, height: 250,
+                                    backgroundImage: `url('/background/no_results.png')`,
+                                }} />
                             </Box>
                         }
                         <Box sx={{ marginTop: 2 }}>
@@ -824,7 +572,7 @@ export default function ListBillsToPay(props) {
                                 active: true,
                                 event,
                                 acceptAction: handleBaixa,
-                                title: `Dar Baixa das - ${menuSelected}`,
+                                title: `Dar Baixa das pagamento`,
                                 message: 'Tem certeza que deseja seguir com a as baixas?'
                             })} />
                         <Button disabled={!isPermissionEdit && true} small secondary text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}

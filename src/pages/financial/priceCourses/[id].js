@@ -31,6 +31,7 @@ export default function EditPricesCourse(props) {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [showHistoric, setShowHistoric] = useState(false)
     const [loadingHistoric, setLoadingHistoric] = useState(false)
+    const [showValuesCalculation, setShowValuesCalculation] = useState(false)
     const [historicId, setHistoricId] = useState()
     const [historicClassId, setHistoricClassId] = useState()
     const [arrayHistoricValuesCourse, setArrayHistoricValuesCourse] = useState([])
@@ -296,6 +297,7 @@ export default function EditPricesCourse(props) {
             alert.error('Ocorreu um erro ao calcular os valores.')
             return error
         } finally {
+            setShowValuesCalculation(true)
             setLoading(false)
         }
     }
@@ -910,24 +912,32 @@ export default function EditPricesCourse(props) {
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Parcelas' name='n_parcelas' onChange={handleChange} value={pricesCourseData?.n_parcelas || ''} label='Parcelas' sx={{ flex: 1, }} type="number" />
                             <Button disabled={!isPermissionEdit && true} small text="calcular" onClick={() => calculationValues({ porcent: false, remove: false })} style={{ width: 80, height: 30 }} />
                         </Box>
-                        <Box sx={styles.inputSection}>
-                            <TextInput disabled={!isPermissionEdit && true}
-                                placeholder='0.00'
-                                name='valor_parcelado_curso'
-                                type="coin"
-                                onChange={handleChange}
-                                value={(pricesCourseData?.valor_parcelado_curso) || ''}
-                                label='Valor das parcelas' sx={{ flex: 1, }}
-                            />
-                            <TextInput disabled={!isPermissionEdit && true}
-                                placeholder='0.00'
-                                name='valor_avista_curso'
-                                type="coin"
-                                onChange={handleChange}
-                                value={(pricesCourseData?.valor_avista_curso) || ''}
-                                label='Valor á vista' sx={{ flex: 1, }}
-                            />
-                        </Box>
+                        {showValuesCalculation &&
+                            <Box sx={{
+                                display: 'flex', gap: 3, flexDirection: 'column', padding: '10px 12px', borderRadius: 2,
+                                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+                            }}>
+                                <Text bold>Valores Calculados:</Text>
+                                <Box sx={styles.inputSection}>
+                                    <TextInput disabled={!isPermissionEdit && true}
+                                        placeholder='0.00'
+                                        name='valor_parcelado_curso'
+                                        type="coin"
+                                        onChange={handleChange}
+                                        value={(pricesCourseData?.valor_parcelado_curso) || ''}
+                                        label='Valor das parcelas' sx={{ flex: 1, }}
+                                    />
+                                    <TextInput disabled={!isPermissionEdit && true}
+                                        placeholder='0.00'
+                                        name='valor_avista_curso'
+                                        type="coin"
+                                        onChange={handleChange}
+                                        value={(pricesCourseData?.valor_avista_curso) || ''}
+                                        label='Valor á vista' sx={{ flex: 1, }}
+                                    />
+                                </Box>
+                            </Box>
+                        }
 
                         {
                             !newPrice &&
