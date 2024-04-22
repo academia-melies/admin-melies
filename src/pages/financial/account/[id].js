@@ -12,6 +12,7 @@ import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody
 import { icons } from "../../../organisms/layout/Colors"
 import { formatTimeStamp } from "../../../helpers"
 import { IconStatus } from "../../../organisms/Table/table"
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 export default function Editaccount(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList, theme } = useAppContext()
@@ -110,85 +111,16 @@ export default function Editaccount(props) {
     const getExtract = async () => {
         try {
             const response = await api.get(`/account/extract/${id}?startDate=${filters?.startDate}&endDate=${filters?.endDate}`)
-            console.log(response)
-            const { installmentsCourse, expenses, personal, receiveds } = response?.data
+            const statmentAccountList = response?.data;
+            const totalValuesDebit = statmentAccountList?.map(item => item.debito)?.reduce((acc, curr) => acc + curr, 0) || 0
+            const totalValuesCredit = statmentAccountList?.map(item => item.credito)?.reduce((acc, curr) => acc + curr, 0) || 0
 
-            const mappedReceiveds = receiveds.map(received => ({
-                id: received?.id,
-                descricao: received?.descricao,
-                vencimento: received?.dt_pagamento,
-                dt_pagamento: received?.dt_baixa,
-                status: received?.status,
-                credito: received?.valor,
-                debito: 0,
-                n_parcela: 1,
-                forma_pagamento: received?.forma_pagamento,
-                observacao: received?.observacao,
-                c_custo: received?.c_custo,
-                conta: received?.conta,
-                type: 'received'
-            }));
-
-            const mappedInstallmentsCourse = installmentsCourse.map(parcel => ({
-                id: parcel.id,
-                descricao: parcel.descricao,
-                vencimento: parcel.vencimento,
-                dt_pagamento: parcel.dt_pagamento,
-                status: parcel.status,
-                credito: parcel.valor,
-                debito: 0,
-                n_parcela: parcel.n_parcela,
-                forma_pagamento: parcel.forma_pagamento,
-                observacao: parcel.observacao,
-                c_custo: parcel.c_custo,
-                conta: parcel?.conta,
-                type: 'installmentsCourse'
-            }));
-
-            const mappedExpenses = expenses.map(expense => ({
-                id: expense.id,
-                descricao: expense.descricao,
-                vencimento: expense.vencimento,
-                dt_pagamento: expense.dt_pagamento,
-                status: expense.status,
-                credito: 0,
-                debito: expense.valor,
-                n_parcela: expense.n_parcela,
-                forma_pagamento: expense.forma_pagamento,
-                observacao: expense.observacao,
-                c_custo: expense.c_custo,
-                conta_pagamento: expense?.conta_pagamento,
-                type: 'expense'
-            }));
-
-            const mappedPersonal = personal.map(personalItem => ({
-                id: personalItem.id,
-                descricao: personalItem.descricao,
-                vencimento: personalItem.vencimento,
-                dt_pagamento: personalItem.dt_pagamento,
-                status: personalItem.status,
-                credito: 0,
-                debito: personalItem.valor,
-                n_parcela: personalItem.n_parcela,
-                forma_pagamento: personalItem.forma_pagamento,
-                observacao: personalItem.observacao,
-                c_custo: personalItem.c_custo,
-                conta_pagamento: personalItem?.conta_pagamento,
-                type: 'personal'
-            }));
-
-            const updatedSetAccountExtractData = [...mappedInstallmentsCourse, ...mappedExpenses, ...mappedPersonal, ...mappedReceiveds];
-            const totalValuesExpanses = mappedExpenses?.map(item => item.debito)?.reduce((acc, curr) => acc + curr, 0) || 0
-            const totalValuesPersonal = mappedPersonal?.map(item => item.debito)?.reduce((acc, curr) => acc + curr, 0) || 0
-            const totalValuesInstallmentCourse = mappedInstallmentsCourse?.map(item => item.credito)?.reduce((acc, curr) => acc + curr, 0) || 0
-            const totalValuesReceiveds = mappedReceiveds?.map(item => item.credito)?.reduce((acc, curr) => acc + curr, 0) || 0
-
-            const totalCredit = (parseFloat(totalValuesInstallmentCourse) + parseFloat(totalValuesReceiveds)) || 0;
-            const totalDebit = (parseFloat(totalValuesExpanses) + parseFloat(totalValuesPersonal)) || 0;
+            const totalCredit = parseFloat(totalValuesCredit) || 0;
+            const totalDebit = parseFloat(totalValuesDebit) || 0;
             const saldo = (parseFloat(totalCredit) - parseFloat(totalDebit)) || 0;
             setSaldoAccount({ debit: totalDebit.toFixed(2), credit: totalCredit.toFixed(2), saldoAccount: saldo.toFixed(2) })
 
-            setSextractAccount(updatedSetAccountExtractData);
+            setSextractAccount(statmentAccountList);
         } catch (error) {
             console.log(error)
             return error
@@ -426,11 +358,11 @@ export default function Editaccount(props) {
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
                             <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Histórico de transferência</Text>
                         </Box>
-                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxHeight: 280, overflowX: 'auto' }}>
+                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxHeight: 280, overflowX: 'auto', minHeight: 280 }}>
                             {accountHistoricList?.length > 0 ?
                                 accountHistoricList?.map((item, index) => {
                                     return (
-                                        <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
+                                        <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'start', position: 'relative' }}>
                                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column' }}>
                                                 <Box sx={{
                                                     ...styles.menuIcon,
@@ -449,7 +381,7 @@ export default function Editaccount(props) {
                                                 />
                                             </Box>
 
-                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column', position: 'relative' }}>
+                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column'}}>
                                                 <Text small light style={{ flexWrap: 'wrap', display: 'flex', maxWidth: 400 }}>{item?.descricao_evento}</Text>
                                                 <div ref={containerRef}>
                                                     <Box sx={{
@@ -582,7 +514,7 @@ export default function Editaccount(props) {
                         </Box>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Dt Pagamento:</Text>
-                            <Text>{formatTimeStamp(transferData?.data?.dt_pagamento)}</Text>
+                            <Text>{formatTimeStamp(transferData?.data?.dt_baixa)}</Text>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Text bold>Status:</Text>
@@ -633,14 +565,12 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
     const { setLoading, colorPalette, theme, user } = useAppContext()
 
     const columns = [
-        { key: 'id', label: '#Id' },
+        { key: 'id_extrato', label: '#Id' },
         { key: 'descricao', label: 'Descrição' },
-        { key: 'vencimento', label: 'Dt Vencimento', date: true },
-        { key: 'dt_pagamento', label: 'Dt Pagamento', date: true },
+        { key: 'dt_baixa', label: 'Dt baixa', date: true },
         { key: 'status', label: 'Status' },
         { key: 'credito', label: 'Crédito' },
         { key: 'debito', label: 'Débito' },
-        { key: 'n_parcela', label: 'Nº Parcela' },
         { key: 'forma_pagamento', label: 'Forma Pagamento', },
         { key: 'observacao', label: 'Observação' },
         { key: 'c_custo', label: 'Centro de Custo' },
@@ -655,7 +585,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
 
     const statusColor = (data) => ((data === 'Pendente' && 'yellow') ||
         (data === 'Erro' && 'red') ||
-        (data === 'Pago' && 'green') ||
+        (data === 'Baixa realizada' && 'green') ||
         (data === 'Aprovado' && 'blue'))
 
 
@@ -685,12 +615,13 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
                             data?.map((item, index) => {
                                 return (
                                     <TableRow key={`${item}-${index}`} sx={{
+                                        backgroundColor: item?.transferido === 1 && colorPalette?.buttonColor + '44',
                                         "&:hover": {
-                                            backgroundColor: colorPalette.primary + '88'
+                                            backgroundColor: item?.transferido === 1 ? colorPalette?.buttonColor + '22' : colorPalette.primary + '88'
                                         },
                                     }}>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.id || '-'}</Text>
+                                            <Text>{item?.id_extrato || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{
                                             padding: '8px 10px', textAlign: 'center',
@@ -702,10 +633,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
                                             <Text>{item?.descricao || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{formatTimeStamp(item?.vencimento, false) || '-'}</Text>
-                                        </TableCell>
-                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{formatTimeStamp(item?.dt_pagamento, false) || '-'}</Text>
+                                            <Text>{formatTimeStamp(item?.dt_baixa, false) || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box
@@ -721,7 +649,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
                                                 }}
                                             >
                                                 <Box sx={{ display: 'flex', backgroundColor: statusColor(item?.status), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                <Text small bold>{item?.status}</Text>
+                                                <Text xsmall bold style={{padding: '5px 5px'}}>{item?.status}</Text>
                                             </Box>
                                         </TableCell>
                                         <Tooltip title={item?.credito}>
@@ -753,11 +681,6 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
                                             </Box>
 
                                         </TableCell>
-                                        <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
-                                            <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                                                <Text>{item?.n_parcela || '-'}</Text>
-                                            </Box>
-                                        </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{item?.forma_pagamento || '-'}</Text>
                                         </TableCell>
@@ -768,7 +691,16 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
                                             <Text>{item?.c_custo || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Button small text="Trasnferir" style={{ height: 30, borderRadius: 2 }} onClick={() => setTransferData({ active: true, data: item })} />
+                                            {item?.transferido === 1 ?
+                                                <Box sx={{
+                                                    display: 'flex', padding: '8px 10px', borderRadius: 2, height: 30, border: `1px solid green`, alignItems: 'center',
+                                                    justifyContent: 'center', gap: 1
+                                                }}>
+                                                    <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />
+                                                    <Text bold small style={{ color: 'green' }}>Transferido</Text></Box>
+                                                :
+                                                <Button small text="Trasnferir" style={{ height: 30, borderRadius: 2 }} onClick={() => setTransferData({ active: true, data: item })} />
+                                            }
                                         </TableCell>
                                     </TableRow>
                                 );

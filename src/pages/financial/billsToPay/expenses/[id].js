@@ -293,7 +293,7 @@ export default function EditExpenses(props) {
         { label: 'Não recorrente', value: 1 },
         { label: 'Semanal', value: 7 },
         { label: 'Quinzenal', value: 15 },
-        { label: 'Mensal', value: 30 },
+        { label: 'Mensal', value: 31 },
         { label: 'Trismestral', value: 90 },
         { label: 'Semestral', value: 182 },
         { label: 'Anual', value: 365 }
@@ -400,6 +400,7 @@ export default function EditExpenses(props) {
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento:' sx={{ flex: 1, }} />
                     {newBill && <TextInput disabled={!isPermissionEdit && true} placeholder='Nº Lançamentos' name='n_lancamento' onChange={handleChange} value={billToPayData?.n_lancamento || ''} type="number" label='Nº Lançamentos:' sx={{ width: 150, }} />}
+                    {newBill && <TextInput disabled={!isPermissionEdit && true} placeholder='Dia de Pagamento' name='dia_pagamento' onChange={handleChange} value={billToPayData?.dia_pagamento || ''} type="number" label='Dia de Pagamento:' sx={{ width: 150, }} />}
                     <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupRecorrency} valueSelection={billToPayData?.recorrencia} onSelect={(value) => setBillToPayData({ ...billToPayData, recorrencia: value })}
                         title="Recorrência: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}

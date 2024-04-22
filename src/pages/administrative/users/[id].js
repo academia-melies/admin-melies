@@ -1040,7 +1040,6 @@ export default function EditUser() {
                 }
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
-                    if (data?.userId) router.push(`/administrative/users/list`)
                 }
                 if (response?.status === 422) {
                     return alert.error('O CPF já está cadastrado.');
@@ -1050,6 +1049,7 @@ export default function EditUser() {
                 console.log(error)
             } finally {
                 setLoading(false)
+                router.push(`/administrative/users/list`)
             }
             return setLoading(false)
         }
@@ -1197,7 +1197,11 @@ export default function EditUser() {
             }
         }
 
-        if (arrayEnrollmentRegisterData?.filter(item => (item.turma_id === enrollmentRegisterData?.turma_id) && item?.modulo === enrollmentRegisterData?.modulo)?.length > 0) {
+        let classId = enrollmentRegisterData?.turma_id;
+        let selectedModule = enrollmentRegisterData?.modulo;
+        let statusEnrollment = enrollmentRegisterData?.status;
+        if (arrayEnrollmentRegisterData?.filter(item => (item.turma_id === classId) && item?.modulo === selectedModule && item?.status === statusEnrollment)?.length > 0
+        ) {
             alert.info('Já foi adicionado uma matrícula com a turma e módulo selecionados. Verifique nas matriculas já incluídas acima, para que não haja duplicidade.')
             return false;
         }
