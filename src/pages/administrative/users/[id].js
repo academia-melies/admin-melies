@@ -1587,8 +1587,6 @@ export default function EditUser() {
             }))
     }
 
-    console.log(arrayInterests)
-
 
     const groupPerfil = [
         { label: 'Funcionário', value: 'funcionario' },
@@ -1698,15 +1696,34 @@ export default function EditUser() {
 
     const groupBank = [
         { label: 'Itaú', value: 'Itau' },
-        { label: 'Bradesco', value: 'Bradesco' },
+        { label: 'Bradesco', value: 'Bradesco' }
     ]
 
 
     const groupLevelEmployee = [
         { label: 'Junior', value: 'Junior' },
         { label: 'Pleno', value: 'Pleno' },
-        { label: 'Sênior', value: 'Sênior' }
-    ]
+        { label: 'Sênior', value: 'Sênior' },
+        { label: 'Instrutor', value: 'Instrutor'},
+        { label: 'Especialista A', value: 'Especialista A'},
+        { label: 'Especialista B', value: 'Especialista B'},
+        { label: 'Especialista C', value: 'Especialista C'},
+        { label: 'Especialista D', value: 'Especialista D'},
+        { label: 'Especialista E', value: 'Especialista E'},
+        { label: 'Mestre A', value: 'Mestre A'},
+        { label: 'Mestre B', value: 'Mestre B'},
+        { label: 'Mestre C', value: 'Mestre C'},
+        { label: 'Mestre D', value: 'Mestre D'},
+        { label: 'Mestre E', value: 'Mestre E'},
+        { label: 'Mestre F', value: 'Mestre F'},
+        { label: 'Doutor A', value: 'Doutor A'},
+        { label: 'Doutor B', value: 'Doutor B'},
+        { label: 'Doutor C', value: 'Doutor C'},
+        { label: 'Doutor D', value: 'Doutor D'},
+        { label: 'Doutor E', value: 'Doutor E'},
+        { label: 'Doutor F', value: 'Doutor F'}
+    
+]
 
     const groupArea = [
         { label: 'Financeiro', value: 'Financeiro' },

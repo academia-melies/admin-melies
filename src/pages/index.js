@@ -571,6 +571,9 @@ function Home() {
                                     const date = item?.nascimento?.split('T')[0]
                                     const day = date?.split('-')[2]
                                     const month = date?.split('-')[1]
+                                    const functionFormatted = item?.funcao.split(' ')[0][0].toUpperCase()
+                                    const restoNome = item.funcao.slice(1)
+                                    const totalName = `${functionFormatted}${restoNome}`
                                     return (
                                        <Box key={index} sx={{
                                           display: 'flex',
@@ -597,7 +600,7 @@ function Home() {
                                           <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                              <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
                                                 <Text light bold>{item?.nome}</Text>
-                                                <Text light>{item?.funcao || 'Nenhum(a)'}</Text>
+                                                <Text light>{totalName || 'Nenhum(a)'}</Text>
                                              </Box>
                                           </Box>
                                           <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
