@@ -573,7 +573,7 @@ export default function EditUser() {
             const response = await api.get(`/users`)
             const { data } = response
 
-            const groupUser = data.filter(item => userArea ? item.area === userArea : item.area)?.map(responsible => ({
+            const groupUser = data.filter(item => item.perfil.includes('funcionario'))?.map(responsible => ({
                 label: responsible.nome,
                 value: responsible?.id,
                 area: responsible?.area
@@ -1705,7 +1705,7 @@ export default function EditUser() {
     const groupLevelEmployee = [
         { label: 'Junior', value: 'Junior' },
         { label: 'Pleno', value: 'Pleno' },
-        { label: 'Sénior', value: 'Sénior' }
+        { label: 'Sênior', value: 'Sênior' }
     ]
 
     const groupArea = [
