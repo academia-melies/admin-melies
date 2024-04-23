@@ -189,7 +189,7 @@ export default function ListBillsToPay(props) {
             setLoading(true)
             const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
             try {
-                const response = await api.patch(`/expense/baixa`, { isToUpdate, baixaData })
+                const response = await api.patch(`/expense/baixa`, { isToUpdate, baixaData, userRespId: user?.id })
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
@@ -215,7 +215,7 @@ export default function ListBillsToPay(props) {
 
     const pusBillId = async (item) => {
         let itemId = item?.id_despesa || 'new';
-        let queryRoute = `/financial/billsToPay/${itemId}`
+        let queryRoute = `/financial/billsToPay/expenses/${itemId}`
         router.push(queryRoute)
     }
 
@@ -399,7 +399,7 @@ export default function ListBillsToPay(props) {
                                                 horizontal={true}
                                                 onSelect={() => {
                                                     if (expensesSelected?.length < allSelected?.length) {
-                                                        let allInstallmentSelected = expensesData?.filter(filter)?.map(item => item?.id_despesa_f)
+                                                        let allInstallmentSelected = expensesData?.filter(filter)?.map(item => item?.id_despesa)
                                                         setExpensesSelected(allInstallmentSelected?.toString())
                                                     } else {
                                                         setExpensesSelected(null)

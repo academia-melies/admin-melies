@@ -13,7 +13,7 @@ import { icons } from "../../../../organisms/layout/Colors"
 export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, userPermissions, menuItemsList, user, alert } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList, user, alert, setShowConfirmationDialog } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [filterPayment, setFilterPayment] = useState('todos')
     const [installmentsSelected, setInstallmentsSelected] = useState(null);
@@ -37,6 +37,8 @@ export default function ListReceipts(props) {
     const [showFilterMobile, setShowFilterMobile] = useState(false)
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [showBaixa, setShowBaixa] = useState(false)
+    const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_recebimento: '' })
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -137,7 +139,6 @@ export default function ListReceipts(props) {
         }
     }
 
-    console.log(newInstallment)
     useEffect(() => {
         fetchPermissions()
         getInstallments();
@@ -283,6 +284,37 @@ export default function ListReceipts(props) {
             ...prevValues,
             [event.target.name]: event.target.value,
         }))
+    }
+
+    const handleBaixa = async () => {
+        if (installmentsSelected && baixaData?.conta_recebimento !== '' && baixaData?.dt_baixa !== '') {
+            setLoading(true)
+            const isToUpdate = installmentsSelected.split(',').map(id => parseInt(id.trim(), 10));
+
+            try {
+                const response = await api.patch(`/student/installment/baixa`, { isToUpdate, baixaData, userRespId: user?.id })
+                const { status } = response?.data
+                console.log(response)
+                if (status) {
+                    alert.success('Todas as Baixas foram realizadas com sucesso.');
+                    setInstallmentsSelected('');
+                    setShowBaixa(false)
+                    setBaixaData({ dt_baixa: '', conta_recebimento: '' });
+                    getInstallments()
+                    return
+                }
+                alert.error('Tivemos um problema ao efetivar as Baixa.');
+            } catch (error) {
+                alert.error('Tivemos um problema ao efetivar as Baixa.');
+                console.log(error)
+                return error
+
+            } finally {
+                setLoading(false)
+            }
+        } else {
+            alert.info('Selecione um item antes de dar baixa e preencha todos os campos corretamente.')
+        }
     }
 
     const priorityColor = (data) => (
@@ -723,7 +755,7 @@ export default function ListReceipts(props) {
                     display: 'flex', position: 'fixed',
                     left: { xs: 20, sm: 20, md: 280, lg: 280, xl: 280 }, bottom: 20, display: 'flex', gap: 2, flexWrap: 'wrap'
                 }}>
-                    <Button text="Dar baixa" style={{ width: '120px', height: '40px' }} />
+                    <Button text="Dar baixa" style={{ width: '120px', height: '40px' }} onClick={() => setShowBaixa(true)} />
                     <Button secondary text="Cancelar" style={{ width: '120px', height: '40px', backgroundColor: colorPalette.primary }} />
                 </Box>
                 <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2 }}>
@@ -806,6 +838,53 @@ export default function ListReceipts(props) {
                             setShowNewParcel(false)
                             setNewInstallment({})
                         }} style={{ width: 120, height: 35 }} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+            <Backdrop open={showBaixa} sx={{ zIndex: 999 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Dados da Baixa</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowBaixa(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                        <TextInput disabled={!isPermissionEdit && true}
+                            name='dt_baixa'
+                            onChange={(event) => setBaixaData({ ...baixaData, dt_baixa: event.target.value })}
+                            value={(baixaData?.dt_baixa)?.split('T')[0] || ''}
+                            type="date"
+                            label='Data da Baixa'
+                            sx={{ width: 250 }} />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountList} valueSelection={baixaData?.conta_recebimento} onSelect={(value) => setBaixaData({ ...baixaData, conta_recebimento: value })}
+                            title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={(event) => setShowConfirmationDialog({
+                                active: true,
+                                event,
+                                acceptAction: handleBaixa,
+                                title: `Dar Baixa das parcelas`,
+                                message: 'Tem certeza que deseja seguir com a as baixas?'
+                            })} />
+                        <Button disabled={!isPermissionEdit && true} small secondary text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => {
+                                setShowBaixa(false)
+                                setBaixaData({ dt_baixa: '', conta_recebimento: '' });
+                            }} />
                     </Box>
                 </ContentContainer>
             </Backdrop>

@@ -155,7 +155,7 @@ export default function ListPayroll(props) {
             setLoading(true)
             const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
             try {
-                const response = await api.patch(`/expense/personal/baixa`, { isToUpdate, baixaData })
+                const response = await api.patch(`/expense/personal/baixa`, { isToUpdate, baixaData, userRespId: user?.id })
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');

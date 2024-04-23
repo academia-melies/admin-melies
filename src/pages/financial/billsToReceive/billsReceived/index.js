@@ -43,8 +43,6 @@ export default function ListBillsReceived(props) {
     const [receiveds, setReceiveds] = useState([]);
     const [showBaixa, setShowBaixa] = useState(false)
     const [accountList, setAccountList] = useState([])
-
-
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
 
     const fetchPermissions = async () => {
@@ -161,7 +159,7 @@ export default function ListBillsReceived(props) {
             const isToUpdate = receivedSelected.split(',').map(id => parseInt(id.trim(), 10));
 
             try {
-                const response = await api.patch(`/received/baixa`, { isToUpdate, baixaData })
+                const response = await api.patch(`/received/baixa`, { isToUpdate, baixaData, userRespId: user?.id })
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
