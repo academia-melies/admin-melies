@@ -47,7 +47,7 @@ export const UserHeader = (props) => {
 
     return (
         <>
-            <Box sx={{ ...styles.header, backgroundColor: colorPalette.secondary, gap: 2 }}>
+            <Box sx={{ ...styles.header, backgroundColor: colorPalette.secondary, gap: 2, borderBottom: `1px solid ${theme ? Colors.backgroundPrimary + '11' : '#404040'}`, }}>
                 <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
                     <Box sx={{
                         ...styles.menuIcon,
@@ -197,8 +197,7 @@ const styles = {
         boxSizing: 'border-box',
         gap: 1,
         position: 'fixed',
-        zIndex: 999999,
-        borderBottom: `1px solid ${Colors.backgroundPrimary + '11'}`,
+        zIndex: 9999999999,
     },
     menuIcon: {
         backgroundSize: 'cover',

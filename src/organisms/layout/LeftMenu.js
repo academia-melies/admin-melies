@@ -139,7 +139,7 @@ export const LeftMenu = ({ }) => {
             width: { xs: '214px', sm: '214px', md: '180px', lg: '180px', xl: '214px' },
          }}>
             <Box sx={{ position: 'fixed', height: '100%', width: { xs: '214px', sm: '214px', md: '180px', lg: '180px', xl: '214px' }, padding: { xs: '10px 15px', sm: '10px 15px', md: '8px 10px', lg: '8px 10px', xl: '10px 15px' } }}>
-               <Box sx={{
+               {/* <Box sx={{
                   // backgroundSize: 'cover',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center center',
@@ -151,47 +151,76 @@ export const LeftMenu = ({ }) => {
                   left: 0,
                   backgroundImage: `url(${imagesList})`,
                   borderRadius: '0px 0px 16px 16px'
-               }} />
+               }} /> */}
                {user?.professor === 1 &&
                   <Box sx={{ position: 'absolute', top: -20, left: 8, padding: '2px 5px 2px 5px', backgroundColor: colorPalette.buttonColor, justifyContent: 'center', alignItems: 'center' }}>
                      <Text bold xsmall>Professor</Text>
                   </Box>
                }
-               <Box sx={{ ...styles.userBadgeContainer }}>
-                  <Box sx={{
-                     display: 'flex',
-                     justifyContent: 'space-between',
-                     alignItems: 'center',
-                     gap: 1,
-                     borderRadius: 1.5,
-                     boxSizing: 'border-box',
-                     flexDirection: 'column',
-                     padding: { md: '0px', lg: '0px', xl: '8px 8px' },
-
-                  }}>
-                     <Avatar
-                        sx={{ width: '65px', height: '65px', fontSize: 14, border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }}
-                        src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`}
-                        onClick={() => {
-                           // router.push(`/administrative/users/${user?.id}`)
-                           // setShowUserOptions(!showUserOptions)
-                           setShowDialogEditUser(true)
-                           setShowMenuMobile(false)
-                        }} />
-                     <Text style={{ color: colorPalette.textColor, transition: 'background-color 1s', color: '#fff', fontFamily: 'MetropolisSemiBold' }}>{userName}</Text>
-                     {/* <Box sx={{
-                        ...styles.menuIcon,
-                        backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
-                        width: 20,
-                        height: 20,
-                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                        filter: 'brightness(0) invert(1)',
-                        "&:hover": {
-                           opacity: 0.8,
-                           cursor: 'pointer'
-                        }
-                     }} onClick={() => setShowUserOptions(!showUserOptions)} /> */}
+               <div ref={containerRef}>
+                  <Box sx={{ ...styles.userBadgeContainer }}>
                      <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 1,
+                        borderRadius: 1.5,
+                        boxSizing: 'border-box',
+                        flexDirection: 'column',
+                        padding: { md: '0px', lg: '0px', xl: '8px 8px' },
+                        position: 'relative'
+                     }}>
+
+                        <Avatar
+                           sx={{ width: '65px', height: '65px', fontSize: 14, border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }}
+                           src={fotoPerfil || `https://mf-planejados.s3.us-east-1.amazonaws.com/melies/perfil-default.jpg`}
+                           onClick={() => {
+                              // router.push(`/administrative/users/${user?.id}`)
+                              // setShowUserOptions(!showUserOptions)
+                              setShowDialogEditUser(true)
+                              setShowMenuMobile(false)
+                           }} />
+                        <Box sx={{ display: 'flex', gap: .5, alignItems: 'center', justifyContent: 'center', }}>
+                           <Text bold style={{ color: colorPalette.textColor, transition: 'background-color 1s' }}>{userName}</Text>
+                           <Box sx={{
+                              ...styles.menuIcon,
+                              backgroundImage: !showUserOptions ? `url(${icons.gray_arrow_down})` : `url(${icons.gray_close})`,
+                              width: 16,
+                              height: 16,
+                              "&:hover": {
+                                 opacity: 0.8,
+                                 cursor: 'pointer'
+                              }
+                           }} onClick={() => {
+                              setShowUserOptions(!showUserOptions)
+                           }} />
+
+                           {showUserOptions &&
+                              <Box sx={{ ...styles.containerUserOpitions, backgroundColor: colorPalette.secondary, border: `1px solid ${(theme ? '#eaeaea' : '#404040')}` }}>
+                                 <Box onClick={() => {
+                                    router.push(`/administrative/users/${user?.id}`)
+                                    setShowMenuMobile(false)
+                                    setShowUserOptions(!showUserOptions)
+                                 }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '88', cursor: 'pointer' }, }}>
+                                    <Text light style={{ ...styles.text, textAlign: 'center', color: colorPalette?.textColor }}>Meus dados</Text>
+                                 </Box>
+                                 <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '88', cursor: 'pointer' } }}
+                                    onClick={() => {
+                                       setShowDialogEditUser(true)
+                                       setShowMenuMobile(false)
+                                       setShowUserOptions(!showUserOptions)
+                                    }}>
+                                    <Text light style={{ ...styles.text, textAlign: 'center', color: colorPalette?.textColor }}>Alterar senha</Text>
+                                 </Box>
+                                 <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '88', cursor: 'pointer' } }}
+                                    onClick={logout}>
+                                    <Text light style={{ ...styles.text, textAlign: 'center', color: colorPalette?.textColor }}>Sair</Text>
+                                 </Box>
+                              </Box>
+                           }
+                        </Box>
+                        <Text xsmall light style={{ color: 'rgb(75 85 99)' }}>{user?.email}</Text>
+                        {/* <Box sx={{
                         display: 'flex', gap: 1.5, alignItems: 'center',
                         justifyContent: 'center',
                      }}>
@@ -226,29 +255,14 @@ export const LeftMenu = ({ }) => {
                            // setShowDialogEditUser(true)
                            setShowMenuMobile(false)
                         }} />
+                     </Box> */}
                      </Box>
                   </Box>
-                  {showUserOptions &&
-                     <Box sx={{ ...styles.containerUserOpitions, backgroundColor: colorPalette.secondary, border: `1px solid ${(theme ? '#eaeaea' : '#404040')}` }}>
-                        <div ref={containerRef}>
-                           <Box onClick={() => {
-                              router.push(`/administrative/users/${user?.id}`)
-                              setShowMenuMobile(false)
-                              setShowUserOptions(!showUserOptions)
-                           }} sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '88', cursor: 'pointer' }, }}>
-                              <Text bold style={{ ...styles.text, textAlign: 'center', color: colorPalette?.textColor }}>Meus dados</Text>
-                           </Box>
-                           <Box sx={{ borderRadius: 1, padding: `4px 8px`, "&:hover": { backgroundColor: colorPalette.primary + '88', cursor: 'pointer' } }}
-                              onClick={() => {
-                                 setShowDialogEditUser(true)
-                                 setShowMenuMobile(false)
-                                 setShowUserOptions(!showUserOptions)
-                              }}>
-                              <Text bold style={{ ...styles.text, textAlign: 'center', color: colorPalette?.textColor }}>Alterar senha</Text>
-                           </Box>
-                        </div>
-                     </Box>
-                  }
+               </div>
+               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Box sx={{ display: 'flex', width: '70%' }}>
+                     <Divider color={colorPalette?.buttonColor} size="2px"/>
+                  </Box>
                </Box>
                <Box sx={{ ...styles.boxMenu, ...(showMenuMobile && { overflowY: 'auto' }) }}>
                   {menuItems.map((group, index) => {
@@ -760,7 +774,7 @@ const styles = {
    boxMenu: {
       display: 'flex',
       flexDirection: 'column',
-      marginTop: 10,
+      marginTop: 5,
       overflowStyle: 'marquee,panner',
       maxHeight: '50%',
       scrollbarWidth: 'thin',
@@ -853,11 +867,12 @@ const styles = {
       backgroundColor: Colors.background,
       boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
       borderRadius: 2,
-      padding: 1,
       display: 'flex',
       flexDirection: 'column',
       position: 'absolute',
-      top: 135,
+      padding: '5px',
+      width: 300,
+      top: 110,
       width: '100%',
       boxSizing: 'border-box',
       zIndex: 9999999
@@ -869,6 +884,7 @@ const styles = {
       justifyContent: 'center',
       alignItems: 'center',
       minWidth: 130,
+      paddingTop: 3,
       gap: 1,
       position: 'relative',
       borderRadius: 1.5,
