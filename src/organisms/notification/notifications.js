@@ -147,7 +147,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
                                 ...styles.menuIcon,
                                 width: 21,
                                 height: 21,
-                                backgroundImage: `url('/icons/setting_icon.png')`,
+                                backgroundImage: `url('/icons/remove_notifications.png')`,
                                 transition: '.3s',
                                 filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                                 transition: 'background-color 1s',
@@ -289,9 +289,10 @@ export const Notifications = ({ showNotification = false, setShowNotification })
                                                         opacity: 0.8,
                                                         cursor: 'pointer'
                                                     }
-                                                }} onClick={(e) => {
+                                                }} onClick={async (e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
+                                                    await handleVizualizeded(item?.id_notificacao)
                                                     handleInativeNotification(item?.id_notificacao)
                                                 }}
                                                     onMouseEnter={() => handleGroupMouseEnter(index)}

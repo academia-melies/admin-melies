@@ -108,7 +108,7 @@ export const SelectList = (props) => {
                                                 width: 15,
                                                 height: 15,
                                                 marginRight: 2,
-                                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                                backgroundImage: `url(/icons/clean_filtro.png)`,
                                                 transition: ".3s",
                                                 "&:hover": {
                                                     opacity: 0.8,

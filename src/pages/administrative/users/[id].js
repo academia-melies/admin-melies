@@ -1704,26 +1704,26 @@ export default function EditUser() {
         { label: 'Junior', value: 'Junior' },
         { label: 'Pleno', value: 'Pleno' },
         { label: 'Sênior', value: 'Sênior' },
-        { label: 'Instrutor', value: 'Instrutor'},
-        { label: 'Especialista A', value: 'Especialista A'},
-        { label: 'Especialista B', value: 'Especialista B'},
-        { label: 'Especialista C', value: 'Especialista C'},
-        { label: 'Especialista D', value: 'Especialista D'},
-        { label: 'Especialista E', value: 'Especialista E'},
-        { label: 'Mestre A', value: 'Mestre A'},
-        { label: 'Mestre B', value: 'Mestre B'},
-        { label: 'Mestre C', value: 'Mestre C'},
-        { label: 'Mestre D', value: 'Mestre D'},
-        { label: 'Mestre E', value: 'Mestre E'},
-        { label: 'Mestre F', value: 'Mestre F'},
-        { label: 'Doutor A', value: 'Doutor A'},
-        { label: 'Doutor B', value: 'Doutor B'},
-        { label: 'Doutor C', value: 'Doutor C'},
-        { label: 'Doutor D', value: 'Doutor D'},
-        { label: 'Doutor E', value: 'Doutor E'},
-        { label: 'Doutor F', value: 'Doutor F'}
-    
-]
+        { label: 'Instrutor', value: 'Instrutor' },
+        { label: 'Especialista A', value: 'Especialista A' },
+        { label: 'Especialista B', value: 'Especialista B' },
+        { label: 'Especialista C', value: 'Especialista C' },
+        { label: 'Especialista D', value: 'Especialista D' },
+        { label: 'Especialista E', value: 'Especialista E' },
+        { label: 'Mestre A', value: 'Mestre A' },
+        { label: 'Mestre B', value: 'Mestre B' },
+        { label: 'Mestre C', value: 'Mestre C' },
+        { label: 'Mestre D', value: 'Mestre D' },
+        { label: 'Mestre E', value: 'Mestre E' },
+        { label: 'Mestre F', value: 'Mestre F' },
+        { label: 'Doutor A', value: 'Doutor A' },
+        { label: 'Doutor B', value: 'Doutor B' },
+        { label: 'Doutor C', value: 'Doutor C' },
+        { label: 'Doutor D', value: 'Doutor D' },
+        { label: 'Doutor E', value: 'Doutor E' },
+        { label: 'Doutor F', value: 'Doutor F' }
+
+    ]
 
     const groupArea = [
         { label: 'Financeiro', value: 'Financeiro' },
@@ -1913,7 +1913,7 @@ export default function EditUser() {
                                 }}
                                 title='Foto de perfil'
                                 text='Para alterar sua foto de perfil, clique ou arraste no local desejado.'
-                                textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                 fileData={bgPhoto}
                                 usuarioId={id}
                                 campo='foto_perfil'
@@ -1987,7 +1987,7 @@ export default function EditUser() {
 
                                     {!foreigner &&
                                         <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cpf: value })}
-                                            style={{ border: filesUser?.filter((file) => file.campo === 'cpf').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                            existsFiles={filesUser?.filter((file) => file.campo === 'cpf').length > 0}>
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
                                         </FileInput>
                                     }
@@ -2001,7 +2001,7 @@ export default function EditUser() {
                                         }}
                                         title='CPF - Frente e verso'
                                         text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
-                                        textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                        textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                         fileData={filesUser?.filter((file) => file.campo === 'cpf')}
                                         usuarioId={id}
                                         campo='cpf'
@@ -2015,8 +2015,7 @@ export default function EditUser() {
                                             }
                                         }}
                                     />
-                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cert_nascimento: value })}
-                                        style={{ border: filesUser?.filter((file) => file.campo === 'nascimento').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cert_nascimento: value })} existsFiles={filesUser?.filter((file) => file.campo === 'nascimento').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
                                         <EditFile
                                             isPermissionEdit={isPermissionEdit}
@@ -2028,7 +2027,7 @@ export default function EditUser() {
                                             }}
                                             title='Certidão de Nascimento ou de Certidão de Casamento'
                                             text='Faça o upload da sua certidão frente e verso, depois clique em salvar.'
-                                            textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                            textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                             fileData={filesUser?.filter((file) => file.campo === 'nascimento')}
                                             usuarioId={id}
                                             campo='nascimento'
@@ -2296,7 +2295,7 @@ export default function EditUser() {
                                 <Box sx={styles.inputSection}>
                                     {!foreigner &&
                                         <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cpf: value })}
-                                            style={{ border: filesUser?.filter((file) => file.campo === 'cpf').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                            existsFiles={filesUser?.filter((file) => file.campo === 'cpf').length > 0}>
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
                                         </FileInput>
                                     }
@@ -2310,7 +2309,7 @@ export default function EditUser() {
                                         }}
                                         title='CPF - Frente e verso'
                                         text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
-                                        textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                        textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                         fileData={filesUser?.filter((file) => file.campo === 'cpf')}
                                         usuarioId={id}
                                         campo='cpf'
@@ -2326,7 +2325,7 @@ export default function EditUser() {
                                     />
                                     {foreigner &&
                                         <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, foreigner: value })}
-                                            style={{ border: filesUser?.filter((file) => file.campo === 'estrangeiro').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                            existsFiles={filesUser?.filter((file) => file.campo === 'estrangeiro').length > 0}>
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />
                                             <EditFile
                                                 isPermissionEdit={isPermissionEdit}
@@ -2338,7 +2337,7 @@ export default function EditUser() {
                                                 }}
                                                 title='Documento estrangeiro - Frente e verso'
                                                 text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
-                                                textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                                textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                                 fileData={filesUser?.filter((file) => file.campo === 'estrangeiro')}
                                                 usuarioId={id}
                                                 campo='estrangeiro'
@@ -2368,7 +2367,7 @@ export default function EditUser() {
 
                                 <Box sx={styles.inputSection}>
                                     <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, rg: value })}
-                                        style={{ border: filesUser?.filter((file) => file.campo === 'rg').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                        existsFiles={filesUser?.filter((file) => file.campo === 'rg').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
                                         <EditFile
                                             isPermissionEdit={isPermissionEdit}
@@ -2380,7 +2379,7 @@ export default function EditUser() {
                                             }}
                                             title='RG - Frente e verso'
                                             text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
-                                            textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                            textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                             fileData={filesUser?.filter((file) => file.campo === 'rg')}
                                             usuarioId={id}
                                             campo='rg'
@@ -2401,7 +2400,7 @@ export default function EditUser() {
                                 </Box>
                                 <Box sx={styles.inputSection}>
                                     <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, titleDoc: value })}
-                                        style={{ border: filesUser?.filter((file) => file.campo === 'titulo').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                        existsFiles={filesUser?.filter((file) => file.campo === 'titulo').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
                                         <EditFile
                                             isPermissionEdit={isPermissionEdit}
@@ -2413,7 +2412,7 @@ export default function EditUser() {
                                             }}
                                             title='Título de Eleitor'
                                             text='Faça o upload do seu título, depois clique em salvar.'
-                                            textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                            textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                             fileData={filesUser?.filter((file) => file.campo === 'titulo')}
                                             usuarioId={id}
                                             campo='titulo'
@@ -2504,7 +2503,7 @@ export default function EditUser() {
 
                                             <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                                 <FileInput left onClick={() => setShowEditFiles({ ...showEditFile, cpf_dependente: true })}
-                                                    style={{ border: filesUser?.filter((file) => file.campo === 'cpf_dependente').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                                    existsFiles={filesUser?.filter((file) => file.campo === 'cpf_dependente').length > 0}>
                                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'nome_dependente', dep?.id_dependente)} value={dep.nome_dependente} sx={{ flex: 1 }} />
                                                     <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'cpf_dependente', dep?.id_dependente)} value={dep.cpf_dependente} sx={{ flex: 1 }} />
                                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'dt_nasc_dependente', dep?.id_dependente)} type="date" value={(dep.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
@@ -2599,7 +2598,7 @@ export default function EditUser() {
                                     </Box>
                                 </ContentContainer>
                                 <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, schoolRecord: value })}
-                                    style={{ border: filesUser?.filter((file) => file.campo === 'historico/diploma').length < 1 && `1px solid ${colorPalette?.buttonColor}`, alignItems: 'center' }}>
+                                    existsFiles={filesUser?.filter((file) => file.campo === 'historico/diploma').length > 0}>
                                     <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.escolaridade} group={groupEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true} onSelect={(value) => {
                                         if (value !== 'Ensino médio') {
                                             setUserData({ ...userData, escolaridade: value, tipo_origem_ensi_med: '' })
@@ -2645,7 +2644,7 @@ export default function EditUser() {
                                 <Box sx={styles.inputSection}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
                                     <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, address: value })}
-                                        style={{ border: filesUser?.filter((file) => file.campo === 'comprovante residencia').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                        existsFiles={filesUser?.filter((file) => file.campo === 'comprovante residencia').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
                                         <EditFile
                                             isPermissionEdit={isPermissionEdit}
@@ -2657,7 +2656,7 @@ export default function EditUser() {
                                             }}
                                             title='Comprovante de residencia'
                                             text='Faça o upload do seu comprovante de residencia, precisa ser uma conta em seu nome ou comprovar que mora com o titular da conta.'
-                                            textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                            textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                             fileData={filesUser?.filter((file) => file.campo === 'comprovante residencia')}
                                             usuarioId={id}
                                             campo='comprovante residencia'
@@ -2740,7 +2739,7 @@ export default function EditUser() {
                                 </Box>
                                 <Box sx={styles.inputSection}>
                                     <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, ctps: value })}
-                                        style={{ border: filesUser?.filter((file) => file.campo === 'ctps').length < 1 && `1px solid ${colorPalette?.buttonColor}` }}>
+                                        existsFiles={filesUser?.filter((file) => file.campo === 'ctps').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
 
                                         <EditFile
@@ -2753,7 +2752,7 @@ export default function EditUser() {
                                             }}
                                             title='Carteira de Trabalho'
                                             text='Faça o upload da dua carteira de trabalho, depois clique em salvar.'
-                                            textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                            textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                             fileData={filesUser?.filter((file) => file.campo === 'ctps')}
                                             usuarioId={id}
                                             campo='ctps'
@@ -2778,8 +2777,8 @@ export default function EditUser() {
                                         title="Banco" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Agência' name='agencia_1' onChange={handleChangeContract} value={contract?.agencia_1 || ''} label='Agência' sx={{ flex: 1, }} />
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Conta' name='conta_1' onChange={handleChangeContract} value={contract?.conta_1 || ''} label='Conta' sx={{ flex: 1, }} />
                                     <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_1} onSelect={(value) => setContract({ ...contract, tipo_conta_1: value })}
                                         title="Tipo de conta" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -2787,8 +2786,8 @@ export default function EditUser() {
                                 </Box>
                                 <Box sx={styles.inputSection}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Banco 2' name='banco_2' onChange={handleChangeContract} value={contract?.banco_2 || ''} label='Banco 2' sx={{ flex: 1, }} />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Agência 2' name='agencia_2' onChange={handleChangeContract} value={contract?.agencia_2 || ''} label='Agência 2' sx={{ flex: 1, }} />
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Conta 2' name='conta_2' onChange={handleChangeContract} value={contract?.conta_2 || ''} label='Conta 2' sx={{ flex: 1, }} />
                                     <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupAccount} valueSelection={contract?.tipo_conta_2} onSelect={(value) => setContract({ ...contract, tipo_conta_2: value })}
                                         title="Tipo de conta 2" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -3599,7 +3598,7 @@ export default function EditUser() {
                                                                     }}
                                                                     title='Boletim de resultados do ENEM'
                                                                     text='Faça o upload do seu Boletim, depois clique em salvar.'
-                                                                    textDropzone='Arraste ou clique para selecionar a Foto que deseja'
+                                                                    textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
                                                                     fileData={filesUser?.filter((file) => file.campo === 'enem')}
                                                                     usuarioId={id}
                                                                     campo='enem'
@@ -4274,7 +4273,7 @@ export const EditFile = (props) => {
     return (
         <Backdrop open={open} sx={{ zIndex: 99999, }}>
             <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll', }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 2, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
                     <Text bold>{title}</Text>
                     <Box sx={{
                         ...styles.menuIcon,

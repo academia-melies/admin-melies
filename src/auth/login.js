@@ -196,6 +196,7 @@ export default function Login() {
                                             name='email'
                                             margin='none'
                                             type="email"
+                                            shrink={true}
                                             InputProps={{
                                                 style: {
                                                     backgroundColor: !theme ? '#1B1829' : Colors.background,
@@ -218,6 +219,7 @@ export default function Login() {
                                         <TextInput
                                             placeholder='******'
                                             label='senha'
+
                                             colorLabel={'#fff'}
                                             value={userData.senha || ''}
                                             onChange={handleChange}
@@ -225,6 +227,7 @@ export default function Login() {
                                             type="password"
                                             margin='none'
                                             InputProps={{
+                                                shrink: true,
                                                 style: {
                                                     backgroundColor: !theme ? '#1B1829' : Colors.background,
                                                     transition: 'background-color 1s',
@@ -235,6 +238,7 @@ export default function Login() {
                                                 }
                                             }}
                                             InputLabelProps={{
+                                                shrink: true,
                                                 style: {
                                                     color: !theme ? '#fff' : Colors.backgroundPrimary,
                                                     transition: 'background-color 1s',
@@ -359,7 +363,8 @@ export default function Login() {
                                 }
                             }} onClick={() => {
                                 setNewPass(false)
-                                setShowRedefinitionPass(false)}} />
+                                setShowRedefinitionPass(false)
+                            }} />
                         </Box>
                         <Box sx={{ flex: 1, display: `flex`, justifyContent: 'center' }}>
 
@@ -393,6 +398,7 @@ export default function Login() {
                                         name='email'
                                         margin='none'
                                         type="email"
+                                        shrink={true}
                                         InputProps={{
                                             style: {
                                                 backgroundColor: !theme ? '#1B1829' : Colors.background,
@@ -404,13 +410,15 @@ export default function Login() {
                                                 // // width: '280px',
                                             }
                                         }}
-                                        InputLabelProps={{
-                                            style: {
-                                                color: !theme ? '#fff' : Colors.backgroundPrimary,
-                                                transition: 'background-color 1s',
-                                                // width: '280px',
-                                            }
-                                        }}
+                                        InputLabelProps={
+                                            {
+                                                shrink: true,
+                                                style: {
+                                                    color: !theme ? '#fff' : Colors.backgroundPrimary,
+                                                    transition: 'background-color 1s',
+                                                    // width: '280px',
+                                                }
+                                            }}
                                     />
                                     {newPass && <TextInput
                                         placeholder='******'
@@ -418,6 +426,7 @@ export default function Login() {
                                         colorLabel={'#fff'}
                                         value={userData.senha || ''}
                                         onChange={handleChange}
+                                        shrink={true}
                                         name='senha'
                                         type="password"
                                         margin='none'

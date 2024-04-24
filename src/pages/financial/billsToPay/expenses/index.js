@@ -329,7 +329,7 @@ export default function ListBillsToPay(props) {
                     display: 'flex', gap: 1.8, alignItems: 'start', justifyContent: 'center',
                     flexDirection: 'column'
                 }}>
-                    <TextInput placeholder="Buscar pelo nome da conta" name='filterData' type="search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} value={filters?.search} sx={{ width: '100%' }} />
+                    <TextInput placeholder="Buscar pela descrição da despesa.." name='filterData' type="search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} value={filters?.search} sx={{ width: '100%' }} />
                     <Box sx={{
                         display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center',
                         flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }

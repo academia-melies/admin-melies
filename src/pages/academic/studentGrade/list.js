@@ -111,7 +111,7 @@ export default function StudentGrade(props) {
     const column = [
         { key: 'id_turma', label: 'ID' },
         { key: 'nome_turma', label: 'Nome' },
-        { key: 'periodo', label: 'Periodo' },
+        { key: 'periodo', label: 'Período' },
         // { key: 'inicio', label: 'Inicio', date: true },
         // { key: 'fim', label: 'Fim', date: true }
         { key: 'dt_criacao', label: 'Criado em', date: true },

@@ -1,5 +1,8 @@
 import { icons } from '../organisms/layout/Colors';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Box } from './Box';
+import CancelIcon from '@mui/icons-material/Cancel';
+import { Tooltip } from '@mui/material';
 
 export const FileInput = (props) => {
 
@@ -7,12 +10,12 @@ export const FileInput = (props) => {
         children,
         onClick = () => { },
         style = {},
-        left = false
+        left = false,
+        existsFiles = false
     } = props;
 
     return (
         <Box sx={{ ...styles.inputSection, alignItems: 'start', gap: 0.5, flexDirection: left && 'row-reverse', ...style }}>
-
             {children}
             <Box sx={{
                 ...styles.menuIcon,
@@ -23,7 +26,16 @@ export const FileInput = (props) => {
                     cursor: 'pointer'
                 }
             }} onClick={() => onClick(true)} />
-        </Box>
+            <div>
+                <Tooltip title={existsFiles ? 'Documento preenchido' : 'Sem documentos'}>
+                    {existsFiles ?
+                        <CheckCircleIcon style={{ color: 'green', fontSize: 17 }} />
+                        :
+                        <CancelIcon style={{ color: 'red', fontSize: 17 }} />
+                    }
+                </Tooltip>
+            </div>
+        </Box >
     )
 }
 
