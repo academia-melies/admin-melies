@@ -385,7 +385,7 @@ export default function EditClassSchedule(props) {
     return (
         <>
             <SectionHeader
-                perfil={classScheduleData?.modulo_cronograma > 0 ? `${classScheduleData?.modulo_cronograma}º módulo` : ''}
+                perfil={classScheduleData?.modulo_cronograma > 0 ? `${classScheduleData?.modulo_cronograma}º Módulo` : ''}
                 title={classScheduleData?.turma_id ? titleSchedule : 'Novo Cronograma'}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newClassSchedule ? handleCreate : handleEdit}

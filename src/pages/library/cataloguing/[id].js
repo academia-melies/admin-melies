@@ -475,7 +475,7 @@ export default function EditCatalogMaterial(props) {
                         {(materialData?.tipo_material === 'Livros | Obra de Referência' || materialData?.tipo_material === 'DVDs | Áudio | CD-ROM') && <TextInput disabled={!isPermissionEdit && true} name='volume' onChange={handleChange} value={materialData?.volume || ''} label='Volume:' sx={{ flex: 1, }} />}
                         {materialData?.tipo_material === 'Periódicos (Revistas | Gibis | Mangás | Folhetos)' && <TextInput disabled={!isPermissionEdit && true} name='periodicidade' onChange={handleChange} value={materialData?.periodicidade || ''} label='Periodicidade' sx={{ flex: 1, }} />}
                     </Box>
-                    <TextInput disabled={!isPermissionEdit && true} name='nota_conteudo' onChange={handleChange} value={materialData?.nota_conteudo || ''} label='Nota de conteudo:' sx={{ flex: 1, }}
+                    <TextInput disabled={!isPermissionEdit && true} name='nota_conteudo' onChange={handleChange} value={materialData?.nota_conteudo || ''} label='Nota de conteúdo:' sx={{ flex: 1, }}
                         multiline
                         maxRows={8}
                         rows={3}

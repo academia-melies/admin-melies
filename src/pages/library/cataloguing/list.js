@@ -201,7 +201,7 @@ export default function CatalogList(props) {
     return (
         <>
             <SectionHeader
-                title={`livros, DVDs e Periódicos (${cataloguesList?.filter(filter)?.length || '0'})`}
+                title={`Livros, DVDs e Periódicos (${cataloguesList?.filter(filter)?.length || '0'})`}
                 newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/library/${pathname}/new`)}
             />
