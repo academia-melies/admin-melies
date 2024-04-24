@@ -42,7 +42,7 @@ const menuApoio = [
    { id: '04', icon: '/icons/aulas_icon_home.png', text: 'Aulas por Turma', to: '/academic/classesDay', description: 'Consulte as aulas por turma, disciplina e módulo/semeste.' },
    { id: '05', icon: '/icons/cursos_icon_home.png', text: 'Cursos', to: '/administrative/course/list', description: 'Lista de todos os cursos da Faculdade.' },
    { id: '06', icon: '/icons/turmas_icon_home.png', text: 'Turmas', to: '/administrative/class/list', description: 'Lista de todas as turmas da Faculdade.' },
-   { id: '07', icon: '/icons/student_icon_home.png', text: 'Área do Aluno', to: '/academic/teacherArea/list', description: 'Acesse o resumo do aluno, para vizualizar suas notas, disciplinas matrículadas, atividades complementares, entre outras.' },
+   { id: '07', icon: '/icons/student_icon_home.png', text: 'Área do Aluno', to: '/academic/teacherArea/list', description: 'Acesse o resumo do aluno, para vizualizar suas notas, disciplinas matriculadas, atividades complementares, entre outras.' },
    { id: '08', icon: '/icons/cronograma_icon_home.png', text: 'Cronograma', to: '/administrative/classSchedule/list', description: 'Lista de cronogramas de aulas por módulo.' },
 ]
 
@@ -109,7 +109,14 @@ function Home() {
       setLoading(true)
       try {
          const response = await api.get(`/user/list/birthdates`)
-         const sorted = response?.data?.sort((a, b) => new Date(a?.nascimento) - new Date(b?.nascimento))
+         const sorted = response?.data?.sort((a, b) => {
+
+            const dayA = a?.nascimento?.split('-')[2]
+            const dayB = b?.nascimento?.split('-')[2]
+
+            return parseInt(dayA) - parseInt(dayB);
+         });
+         console.log(response?.data)
          setListBirthDay(sorted)
       } catch (error) {
          return error
@@ -561,7 +568,7 @@ function Home() {
                         borderRadius: 2,
                         boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
                      }}>
-                        <Text large bold style={{ textAlign: 'center' }}>Aniversáriantes de {formattedMonth} 🎉🎉</Text>
+                        <Text large bold style={{ textAlign: 'center' }}>Aniversariantes de {formattedMonth} 🎉🎉</Text>
                         <Box sx={{
                            display: 'flex', justifyContent: 'center', width: '100%',
                         }}>

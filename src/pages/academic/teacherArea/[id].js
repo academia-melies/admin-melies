@@ -506,7 +506,7 @@ export default function StudentData(props) {
                         }}
                         onClick={() => setShowBox({ ...showBox, frequency: !showBox?.frequency })}
                     >
-                        <Text bold>Frequencia/Presença:</Text>
+                        <Text bold>Frequência/Presença:</Text>
                         <Box
                             sx={{
                                 ...styles.menuIcon,

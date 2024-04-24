@@ -38,7 +38,7 @@ export default function ListTasks(props) {
     })
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [menuSelected, setMenuSelected] = useState('Atríbuidos a mim')
+    const [menuSelected, setMenuSelected] = useState('Atribuídos a mim')
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
@@ -48,7 +48,7 @@ export default function ListTasks(props) {
         actor: (item) => filters.actor === 'todos' || item.autor === filters.actor,
         type: (item) => filters.type === 'todos' || item.tipo_chamado === filters.type,
         taskVizualization: (item) => {
-            if (menuSelected === 'Atríbuidos a mim') {
+            if (menuSelected === 'Atribuídos a mim') {
                 const isResponsible = item.responsavel_chamado === user?.id;
                 const isParticipant = item?.participantes?.some(participante => participante.id_participante === user?.id);
 
@@ -216,7 +216,7 @@ export default function ListTasks(props) {
     ]
 
     const menusFilters = [
-        { id: '01', text: 'Atríbuidos a mim', value: 'Atríbuidos a mim' },
+        { id: '01', text: 'Atribuídos a mim', value: 'Atribuídos a mim' },
         { id: '01', text: 'Abertos por mim', value: 'Abertos por mim' },
         { id: '02', text: `Chamados da Área`, value: `Chamados da Área` },
         { id: '01', text: 'Pendente de responsável', value: 'Pendente de responsável' },
@@ -233,7 +233,7 @@ export default function ListTasks(props) {
             />
 
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
-                <Text light style={{ marginRight: 10 }}>vizualizar por:</Text>
+                <Text light style={{ marginRight: 10 }}>visualizar por:</Text>
                 {menusFilters?.map((item, index) => {
                     const menu = item?.value === menuSelected;
                     return (

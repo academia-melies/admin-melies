@@ -394,7 +394,7 @@ export default function CalendarComponent(props) {
 
     return (
         <>
-            <SectionHeader title={`Calendario Geral`} />
+            <SectionHeader title={`Calendário Geral`} />
             <ContentContainer>
                 <Box sx={{
                     display: 'flex', justifyContent: 'start', gap: 2, alignItems: { xs: 'star', sm: 'star', md: 'center', lg: 'center', xl: 'center' },
@@ -402,7 +402,7 @@ export default function CalendarComponent(props) {
                 }}>
                     <Box sx={{ display: 'flex', gap: 1.5 }}>
                         <SelectList clean={false} data={groupMonths} valueSelection={semesterSelect} onSelect={(value) => setSemesterSelect(value)}
-                            title="Vizualizar por:" filterOpition="value" sx={{ color: colorPalette.textColor, maxWidth: 280 }}
+                            title="Visualizar por:" filterOpition="value" sx={{ color: colorPalette.textColor, maxWidth: 280 }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
                         <TextInput

@@ -268,7 +268,7 @@ export default function EditCourse(props) {
     const groupModal = [
         { label: 'Presencial', value: 'Presencial' },
         { label: 'EAD', value: 'EAD' },
-        { label: 'Hibrido', value: 'Hibrido' },
+        { label: 'Híbrido', value: 'Híbrido' },
     ]
 
     const groupNivel = [

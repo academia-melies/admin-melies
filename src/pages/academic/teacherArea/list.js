@@ -174,7 +174,7 @@ export default function ListStudents(props) {
     return (
         <>
             <SectionHeader
-                title={`Alunos (${usersList.filter(filter)?.length})`}
+                title={`Histórico Acadêmico dos Alunos (${usersList.filter(filter)?.length})`}
             />
             <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>

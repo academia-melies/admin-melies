@@ -110,7 +110,7 @@ export default function FrequencyStudent(props) {
     const column = [
         { key: 'id_turma', label: 'ID' },
         { key: 'nome_turma', label: 'Nome' },
-        { key: 'periodo', label: 'Periodo' },
+        { key: 'periodo', label: 'Período' },
         { key: 'dt_criacao', label: 'Criado em', date: true }
     ];
 
