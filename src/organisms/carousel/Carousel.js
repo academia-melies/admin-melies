@@ -23,7 +23,7 @@ export const Carousel = (props) => {
             {data?.map((item, index) => (
                 <SwiperSlide key={`${item}-${index}`} style={{ ...style}}>
                     <Box sx={{
-                        backgroundSize: {xs: 'contain', xm: 'cover', md: 'cover', lg: 'cover'},
+                        backgroundSize: {xs: 'cover', xm: 'cover', md: 'cover', lg: 'cover'},
                         backgroundRepeat: 'no-repeat',
                         backgroundPosition: 'center',
                         backgroundImage: `url('${item?.location}')`,

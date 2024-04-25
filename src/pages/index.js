@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
-import { Box, Button, ContentContainer, Divider, Text, TextInput } from '../atoms'
-import { Carousel } from '../organisms'
+import { AnimatedNumbers, Box, Button, ContentContainer, Divider, Text, TextInput } from '../atoms'
+import { BirthDaysMonth, Carousel, ClassDays, MenuHomeList, Top15List } from '../organisms'
 import { useAppContext } from '../context/AppContext'
 import { icons } from '../organisms/layout/Colors'
 import { useEffect, useState } from 'react'
@@ -20,30 +20,9 @@ import "react-big-calendar/lib/addons/dragAndDrop"; // Recurso de arrastar e sol
 import Hamburger from 'hamburger-react'
 import Link from 'next/link'
 
-const inter = Inter({ subsets: ['latin'] })
-
 const backgroundHome = [
    { name: 'slide-1', location: 'https://adm-melies.s3.amazonaws.com/slide-3.jpg' },
    { name: 'slide-2', location: 'https://adm-melies.s3.amazonaws.com/slide-5.jpg' },
-]
-
-const menuProfessor = [
-   { id: '01', icon: '', text: 'Aulas do dia', to: '/academic/frequency/list', query: true },
-   { id: '02', icon: '', text: 'Lançar nota', to: '/academic/studentGrade/list', query: true },
-   { id: '03', icon: '', text: 'Atividade Complementar', to: '/', query: false },
-   { id: '04', icon: '', text: 'Calendário Acadêmico', to: '/administrative/calendar/calendar', query: false },
-   { id: '05', icon: '', text: 'Cronograma', to: '/administrative/classSchedule/list', query: false },
-]
-
-const menuApoio = [
-   { id: '01', icon: '/icons/users_icon_home.png', text: 'Usuários', to: '/administrative/users/list', description: 'Lista de todos os usuários, alunos e funcionários.' },
-   { id: '02', icon: '/icons/calendar_icon_home.png', text: 'Calendário', to: '/administrative/calendar/calendar', description: 'Calendário administrativo e acadêmico.' },
-   { id: '03', icon: '/icons/help-desk_icon_home.png', text: 'Chamados/Ajuda', to: '/suport/tasks/list', description: 'Abra uma chamado para tirar qualquer dúvida, ou obter ajuda ou suporte.' },
-   { id: '04', icon: '/icons/aulas_icon_home.png', text: 'Aulas por Turma', to: '/academic/classesDay', description: 'Consulte as aulas por turma, disciplina e módulo/semeste.' },
-   { id: '05', icon: '/icons/cursos_icon_home.png', text: 'Cursos', to: '/administrative/course/list', description: 'Lista de todos os cursos da Faculdade.' },
-   { id: '06', icon: '/icons/turmas_icon_home.png', text: 'Turmas', to: '/administrative/class/list', description: 'Lista de todas as turmas da Faculdade.' },
-   { id: '07', icon: '/icons/student_icon_home.png', text: 'Área do Aluno', to: '/academic/teacherArea/list', description: 'Acesse o resumo do aluno, para vizualizar suas notas, disciplinas matriculadas, atividades complementares, entre outras.' },
-   { id: '08', icon: '/icons/cronograma_icon_home.png', text: 'Cronograma', to: '/administrative/classSchedule/list', description: 'Lista de cronogramas de aulas por módulo.' },
 ]
 
 const accessButons = [
@@ -72,18 +51,14 @@ function Home() {
    const [listClassesDay, setListClassesDay] = useState([])
    const [events, setEvents] = useState([])
    const [tasksList, setTasksList] = useState([])
-   const [showMessageBirthDay, setShowMessageBirthDay] = useState(false)
-   const [idSelected, setIdSelected] = useState()
    const [showMenuHelp, setShowMenuHelp] = useState(false)
-   const [showClassDay, setShowClassDay] = useState({ active: false, item: {} })
-
+   const [indicatorsEnrollment, setIndicatorsEnrollment] = useState({})
+   const [lastEnrollments, setLastEnrollments] = useState([])
    const [showSections, setShowSections] = useState({
       legend: false,
       notification: false,
       tasks: false
    })
-   let isProfessor = user?.professor === 1 ? true : false;
-   const userId = user?.id;
 
    const router = useRouter();
    moment.locale("pt-br");
@@ -104,6 +79,38 @@ function Home() {
       }
    }
 
+   const handleLastEnrollments = async () => {
+      setLoading(true)
+      try {
+         const response = await api.get('/student/enrollments/lastEnrollments')
+         console.log(response.data)
+         if (response.status === 200) {
+            setLastEnrollments(response.data)
+         }
+      } catch (error) {
+         return error
+      } finally {
+         setLoading(false)
+      }
+   }
+
+
+
+
+   const handleIndicatorsEnrollment = async () => {
+      setLoading(true)
+      try {
+         const response = await api.get('/student/enrollments/indicator')
+         if (response.status === 200) {
+            setIndicatorsEnrollment(response.data)
+         }
+      } catch (error) {
+         return error
+      } finally {
+         setLoading(false)
+      }
+   }
+
 
    const handleBirthday = async () => {
       setLoading(true)
@@ -116,7 +123,6 @@ function Home() {
 
             return parseInt(dayA) - parseInt(dayB);
          });
-         console.log(response?.data)
          setListBirthDay(sorted)
       } catch (error) {
          return error
@@ -186,6 +192,8 @@ function Home() {
 
    useEffect(() => {
       handleImages(imagesList)
+      handleIndicatorsEnrollment()
+      handleLastEnrollments()
       handleBirthday()
       handleClassesDay()
       handleEvents()
@@ -363,7 +371,7 @@ function Home() {
             <meta charset="utf-8" />
             <link rel="icon" href="https://adm-melies.s3.amazonaws.com/logo_vermelho_linhas_brancas.svg" />
          </Head>
-         <Box sx={{ display: 'flex', marginTop: '50px', width: '96%' }}>
+         <Box sx={{ display: 'flex', marginTop: '50px', width: '100%' }}>
             <Carousel
                data={imagesList || backgroundHome}
                style={{
@@ -401,7 +409,10 @@ function Home() {
 
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 5 }}>
                      <Text light>Minhas Ferramentas:</Text>
-                     <Box sx={{ display: 'flex', gap: 2 }}>
+                     <Box sx={{
+                        display: 'flex', gap: 2,
+                        flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'nowrap', xl: 'nowrap' }
+                     }}>
                         {accessButons?.map((item, index) => {
                            const route = item?.link;
                            return (
@@ -467,266 +478,64 @@ function Home() {
                   <Divider distance={5} />
                </Box>
 
-               <Box sx={{ display: 'flex', gap: 2, marginTop: 5, }}>
+               <Box sx={{
+                  display: 'flex', gap: 2, marginTop: 5,
+                  flexDirection: { xs: 'column', xm: 'column', md: 'column', lg: 'column', xl: 'column' }
+               }}>
 
-                  <Box sx={{ padding: '30px 0px', width: '100%' }}>
+                  <Box sx={{
+                     display: 'flex', gap: 2, alignItems: 'center', width: '100%', borderRadius: 2,
+                     backgroundColor: colorPalette?.secondary, padding: '12px 15px'
+                  }}>
+                     <Box sx={{ ...styles.indicator, backgroundColor: colorPalette?.buttonColor + '33' }}>
+                        <Text title>Matrículas em Andamento:</Text>
+                        <AnimatedNumbers value={indicatorsEnrollment?.active} />
+                     </Box>
 
-                     {isProfessor ?
-                        (<Box sx={{
-                           display: 'flex', gap: 5, justifyContent: 'flex-start', flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' },
-                           display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' },
-                           width: '100%',
-                        }}>
-                           {menuProfessor?.map((group, index) => {
+                     <Box sx={{ ...styles.indicator, backgroundColor: colorPalette?.buttonColor + '33' }}>
+                        <Text title>Matrículas Concluídas:</Text>
+                        <AnimatedNumbers value={indicatorsEnrollment?.completed} />
+                     </Box>
 
-                              return (
-                                 <ContentContainer key={`${group}-${index}`} sx={{
-                                    alignItems: 'center', backgroundColor: colorPalette.buttonColor,
-                                    width: '100%',
-                                    transition: '.5s',
-                                    justifyContent: 'center',
-                                    "&:hover": {
-                                       cursor: 'pointer',
-                                       opacity: 0.8,
-                                       transform: 'scale(1.1)',
-                                    }
-                                 }} onClick={() => {
-                                    group.query ?
-                                       router.push(`${group.to}?id=${userId}`) : router.push(`${group.to}`)
-                                 }}>
-                                    <Text bold style={{ color: '#fff', transition: 'background-color 1s', textAlign: 'center' }}>
-                                       {group.text}
-                                    </Text>
-                                 </ContentContainer>
-                              )
-                           })}
-
-                        </Box>
-                        )
-                        :
-                        (
-                           <Box sx={{
-                              display: 'flex', gap: 2, justifyContent: 'flex-start',
-                              width: '100%',
-                              backgroundColor: 'none',
-                              flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' },
-                              display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' }
-                           }}>
-                              {menuApoio?.map((group, index) =>
-                                 <Box key={`${group}-${index}`} sx={{
-                                    alignItems: 'center',
-                                    display: 'flex',
-                                    backgroundColor: colorPalette.secondary,
-                                    flexDirection: 'row',
-                                    width: '100%',
-                                    padding: '20px 30px',
-                                    gap: 2,
-                                    borderRadius: 2,
-                                    transition: '.5s',
-                                    "&:hover": {
-                                       cursor: 'pointer',
-                                       opacity: 0.8,
-                                       transform: 'scale(1.03, 1.03)',
-                                    }
-                                 }} onClick={() => router.push(group.to)}>
-                                    <Box sx={{
-                                       ...styles.icon, backgroundImage: `url(${group?.icon})`,
-                                       width: 40, height: 40,
-                                       aspectRatio: '1/1',
-                                       flexDirection: 'column',
-                                       // filter: 'brightness(0) invert(1)',
-                                       transition: 'background-color 1s'
-                                    }} />
-                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
-                                       <Text bold title style={{ transition: 'background-color 1s', }}>
-                                          {group?.text}
-                                       </Text>
-                                       <Text light small>{group?.description}</Text>
-                                    </Box>
-                                 </Box>
-                              )}
-
-                           </Box>
-                        )
-                     }
+                     <Box sx={{ ...styles.indicator, backgroundColor: colorPalette?.buttonColor + '33' }}>
+                        <Text title>Total de Alunos:</Text>
+                        <AnimatedNumbers value={indicatorsEnrollment?.totalStudent} />
+                     </Box>
                   </Box>
-                  <Box gap={2} sx={{
-                     padding: { xs: '10px', xm: '30px 0px', md: '30px 0px', lg: '30px 0px' },
-                     flexDirection: 'column',
-                     width: '40%',
-                     display: 'flex', backgroundColor: 'none',
-                     boxShadow: 'none', position: 'relative', alignItems: 'start',
-                     justifyContent: 'start'
+
+                  <Box sx={{
+                     display: 'flex', gap: 2, flexDirection: { xs: 'column', xm: 'column', md: 'column', lg: 'row', xl: 'row' },
                   }}>
 
-                     <Box sx={{
-                        padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
-                        alignItems: 'start', gap: 1,
-                        height: 400, overflowY: 'auto',
-                        width: '100%',
-                        backgroundColor: colorPalette?.secondary,
-                        borderRadius: 2,
-                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
-                     }}>
-                        <Text large bold style={{ textAlign: 'center' }}>Aniversariantes de {formattedMonth} 🎉🎉</Text>
-                        <Box sx={{
-                           display: 'flex', justifyContent: 'center', width: '100%',
-                        }}>
-                           {listBirthDay.length > 0 ?
-                              <Box sx={{ borderRadius: '8px', width: '100%', display: 'flex', flexDirection: 'column', gap: 1, }}>
-                                 {listBirthDay?.map((item, index) => {
-                                    const date = item?.nascimento?.split('T')[0]
-                                    const day = date?.split('-')[2]
-                                    const month = date?.split('-')[1]
-                                    const functionFormatted = item?.funcao.split(' ')[0][0].toUpperCase()
-                                    const restoNome = item.funcao.slice(1)
-                                    const totalName = `${functionFormatted}${restoNome}`
-                                    return (
-                                       <Box key={index} sx={{
-                                          display: 'flex',
-                                          backgroundColor: colorPalette?.primary,
-                                          position: 'relative',
-                                          boxShadow: 'none',
-                                          alignItems: 'center', width: '100%', padding: '10px',
-                                          borderRadius: 2,
-                                          gap: 2
-                                       }}>
-                                          <Box sx={{
-                                             display: 'flex', borderRadius: 35, backgroundColor: colorPalette?.buttonColor,
-                                             height: { xs: 30, sm: 35, md: 35, lg: 35 },
-                                             width: { xs: 30, sm: 35, md: 35, lg: 35 },
-                                             padding: '5px 5px', position: 'absolute', alignItems: 'center', justifyContent: 'center', top: -1, left: 2, zIndex: 999
-                                          }}>
-                                             <Text bold xsmall style={{ color: '#fff' }}>{day}/{month}</Text>
-                                          </Box>
-                                          <Avatar src={item?.location} sx={{
-                                             height: { xs: 40, sm: 65, md: 65, lg: 65 },
-                                             width: { xs: 40, sm: 65, md: 65, lg: 65 },
-                                          }} variant="circular"
-                                          />
-                                          <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                             <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
-                                                <Text light bold>{item?.nome}</Text>
-                                                <Text light>{totalName || 'Nenhum(a)'}</Text>
-                                             </Box>
-                                          </Box>
-                                          <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
-                                             <Button small secondary text="Parabenizar" style={{ backgroundColor: colorPalette?.secondary }} onClick={() => {
-                                                setIdSelected(item?.id)
-                                                setShowMessageBirthDay(true)
-                                             }} />
-                                          </Box>
-                                       </Box>
-                                    )
-                                 })}
-                              </Box>
-                              :
-                              <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
-                                 <Text >Não existem aniversáriantes nesse mês</Text>
-                              </Box>
-                           }
-                        </Box>
-                        <Backdrop open={showMessageBirthDay} sx={{ zIndex: 9999 }}>
-                           <BirthDateDiaog idSelected={idSelected} setShowMessageBirthDay={setShowMessageBirthDay} userBirthDay={listBirthDay} />
-                        </Backdrop>
-                     </Box>
+
+                     <Top15List data={lastEnrollments} />
 
                      <Box sx={{
-                        padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
-                        alignItems: 'start', gap: 1,
-                        height: 400, overflowY: 'auto',
-                        backgroundColor: colorPalette?.secondary,
-                        borderRadius: 2,
-                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                        display: 'flex', gap: 2, flexDirection: 'column',
+                        width: { xs: '100%', xm: '100%', md: '100%', lg: '60%', xl: '60%' },
                      }}>
-                        <Text large bold style={{ textAlign: 'start' }}>Aulas do dia</Text>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                           {listClassesDay.length > 0 ?
-                              <Box sx={{ borderRadius: '8px', width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                 {listClassesDay?.map((item, index) => {
-                                    const date = formatDate(item?.dt_aula)
-                                    const classDay = `${item?.nome_turma} - ${item?.nome_disciplina}`;
-                                    return (
-                                       <Box key={index} sx={{
-                                          display: 'flex', flexDirection: 'column', position: 'relative',
-                                          "&:hover": {
-                                             opacity: 0.8,
-                                             cursor: 'pointer'
-                                          }
-                                       }} onClick={() => setShowClassDay({ active: true, item })}>
-                                          <ContentContainer row style={{
-                                             display: 'flex',
-                                             backgroundColor: colorPalette?.primary, boxShadow: 'none',
-                                             alignItems: 'center',
-                                             maxHeight: 100,
-                                             padding: '10px'
-                                          }}>
-                                             <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', width: '100%' }}>
-                                                <Box sx={{
-                                                   display: 'flex', borderRadius: 5,
-                                                   backgroundColor: colorPalette?.buttonColor,
-                                                   padding: '5px 5px',
-                                                   position: 'absolute',
-                                                   top: -5,  // Ajuste aqui para mover para cima
-                                                   right: -10, // Ajuste aqui para mover para a esquerda
-                                                   zIndex: 999
-                                                }}>
-                                                   <Text bold xsmall style={{ color: '#fff' }}>{date}</Text>
-                                                </Box>
-                                                <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                   <Text light bold>{classDay}</Text>
-                                                   <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
-                                                      {item?.professor1 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                         <Text bold>1º professor: </Text>
-                                                         <Text light>{item?.professor1}</Text>
-                                                      </Box>}
-                                                      {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                         <Text bold>2º professor: </Text>
-                                                         <Text light>{item?.professor2}</Text>
-                                                      </Box>}
-                                                   </Box>
-                                                </Box>
-                                             </Box>
-                                          </ContentContainer>
-                                       </Box>
-                                    )
-                                 })}
-                              </Box>
-                              :
-                              <Box sx={{ backgroundColor: colorPalette.secondary, padding: '5px 10px' }}>
-                                 <Text >Não existem aulas cadastradas hoje.</Text>
-                              </Box>
-                           }
+
+                        <Box sx={{ width: '100%' }}>
+                           <MenuHomeList />
                         </Box>
+
+                        <Box sx={{
+                           flexDirection: 'row',
+                           width: '100%',
+                           gap: 2,
+                           display: 'flex', backgroundColor: 'none',
+                           alignItems: 'start',
+                           justifyContent: 'start'
+                        }}>
+
+                           <BirthDaysMonth listBirthDay={listBirthDay} />
+                           <ClassDays listClassesDay={listClassesDay} />
+
+                        </Box>
+
                      </Box>
-                     <Backdrop open={showClassDay?.active} sx={{ zIndex: 9999 }}>
-                        <ContentContainer>
-                           <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4, alignItems: 'start', width: '100%', position: 'relative' }}>
-                              <Text bold>Descrição da Aula</Text>
-                              <Box sx={{
-                                 ...styles.menuIcon,
-                                 width: 17, height: 17,
-                                 backgroundImage: `url(${icons.gray_close})`,
-                                 transition: '.3s',
-                                 "&:hover": {
-                                    opacity: 0.8,
-                                    cursor: 'pointer'
-                                 }
-                              }} onClick={() => setShowClassDay({ active: false, item: {} })} />
-                           </Box>
-                           <Divider />
-                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 350 }}>
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                 <Text bold>Resumo da aula:</Text>
-                                 <Text>{showClassDay?.item?.resumo_aula}</Text>
-                              </Box>
-                              <Link href={showClassDay?.item?.link_aula || ''} target='_blank'>
-                                 <Button small disabled={showClassDay?.item?.link_aula ? false : true} text="Assistir aula" />
-                              </Link>
-                           </Box>
-                        </ContentContainer>
-                     </Backdrop>
                   </Box>
+
                </Box>
 
 
@@ -892,7 +701,8 @@ function Home() {
             </Box>
 
             <Box sx={{
-               position: 'fixed', width: showMenuHelp ? '22%' : 60, transition: '.5s', overflowY: 'auto', height: 1000, right: 0, display: { xs: 'none', xm: 'none', md: 'flex', lg: 'flex' }, flexDirection: 'column', flex: 1, paddingTop: 10, backgroundColor: colorPalette?.secondary, boxShadow: `rgba(149, 157, 165, 0.5) 0px 6px 24px`,
+               position: 'fixed', width: showMenuHelp ? '22%' : 60, transition: '.5s', overflowY: 'auto',
+               height: '100%', right: 0, display: { xs: 'none', xm: 'none', md: 'flex', lg: 'flex' }, flexDirection: 'column', flex: 1, paddingTop: 10, backgroundColor: colorPalette?.secondary, boxShadow: `rgba(149, 157, 165, 0.5) 0px 6px 24px`,
                top: 10, zIndex: 99999
             }}>
                <Box sx={{ position: 'absolute', left: 5, top: 40 }}>
@@ -1058,7 +868,7 @@ function Home() {
 
                      {showSections?.notification &&
                         <Box sx={{
-                           width: 200, height: notificationUser?.filter(item => item.ativo === 1)?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
+                           width: 200, height: notificationUser?.filter(item => item.ativo === 1)?.length > 5 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
                            scrollbarWidth: 'thin', // para navegadores que não são WebKit
                            scrollbarColor: 'transparent transparent', // para navegadores que não são WebKit
                            '&::-webkit-scrollbar': {
@@ -1140,7 +950,8 @@ function Home() {
                      </Box>
                      {showSections?.tasks &&
                         <Box sx={{
-                           width: 200, height: tasksList?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
+                           width: 200, maxHeight: tasksList?.length > 0 ? 400 : 'auto', overflowY: 'auto', width: '100%', gap: 1, display: 'flex', flexDirection: 'column',
+                           justifyContent: 'flex-start',
                            scrollbarWidth: 'thin', // para navegadores que não são WebKit
                            scrollbarColor: 'transparent transparent', // para navegadores que não são WebKit
                            '&::-webkit-scrollbar': {
@@ -1154,6 +965,9 @@ function Home() {
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, paddingBottom: 5 }}>
                                  {tasksList?.sort((a, b) => b.dt_criacao.localeCompare(a.dt_criacao))
                                     ?.map((item, index) => {
+                                       const actorTask = item?.autor?.split(' ')
+                                       const firstName = actorTask[0]
+                                       const lastName = actorTask[actorTask?.length - 1]
                                        return (
                                           <Box key={index} sx={{
                                              display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', padding: '12px 12px',
@@ -1167,13 +981,17 @@ function Home() {
                                           }}>
                                              <Box sx={{ display: 'flex', gap: 0.5 }}>
                                                 <Text small bold style={{ color: colorPalette?.buttonColor }}>Aberto por:</Text>
-                                                <Text small>{item?.autor}</Text>
+                                                <Text small>{firstName} {lastName}</Text>
                                              </Box>
                                              <Box sx={{
                                                 display: 'flex', gap: 0.5, flexDirection: 'column', flex: 1,
                                                 padding: '10px 0px'
                                              }}>
-                                                <Text small bold>{item?.titulo_chamado}</Text>
+                                                <Text small bold style={{
+                                                   maxWidth: 200,
+                                                   textOverflow: 'ellipsis',
+                                                   whiteSpace: 'nowrap',
+                                                }}>{item?.titulo_chamado}</Text>
                                                 <Text small style={{
                                                    textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                    overflow: 'hidden',
@@ -1203,111 +1021,6 @@ function Home() {
 }
 
 
-const BirthDateDiaog = ({ idSelected, setShowMessageBirthDay, userBirthDay }) => {
-
-   const { user, colorPalette, theme, setLoading, alert } = useAppContext()
-
-   const [message, setMessage] = useState('')
-   const nameBirthDay = userBirthDay?.filter(item => item.id === idSelected).map(item => item.nome)
-
-   const handlePushNotification = async (id) => {
-      setLoading(true)
-      try {
-         const notificationData = {
-            titulo: `Parabéns!!`,
-            menssagem: message,
-            vizualizado: 0,
-            usuario_env: user?.id
-         }
-         const response = await api.post(`/notification/create/${id}`, { notificationData })
-         if (response.status === 201) {
-            alert.success('Mensagem de parabéns enviada!')
-            setShowMessageBirthDay(false)
-         }
-      } catch (error) {
-         console.log(error)
-         return error
-      } finally {
-         setLoading(false)
-      }
-   }
-
-   return (
-
-      <ContentContainer style={{ position: 'relative', width: 415, maxHeight: 600, overflowY: 'auto', padding: 4, display: 'flex', flexDirection: 'column' }}>
-
-         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'start', width: '100%', position: 'relative' }}>
-            <Text bold>Escreva uma mensagem de aniversário</Text>
-            <Box sx={{
-               ...styles.menuIcon,
-               backgroundImage: `url(${icons.gray_close})`,
-               transition: '.3s',
-               zIndex: 999999999,
-               position: 'absolute',
-               right: 5,
-               top: 2,
-               "&:hover": {
-                  opacity: 0.8,
-                  cursor: 'pointer'
-               }
-            }} onClick={() => setShowMessageBirthDay(false)} />
-         </Box>
-
-         <Box sx={{ width: '100%', height: '1px', backgroundColor: '#eaeaea', margin: '0px 0px 20px 0px' }} />
-
-         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'start', flex: 1 }}>
-            <Text style={{ whiteSpace: 'nowrap' }}>Escreva sua mensagem de aniversário para</Text>
-            <Text style={{ whiteSpace: 'nowrap' }} bold>{nameBirthDay},</Text>
-            <Text style={{ whiteSpace: 'nowrap' }}>ou envie mensagens pré-montadas!</Text>
-         </Box>
-         <Box sx={{ display: 'flex', gap: 1.75, }}>
-            <TextInput
-               placeholder='Feliz aniversário!'
-               name='message'
-               onChange={(e) => setMessage(e.target.value)}
-               value={message || ''}
-               multiline
-               maxRows={6}
-               rows={3}
-               sx={{ flex: 1, }}
-            />
-         </Box>
-
-         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            <Text bold xsmall>Mensagens pré-montadas:</Text>
-            <Box sx={{
-               display: 'flex', padding: '5px 15px', border: `1px solid ${colorPalette?.buttonColor}`, alignItems: 'center', justifyContent: 'center', borderRadius: 8,
-               "&:hover": {
-                  opacity: 0.8,
-                  cursor: 'pointer'
-               }
-            }}
-               onClick={() => setMessage(`Feliz aniversário, ${nameBirthDay}. Te desejo muitas felicidades no seu dia!`)}>
-               <Text xsmall>Feliz aniversário, {nameBirthDay}. Te desejo muitas felicidades no seu dia!</Text>
-            </Box>
-            <Box sx={{
-               display: 'flex', padding: '5px 15px', border: `1px solid ${colorPalette?.buttonColor}`, alignItems: 'center', justifyContent: 'center', borderRadius: 8,
-               "&:hover": {
-                  opacity: 0.8,
-                  cursor: 'pointer'
-               }
-            }}
-               onClick={() => setMessage(`Parabéns, ${nameBirthDay}!`)}>
-               <Text xsmall>Parabéns, {nameBirthDay}!</Text>
-            </Box>
-         </Box>
-         <Divider distance={0} />
-         <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 1, alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-               <Button small text="Enviar" style={{ height: 30, width: 80 }} onClick={() => handlePushNotification(idSelected)} />
-               <Button secondary small text="Apagar" style={{ height: 30, width: 80 }} onClick={() => setMessage('')} />
-            </Box>
-         </Box>
-
-      </ContentContainer>
-   )
-}
-
 const styles = {
    icon: {
       backgroundSize: 'cover',
@@ -1325,6 +1038,16 @@ const styles = {
       width: 20,
       height: 20,
 
+   },
+   indicator: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '33%',
+      padding: '15px 20px',
+      gap: .5,
+      flexDirection: 'column',
+      borderRadius: 2,
    },
 }
 
