@@ -17,6 +17,10 @@ export { DialogUserEdit } from './userEdit/dialogEditUser'
 export { ContainDropzone } from './containDropzone/ContainDropzone'
 export { DeclarationPayment } from './contractStudent/declarationPayment'
 export { WorkChat } from './chat/chat'
+export { Top15List } from './top15/top15'
+export { BirthDaysMonth } from './birthDays/birthDays'
+export { ClassDays } from './classDays/classDays'
+export { MenuHomeList } from './menuHomeList/menuHomeList'
 
 
 

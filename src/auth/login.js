@@ -196,7 +196,6 @@ export default function Login() {
                                             name='email'
                                             margin='none'
                                             type="email"
-                                            shrink={true}
                                             InputProps={{
                                                 style: {
                                                     backgroundColor: !theme ? '#1B1829' : Colors.background,
@@ -209,6 +208,7 @@ export default function Login() {
                                                 }
                                             }}
                                             InputLabelProps={{
+                                                shrink: true,
                                                 style: {
                                                     color: !theme ? '#fff' : Colors.backgroundPrimary,
                                                     transition: 'background-color 1s',
@@ -219,7 +219,6 @@ export default function Login() {
                                         <TextInput
                                             placeholder='******'
                                             label='senha'
-
                                             colorLabel={'#fff'}
                                             value={userData.senha || ''}
                                             onChange={handleChange}
@@ -398,7 +397,6 @@ export default function Login() {
                                         name='email'
                                         margin='none'
                                         type="email"
-                                        shrink={true}
                                         InputProps={{
                                             style: {
                                                 backgroundColor: !theme ? '#1B1829' : Colors.background,
@@ -426,7 +424,6 @@ export default function Login() {
                                         colorLabel={'#fff'}
                                         value={userData.senha || ''}
                                         onChange={handleChange}
-                                        shrink={true}
                                         name='senha'
                                         type="password"
                                         margin='none'
@@ -441,6 +438,7 @@ export default function Login() {
                                             }
                                         }}
                                         InputLabelProps={{
+                                            shrink: true,
                                             style: {
                                                 color: !theme ? '#fff' : Colors.backgroundPrimary,
                                                 transition: 'background-color 1s',
