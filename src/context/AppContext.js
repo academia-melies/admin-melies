@@ -40,6 +40,7 @@ export const AppProvider = ({ children }) => {
         textColor: ''
     })
     const [theme, setTheme] = useState(true)
+    const [permissionTop15, setPermissionTop15] = useState(false)
     const [showConfirmationDialog, setShowConfirmationDialog] = useReducer(reducer, { active: false, position: { left: 0, top: 0 }, acceptAction: () => { } })
     const [alertData, setAlertData] = useState({
         active: false,
@@ -59,6 +60,19 @@ export const AppProvider = ({ children }) => {
     const latestVersion = filterVersions[filterVersions.length - 1];
     const latestVersionNumber = latestVersion?.version;
 
+    const groupArea = [
+        { label: 'Financeiro', value: 'Financeiro' },
+        // { label: 'Biblioteca', value: 'Biblioteca' },
+        { label: 'TI - Suporte', value: 'TI - Suporte' },
+        // { label: 'RH', value: 'RH' },
+        // { label: 'Marketing', value: 'Marketing' },
+        { label: 'Atendimento/Recepção', value: 'Atendimento/Recepção' },
+        { label: 'Secretaria', value: 'Secretaria' },
+        { label: 'Administrativo', value: 'Administrativo' },
+        { label: 'Diretoria', value: 'Diretoria' },
+        // { label: 'Acadêmica', value: 'Acadêmica' },
+    ]
+
     useEffect(() => {
         async function loadUserFromCookies() {
             setLoading(true)
@@ -74,6 +88,7 @@ export const AppProvider = ({ children }) => {
                         setUser({ ...userData, getPhoto })
                         setUserPermissions(userData?.permissoes)
                         setNotificationUser(notificationsData)
+                        setPermissionTop15(groupArea?.filter(i => i.value === userData?.area)?.length > 0)
                     }
                     else logout();
                 }
@@ -103,6 +118,7 @@ export const AppProvider = ({ children }) => {
                 api.defaults.headers.Authorization = `Bearer ${userData?.token}`
                 setUser({ ...userData, getPhoto });
                 setNotificationUser(notificationsData)
+                setPermissionTop15(groupArea?.filter(i => i.value === userData?.area)?.length > 0)
                 return response
             }
             return response
@@ -224,7 +240,8 @@ export const AppProvider = ({ children }) => {
                 latestVersion,
                 menuItemsList,
                 showVersion,
-                setShowVersion
+                setShowVersion,
+                permissionTop15
             }}
         >
             {children}

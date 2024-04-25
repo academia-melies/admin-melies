@@ -3,6 +3,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Box } from './Box';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { Tooltip } from '@mui/material';
+import { useAppContext } from '../context/AppContext';
 
 export const FileInput = (props) => {
 
@@ -14,13 +15,16 @@ export const FileInput = (props) => {
         existsFiles = false
     } = props;
 
+    const { theme } = useAppContext()
+
     return (
         <Box sx={{ ...styles.inputSection, alignItems: 'start', gap: 0.5, flexDirection: left && 'row-reverse', ...style }}>
             {children}
             <Box sx={{
                 ...styles.menuIcon,
-                backgroundImage: `url('${icons.file}')`,
+                backgroundImage: `url('/icons/anexar_icon.png')`,
                 transition: '.3s',
+                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                 "&:hover": {
                     opacity: 0.8,
                     cursor: 'pointer'

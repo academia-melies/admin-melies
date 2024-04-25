@@ -12,11 +12,14 @@ const menuApoio = [
     { id: '06', icon: '/icons/turmas_icon_home.png', text: 'Turmas', to: '/administrative/class/list', description: 'Lista de todas as turmas da Faculdade.' },
     { id: '07', icon: '/icons/student_icon_home.png', text: 'Área do Aluno', to: '/academic/teacherArea/list', description: 'Acesse o resumo do aluno, para vizualizar suas notas, disciplinas matriculadas, atividades complementares, entre outras.' },
     { id: '08', icon: '/icons/cronograma_icon_home.png', text: 'Cronograma', to: '/administrative/classSchedule/list', description: 'Lista de cronogramas de aulas por módulo.' },
+    { id: '09', icon: '/icons/partners.png', text: 'Conhecça as Equipes Méliès', to: '/administrative/classSchedule/list', description: 'Organograma dos funcionários, por área.' },
 ]
 
 export const MenuHomeList = (props) => {
-    const { colorPalette, theme } = useAppContext()
+    const { colorPalette, theme, user, permissionTop15 } = useAppContext()
     const router = useRouter();
+
+
 
     return (
         <Box sx={{
@@ -26,38 +29,42 @@ export const MenuHomeList = (props) => {
             flexWrap: { xs: 'wrap', xm: 'wrap', md: 'wrap', lg: 'wrap' },
             display: { xs: 'flex', xm: 'flex', md: 'flex', lg: 'flex' }
         }}>
-            {menuApoio?.map((group, index) =>
-                <Box key={`${group}-${index}`} sx={{
-                    alignItems: 'center',
-                    display: 'flex',
-                    backgroundColor: colorPalette.secondary,
-                    flexDirection: 'row',
-                    width: '31%',
-                    padding: '15px 20px',
-                    gap: 2,
-                    borderRadius: 2,
-                    transition: '.5s',
-                    "&:hover": {
-                        cursor: 'pointer',
-                        opacity: 0.8,
-                        transform: 'scale(1.03, 1.03)',
-                    }
-                }} onClick={() => router.push(group.to)}>
-                    <Box sx={{
-                        ...styles.icon, backgroundImage: `url(${group?.icon})`,
-                        width: 40, height: 40,
-                        aspectRatio: '1/1',
-                        flexDirection: 'column',
-                        // filter: 'brightness(0) invert(1)',
-                        transition: 'background-color 1s'
-                    }} />
-                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
-                        <Text bold style={{ transition: 'background-color 1s', }}>
-                            {group?.text}
-                        </Text>
-                        <Text light small>{group?.description}</Text>
+            {menuApoio?.map((group, index) => {
+
+                return (
+                    <Box key={`${group}-${index}`} sx={{
+                        alignItems: 'center',
+                        display: 'flex',
+                        backgroundColor: colorPalette.secondary,
+                        flexDirection: 'row',
+                        width: permissionTop15 ? '31%' : '100%',
+                        padding: permissionTop15 ? '15px 20px' : '25px 20px',
+                        gap: 2,
+                        borderRadius: 2,
+                        transition: '.5s',
+                        "&:hover": {
+                            cursor: 'pointer',
+                            opacity: 0.8,
+                            transform: 'scale(1.03, 1.03)',
+                        }
+                    }} onClick={() => router.push(group.to)}>
+                        <Box sx={{
+                            ...styles.icon, backgroundImage: `url(${group?.icon})`,
+                            width: 40, height: 40,
+                            aspectRatio: '1/1',
+                            flexDirection: 'column',
+                            // filter: 'brightness(0) invert(1)',
+                            transition: 'background-color 1s'
+                        }} />
+                        <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                            <Text bold large={!permissionTop15} style={{ transition: 'background-color 1s', }}>
+                                {group?.text}
+                            </Text>
+                            <Text light small={permissionTop15}>{group?.description}</Text>
+                        </Box>
                     </Box>
-                </Box>
+                )
+            }
             )}
         </Box>
     )
@@ -67,20 +74,20 @@ export const MenuHomeList = (props) => {
 
 const styles = {
     icon: {
-       backgroundSize: 'cover',
-       backgroundRepeat: 'no-repeat',
-       backgroundPosition: 'center center',
-       width: '15px',
-       height: '15px',
-       marginRight: '0px',
-       backgroundImage: `url('/favicon.svg')`,
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center center',
+        width: '15px',
+        height: '15px',
+        marginRight: '0px',
+        backgroundImage: `url('/favicon.svg')`,
     },
     menuIcon: {
-       backgroundSize: 'cover',
-       backgroundRepeat: 'no-repeat',
-       backgroundPosition: 'center',
-       width: 20,
-       height: 20,
- 
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 20,
+        height: 20,
+
     },
- }
+}

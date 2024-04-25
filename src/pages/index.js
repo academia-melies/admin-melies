@@ -44,7 +44,7 @@ const accessButons = [
 
 function Home() {
 
-   const { user, colorPalette, theme, setLoading, alert, notificationUser } = useAppContext()
+   const { user, colorPalette, theme, setLoading, alert, notificationUser, permissionTop15 } = useAppContext()
    const [menu, setMenu] = useState(menuItems)
    const [imagesList, setImagesList] = useState([])
    const [listBirthDay, setListBirthDay] = useState([])
@@ -63,7 +63,6 @@ function Home() {
    const router = useRouter();
    moment.locale("pt-br");
    const localizer = momentLocalizer(moment);
-
 
    const handleImages = async () => {
       setLoading(true)
@@ -484,7 +483,7 @@ function Home() {
                }}>
 
                   <Box sx={{
-                     display: 'flex', gap: 2, alignItems: 'center', width: '100%', borderRadius: 2,
+                     display: permissionTop15 ? 'flex' : 'none', gap: 2, alignItems: 'center', width: '100%', borderRadius: 2,
                      backgroundColor: colorPalette?.secondary, padding: '12px 15px'
                   }}>
                      <Box sx={{ ...styles.indicator, backgroundColor: colorPalette?.buttonColor + '33' }}>
@@ -508,20 +507,20 @@ function Home() {
                   }}>
 
 
-                     <Top15List data={lastEnrollments} />
+                     {permissionTop15 && <Top15List data={lastEnrollments} />}
 
                      <Box sx={{
-                        display: 'flex', gap: 2, flexDirection: 'column',
-                        width: { xs: '100%', xm: '100%', md: '100%', lg: '60%', xl: '60%' },
+                        display: 'flex', gap: 2, flexDirection: permissionTop15 ? 'column' : 'row',
+                        width: permissionTop15 ? { xs: '100%', xm: '100%', md: '100%', lg: '60%', xl: '60%' } : '100%',
                      }}>
 
                         <Box sx={{ width: '100%' }}>
-                           <MenuHomeList />
+                           <MenuHomeList/>
                         </Box>
 
                         <Box sx={{
-                           flexDirection: 'row',
-                           width: '100%',
+                           flexDirection: permissionTop15 ? 'row' : 'column',
+                           width: permissionTop15 ? '100%' : '60%',
                            gap: 2,
                            display: 'flex', backgroundColor: 'none',
                            alignItems: 'start',
