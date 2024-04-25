@@ -4309,8 +4309,8 @@ export default function EditUser() {
                                                         const typePdf = item?.name?.includes('pdf') || null;
                                                         const fileUrl = item?.location || item?.preview || '';
                                                         return (
-                                                            <Link href={fileUrl} target="_blank">
-                                                                <Box key={index} sx={{ display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} >
+                                                            <Link key={index} href={fileUrl} target="_blank">
+                                                                <Box sx={{ display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} >
                                                                     <Tooltip title={decodeURI(nameFile)}>
                                                                         <div>
                                                                             <Box sx={{ display: 'flex', gap: 1, padding: '0px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
