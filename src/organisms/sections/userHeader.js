@@ -197,7 +197,7 @@ const styles = {
         boxSizing: 'border-box',
         gap: 1,
         position: 'fixed',
-        zIndex: 9999999999,
+        zIndex: 999999,
     },
     menuIcon: {
         backgroundSize: 'cover',

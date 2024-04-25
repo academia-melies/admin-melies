@@ -420,9 +420,10 @@ export const LeftMenu = ({ }) => {
                   ...styles.icon,
                   backgroundImage: !theme ? `url('/icons/favicon_dark.png')` : `url('/favicon.png')`,
                   backgroundSize: 'contain',
-                  width: '107px',
-                  height: '51px',
-                  bottom: 70,
+                  width: '80px',
+                  height: '40px',
+                  left: 60,
+                  top: -30,
                   position: 'absolute',
                   "&:hover": {
                      cursor: 'pointer', opacity: 0.8
