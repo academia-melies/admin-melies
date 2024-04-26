@@ -162,7 +162,7 @@ export const CustomDropzone = (props) => {
                                                         backgroundRepeat: 'no-repeat',
                                                         backgroundPosition: 'center center',
                                                         borderRadius: campo === 'foto_perfil' ? '50%' : '',
-                                                        width: { xs: '100%', sm: 150, md: 150, lg: 500, xl: 500 },
+                                                        width: { xs: '100%', sm: 150, md: 150, lg: 250, xl: 250 },
                                                         aspectRatio: '1/1',
                                                     }}>
                                                 </Box>

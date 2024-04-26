@@ -14,6 +14,7 @@ import Link from "next/link"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import Dropzone from "react-dropzone"
 
 export default function EditUser() {
     const { setLoading, alert, colorPalette, user, matches, theme, setShowConfirmationDialog, menuItemsList, userPermissions } = useAppContext()
@@ -4448,133 +4449,194 @@ export const EditFile = (props) => {
             alert.success('Aqruivo removido.');
             callback(file)
         } else {
-            alert.error('Ocorreu um erro ao remover arquivo.');
+            alert.error('Ocorreu um erro ao remover arquivo.'); 
         }
         setLoading(false)
     }
 
+
+    const onDropFiles = async (files) => { 
+        try {
+            setLoading(true)
+            const uploadedFiles = files.map(file => ({
+                file,
+                id: getRandomInt(1, 999),
+                name: file.name,
+                preview: URL.createObjectURL(file),
+                progress: 0,
+                uploaded: false,
+                error: false,
+                url: null,
+                campo: campo,
+                tipo: 'documento usuario'
+            }));
+
+            setFilesDrop(prevFilesDrop => [...prevFilesDrop, ...uploadedFiles]);
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleRemoveFile = (file) => {
+        const arquivosAtualizados = fileUser.filter((uploadedFile) => uploadedFile.id !== file.id);
+        setFileUser(arquivosAtualizados);
+    };
+
     return (
-        <Backdrop open={open} sx={{ zIndex: 99999, }}>
-            <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll', }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 2, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
-                    <Text bold>{title}</Text>
+        <>
+            <Backdrop open={open} sx={{ zIndex: 99999, }}>
+                <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll', }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 2, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
+                        <Text bold>{title}</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 15,
+                            height: 15,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            onSet(false)
+                        }} />
+                    </Box>
+                    <Divider />
                     <Box sx={{
-                        ...styles.menuIcon,
-                        width: 15,
-                        height: 15,
-                        backgroundImage: `url(${icons.gray_close})`,
-                        transition: '.3s',
-                        zIndex: 999999999,
-                        "&:hover": {
-                            opacity: 0.8,
-                            cursor: 'pointer'
-                        }
-                    }} onClick={() => {
-                        onSet(false)
-                    }} />
-                </Box>
-                <Divider />
-                <Box sx={{
-                    display: 'flex',
-                    whiteSpace: 'wrap',
-                    maxWidth: 280,
-                    justifyContent: 'center'
-                }}>
-                    <Text>{text}</Text>
-                </Box>
-                {isPermissionEdit &&
-                    <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-                        <CustomDropzone
-                            txt={textDropzone}
-                            bgImage={bgImage}
-                            bgImageStyle={{
-                                backgroundImage: `url(${bgImage})`,
-                                backgroundSize: campo === 'foto_perfil' ? 'cover' : 'contain',
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center center',
-                                width: { xs: '100%', sm: 150, md: 150, lg: 150 },
-                                borderRadius: campo === 'foto_perfil' ? '50%' : '',
-                                aspectRatio: '1/1',
-                            }}
-                            callback={(file) => {
-                                if (file.status === 201) {
-                                    callback(file)
-                                }
-                            }}
-                            usuario_id={usuarioId}
-                            campo={campo}
-                            tipo={tipo}
-                            matricula_id={matriculaId}
-                            courseId={courseId}
-                        />
-
-                    </Box>}
-
-                {bgImage &&
-                    <>
-                        <Divider padding={0} />
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                <Button disabled={!isPermissionEdit && true} secondary small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
-                                    newUser ? callback("") : handleDeleteFile()
-                                }} />
-                            </Box>
-                        </Box>
-                    </>
-                }
-
-                {campo != 'foto_perfil' && fileData?.length > 0 &&
-                    <ContentContainer>
-                        <Text bold>Arquivos</Text>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-                            {fileData?.map((file, index) => {
-                                const typePdf = file?.name_file
-                                    ?.includes('pdf') || null;
-                                return (
-                                    <Box key={`${file}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px' }}>
-
-                                        <Link style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }} href={file.location} target="_blank">
-                                            <Box
-                                                sx={{
-                                                    backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : file?.location}')`,
-                                                    backgroundSize: 'contain',
-                                                    backgroundRepeat: 'no-repeat',
-                                                    backgroundPosition: 'center center',
-                                                    width: { xs: '100%', sm: 150, md: 150, lg: 150 },
-                                                    aspectRatio: '1/1',
-                                                }}>
+                        display: 'flex',
+                        whiteSpace: 'wrap',
+                        maxWidth: 280,
+                        justifyContent: 'center'
+                    }}>
+                        <Text>{text}</Text>
+                    </Box>
+                    {isPermissionEdit &&
+                        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+                            {!newUser ?
+                                <CustomDropzone
+                                    txt={textDropzone}
+                                    bgImage={bgImage}
+                                    bgImageStyle={{
+                                        backgroundImage: `url(${bgImage})`,
+                                        backgroundSize: campo === 'foto_perfil' ? 'cover' : 'contain',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center center',
+                                        width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                                        borderRadius: campo === 'foto_perfil' ? '50%' : '',
+                                        aspectRatio: '1/1',
+                                    }}
+                                    callback={(file) => {
+                                        if (file.status === 201) {
+                                            callback(file)
+                                        }
+                                    }}
+                                    usuario_id={usuarioId}
+                                    campo={campo}
+                                    tipo={tipo}
+                                    matricula_id={matriculaId}
+                                    courseId={courseId}
+                                />
+                                : <Dropzone
+                                    accept={{ 'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'], 'image/png': ['.png', '.PNG'], 'application/pdf': ['.pdf'] }}
+                                    onDrop={onDropFiles}
+                                    addRemoveLinks={true}
+                                    removeLink={(file) => handleRemoveFile(file)}
+                                >
+                                    {({ getRootProps, getInputProps, isDragActive, isDragReject }) => (
+                                        <Box {...getRootProps()}
+                                            sx={{
+                                                // ...styles.dropZoneContainer,
+                                                // border: `2px dashed ${colorPalette.primary + 'aa'}`,
+                                                // backgroundColor: isDragActive && !isDragReject ? colorPalette.secondary : isDragReject ? '#ff000042' : colorPalette.primary,
+                                            }}
+                                        >
+                                            <input {...getInputProps()} />
+                                            <Box sx={{ textAlign: 'center', display: 'flex', fontSize: 12, gap: 0, alignItems: 'center' }}>
+                                                <Button small style={{ height: 25, borderRadius: '6px 0px 0px 6px' }} text="Selecionar" />
+                                                <Box sx={{ textAlign: 'center', display: 'flex', border: `1px solid ${(theme ? '#eaeaea' : '#404040')}`, padding: '0px 15px', maxWidth: 400, height: 25, alignItems: 'center' }}>
+                                                    <Text light small>{textDropzone}</Text>
+                                                </Box>
                                             </Box>
-                                            {isPermissionEdit && <Box sx={{
-                                                backgroundSize: "cover",
-                                                backgroundRepeat: "no-repeat",
-                                                backgroundPosition: "center",
-                                                width: 22,
-                                                height: 22,
-                                                backgroundImage: `url(/icons/remove_icon.png)`,
-                                                position: 'absolute',
-                                                top: -5,
-                                                right: -5,
-                                                transition: ".3s",
-                                                "&:hover": {
-                                                    opacity: 0.8,
-                                                    cursor: "pointer",
-                                                },
-                                                zIndex: 9999999,
-                                            }} onClick={(event) => {
-                                                event.preventDefault()
-                                                handleDeleteFile(file)
-                                            }} />}
-                                        </Link>
-                                        <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            {decodeURIComponent(file?.name_file)}
-                                        </Text>
-                                    </Box>
-                                )
-                            })}
-                        </Box>
-                    </ContentContainer>
-                }
-            </ContentContainer>
-        </Backdrop>
+                                        </Box>
+                                    )}
+                                </Dropzone>}
+
+                        </Box>}
+
+                    {bgImage &&
+                        <>
+                            <Divider padding={0} />
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
+                                    <Button disabled={!isPermissionEdit && true} secondary small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
+                                        newUser ? callback("") : handleDeleteFile()
+                                    }} />
+                                </Box>
+                            </Box>
+                        </>
+                    }
+
+                    {campo != 'foto_perfil' && fileData?.length > 0 &&
+                        <ContentContainer>
+                            <Text bold>Arquivos</Text>
+                            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                                {fileData?.map((file, index) => {
+                                    const typePdf = file?.name_file
+                                        ?.includes('pdf') || null;
+                                    return (
+                                        <Box key={`${file}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px' }}>
+
+                                            <Link
+                                                style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}
+                                                href={file?.location || ''} target="_blank">
+                                                <Box
+                                                    sx={{
+                                                        backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : file?.location}')`,
+                                                        backgroundSize: 'contain',
+                                                        backgroundRepeat: 'no-repeat',
+                                                        backgroundPosition: 'center center',
+                                                        width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                                                        aspectRatio: '1/1',
+                                                    }}>
+                                                </Box>
+                                                {isPermissionEdit && <Box sx={{
+                                                    backgroundSize: "cover",
+                                                    backgroundRepeat: "no-repeat",
+                                                    backgroundPosition: "center",
+                                                    width: 22,
+                                                    height: 22,
+                                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                                    position: 'absolute',
+                                                    top: -5,
+                                                    right: -5,
+                                                    transition: ".3s",
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: "pointer",
+                                                    },
+                                                    zIndex: 9999999,
+                                                }} onClick={(event) => {
+                                                    event.preventDefault()
+                                                    handleDeleteFile(file)
+                                                }} />}
+                                            </Link>
+                                            <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {decodeURIComponent(file?.name_file)}
+                                            </Text>
+                                        </Box>
+                                    )
+                                })}
+                            </Box>
+                        </ContentContainer>
+                    }
+                </ContentContainer>
+            </Backdrop>
+        </>
     )
 }
