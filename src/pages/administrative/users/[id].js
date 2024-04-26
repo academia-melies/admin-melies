@@ -1710,6 +1710,7 @@ export default function EditUser() {
         { label: 'Especialista C', value: 'Especialista C' },
         { label: 'Especialista D', value: 'Especialista D' },
         { label: 'Especialista E', value: 'Especialista E' },
+        { label: 'Especialista F', value: 'Especialista F' },
         { label: 'Mestre A', value: 'Mestre A' },
         { label: 'Mestre B', value: 'Mestre B' },
         { label: 'Mestre C', value: 'Mestre C' },
