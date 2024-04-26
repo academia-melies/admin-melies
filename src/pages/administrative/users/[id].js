@@ -8,7 +8,7 @@ import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, TableOffic
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
 import { createContract, createEnrollment, createUser, deleteFile, deleteUser, editContract, editeEnrollment, editeUser } from "../../../validators/api-requests"
-import { emailValidator, formatCEP, formatCPF, formatDate, formatRg, formatTimeStamp } from "../../../helpers"
+import { emailValidator, formatCEP, formatCPF, formatDate, formatRg, formatTimeStamp, getRandomInt } from "../../../helpers"
 import { SelectList } from "../../../organisms/select/SelectList"
 import Link from "next/link"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
@@ -85,7 +85,7 @@ export default function EditUser() {
         nascimento: null,
         tipo_deficiencia: null,
         nome_emergencia: null,
-        foto_perfil_id: bgPhoto?.location || fileCallback?.filePreview || null,
+        foto_perfil_id: bgPhoto?.location || fileCallback?.preview || null,
         nome_social: null
     })
     const [contract, setContract] = useState({
@@ -339,20 +339,6 @@ export default function EditUser() {
         }
     }
 
-
-    const getPhotoNewUser = async () => {
-        setLoading(true)
-        try {
-            const response = await api.get(`/photo/${fileCallback?.id_foto_perfil}`)
-            const { data } = response
-            setBgPhoto(data)
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
     const getFileUser = async () => {
         try {
             const response = await api.get(`/files/${id}`)
@@ -415,12 +401,6 @@ export default function EditUser() {
             await handleItems();
         })();
     }, [id])
-
-    useEffect(() => {
-        if (newUser && fileCallback?.id_foto_perfil) {
-            getPhotoNewUser()
-        }
-    }, [fileCallback])
 
     async function findCEP(cep) {
         setLoading(true)
@@ -1030,7 +1010,26 @@ export default function EditUser() {
                 if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
                     await api.post(`/enrollment/student/register/${data?.userId}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
                 }
-                if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
+                // if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
+                if (fileCallback) {
+                    const formData = new FormData();
+                    formData.append('file', fileCallback?.file, encodeURIComponent(fileCallback?.name));
+                    let query = `?usuario_id=${data?.userId}`;
+                    if (data?.userId) query += `&campo=${data?.userId}`;
+                    if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
+                    await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+                }
+                if (filesUser?.length > 0) {
+                    for (const uploadedFile of filesUser) {
+                        const formData = new FormData();
+                        formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
+                        let query = `?usuario_id=${data?.userId}`;
+                        if (data?.userId) query += `&campo=${data?.userId}`;
+                        if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
+                        if (uploadedFile?.matricula_id) query += `&matricula_id=${uploadedFile?.matricula_id}`;
+                        await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+                    }
+                }
                 if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
                 if (newUser && filesUser) { await api.patch(`/file/editFiles/${data?.userId}`, { filesUser }); }
                 if (permissionPerfil) {
@@ -1962,6 +1961,8 @@ export default function EditUser() {
                             </Box>
 
                             <EditFile
+                                setFilesUser={setFilesUser}
+                                filesUser={filesUser}
                                 isPermissionEdit={isPermissionEdit}
                                 columnId="id_foto_perfil"
                                 open={showEditFile.photoProfile}
@@ -1969,6 +1970,7 @@ export default function EditUser() {
                                 onSet={(set) => {
                                     setShowEditFiles({ ...showEditFile, photoProfile: set })
                                 }}
+                                setFileCallback={setFileCallback}
                                 title='Foto de perfil'
                                 text='Para alterar sua foto de perfil, clique ou arraste no local desejado.'
                                 textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
@@ -1976,7 +1978,7 @@ export default function EditUser() {
                                 usuarioId={id}
                                 campo='foto_perfil'
                                 tipo='foto'
-                                bgImage={bgPhoto?.location || fileCallback?.filePreview}
+                                bgImage={bgPhoto?.location || fileCallback?.preview}
                                 callback={(file) => {
                                     if (file.status === 201 || file.status === 200) {
                                         setFileCallback({
@@ -1996,7 +1998,7 @@ export default function EditUser() {
                                 width: 300,
                                 gap: 2
                             }}>
-                                <Avatar src={bgPhoto?.location || fileCallback?.filePreview} sx={{
+                                <Avatar src={bgPhoto?.location || fileCallback?.preview} sx={{
                                     height: 'auto',
                                     borderRadius: '16px',
                                     width: { xs: '100%', sm: 150, md: 200, lg: 300 },
@@ -2050,6 +2052,8 @@ export default function EditUser() {
                                         </FileInput>
                                     }
                                     <EditFile
+                                        setFilesUser={setFilesUser}
+                                        filesUser={filesUser}
                                         isPermissionEdit={isPermissionEdit}
                                         columnId="id_doc_usuario"
                                         open={showEditFile.cpf}
@@ -2076,6 +2080,8 @@ export default function EditUser() {
                                     <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, cert_nascimento: value })} existsFiles={filesUser?.filter((file) => file.campo === 'nascimento').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Nascimento' name='nascimento' onChange={handleChange} type="date" value={(userData?.nascimento)?.split('T')[0] || ''} label='Nascimento *' sx={{ flex: 1, }} />
                                         <EditFile
+                                            setFilesUser={setFilesUser}
+                                            filesUser={filesUser}
                                             isPermissionEdit={isPermissionEdit}
                                             columnId="id_doc_usuario"
                                             open={showEditFile.cert_nascimento}
@@ -2358,6 +2364,8 @@ export default function EditUser() {
                                         </FileInput>
                                     }
                                     <EditFile
+                                        setFilesUser={setFilesUser}
+                                        filesUser={filesUser}
                                         isPermissionEdit={isPermissionEdit}
                                         columnId="id_doc_usuario"
                                         open={showEditFile.cpf}
@@ -2386,6 +2394,8 @@ export default function EditUser() {
                                             existsFiles={filesUser?.filter((file) => file.campo === 'estrangeiro').length > 0}>
                                             <TextInput disabled={!isPermissionEdit && true} placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />
                                             <EditFile
+                                                setFilesUser={setFilesUser}
+                                                filesUser={filesUser}
                                                 isPermissionEdit={isPermissionEdit}
                                                 columnId="id_doc_usuario"
                                                 open={showEditFile.foreigner}
@@ -2428,6 +2438,8 @@ export default function EditUser() {
                                         existsFiles={filesUser?.filter((file) => file.campo === 'rg').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
                                         <EditFile
+                                            setFilesUser={setFilesUser}
+                                            filesUser={filesUser}
                                             isPermissionEdit={isPermissionEdit}
                                             columnId="id_doc_usuario"
                                             open={showEditFile.rg}
@@ -2461,6 +2473,8 @@ export default function EditUser() {
                                         existsFiles={filesUser?.filter((file) => file.campo === 'titulo').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
                                         <EditFile
+                                            setFilesUser={setFilesUser}
+                                            filesUser={filesUser}
                                             isPermissionEdit={isPermissionEdit}
                                             columnId="id_doc_usuario"
                                             open={showEditFile.titleDoc}
@@ -2567,6 +2581,8 @@ export default function EditUser() {
                                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente-${index}`} onChange={(e) => handleChangeDependentArray(e, 'dt_nasc_dependente', dep?.id_dependente)} type="date" value={(dep.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
                                                 </FileInput>
                                                 <EditFile
+                                                    setFilesUser={setFilesUser}
+                                                    filesUser={filesUser}
                                                     isPermissionEdit={isPermissionEdit}
                                                     columnId="id_doc_usuario"
                                                     open={showEditFile.cpf_dependente}
@@ -2666,6 +2682,8 @@ export default function EditUser() {
                                     }
                                     } />
                                     <EditFile
+                                        setFilesUser={setFilesUser}
+                                        filesUser={filesUser}
                                         isPermissionEdit={isPermissionEdit}
                                         columnId="id_doc_usuario"
                                         open={showEditFile.schoolRecord}
@@ -2705,6 +2723,8 @@ export default function EditUser() {
                                         existsFiles={filesUser?.filter((file) => file.campo === 'comprovante residencia').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
                                         <EditFile
+                                            setFilesUser={setFilesUser}
+                                            filesUser={filesUser}
                                             isPermissionEdit={isPermissionEdit}
                                             columnId="id_doc_usuario"
                                             open={showEditFile.address}
@@ -2801,6 +2821,8 @@ export default function EditUser() {
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='CTPS' name='ctps' onChange={handleChangeContract} value={contract?.ctps || ''} label='CTPS' sx={{ flex: 1, }} />
 
                                         <EditFile
+                                            setFilesUser={setFilesUser}
+                                            filesUser={filesUser}
                                             isPermissionEdit={isPermissionEdit}
                                             columnId="id_doc_usuario"
                                             open={showEditFile.ctps}
@@ -3362,6 +3384,8 @@ export default function EditUser() {
                                                                         }
                                                                     }} />
                                                                     <EditFile
+                                                                        setFilesUser={setFilesUser}
+                                                                        filesUser={filesUser}
                                                                         isPermissionEdit={isPermissionEdit}
                                                                         columnId="id_contrato_aluno"
                                                                         open={showEditFile.contractStudent}
@@ -3647,6 +3671,8 @@ export default function EditUser() {
                                                                 </Box>
 
                                                                 <EditFile
+                                                                    setFilesUser={setFilesUser}
+                                                                    filesUser={filesUser}
                                                                     isPermissionEdit={isPermissionEdit}
                                                                     columnId="id_doc_usuario"
                                                                     open={showEditFile.enem}
@@ -4433,10 +4459,13 @@ export const EditFile = (props) => {
         columnId = '',
         matriculaId,
         isPermissionEdit,
-        courseId
+        courseId,
+        setFilesUser,
+        filesUser,
+        setFileCallback
     } = props
 
-    const { alert, setLoading, matches } = useAppContext()
+    const { alert, setLoading, matches, theme } = useAppContext()
 
     const handleDeleteFile = async (files) => {
         setLoading(true)
@@ -4449,13 +4478,13 @@ export const EditFile = (props) => {
             alert.success('Aqruivo removido.');
             callback(file)
         } else {
-            alert.error('Ocorreu um erro ao remover arquivo.'); 
+            alert.error('Ocorreu um erro ao remover arquivo.');
         }
         setLoading(false)
     }
 
 
-    const onDropFiles = async (files) => { 
+    const onDropFiles = async (files) => {
         try {
             setLoading(true)
             const uploadedFiles = files.map(file => ({
@@ -4468,10 +4497,18 @@ export const EditFile = (props) => {
                 error: false,
                 url: null,
                 campo: campo,
-                tipo: 'documento usuario'
+                tipo: tipo,
+                usuario_id: usuarioId,
+                matricula_id: matriculaId,
+                courseId: courseId
             }));
 
-            setFilesDrop(prevFilesDrop => [...prevFilesDrop, ...uploadedFiles]);
+            const [filePerfil] = uploadedFiles;
+            if (campo === 'foto_perfil') {
+                setFileCallback(filePerfil);
+            }
+
+            setFilesUser(prevFilesDrop => [...prevFilesDrop, ...uploadedFiles]);
         } catch (error) {
             console.log(error)
             return error
@@ -4482,14 +4519,17 @@ export const EditFile = (props) => {
 
 
     const handleRemoveFile = (file) => {
-        const arquivosAtualizados = fileUser.filter((uploadedFile) => uploadedFile.id !== file.id);
-        setFileUser(arquivosAtualizados);
+        const arquivosAtualizados = filesUser.filter((uploadedFile) => uploadedFile.id !== file.id);
+        setFilesUser(arquivosAtualizados);
     };
 
     return (
         <>
             <Backdrop open={open} sx={{ zIndex: 99999, }}>
-                <ContentContainer style={{ ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll', }}>
+                <ContentContainer style={{
+                    ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll',
+                    maxWidth: 550,
+                }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 2, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
                         <Text bold>{title}</Text>
                         <Box sx={{
@@ -4511,7 +4551,7 @@ export const EditFile = (props) => {
                     <Box sx={{
                         display: 'flex',
                         whiteSpace: 'wrap',
-                        maxWidth: 280,
+                        // maxWidth: 280,
                         justifyContent: 'center'
                     }}>
                         <Text>{text}</Text>
@@ -4572,11 +4612,30 @@ export const EditFile = (props) => {
                     {bgImage &&
                         <>
                             <Divider padding={0} />
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 2 }}>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column' }}>
+
+                                {newUser &&
+                                    <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Text bold>Atual</Text>
+                                        <Avatar src={bgImage} sx={{
+                                            height: 'auto',
+                                            borderRadius: '16px',
+                                            width: { xs: 150, sm: 150, md: 200, lg: 250 },
+                                            aspectRatio: '1/1',
+                                        }} variant="square" />
+                                    </Box>
+                                }
                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
-                                    <Button disabled={!isPermissionEdit && true} secondary small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }} onClick={() => {
-                                        newUser ? callback("") : handleDeleteFile()
-                                    }} />
+                                    <Button disabled={!isPermissionEdit && true} secondary small text='Remover' style={{ padding: '5px 10px 5px 10px', width: 120 }}
+                                        onClick={() => {
+                                            if (newUser) {
+                                                callback("")
+                                                setFileCallback({})
+                                            } else {
+                                                handleDeleteFile()
+                                            }
+                                        }} />
                                 </Box>
                             </Box>
                         </>
@@ -4585,19 +4644,21 @@ export const EditFile = (props) => {
                     {campo != 'foto_perfil' && fileData?.length > 0 &&
                         <ContentContainer>
                             <Text bold>Arquivos</Text>
-                            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, overflow: 'auto', padding: '15px 10px' }}>
                                 {fileData?.map((file, index) => {
                                     const typePdf = file?.name_file
                                         ?.includes('pdf') || null;
+                                    const fileName = file?.name_file || file?.name
+                                    const fileLocation = file?.location || file?.preview
                                     return (
                                         <Box key={`${file}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px' }}>
 
                                             <Link
                                                 style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}
-                                                href={file?.location || ''} target="_blank">
+                                                href={fileLocation || ''} target="_blank">
                                                 <Box
                                                     sx={{
-                                                        backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : file?.location}')`,
+                                                        backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : fileLocation}')`,
                                                         backgroundSize: 'contain',
                                                         backgroundRepeat: 'no-repeat',
                                                         backgroundPosition: 'center center',
@@ -4623,11 +4684,15 @@ export const EditFile = (props) => {
                                                     zIndex: 9999999,
                                                 }} onClick={(event) => {
                                                     event.preventDefault()
-                                                    handleDeleteFile(file)
+                                                    if (newUser) {
+                                                        handleRemoveFile(file)
+                                                    } else {
+                                                        handleDeleteFile(file)
+                                                    }
                                                 }} />}
                                             </Link>
                                             <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {decodeURIComponent(file?.name_file)}
+                                                {decodeURIComponent(fileName)}
                                             </Text>
                                         </Box>
                                     )
