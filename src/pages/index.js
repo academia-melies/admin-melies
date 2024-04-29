@@ -134,6 +134,7 @@ function Home() {
       setLoading(true)
       try {
          const response = await api.get(`/classDay/month/now`)
+         console.log(response)
          if (response.status === 200) {
             setListClassesDay(response?.data)
          }

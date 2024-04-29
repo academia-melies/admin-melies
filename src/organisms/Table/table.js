@@ -1,10 +1,11 @@
 import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { formatDate, formatTimeStamp } from "../../helpers";
 import { Box, Button, Text } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
 import { icons } from "../layout/Colors";
+import { PaginationTable } from "../pagination/Pagination";
 
 export const Table_V1 = (props) => {
 
@@ -36,6 +37,8 @@ export const Table_V1 = (props) => {
     const router = useRouter();
     const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
     const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const handleRowClick = (id) => {
         if (route) {
@@ -71,18 +74,24 @@ export const Table_V1 = (props) => {
         currency: 'BRL'
     });
 
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
     return (
         <>
-            <Box sx={{ backgroundColor: colorPalette.primary, transition: 'background-color 1s', ...sx }}>
+            <Box sx={{
+                backgroundColor: colorPalette.secondary, transition: 'background-color 1s',
+                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, ...sx
+            }}>
                 <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
                             <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
                                 {columns.map((column) => (
                                     <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>
-                                       
-                                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                        <Text bold>{column.label}</Text>
+
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                            <Text bold>{column.label}</Text>
                                             {onFilter &&
                                                 <Box sx={{
                                                     ...styles.menuIcon,
@@ -114,7 +123,7 @@ export const Table_V1 = (props) => {
                             </TableRow>
                         </TableHead>
                         <TableBody sx={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
-                            {data?.map((row, index) => (
+                            {data?.slice(startIndex, endIndex)?.map((row, index) => (
                                 <TableRow key={row.id} onClick={() => {
                                     routerPush ? handleRowClick(row[columnId])
                                         : onSelect(row[columnId])
@@ -227,6 +236,10 @@ export const Table_V1 = (props) => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+
+                <PaginationTable data={data}
+                    page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+                />
             </Box >
         </>
     )

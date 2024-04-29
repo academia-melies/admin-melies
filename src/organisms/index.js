@@ -21,6 +21,7 @@ export { Top15List } from './top15/top15'
 export { BirthDaysMonth } from './birthDays/birthDays'
 export { ClassDays } from './classDays/classDays'
 export { MenuHomeList } from './menuHomeList/menuHomeList'
+export { PaginationTable } from './pagination/Pagination'
 
 
 

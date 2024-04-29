@@ -210,7 +210,8 @@ export const uploadFile = async (data) => {
       taskId,
       matricula_id = null,
       material_id = null,
-      courseId = null
+      courseId = null,
+      institutionId
    } = data;
 
    let query = `?usuario_id=${usuario_id}`;
@@ -224,6 +225,8 @@ export const uploadFile = async (data) => {
    if (matricula_id) query += `&matricula_id=${matricula_id}`;
    if (material_id) query += `&material_id=${material_id}`;
    if (courseId) query += `&courseId=${courseId}`;
+   if (institutionId) query += `&institutionId=${institutionId}`;
+   
 
    try {
       if (images) {
@@ -253,6 +256,11 @@ export const uploadFile = async (data) => {
 
       if (courseId) {
          const response = await api.post(`/course/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+         return response
+      }
+
+      if (institutionId) {
+         const response = await api.post(`/institution/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
          return response
       }
 

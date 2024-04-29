@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
-import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
+import { CheckBoxComponent, PaginationTable, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
@@ -13,7 +13,8 @@ import { icons } from "../../../../organisms/layout/Colors"
 export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, userPermissions, menuItemsList, user, alert, setShowConfirmationDialog } = useAppContext()
+    const { setLoading, colorPalette, userPermissions, menuItemsList, user, alert, setShowConfirmationDialog,
+    theme } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [filterPayment, setFilterPayment] = useState('todos')
     const [installmentsSelected, setInstallmentsSelected] = useState(null);
@@ -434,17 +435,6 @@ export default function ListReceipts(props) {
                             setFilterData('')
                         }} />
                     </Box>
-                    <TablePagination
-                        component="div"
-                        count={installmentsList?.filter(filter)?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        style={{ color: colorPalette.textColor }}
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }}
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }}
-                    />
                 </Box>
             </ContentContainer>
 
@@ -615,7 +605,11 @@ export default function ListReceipts(props) {
             </Box>
 
             {installmentsList.length > 0 ?
-                <div style={{ borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap', }}>
+                <div style={{
+                    borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap',
+                    backgroundColor: colorPalette?.secondary,
+                    border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+                }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                         <thead>
                             <tr style={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
@@ -743,6 +737,11 @@ export default function ListReceipts(props) {
                         </tbody>
 
                     </table>
+
+                    <PaginationTable data={sortedInstallments?.filter(filter)}
+                        page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+                    />
+
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>

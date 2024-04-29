@@ -219,17 +219,6 @@ export default function ListStudents(props) {
                             setFilterData('')
                         }} />
                     </Box>
-                    <TablePagination
-                        component="div"
-                        count={sortUsers()?.filter(filter)?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        style={{ color: colorPalette.textColor }} // Define a cor do texto
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
-                    />
                 </Box>
             </ContentContainer>
 
@@ -239,20 +228,6 @@ export default function ListStudents(props) {
                     flex: 1,
                 }} />
                 <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
-                <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-                    <TablePagination
-                        component="div"
-                        count={sortUsers()?.filter(filter)?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        labelRowsPerPage="Items"
-                        style={{ color: colorPalette.textColor }} // Define a cor do texto
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
-                    />
-                </Box>
                 <Divider distance={0} />
             </Box>
 
@@ -311,7 +286,7 @@ export default function ListStudents(props) {
             </Backdrop>
 
             {usersList.length > 0 ?
-                <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
+                <Table_V1 data={sortUsers()?.filter(filter)} columns={column} columnId={'id'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não foi encontrado usuarios {perfil}</Text>

@@ -147,17 +147,6 @@ export default function ListAccountType(props) {
                             setFilterData('')
                         }} />
                     </Box>
-                    <TablePagination
-                        component="div"
-                        count={accountTypesList?.filter(filter)?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        style={{ color: colorPalette.textColor }} // Define a cor do texto
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
-                    />
                 </Box>
             </ContentContainer>
 
@@ -227,7 +216,7 @@ export default function ListAccountType(props) {
             </Backdrop>
             {accountTypesList?.length > 0 ?
                 <div ref={componentPDF}>
-                    <Table_V1 data={accountTypesList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_centro_custo'} columnActive={true} />
+                    <Table_V1 data={accountTypesList?.filter(filter)} columns={column} columnId={'id_centro_custo'} columnActive={true} />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>

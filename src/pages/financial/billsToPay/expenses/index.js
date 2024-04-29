@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
-import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
+import { CheckBoxComponent, PaginationTable, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
@@ -370,7 +370,10 @@ export default function ListBillsToPay(props) {
 
             <Box sx={{ overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap' }}>
 
-                <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
+                <Box sx={{
+                    display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                    border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+                }}>
 
 
                     <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', paddingTop: '20px', paddingRight: '20px' }}>
@@ -386,7 +389,9 @@ export default function ListBillsToPay(props) {
                             onClick={() => setShowBaixa(true)} />
                     </Box>
 
-                    <div style={{ borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
+                    <div style={{
+                        borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%',
+                    }}>
                         {expensesData?.filter(item => filter(item)).length > 0 ?
                             <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                                 <thead>
@@ -505,16 +510,8 @@ export default function ListBillsToPay(props) {
                         }
                         <Box sx={{ marginTop: 2 }}>
 
-                            <TablePagination
-                                component="div"
-                                count={expensesData?.length}
-                                page={page}
-                                onPageChange={handleChangePage}
-                                rowsPerPage={rowsPerPage}
-                                onRowsPerPageChange={handleChangeRowsPerPage}
-                                style={{ color: colorPalette.textColor }}
-                                backIconButtonProps={{ style: { color: colorPalette.textColor } }}
-                                nextIconButtonProps={{ style: { color: colorPalette.textColor } }}
+                            <PaginationTable data={expensesData?.filter(filter)}
+                                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
                             />
                         </Box>
                     </div>
