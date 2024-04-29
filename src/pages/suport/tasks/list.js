@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
-import { CheckBoxComponent, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
+import { CheckBoxComponent, PaginationTable, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -232,6 +232,10 @@ export default function ListTasks(props) {
                 newButtonAction={() => router.push(`/suport/${pathname}/new`)}
             />
 
+            <Box sx={{ display: 'flex', position: 'absolute', top: 130, right: 60 }}>
+                <Button text="Novo" style={{ width: 130 }} onClick={() => router.push(`/suport/${pathname}/new`)} />
+            </Box>
+
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
                 <Text light style={{ marginRight: 10 }}>visualizar por:</Text>
                 {menusFilters?.map((item, index) => {
@@ -333,7 +337,7 @@ export default function ListTasks(props) {
                             type: 'todos'
                         })} />
                     </Box>
-                    <TablePagination
+                    {vizualizedForm?.cards && <TablePagination
                         component="div"
                         count={sortTasks()?.filter(filter)?.length}
                         page={page}
@@ -343,7 +347,7 @@ export default function ListTasks(props) {
                         style={{ color: colorPalette.textColor }} // Define a cor do texto
                         backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
                         nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
-                    />
+                    />}
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
                     <CheckBoxComponent disabled={!isPermissionEdit && true}
@@ -370,7 +374,7 @@ export default function ListTasks(props) {
                                         cursor: 'pointer',
                                         backgroundColor: colorPalette?.primary + '66',
                                     },
-                                }}  onClick={() => setVizualizedForm({ cards: true, list: false })} >
+                                }} onClick={() => setVizualizedForm({ cards: true, list: false })} >
                                     <Box sx={{
                                         ...styles.menuIcon,
                                         backgroundImage: `url('/icons/icon_card.png')`,
@@ -383,7 +387,7 @@ export default function ListTasks(props) {
                                             cursor: 'pointer'
                                         },
                                     }}
-                                       />
+                                    />
                                 </Box>
                             </div>
                         </Tooltip>
@@ -403,8 +407,8 @@ export default function ListTasks(props) {
                                 }} onClick={() => setVizualizedForm({ cards: false, list: true })}>
                                     <Box sx={{
                                         ...styles.menuIcon,
-                                    filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-                                    backgroundImage: `url('/icons/icon_list.png')`,
+                                        filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                        backgroundImage: `url('/icons/icon_list.png')`,
                                         transition: '.3s',
                                         width: 22,
                                         height: 22,
@@ -413,7 +417,7 @@ export default function ListTasks(props) {
                                             cursor: 'pointer'
                                         },
                                     }}
-                                         />
+                                    />
                                 </Box>
                             </div>
                         </Tooltip>
@@ -519,7 +523,7 @@ export default function ListTasks(props) {
             </Backdrop>
             {vizualizedForm?.list &&
                 <TableReport
-                    data={sortTasks().filter(filter).slice(startIndex, endIndex)}
+                    data={sortTasks().filter(filter)}
                     filters={filtersOrders} onPress={(value) => setFiltersOrders(value)}
                 />
             }
@@ -538,6 +542,11 @@ export default function ListTasks(props) {
 
 const TableReport = ({ data = [], filters = [], onPress = () => { } }) => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
 
     const columns = [
         { key: 'id_chamado', label: '#Ticket' },
@@ -567,7 +576,10 @@ const TableReport = ({ data = [], filters = [], onPress = () => { } }) => {
         (data === 'Baixa' && 'blue'))
 
     return (
-        <ContentContainer sx={{ display: 'flex', width: '100%', padding: 0, backgroundColor: colorPalette.primary, boxShadow: 'none', borderRadius: 2 }}>
+        <ContentContainer sx={{
+            display: 'flex', width: '100%', padding: 0, backgroundColor: colorPalette.secondary, boxShadow: 'none', borderRadius: 2,
+            border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+        }}>
 
             <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                 <Table sx={{ borderCollapse: 'collapse', width: '100%' }}>
@@ -601,7 +613,7 @@ const TableReport = ({ data = [], filters = [], onPress = () => { } }) => {
                     </TableHead>
                     <TableBody sx={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
                         {
-                            data?.map((item, index) => {
+                            data?.slice(startIndex, endIndex)?.map((item, index) => {
                                 return (
                                     <TableRow key={`${item}-${index}`} onClick={() => handleRowClick(item?.id_chamado)} sx={{
                                         "&:hover": {
@@ -683,6 +695,10 @@ const TableReport = ({ data = [], filters = [], onPress = () => { } }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <PaginationTable data={data}
+                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+            />
         </ContentContainer >
     )
 }

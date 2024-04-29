@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
-import { CheckBoxComponent, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
+import { CheckBoxComponent, PaginationTable, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
@@ -38,13 +38,16 @@ export default function ListBillsReceived(props) {
     const [receivedSelected, setReceivedSelected] = useState(null);
     const [allSelected, setAllSelected] = useState();
     const router = useRouter()
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [receiveds, setReceiveds] = useState([]);
     const [showBaixa, setShowBaixa] = useState(false)
     const [accountList, setAccountList] = useState([])
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
 
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -197,8 +200,6 @@ export default function ListBillsReceived(props) {
         (data === 'Inativa' && '#f0f0f0') ||
         (data === 'Estornada' && '#f0f0f0'))
 
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
 
     const columnReceived = [
         { key: 'id_recebiveis', label: 'id' },
@@ -376,7 +377,10 @@ export default function ListBillsReceived(props) {
             </Box>
 
             <Box sx={{ overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap' }}>
-                <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`, }}>
+                <Box sx={{
+                    display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                    border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+                }}>
                     <Box sx={{ display: 'flex', padding: '20px 40px', alignItems: 'center', justifyContent: 'space-between' }}>
                         <CheckBoxComponent disabled={!isPermissionEdit && true}
                             boxGroup={groupStatus}
@@ -431,7 +435,7 @@ export default function ListBillsReceived(props) {
                                     </tr>
                                 </thead>
                                 <tbody style={{ flex: 1, }}>
-                                    {receiveds?.filter(filter)?.map((item, index) => {
+                                    {receiveds?.filter(filter)?.slice(startIndex, endIndex)?.map((item, index) => {
                                         let itemId = item?.id_recebiveis;
                                         const isSelected = receivedSelected?.includes(itemId) || null;
 
@@ -512,16 +516,8 @@ export default function ListBillsReceived(props) {
                         }
                         <Box sx={{ marginTop: 2 }}>
 
-                            <TablePagination
-                                component="div"
-                                count={receiveds?.length}
-                                page={page}
-                                onPageChange={handleChangePage}
-                                rowsPerPage={rowsPerPage}
-                                onRowsPerPageChange={handleChangeRowsPerPage}
-                                style={{ color: colorPalette.textColor }}
-                                backIconButtonProps={{ style: { color: colorPalette.textColor } }}
-                                nextIconButtonProps={{ style: { color: colorPalette.textColor } }}
+                            <PaginationTable data={receiveds?.filter(filter)}
+                                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
                             />
                         </Box>
                     </div>

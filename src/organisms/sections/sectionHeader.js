@@ -19,7 +19,7 @@ export const SectionHeader = (props) => {
       resetButtonAction = () => { },
       customButton = false,
       customButtonText = '',
-      customButtonAction = () => { }
+      customButtonAction = () => { },
    } = props;
 
    const { colorPalette } = useAppContext()

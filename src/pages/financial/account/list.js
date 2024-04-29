@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState, useRef } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
-import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
+import { PaginationTable, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -157,17 +157,6 @@ export default function ListAccounts(props) {
                             setFilterData('')
                         }} />
                     </Box>
-                    <TablePagination
-                        component="div"
-                        count={accountList?.filter(filter)?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        style={{ color: colorPalette.textColor }} // Define a cor do texto
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
-                    />
                 </Box>
             </ContentContainer>
 
@@ -238,7 +227,7 @@ export default function ListAccounts(props) {
             {accountList?.length > 0 ?
                 <div ref={componentPDF}>
                     {/* <Table_V1 data={accountList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_conta'} columnActive={true} /> */}
-                    <TableAccount data={accountList?.filter(filter).slice(startIndex, endIndex)} />
+                    <TableAccount data={accountList?.filter(filter)} />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
@@ -269,6 +258,11 @@ export default function ListAccounts(props) {
 
 const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
 
     const columns = [
         { key: 'id_conta', label: 'ID' },
@@ -297,7 +291,10 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
     });
 
     return (
-        <ContentContainer sx={{ display: 'flex', width: '100%', padding: 0, backgroundColor: colorPalette.primary, boxShadow: 'none', borderRadius: 2 }}>
+        <ContentContainer sx={{
+            display: 'flex', width: '100%', padding: 0, boxShadow: 'none', borderRadius: 2,
+            border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+        }}>
 
             <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                 <Table sx={{ borderCollapse: 'collapse', width: '100%' }}>
@@ -331,7 +328,7 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
                     </TableHead>
                     <TableBody sx={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
                         {
-                            data?.map((item, index) => {
+                            data?.slice(startIndex, endIndex)?.map((item, index) => {
                                 return (
                                     <TableRow key={`${item}-${index}`} onClick={() => handleRowClick(item?.id_conta)} sx={{
                                         "&:hover": {
@@ -368,7 +365,7 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
                                             </Box>
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
-                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent:'center' }}>
+                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
                                                 <Box sx={{
                                                     ...styles.menuIcon,
                                                     width: 14,
@@ -409,6 +406,9 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <PaginationTable data={data}
+                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+            />
         </ContentContainer >
     )
 }

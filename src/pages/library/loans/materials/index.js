@@ -390,23 +390,14 @@ export default function ListMaterialsLoans(props) {
                 </Box>
             }
 
-            <ConfirmationModal
-                active={showConfirmationDialog.active}
-                position={showConfirmationDialog.position}
-                title={showConfirmationDialog.title}
-                message={showConfirmationDialog.message}
-                acceptAction={showConfirmationDialog.acceptAction}
-                closeDialog={() => setShowConfirmationDialog({ active: false })}
-            />
-
         </>
     )
 }
 
 
-const TableLoans = ({ isPermissionEdit, loansData = [], getLoans, setFiltersField, setShowConfirmationDialog, showConfirmationDialog }) => {
+const TableLoans = ({ isPermissionEdit, loansData = [], getLoans, setFiltersField }) => {
 
-    const { setLoading, colorPalette, theme, alert } = useAppContext()
+    const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog } = useAppContext()
 
     const getRowBackground = (index) => {
         if (theme) {

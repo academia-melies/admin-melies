@@ -34,7 +34,8 @@ export const CustomDropzone = (props) => {
         taskId = null,
         matricula_id,
         material_id,
-        courseId
+        courseId,
+        institutionId
     } = props;
 
     const onDropFiles = async (files) => {
@@ -71,7 +72,8 @@ export const CustomDropzone = (props) => {
             try {
                 const response = await uploadFile({
                     formData, usuario_id, campo, tipo: typeOpition ? typeFile : tipo, images, tela,
-                    contract, servicoId, screen, taskId, matricula_id, material_id, courseId
+                    contract, servicoId, screen, taskId, matricula_id, material_id, courseId,
+                    institutionId
                 });
                 const { data = {}, status } = response;
                 const { fileId } = data
@@ -162,7 +164,7 @@ export const CustomDropzone = (props) => {
                                                         backgroundRepeat: 'no-repeat',
                                                         backgroundPosition: 'center center',
                                                         borderRadius: campo === 'foto_perfil' ? '50%' : '',
-                                                        width: { xs: '100%', sm: 150, md: 150, lg: 500, xl: 500 },
+                                                        width: { xs: '100%', sm: 150, md: 150, lg: 250, xl: 250 },
                                                         aspectRatio: '1/1',
                                                     }}>
                                                 </Box>

@@ -3,7 +3,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
 import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
-import { Colors, IconTheme, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
+import { Colors, IconTheme, PaginationTable, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { api } from "../../../api/api"
 import { getDisciplines, getdisciplines, getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
@@ -18,18 +18,19 @@ import Link from "next/link"
 export default function ClassDay(props) {
     const [classDayList, setClassDay] = useState([])
     const [filterData, setFilterData] = useState('')
-    const { setLoading, colorPalette, alert, userPermissions, menuItemsList } = useAppContext()
+    const { setLoading, colorPalette, alert, userPermissions, menuItemsList, user } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [firstRender, setFirstRender] = useState(true)
     const [showEditClassDay, setShowEditClassDay] = useState(false)
+    const [showLinkClass, setShowLinkClass] = useState(false)
+    const [linkDisciplineData, setLinkDisciplineData] = useState({})
+
     const [isFind, setIsFind] = useState(false)
-    const [page, setPage] = useState(0);
     const [classes, setClasses] = useState([])
     const [modules, setModules] = useState([]);
     const [disciplines, setDisciplines] = useState([])
     const [showClasses, setShowClasses] = useState(false)
     const [classDaySelected, setClassSelected] = useState({})
-    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [filters, setFilters] = useState({
         classId: '',
         disciplineId: '',
@@ -37,7 +38,11 @@ export default function ClassDay(props) {
     })
     const [showFilterMobile, setShowFilterMobile] = useState(false)
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
 
     const fetchPermissions = async () => {
         try {
@@ -62,9 +67,6 @@ export default function ClassDay(props) {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
-
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
 
     // useEffect(() => {
     //     if (firstRender) return setFirstRender(false);
@@ -127,13 +129,36 @@ export default function ClassDay(props) {
             try {
                 const response = await api.get(`/classDay/discipline/${classId}/${disciplineId}/${moduleSelected}`)
                 const { data = [] } = response;
+                if (data?.length > 0) {
+                    const responseLink = await handleLinkDiscipline(classId, disciplineId)
+                    if (responseLink) {
+                        const sorted = data?.sort((a, b) => new Date(b.dt_aula) - new Date(a.dt_aula))
+                        setClassDay(sorted)
+                    }
+                }
                 setIsFind(true)
-                setClassDay(data)
+
             } catch (error) {
                 console.log(error)
             } finally {
                 setLoading(false)
             }
+        }
+    }
+
+    const handleLinkDiscipline = async (classId, disciplineId) => {
+        try {
+            const response = await api.get(`/classDay/linkClass/discipline/list/${classId}/${disciplineId}`)
+            const { data } = response;
+            if (data) {
+                setLinkDisciplineData(data)
+            } else {
+                setLinkDisciplineData({})
+            }
+            return true
+        } catch (error) {
+            console.log(error)
+            return error
         }
     }
 
@@ -215,6 +240,44 @@ export default function ClassDay(props) {
             setLoading(false)
         }
     }
+
+
+    const handleSaveLinkClassDiscipline = async () => {
+        setLoading(true)
+        try {
+            let response;
+            if (linkDisciplineData?.id_link_aula) {
+                console.log(linkDisciplineData)
+                response = await api.patch(`/classDay/update/linkClass/discipline`, { linkDisciplineData })
+            } else {
+
+                response = await api.post(`/classDay/create/linkClass/discipline`, {
+                    linkDisciplineData: {
+                        ...linkDisciplineData,
+                        disciplina_id: filters?.disciplineId,
+                        turma_id: filters?.classId,
+                        usuario_resp: user?.id
+                    }
+                })
+            }
+            if (response?.status === 201 || response?.status === 200) {
+                alert.success('Link atualizado com sucesso.');
+                handleFindClasses()
+                setShowEditClassDay(false)
+                setShowLinkClass(false)
+                return
+            }
+            alert.error('Tivemos um problema ao atualizar Link da Aula da disciplina.');
+        } catch (error) {
+            console.log(error)
+            alert.error('Tivemos um problema ao atualizar Link da Aula da disciplina.');
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+
 
     const column = [
         { key: 'id_turma', label: 'ID' },
@@ -351,31 +414,19 @@ export default function ClassDay(props) {
                     }} />
                 </Box>
                 {/* <TextInput placeholder="Buscar turma.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} /> */}
-                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
-                    <TablePagination
-                        component="div"
-                        count={classDayList?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        labelRowsPerPage="Items por página"
-                        style={{ color: colorPalette.textColor }} // Define a cor do texto
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
-                    />
-                </Box>
                 {(filters?.disciplineId && showClasses && isFind) ?
                     classDayList?.length > 0 ?
                         (
-                            // <Table_V1 data={sortClasses()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_turma'} query={id ? `=day` : ''} filters={filters} onPress={(value) => setFilters(value)} onFilter />
-                            <TableClasses
-                                data={classDayList?.slice(startIndex, endIndex)}
-                                setShowEditClassDay={setShowEditClassDay}
-                                showEditClassDay={showEditClassDay}
-                                classDaySelected={classDaySelected}
-                                setClassSelected={setClassSelected}
-                            />
+                            <>
+                                <ButtonLinkTeams setShowLinkClass={setShowLinkClass} />
+                                <TableClasses
+                                    data={classDayList}
+                                    setShowEditClassDay={setShowEditClassDay}
+                                    showEditClassDay={showEditClassDay}
+                                    classDaySelected={classDaySelected}
+                                    setClassSelected={setClassSelected}
+                                />
+                            </>
                         ) : (
                             <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                                 <Text light>
@@ -409,25 +460,6 @@ export default function ClassDay(props) {
                     <Divider distance={0} />
                     <Box sx={{ display: 'flex', gap: 2, marginTop: 2, }}>
                         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', width: 400 }}>
-                            <Box sx={{
-                                display: 'flex', padding: '8px 12px', alignItems: 'center', justifyContent: 'center',
-                                backgroundColor: new Date(classDaySelected?.dt_aula) > new Date() ? 'red' : 'green'
-                            }}>
-                                <Text style={{ color: '#fff' }}>
-                                    {new Date(classDaySelected?.dt_aula) > new Date() ? 'Aula Futura' : 'Assistida'}
-                                </Text>
-                            </Box>
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                <Text bold>Data da aula: </Text>
-                                <Text>{classDaySelected?.dia_semana} - {formatTimeStamp(classDaySelected?.dt_aula)}</Text>
-                            </Box>
-                            <Divider distance={0} />
-                            <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                                <Text bold>Professores: </Text>
-                                <Text>{classDaySelected?.primeiro_professor}</Text>
-                                <Text>{classDaySelected?.segundo_professor}</Text>
-                            </Box>
-                            <Divider distance={0} />
                             <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                                 <Text bold>Resumo da Aula: </Text>
                                 <TextInput disabled={!isPermissionEdit && true}
@@ -437,19 +469,8 @@ export default function ClassDay(props) {
                                     value={classDaySelected?.resumo_aula || ''}
                                     // label='Metodologia'
                                     multiline
-                                    maxRows={4}
-                                    rows={3}
-                                    sx={{ flex: 1, }}
-                                />
-                            </Box>
-                            <Divider distance={0} />
-                            <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                                <Text bold>Link da Aula: </Text>
-                                <TextInput disabled={!isPermissionEdit && true}
-                                    placeholder='Link da reunião do Teams por exemplo.'
-                                    onChange={handleChange}
-                                    name='link_aula'
-                                    value={classDaySelected?.link_aula || ''}
+                                    maxRows={8}
+                                    rows={4}
                                     sx={{ flex: 1, }}
                                 />
                             </Box>
@@ -464,12 +485,63 @@ export default function ClassDay(props) {
                 </ContentContainer>
 
             </Backdrop>
+
+
+            <Backdrop open={showLinkClass} sx={{ zIndex: 999, width: '100%' }}>
+                <ContentContainer style={{ padding: '20px 30px', minWidth: 400 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                            <Text bold large>Link da Aula do Teams</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 22,
+                                height: 22,
+                                aspectRatio: '1/1',
+                                backgroundImage: `url(/icons/teams.png)`,
+                            }} />
+                        </Box>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowLinkClass(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 2, marginTop: 2, }}>
+                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', width: 400 }}>
+                            <TextInput disabled={!isPermissionEdit && true}
+                                placeholder='Link da reunião do Teams.'
+                                onChange={(e) => setLinkDisciplineData({ ...linkDisciplineData, url_link: e.target.value })}
+                                name='linkDisicpline'
+                                value={linkDisciplineData?.url_link || ''}
+                                sx={{ flex: 1, }}
+                            />
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                                <Button small text="Salvar" style={{ width: 120, height: 30 }} onClick={() => handleSaveLinkClassDiscipline()} />
+                                <Button secondary small text="Cancelar" style={{ width: 120, height: 30 }} onClick={() => setShowLinkClass(false)} />
+                            </Box>
+                        </Box>
+                    </Box>
+
+                </ContentContainer>
+
+            </Backdrop>
         </>
     )
 }
 
 const TableClasses = ({ data = [], setShowEditClassDay, showEditClassDay, setClassSelected, classDaySelected }) => {
     const { setLoading, colorPalette, userPermissions, menuItemsList, user } = useAppContext()
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
 
     return (
         <ContentContainer sx={{ display: 'flex', width: '100%', padding: 0, boxShadow: 'none', borderRadius: 2 }}>
@@ -481,9 +553,7 @@ const TableClasses = ({ data = [], setShowEditClassDay, showEditClassDay, setCla
                             <th style={{ padding: '16px' }}><Text bold>Data</Text></th>
                             <th style={{ padding: '16px' }}><Text bold>Dia</Text></th>
                             <th style={{ padding: '16px' }}><Text bold>Resumo</Text></th>
-                            <th style={{ padding: '16px' }}><Text bold>link da aula</Text></th>
                             <th style={{ padding: '16px' }}><Text bold>1 Professor</Text></th>
-                            <th style={{ padding: '16px' }}><Text bold>2 Professor</Text></th>
                             <th style={{ padding: '16px' }}><Text bold>Status da aula</Text></th>
                             <th style={{ padding: '8px' }}><Text bold></Text></th>
                             {/* <th style={{ padding: '8px' }}><Text bold></Text></th> */}
@@ -491,7 +561,11 @@ const TableClasses = ({ data = [], setShowEditClassDay, showEditClassDay, setCla
                     </thead>
                     <tbody style={{ flex: 1, padding: 5, backgroundColor: colorPalette.primary }}>
                         {
-                            data?.map((item, index) => {
+                            data?.slice(startIndex, endIndex)?.map((item, index) => {
+                                const partsName = item?.primeiro_professor?.split(' ')
+                                const firstName = partsName[0]
+                                const lastName = partsName[partsName?.length - 1]
+                                const professorName = `${firstName} ${lastName}`
                                 return (
                                     <tr key={`${item}-${index}`}>
                                         <td style={{ padding: '8px 10px', textAlign: 'center' }}>
@@ -500,26 +574,16 @@ const TableClasses = ({ data = [], setShowEditClassDay, showEditClassDay, setCla
                                         <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{(item?.dia_semana) || '-'}</Text>
                                         </td>
-                                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                                        <td style={{ padding: '8px 10px', textAlign: 'center', maxWidth: 250 }}>
                                             <Text style={{
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
-                                                maxWidth: '180px',
+                                                maxWidth: '100%',
                                             }}>{item?.resumo_aula || '-'}</Text>
                                         </td>
-                                        <td style={{ padding: '10px 10px', textAlign: 'center', alignItems: 'center', display: 'flex', justifyContent: 'center' }}>
-                                            {item?.link_aula ?
-                                                <Link href={item?.link_aula} target="_blank">
-                                                    <Button small text="link" style={{ width: 60, height: 20, borderRadius: 2 }} />
-                                                </Link>
-                                                : <Text>{'-'}</Text>}
-                                        </td>
                                         <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.primeiro_professor || '-'}</Text>
-                                        </td>
-                                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text> {item?.segundo_professor || '-'}</Text>
+                                            <Text>{professorName || '-'}</Text>
                                         </td>
                                         <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Box sx={{
@@ -527,12 +591,12 @@ const TableClasses = ({ data = [], setShowEditClassDay, showEditClassDay, setCla
                                                 backgroundColor: new Date(item?.dt_aula) > new Date() ? 'red' : 'green'
                                             }}>
                                                 <Text small style={{ color: '#fff' }}>
-                                                    {new Date(item?.dt_aula) > new Date() ? 'Aula Futura' : 'Assistida'}
+                                                    {new Date(item?.dt_aula) > new Date() ? 'Aula Futura' : 'Concluída'}
                                                 </Text>
                                             </Box>
                                         </td>
                                         <td style={{ padding: '8px 8px', }}>
-                                            <Button small text="Editar" style={{ padding: '6px 5px', borderRadius: 2 }} onClick={() => {
+                                            <Button small text="Resumo" style={{ padding: '6px 5px', borderRadius: 2 }} onClick={() => {
                                                 setClassSelected(item)
                                                 setShowEditClassDay(true)
                                             }
@@ -548,8 +612,51 @@ const TableClasses = ({ data = [], setShowEditClassDay, showEditClassDay, setCla
                         }
                     </tbody>
                 </table>
+
+                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
+                    <PaginationTable data={data}
+                        page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+                    />
+                </Box>
             </div>
         </ContentContainer>
+    )
+}
+
+const ButtonLinkTeams = ({
+    setShowLinkClass
+}) => {
+    return (
+        <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{
+                display: 'flex', gap: 1.5, padding: '8px 12px', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 2,
+                backgroundColor: '#5d5bd4',
+                transition: '.3s',
+                '&:hover': {
+                    opacity: 0.8,
+                    cursor: 'pointer',
+                    transform: 'scale(1.02, 1.02)'
+                }
+            }} onClick={() => setShowLinkClass(true)}>
+                <Text bold small style={{ color: '#fff' }}>Link da Aula do Teams</Text>
+                <Box sx={{
+                    ...styles.menuIcon,
+                    backgroundImage: `url('/icons/arrow_right_icon.png')`,
+                    width: 13,
+                    height: 13,
+                    filter: 'brightness(0) invert(1)',
+                    transition: 'background-color 1s',
+                }} />
+                <Box sx={{
+                    ...styles.menuIcon,
+                    width: 22,
+                    height: 22,
+                    aspectRatio: '1/1',
+                    backgroundImage: `url(/icons/teams.png)`,
+                }} />
+            </Box>
+        </Box>
     )
 }
 

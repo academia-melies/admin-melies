@@ -1,14 +1,17 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { useMediaQuery, useTheme } from "@mui/material"
+import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text } from "../../../atoms"
-import { RadioItem, SectionHeader } from "../../../organisms"
+import { Box, ContentContainer, TextInput, Text, FileInput, Divider, Button } from "../../../atoms"
+import { RadioItem, SectionHeader, CustomDropzone } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { formatCEP, formatCNPJ } from "../../../helpers"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import axios from "axios"
 import { IconStatus } from "../../../organisms/Table/table"
+import { icons } from "../../../organisms/layout/Colors"
+import Dropzone from "react-dropzone"
+import Link from "next/link"
 
 export default function EditInstitution(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -36,9 +39,19 @@ export default function EditInstitution(props) {
         ativo: 1,
         endereco_pres: '',
         endereco_ead: '',
+        cod_inep_ead: '',
+        cod_inep_pres: '',
     })
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-
+    const [showFileContainer, setShowFileContainer] = useState({
+        pt_cred_ead: false,
+        pt_rec_ead: false,
+        pt_rec_pres: false,
+        pt_cred_pres: false,
+        ren_reconhecimento_ead: false,
+        ren_reconhecimento_p: false
+    })
+    const [files, setFiles] = useState([])
 
     const fetchPermissions = async () => {
         try {
@@ -50,6 +63,8 @@ export default function EditInstitution(props) {
         }
     }
 
+    console.log(showFileContainer)
+
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 
@@ -59,6 +74,22 @@ export default function EditInstitution(props) {
             const response = await api.get(`/institution/${id}`)
             const { data } = response
             setInstitutionData(data)
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally { }
+        setLoading(false)
+    }
+
+
+    const getFiles = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/institution/files/${id}`)
+            const { data } = response
+            if (data?.length > 0) {
+                setFiles(data)
+            }
         } catch (error) {
             console.log(error)
             return error
@@ -99,6 +130,7 @@ export default function EditInstitution(props) {
         setLoading(true)
         try {
             await getInstitution()
+            await getFiles()
             getRecognition()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar A instituição')
@@ -372,7 +404,6 @@ export default function EditInstitution(props) {
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='CNPJ' name='cnpj' onChange={handleChange} value={institutionData?.cnpj || ''} label='CNPJ' sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Código Inep' name='cod_inep' onChange={handleChange} value={institutionData?.cod_inep || ''} label='Código Inep' sx={{ flex: 1, }} />
                 </Box>
                 <RadioItem disabled={!isPermissionEdit && true} valueRadio={institutionData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setInstitutionData({ ...institutionData, ativo: parseInt(value) })} />
 
@@ -380,17 +411,70 @@ export default function EditInstitution(props) {
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Text title bold >Presencial</Text>
+                <TextInput disabled={!isPermissionEdit && true} placeholder='Código Inep' name='cod_inep_pres' onChange={handleChange} value={institutionData?.cod_inep_pres || ''} label='Código Inep' sx={{ width: 256, }} />
                 <Box sx={{
                     display: 'flex', gap: 1,
                     flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
                 }}>
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Credenciamento' name='pt_cred_pres' onChange={handleChange} value={institutionData?.pt_cred_pres || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true} label="Data" placeholder='Data' name='dt_cred_pres' onChange={handleChange} value={(institutionData?.dt_cred_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Recredenciamento' name='pt_rec_pres' onChange={handleChange} value={institutionData?.pt_rec_pres || ''} label='Portaria de Recredenciamento' sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true} label="Data" placeholder='Data' name='dt_rec_pres' onChange={handleChange} value={(institutionData?.dt_rec_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                    <FileInput
+                        onClick={(value) => setShowFileContainer({ ...showFileContainer, pt_cred_pres: value })}
+                        existsFiles={files?.filter((file) => file?.campo === 'pt_cred_pres' && file?.tipo === 'presencial').length > 0}>
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Credenciamento' name='pt_cred_pres' onChange={handleChange} value={institutionData?.pt_cred_pres || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
 
+                        <UploadedFiles
+                            setFiles={setFiles}
+                            files={files}
+                            isPermissionEdit={isPermissionEdit}
+                            open={showFileContainer?.pt_cred_pres}
+                            newInstitution={newInstitution}
+                            onSet={(set) => {
+                                setShowFileContainer({ ...showFileContainer, pt_cred_pres: set })
+                            }}
+                            title='Portaria de Credenciamento'
+                            institutionId={id}
+                            campo='pt_cred_pres'
+                            tipo='presencial'
+                            callback={(file) => {
+                                if (file.status === 201 || file.status === 200) {
+                                    handleItems()
+                                }
+                            }}
+                        />
+                    </FileInput>
+                    <TextInput disabled={!isPermissionEdit && true} label="Data" placeholder='Data' name='dt_cred_pres' onChange={handleChange} value={(institutionData?.dt_cred_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
-                <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='endereco_pres' onChange={handleChange} value={institutionData?.endereco_pres || ''} label='Endereço' sx={{ flex: 1, }} />
+                <Box sx={{
+                    display: 'flex', gap: 1,
+                    flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
+                }}>
+
+                    <FileInput
+                    onClick={(value) => setShowFileContainer({ ...showFileContainer, pt_rec_pres: value })}
+                        existsFiles={files?.filter((file) => file?.campo === 'pt_rec_pres' && file?.tipo === 'presencial').length > 0}>
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Recredenciamento' name='pt_rec_pres' onChange={handleChange} value={institutionData?.pt_rec_pres || ''} label='Portaria de Recredenciamento' sx={{ flex: 1, }} />
+
+                        <UploadedFiles
+                            setFiles={setFiles}
+                            files={files}
+                            isPermissionEdit={isPermissionEdit}
+                            open={showFileContainer?.pt_rec_pres}
+                            newInstitution={newInstitution}
+                            onSet={(set) => {
+                                setShowFileContainer({ ...showFileContainer, pt_rec_pres: set })
+                            }}
+                            title='Portaria de Recredenciamento'
+                            institutionId={id}
+                            campo='pt_rec_pres'
+                            tipo='presencial'
+                            callback={(file) => {
+                                if (file.status === 201 || file.status === 200) {
+                                    handleItems()
+                                }
+                            }}
+                        />
+                    </FileInput>
+                    <TextInput disabled={!isPermissionEdit && true} label="Data" placeholder='Data' name='dt_rec_pres' onChange={handleChange} value={(institutionData?.dt_rec_pres)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
+                </Box>
 
                 <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
                     {arrayRecognitionP.map((rec, index) => (
@@ -398,7 +482,7 @@ export default function EditInstitution(props) {
                             <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
                                 <TextInput disabled={!isPermissionEdit && true} label="Portaria de Renovação do Recredenciamento" placeholder='Portaria de Renovação do Recredenciamento' name={`ren_reconhecimento_p-${index}`} onChange={handleChangeRecognitionP} value={rec.ren_reconhecimento_p} sx={{ flex: 1 }} />
                                 <TextInput disabled={!isPermissionEdit && true} label="Data" placeholder='Data' name={`dt_renovacao_rec_p-${index}`} onChange={handleChangeRecognitionP} value={(rec?.dt_renovacao_rec_p)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                                {newInstitution && <Box sx={{
+                                <Box sx={{
                                     backgroundSize: 'cover',
                                     backgroundRepeat: 'no-repeat',
                                     backgroundPosition: 'center',
@@ -412,7 +496,7 @@ export default function EditInstitution(props) {
                                     }
                                 }} onClick={() => {
                                     newInstitution ? deleteRecognitionP(index) : handleDeleteRecognition(rec?.id_renovacao_rec_p)
-                                }} />}
+                                }} />
                             </Box>
                         </>
                     ))}
@@ -454,10 +538,65 @@ export default function EditInstitution(props) {
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Text title bold >EAD</Text>
 
+                <TextInput disabled={!isPermissionEdit && true} placeholder='Código Inep' name='cod_inep_ead' onChange={handleChange}
+                    value={institutionData?.cod_inep_ead || ''} label='Código Inep' sx={{ width: 256, }} />
+
                 <Box sx={styles.inputSection}>
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Credenciamento' name='pt_cred_ead' onChange={handleChange} value={institutionData?.pt_cred_ead || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
+                    <FileInput
+                    onClick={(value) => setShowFileContainer({ ...showFileContainer, pt_cred_ead: value })}
+                        existsFiles={files?.filter((file) => file?.campo === 'pt_cred_ead' && file?.tipo === 'ead').length > 0}>
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Credenciamento' name='pt_cred_ead' onChange={handleChange} value={institutionData?.pt_cred_ead || ''} label='Portaria de Credenciamento' sx={{ flex: 1, }} />
+
+                        <UploadedFiles
+                            setFiles={setFiles}
+                            files={files}
+                            isPermissionEdit={isPermissionEdit}
+                            open={showFileContainer?.pt_cred_ead}
+                            newInstitution={newInstitution}
+                            onSet={(set) => {
+                                setShowFileContainer({ ...showFileContainer, pt_cred_ead: set })
+                            }}
+                            title='Portaria de Credenciamento - EAD'
+                            institutionId={id}
+                            campo='pt_cred_ead'
+                            tipo='ead'
+                            callback={(file) => {
+                                if (file.status === 201 || file.status === 200) {
+                                    handleItems()
+                                }
+                            }}
+                        />
+                    </FileInput>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Data' name='dt_cred_ead' onChange={handleChange} value={(institutionData?.dt_cred_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Recredenciamento' name='pt_rec_ead' onChange={handleChange} value={institutionData?.pt_rec_ead || ''} label='Portaria de Recredenciamento' sx={{ flex: 1, }} />
+                </Box>
+                <Box sx={styles.inputSection}>
+
+                    <FileInput
+                     onClick={(value) => setShowFileContainer({ ...showFileContainer, pt_rec_ead: value })}
+                        existsFiles={files?.filter((file) => file?.campo === 'pt_rec_ead' && file?.tipo === 'ead').length > 0}>
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Portaria de Recredenciamento' name='pt_rec_ead' onChange={handleChange} value={institutionData?.pt_rec_ead || ''} label='Portaria de Recredenciamento' sx={{ flex: 1, }} />
+
+
+                        <UploadedFiles
+                            setFiles={setFiles}
+                            files={files}
+                            isPermissionEdit={isPermissionEdit}
+                            open={showFileContainer?.pt_rec_ead}
+                            newInstitution={newInstitution}
+                            onSet={(set) => {
+                                setShowFileContainer({ ...showFileContainer, pt_rec_ead: set })
+                            }}
+                            title='Portaria de Recredenciamento - EAD'
+                            institutionId={id}
+                            campo='pt_rec_ead'
+                            tipo='ead'
+                            callback={(file) => {
+                                if (file.status === 201 || file.status === 200) {
+                                    handleItems()
+                                }
+                            }}
+                        />
+                    </FileInput>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Data' name='dt_rec_ead' onChange={handleChange} value={(institutionData?.dt_rec_ead)?.split('T')[0] || ''} type="date" sx={{ flex: 1, }} />
                 </Box>
                 <Box sx={{ maxWidth: '580px', display: 'flex', flexDirection: 'column', gap: 1.8 }}>
@@ -518,6 +657,219 @@ export default function EditInstitution(props) {
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Complemento' name='complemento_ead' onChange={handleChange} value={institutionData?.complemento_ead || ''} label='Complemento' sx={{ flex: 1, }} />
                 </Box>
             </ContentContainer>
+        </>
+    )
+}
+
+
+
+export const UploadedFiles = (props) => {
+    const {
+        open = false,
+        onSet = () => { },
+        callback = () => { },
+        title = '',
+        campo = '',
+        tipo = '',
+        newInstitution,
+        isPermissionEdit,
+        setFiles,
+        files,
+        institutionId
+    } = props
+
+    const { alert, setLoading, matches, theme } = useAppContext()
+
+    const handleDeleteFile = async (files) => {
+        setLoading(true)
+        let query = `?key=${files?.key_file}`;
+
+        const response = await api.delete(`/institution/file/delete/${files?.id_doc_instituicao}${query}`)
+        const { status } = response
+        let file = {
+            status
+        }
+        if (status === 200) {
+            alert.success('Aqruivo removido.');
+            callback(file)
+        } else {
+            alert.error('Ocorreu um erro ao remover arquivo.');
+        }
+        setLoading(false)
+    }
+
+
+    const onDropFiles = async (files) => {
+        try {
+            setLoading(true)
+            const uploadedFiles = files.map(file => ({
+                file,
+                id: getRandomInt(1, 999),
+                name: file.name,
+                preview: URL.createObjectURL(file),
+                progress: 0,
+                uploaded: false,
+                error: false,
+                url: null,
+                campo: campo,
+                tipo: tipo,
+                institutionId: institutionId
+            }));
+
+            setFiles(prevFilesDrop => [...prevFilesDrop, ...uploadedFiles]);
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleRemoveFile = (file) => {
+        const arquivosAtualizados = files.filter((uploadedFile) => uploadedFile.id !== file.id);
+        setFiles(arquivosAtualizados);
+    };
+
+    return (
+        <>
+            <Backdrop open={open} sx={{ zIndex: 99999, }}>
+                <ContentContainer style={{
+                    ...styles.containerFile, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '0px' }, overflowY: matches && 'scroll',
+                    maxWidth: 550,
+                }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 2, alignItems: 'center', padding: '0px 0px 8px 0px' }}>
+                        <Text bold>{title}</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 15,
+                            height: 15,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            onSet(false)
+                        }} />
+                    </Box>
+                    <Divider />
+                    <Box sx={{
+                        display: 'flex',
+                        whiteSpace: 'wrap',
+                        // maxWidth: 280,
+                        justifyContent: 'center'
+                    }}>
+                        <Text>
+                            Faça o upload do seu documento frente e verso, depois clique em salvar.
+                        </Text>
+                    </Box>
+                    {isPermissionEdit &&
+                        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+                            {!newInstitution ?
+                                <CustomDropzone
+                                    txt={'Arraste ou clique para selecionar o arquivo desejado.'}
+                                    callback={(file) => {
+                                        if (file.status === 201) {
+                                            callback(file)
+                                        }
+                                    }}
+                                    institutionId={institutionId}
+                                    campo={campo}
+                                    tipo={tipo}
+                                />
+                                : <Dropzone
+                                    accept={{ 'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'], 'image/png': ['.png', '.PNG'], 'application/pdf': ['.pdf'] }}
+                                    onDrop={onDropFiles}
+                                    addRemoveLinks={true}
+                                    removeLink={(file) => handleRemoveFile(file)}
+                                >
+                                    {({ getRootProps, getInputProps, isDragActive, isDragReject }) => (
+                                        <Box {...getRootProps()}
+                                            sx={{
+                                                // ...styles.dropZoneContainer,
+                                                // border: `2px dashed ${colorPalette.primary + 'aa'}`,
+                                                // backgroundColor: isDragActive && !isDragReject ? colorPalette.secondary : isDragReject ? '#ff000042' : colorPalette.primary,
+                                            }}
+                                        >
+                                            <input {...getInputProps()} />
+                                            <Box sx={{ textAlign: 'center', display: 'flex', fontSize: 12, gap: 0, alignItems: 'center' }}>
+                                                <Button small style={{ height: 25, borderRadius: '6px 0px 0px 6px' }} text="Selecionar" />
+                                                <Box sx={{ textAlign: 'center', display: 'flex', border: `1px solid ${(theme ? '#eaeaea' : '#404040')}`, padding: '0px 15px', maxWidth: 400, height: 25, alignItems: 'center' }}>
+                                                    <Text light small>
+                                                        Arraste ou clique para selecionar o arquivo desejado.
+                                                    </Text>
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    )}
+                                </Dropzone>}
+
+                        </Box>}
+
+                    {campo != 'foto_perfil' && files?.filter(item => item?.campo === campo)?.length > 0 &&
+                        <ContentContainer>
+                            <Text bold>Arquivos</Text>
+                            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, overflow: 'auto', padding: '15px 10px' }}>
+                                {files?.filter(item => item?.campo === campo)?.map((file, index) => {
+                                    const typePdf = file?.name_file
+                                        ?.includes('pdf') || null;
+                                    const fileName = file?.name_file || file?.name
+                                    const fileLocation = file?.location || file?.preview
+                                    return (
+                                        <Box key={`${file}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px' }}>
+
+                                            <Link
+                                                style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}
+                                                href={fileLocation || ''} target="_blank">
+                                                <Box
+                                                    sx={{
+                                                        backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : fileLocation}')`,
+                                                        backgroundSize: 'contain',
+                                                        backgroundRepeat: 'no-repeat',
+                                                        backgroundPosition: 'center center',
+                                                        width: { xs: '100%', sm: 150, md: 150, lg: 150 },
+                                                        aspectRatio: '1/1',
+                                                    }}>
+                                                </Box>
+                                                {isPermissionEdit && <Box sx={{
+                                                    backgroundSize: "cover",
+                                                    backgroundRepeat: "no-repeat",
+                                                    backgroundPosition: "center",
+                                                    width: 22,
+                                                    height: 22,
+                                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                                    position: 'absolute',
+                                                    top: -5,
+                                                    right: -5,
+                                                    transition: ".3s",
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: "pointer",
+                                                    },
+                                                    zIndex: 9999999,
+                                                }} onClick={(event) => {
+                                                    event.preventDefault()
+                                                    if (newInstitution) {
+                                                        handleRemoveFile(file)
+                                                    } else {
+                                                        handleDeleteFile(file)
+                                                    }
+                                                }} />}
+                                            </Link>
+                                            <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {decodeURIComponent(fileName)}
+                                            </Text>
+                                        </Box>
+                                    )
+                                })}
+                            </Box>
+                        </ContentContainer>
+                    }
+                </ContentContainer>
+            </Backdrop>
         </>
     )
 }
