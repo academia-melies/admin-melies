@@ -48,7 +48,7 @@ export default function EditUser() {
         superdotacao: null,
         cpf: null,
         naturalidade: null,
-        nacionalidade: null,
+        nacionalidade: 'Brasileira Nata',
         estado_civil: null,
         conjuge: null,
         email_melies: null,
@@ -1015,8 +1015,8 @@ export default function EditUser() {
                     const formData = new FormData();
                     formData.append('file', fileCallback?.file, encodeURIComponent(fileCallback?.name));
                     let query = `?usuario_id=${data?.userId}`;
-                    if (data?.userId) query += `&campo=${data?.userId}`;
-                    if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
+                    if (fileCallback?.campo) query += `&campo=${fileCallback?.campo}`;
+                    if (fileCallback?.tipo) query += `&tipo=${fileCallback?.tipo}`;
                     await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
                 }
                 if (filesUser?.length > 0) {
@@ -1024,10 +1024,11 @@ export default function EditUser() {
                         const formData = new FormData();
                         formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
                         let query = `?usuario_id=${data?.userId}`;
-                        if (data?.userId) query += `&campo=${data?.userId}`;
+                        if (uploadedFile?.campo) query += `&campo=${uploadedFile?.campo}`;
                         if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
                         if (uploadedFile?.matricula_id) query += `&matricula_id=${uploadedFile?.matricula_id}`;
-                        await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+                        const documents = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+                        console.log('documentod qui', documents)
                     }
                 }
                 if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }

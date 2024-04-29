@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
-import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
+import { PaginationTable, SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { getUsersPerfil } from "../../../validators/api-requests"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -53,7 +53,7 @@ export default function ListUsers(props) {
                 normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
                 // normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
                 normalizedUserId?.includes(filterData.toString())
-                
+
             )
         );
     };
@@ -234,7 +234,7 @@ export default function ListUsers(props) {
                             setFilterData('')
                         }} />
                     </Box>
-                    <TablePagination
+                    {/* <TablePagination
                         component="div"
                         count={sortUsers()?.filter(filter)?.length}
                         page={page}
@@ -244,7 +244,7 @@ export default function ListUsers(props) {
                         style={{ color: colorPalette.textColor }} // Define a cor do texto
                         backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
                         nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
-                    />
+                    /> */}
                 </Box>
             </ContentContainer>
 
@@ -267,12 +267,12 @@ export default function ListUsers(props) {
                         nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
                     />
                 </Box>
-                <Divider distance={0}/>
+                <Divider distance={0} />
             </Box>
 
 
             <Backdrop open={showFilterMobile} sx={{ zIndex: 999, width: '100%' }}>
-                <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%'  }}>
+                <ContentContainer sx={{ height: '100%', position: 'absolute', marginTop: 18, width: '100%' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                         <Text bold large>Filtros</Text>
                         <Box sx={{
@@ -287,7 +287,7 @@ export default function ListUsers(props) {
                         }} onClick={() => setShowFilterMobile(false)} />
                     </Box>
                     <Divider padding={0} />
-                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative',}}>
+                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative', }}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, alignItems: 'start', flexDirection: 'column' }}>
                             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-start' }}>
                                 <SelectList
@@ -343,7 +343,9 @@ export default function ListUsers(props) {
 
             {
                 usersList?.filter(filter)?.length > 0 ?
-                    <Table_V1 data={sortUsers()?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id'} enrollmentsCount={true} filters={filters} onPress={(value) => setFilters(value)} onFilter />
+                <Box>
+                    <Table_V1 data={sortUsers()?.filter(filter)} columns={column} columnId={'id'} enrollmentsCount={true} filters={filters} onPress={(value) => setFilters(value)} onFilter />
+                </Box>
                     :
                     <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                         <Text bold>Não foi encontrado usuarios {perfil}</Text>

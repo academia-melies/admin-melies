@@ -81,10 +81,6 @@ export const ClassDays = (props) => {
                                                         <Text bold small>1º professor: </Text>
                                                         <Text light small>{formattedName(item?.professor1)}</Text>
                                                     </Box>}
-                                                    {item?.professor2 && <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                        <Text bold small>2º professor: </Text>
-                                                        <Text light small>{formattedName(item?.professor2)}</Text>
-                                                    </Box>}
                                                 </Box>
                                             </Box>
                                         </Box>
@@ -102,7 +98,10 @@ export const ClassDays = (props) => {
 
             <Backdrop open={showClassDay?.active} sx={{ zIndex: 9999 }}>
                 <ContentContainer>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4, alignItems: 'start', width: '100%', position: 'relative' }}>
+                    <Box sx={{
+                        display: 'flex', gap: 4, alignItems: 'center', width: '100%', position: 'relative',
+                        justifyContent: 'space-between'
+                    }}>
                         <Text bold>Descrição da Aula</Text>
                         <Box sx={{
                             ...styles.menuIcon,
@@ -119,11 +118,16 @@ export const ClassDays = (props) => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 350 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                             <Text bold>Resumo da aula:</Text>
-                            <Text>{showClassDay?.item?.resumo_aula}</Text>
+                            <Text light small style={{
+                                whiteSpace: `pre-line`
+                            }}>{showClassDay?.item?.resumo_aula || 'Não existe conteúdo'}</Text>
                         </Box>
-                        <Link href={showClassDay?.item?.link_aula || ''} target='_blank'>
-                            <Button small disabled={showClassDay?.item?.link_aula ? false : true} text="Assistir aula" />
-                        </Link>
+                        {showClassDay?.item?.link_aula ?
+                            <Button small disabled={showClassDay?.item?.link_aula ? false : true} text="Assistir aula"
+                                onClick={() => window.open(showClassDay?.item?.link_aula, '_blank')} />
+                            :
+                            <Text small light>Link da Aula não disponível</Text>
+                        }
                     </Box>
                 </ContentContainer>
             </Backdrop>

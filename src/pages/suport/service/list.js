@@ -243,7 +243,7 @@ export default function ListServices(props) {
             </Backdrop>
 
             {servicesList.length > 0 ?
-                <Table_V1 data={servicesList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_servico'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
+                <Table_V1 data={servicesList?.filter(filter)} columns={column} columnId={'id_servico'} filters={filters} onPress={(value) => setFilters(value)} onFilter />
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                     <Text bold>Não conseguimos encontrar nenhum Serviço Cadastrado</Text>
