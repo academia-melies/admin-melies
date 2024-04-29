@@ -185,12 +185,18 @@ export const Table_V1 = (props) => {
                                                             )
                                                         )}
                                                         {(enrollmentsCount && row?.total_matriculas_em_andamento > 0 && column?.matricula) &&
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: '1px', backgroundColor: colorPalette?.buttonColor, width: 20, height: 20, borderRadius: 20 }}>
-                                                                <Text style={{ textAlign: 'center' }} small bold>M</Text>
-                                                            </Box>
-
-                                                        }
-                                                    </Box>
+                                                      <Box
+                                                      sx={{
+                                                          backgroundSize: "cover",
+                                                          backgroundRepeat: "no-repeat",
+                                                          backgroundPosition: "center",
+                                                          width: 20,
+                                                          height: 20,
+                                                          backgroundImage: `url(/icons/letra_icon.png)`,
+                                                          
+                                                      }}
+                                                  />}
+                                              </Box>
                                                 ) : (
                                                     <TableCell sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>---</TableCell>
                                                 )}
