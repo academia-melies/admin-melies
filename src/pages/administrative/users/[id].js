@@ -15,6 +15,7 @@ import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import Dropzone from "react-dropzone"
+require('dotenv').config();
 
 export default function EditUser() {
     const { setLoading, alert, colorPalette, user, matches, theme, setShowConfirmationDialog, menuItemsList, userPermissions } = useAppContext()
@@ -194,6 +195,8 @@ export default function EditUser() {
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [showEnrollmentsRegisters, setShowEnrollmentsRegisters] = useState({});
     const [menuView, setMenuView] = useState('userData');
+    const [showEditWritingGrade, setShowEditWritingGrade] = useState({ active: false, writing: {} })
+    const [essayWritingData, setEssayWritingData] = useState({})
 
     const fetchPermissions = async () => {
         try {
@@ -286,7 +289,6 @@ export default function EditUser() {
                 const highestModule = data[data.length - 1].modulo;
                 setHighestModule(highestModule);
             }
-            console.log(data)
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)
@@ -653,16 +655,18 @@ export default function EditUser() {
         }))
     }
 
-    const handleBlurNota = (event) => {
+    const handleBlurNota = (event, subscription) => {
 
         let nota = event.target.value;
 
-        if (nota >= 51) {
-            setSelectiveProcessData({ ...selectiveProcessData, status_processo: 'Aprovado - pré-matricula' })
+        if (nota > 50) {
+            console.log('entrou aqui')
+            handleChangeSubscriptionData({ interestId: subscription?.interesse_id, field: 'status_processo_sel', value: 'Classificado' })
             return
         }
-        if (nota < 50) {
-            setSelectiveProcessData({ ...selectiveProcessData, status_processo: 'Reprovado' })
+        if (nota <= 50) {
+            console.log('entrou ali')
+            handleChangeSubscriptionData({ interestId: subscription?.interesse_id, field: 'status_processo_sel', value: 'Desclassificado' })
             return
         }
     }
@@ -817,7 +821,6 @@ export default function EditUser() {
             return
         }
 
-        console.log(arrayInterests)
         setArrayInterests((prevArray) => [
             ...prevArray,
             {
@@ -1028,7 +1031,6 @@ export default function EditUser() {
                         if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
                         if (uploadedFile?.matricula_id) query += `&matricula_id=${uploadedFile?.matricula_id}`;
                         const documents = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
-                        console.log('documentod qui', documents)
                     }
                 }
                 if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
@@ -1096,7 +1098,7 @@ export default function EditUser() {
 
                 if (arrayInterests?.length > 0) {
                     for (let interest of arrayInterests) {
-                        const subscription = interest?.inscricao;
+                        const subscription = { ...interest?.inscricao, id_redacao: interest?.id_redacao };
 
                         if (subscription) {
                             if (subscription?.id_inscricao) {
@@ -1447,7 +1449,7 @@ export default function EditUser() {
             const response = await api.post(`/requeriment/subscription/create`, { classId, courseId, entryForm, userData, moduleEnrollment: 1, userResp: user?.id })
             if (response?.status === 201) {
                 alert.success('Requerimento enviado com sucesso.')
-                handleItems()
+                handleEditUser()
             } else {
                 alert.error('Ocorreu um erro interno ao enviar o requerimento. Tente novamente ou consulte o Suporte.')
             }
@@ -1532,6 +1534,7 @@ export default function EditUser() {
                 return
             } else {
                 alert.success('E-mail enviado com sucesso.')
+                await handleEditUser()
             }
         } catch (error) {
             console.log(error)
@@ -1570,15 +1573,11 @@ export default function EditUser() {
 
 
     const handleChangeSubscriptionData = ({ interestId, field, value }) => {
-        console.log(interestId, field, value)
-
         setArrayInterests((prevClassDays) =>
             prevClassDays?.map((item) => {
 
                 if (item?.id_interesse === interestId) {
                     const updatedItem = { ...item };
-
-                    console.log(updatedItem)
 
                     updatedItem.inscricao[field] = value;
                     return updatedItem;
@@ -1586,6 +1585,67 @@ export default function EditUser() {
                     return item;
                 }
             }))
+    }
+
+
+
+    const handleGetWriting = async (redacaoId) => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/redacao-online/${redacaoId}`)
+            if (response?.status === 200) {
+                const { data } = response
+                setShowEditWritingGrade({ active: true, writing: data })
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleChangeEssayWriting = (value) => {
+
+        setEssayWritingData((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
+
+
+    const handleApprovedStatus = async () => {
+        if (essayWritingData?.status_processo_sel && essayWritingData?.nt_redacao) {
+            setLoading(true)
+            try {
+                let approved = essayWritingData?.status_processo_sel === 'Classificado' && 1 ||
+                    essayWritingData?.status_processo_sel === 'Desclassificado' && 0 || null
+                let essayData = {
+                    aprovado: approved,
+                    status_processo_sel: essayWritingData?.status_processo_sel,
+                    nt_redacao: essayWritingData?.nt_redacao,
+                    id_redacao: showEditWritingGrade?.writing?.id_redacao,
+                    interesse_id: showEditWritingGrade?.writing?.interesse_id
+                }
+                const response = await api.patch(`/redacao-online/approved/status`, { essayData })
+
+                if (response?.status === 200) {
+                    alert.success('Nota lançada.')
+                    setEssayWritingData({})
+                    setShowEditWritingGrade({ active: false, writing: {} })
+                    handleItems()
+                } else {
+                    alert.error('Ocorreu um erro ao lançar nota. Tente novamente ou entre em contato com o Suporte.')
+                }
+            } catch (error) {
+                console.log(error)
+            } finally {
+                setLoading(false)
+            }
+        } else {
+            alert.info('Preencha o campo de Nota e Status da redação antes de enviar.')
+        }
     }
 
 
@@ -3280,7 +3340,7 @@ export default function EditUser() {
 
                                     {enrollmentData.length > 0 ?
                                         enrollmentData?.map((item, index) => {
-                                            const isReenrollment = item.status === "Concluído" &&
+                                            const isReenrollment = (item.status === "Concluído" || item.status === "Aprovado") &&
                                                 item.modulo === highestModule;
                                             const isDp = item.cursando_dp === 1;
                                             const className = item?.nome_turma;
@@ -3504,7 +3564,7 @@ export default function EditUser() {
                                         })
                                         :
                                         <Text light> Não encontramos matrículas cadastradas.</Text>}
-                                    {/* <Button disabled={!isPermissionEdit && true} text="Nova matrícula" style={{ width: 150, marginTop: 3 }} onClick={() => setShowSections({ ...showSections, interest: true })} /> */}
+                                    <Button disabled={!isPermissionEdit && true} text="Nova matrícula" style={{ width: 150, marginTop: 3 }} onClick={() => setShowSections({ ...showSections, interest: true })} />
                                 </Box>
                             }
 
@@ -3701,40 +3761,48 @@ export default function EditUser() {
                                                         }
                                                         {subscription?.forma_ingresso === 'Redação Online' &&
                                                             <>
-                                                                <Divider padding={0} />
+                                                                {/* <Divider padding={0} />
                                                                 <Box sx={{ ...styles.inputSection, maxWidth: 280 }}>
                                                                     <TextInput disabled={!isPermissionEdit && true} name='agendamento_processo' onChange={(e) =>
                                                                         handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
                                                                         type="datetime-local" value={(subscription?.agendamento_processo) || ''}
                                                                         label='Data do agendamento' sx={{ flex: 1, }} />
-                                                                </Box>
+                                                                </Box> */}
                                                                 <Divider padding={0} />
-                                                                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
-                                                                    <Text bold>Redação:</Text>
-                                                                    <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                                        <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveEssayWriting(interest)} style={{ width: 120, height: 30 }} />
-                                                                        <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" style={{ width: 120, height: 30 }} />
-                                                                    </Box>
-                                                                </Box>
-                                                                <Divider padding={0} />
+                                                                {!interest?.id_redacao &&
+                                                                    <>
+                                                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
+                                                                            <Text bold>Redação:</Text>
+                                                                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
+                                                                                <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveEssayWriting(interest)} style={{ width: 120, height: 30 }} />
+                                                                                {/* <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" style={{ width: 120, height: 30 }} /> */}
+                                                                            </Box>
+                                                                        </Box>
+                                                                        <Divider padding={0} />
+                                                                    </>
+                                                                }
                                                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
                                                                     <Text bold>Prova - Redação:</Text>
                                                                     {interest?.id_redacao &&
-                                                                        <Link href={`http://localhost:3000/?key_writing_user=${interest?.id_redacao}`} target="_blank">
-                                                                            <Box sx={{
-                                                                                ...styles.menuIcon,
-                                                                                backgroundImage: `url('${icons.file}')`,
-                                                                                transition: '.3s',
-                                                                                "&:hover": {
-                                                                                    opacity: 0.8,
-                                                                                    cursor: 'pointer'
-                                                                                }
-                                                                            }} />
-                                                                        </Link>}
+                                                                        <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
+                                                                            <Link href={`${process.env.NEXT_PUBLIC_REDACAO_URL}?key_writing_user=${interest?.id_redacao}`} target="_blank">
+                                                                                <Box sx={{
+                                                                                    ...styles.menuIcon,
+                                                                                    backgroundImage: `url('${icons.file}')`,
+                                                                                    transition: '.3s',
+                                                                                    "&:hover": {
+                                                                                        opacity: 0.8,
+                                                                                        cursor: 'pointer'
+                                                                                    }
+                                                                                }} />
+                                                                            </Link>
+                                                                        </Box>
+                                                                    }
+
                                                                 </Box>
                                                                 <Divider padding={0} />
                                                                 <Box sx={styles.inputSection}>
-                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_redacao' onBlur={handleBlurNota}
+                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_redacao' onBlur={(e) => handleBlurNota(e, subscription)}
                                                                         type="number" onChange={(e) =>
                                                                             handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
                                                                         value={subscription?.nt_redacao || ''} label='Nota da prova' sx={{ flex: 1, }} />
@@ -3743,17 +3811,60 @@ export default function EditUser() {
                                                         <>
                                                             {subscription?.forma_ingresso === 'Nota do Enem'
                                                                 && <Box sx={styles.inputSection}>
-                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_enem' onBlur={handleBlurNota}
+                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_enem'
                                                                         type="number" onChange={(e) =>
                                                                             handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
                                                                         value={subscription?.nt_enem || ''} label='Nota da prova' sx={{ flex: 1, }} />
                                                                 </Box>}
-                                                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupStatusProcess}
+                                                            {/* <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupStatusProcess}
                                                                 valueSelection={subscription?.status_processo_sel} onSelect={(value) =>
                                                                     handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value })}
                                                                 title="Status processo seletivo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                            />
+                                                            /> */}
+                                                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                                <Box sx={{
+                                                                    display: 'flex', gap: 1.5, alignItems: 'center', padding: '5px 8px',
+                                                                    border: `1px solid green`,
+                                                                    transition: '.3s',
+                                                                    backgroundColor: subscription?.status_processo_sel === 'Classificado' ? 'green' : 'trasnparent', borderRadius: 2,
+                                                                    "&:hover": {
+                                                                        opacity: 0.8,
+                                                                        cursor: 'pointer',
+                                                                        transform: 'scale(1.03, 1.03)'
+                                                                    },
+                                                                }} onClick={() => {
+                                                                    if (subscription?.status_processo_sel !== 'Classificado') {
+                                                                        handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value: 'Classificado' })
+                                                                    }
+                                                                }}>
+                                                                    {subscription?.status_processo_sel !== 'Classificado' && <CheckCircleIcon style={{ color: 'green', fontSize: 13 }} />}
+                                                                    <Text bold style={{ color: subscription?.status_processo_sel === 'Classificado' ? '#fff' : 'green' }}>{
+                                                                        subscription?.status_processo_sel === 'Classificado' ? "Classificado" : "Classificar"
+                                                                    }</Text>
+                                                                </Box>
+                                                                <Box sx={{
+                                                                    display: 'flex', gap: 1.5, alignItems: 'center', padding: '5px 8px',
+                                                                    border: `1px solid red`,
+                                                                    backgroundColor: subscription?.status_processo_sel === 'Desclassificado' ? 'red' : 'trasnparent', borderRadius: 2,
+                                                                    transition: '.3s',
+                                                                    "&:hover": {
+                                                                        opacity: 0.8,
+                                                                        cursor: 'pointer',
+                                                                        transform: 'scale(1.03, 1.03)'
+                                                                    },
+                                                                }} onClick={() => {
+                                                                    if (subscription?.status_processo_sel !== 'Desclassificado') {
+                                                                        handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value: 'Desclassificado' })
+                                                                    }
+                                                                }}>
+                                                                    {subscription?.status_processo_sel !== 'Desclassificado' && <CancelIcon style={{ color: 'red', fontSize: 13 }} />}
+                                                                    <Text bold style={{ color: subscription?.status_processo_sel === 'Desclassificado' ? '#fff' : 'red' }}>{
+                                                                        subscription?.status_processo_sel === 'Desclassificado' ? "Desclassificado" : "Desclassificar"
+                                                                    }</Text>
+                                                                </Box>
+                                                            </Box>
+
                                                             <Divider padding={0} />
                                                             {!newUser && <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
                                                                 <Text bold>Requerimento de Matrícula/Cadastro:</Text>
@@ -3826,6 +3937,8 @@ export default function EditUser() {
 
                                     }
                                 </Box>
+
+                                <Button disabled={!isPermissionEdit && true} text="Nova inscrição/Interesse" style={{ width: 250, marginTop: 3 }} onClick={() => setShowSections({ ...showSections, interest: true })} />
                             </>
                         }
                     </ContentContainer>

@@ -22,12 +22,12 @@ export default function EssayWritingList(props) {
     const filterFunctions = {
         writingsVizualization: (item) => {
             if (menuSelected === 'Em andamento') {
-                const isData = item?.aprovado === null
+                const isData = item?.corrigido !== 1
                 return isData;
-            } else if (menuSelected === 'Aprovados') {
-                return item?.aprovado === 1
+            } if (menuSelected === 'Aprovados') {
+                return parseInt(item?.aprovado) === 1
             }
-            else if (menuSelected === 'Reprovados') {
+            if (menuSelected === 'Reprovados') {
                 return parseInt(item?.aprovado) < 1
             } else {
                 return true
@@ -39,16 +39,8 @@ export default function EssayWritingList(props) {
 
 
     const filter = (item) => {
-        const normalizeString = (str) => {
-            return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        };
 
-        const normalizedFilterData = normalizeString(filterData);
-        const normalizedTituloChamado = normalizeString(item.nome_curso);
-
-        return (
-            normalizedTituloChamado?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
-        ) && Object.values(filterFunctions).every(filterFunction => filterFunction(item));
+        return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
     };
 
 
@@ -186,7 +178,7 @@ export default function EssayWritingList(props) {
             </Box>
 
             {writings?.filter(filter)?.length > 0 ?
-                <TableEssayWritings data={writings} setShowEditWritingGrade={setShowEditWritingGrade} showEditWritingGrade={showEditWritingGrade} />
+                <TableEssayWritings data={writings?.filter(filter)} setShowEditWritingGrade={setShowEditWritingGrade} showEditWritingGrade={showEditWritingGrade} />
                 :
                 <Text light>Não foi possível encontrar Redações cadastradas.</Text>}
 
