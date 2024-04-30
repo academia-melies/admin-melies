@@ -194,10 +194,9 @@ export const Table_V1 = (props) => {
                                                             )
                                                         )}
                                                         {(enrollmentsCount && row?.total_matriculas_em_andamento > 0 && column?.matricula) &&
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: '1px', backgroundColor: colorPalette?.buttonColor, width: 20, height: 20, borderRadius: 20 }}>
-                                                                <Text style={{ textAlign: 'center' }} small bold>M</Text>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Text style={{ textAlign: 'center', color: colorPalette?.buttonColor }} bold>M</Text>
                                                             </Box>
-
                                                         }
                                                     </Box>
                                                 ) : (
