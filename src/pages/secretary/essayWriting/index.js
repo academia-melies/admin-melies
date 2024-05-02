@@ -366,7 +366,7 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 2, }}>
 
-                                                <Link href={`http://localhost:3000/?key_writing_user=${item?.id_redacao}`} target="_blank">
+                                                <Link href={`${process.env.NEXT_PUBLIC_REDACAO_URL}?key_writing_user=${item?.id_redacao}`} target="_blank">
                                                     <Box sx={{
                                                         display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
                                                         padding: '6px 12px', borderRadius: 2, border: `1px solid ${colorPalette?.buttonColor}`,
