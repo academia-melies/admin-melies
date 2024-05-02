@@ -3901,7 +3901,7 @@ export default function EditUser() {
                                                                                             cursor: 'pointer'
                                                                                         }
                                                                                     }} onClick={() => {
-                                                                                        if (subscription?.forma_ingresso && subscription?.id_inscricao) {
+                                                                                        if (subscription?.forma_ingresso) {
                                                                                             if (isHaveRequeriment) {
                                                                                                 window.open(linkRequeriment, '_blank')
                                                                                             } else {
@@ -4079,7 +4079,7 @@ export default function EditUser() {
                                                                                             secondary={isHaveRequeriment}
                                                                                             small text={isHaveRequeriment ? 'Ver Requerimento' : "Enviar Requerimento"}
                                                                                             style={{ width: 160 }} onClick={() => {
-                                                                                                if (subscription?.forma_ingresso && subscription?.id_inscricao) {
+                                                                                                if (subscription?.forma_ingresso) {
                                                                                                     if (isHaveRequeriment) {
                                                                                                         window.open(linkRequeriment, '_blank')
                                                                                                     } else {
