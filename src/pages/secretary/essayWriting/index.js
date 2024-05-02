@@ -25,10 +25,10 @@ export default function EssayWritingList(props) {
                 const isData = item?.corrigido !== 1
                 return isData;
             } if (menuSelected === 'Aprovados') {
-                return parseInt(item?.aprovado) === 1
+                return item?.corrigido === 1 && parseInt(item?.aprovado) === 1
             }
             if (menuSelected === 'Reprovados') {
-                return parseInt(item?.aprovado) < 1
+                return item?.corrigido === 1 && parseInt(item?.aprovado) < 1
             } else {
                 return true
             }
@@ -64,15 +64,12 @@ export default function EssayWritingList(props) {
         }
     }
 
-
     const handleApprovedStatus = async () => {
         if (essayWritingData?.status_processo_sel && essayWritingData?.nt_redacao) {
             setLoading(true)
             try {
-                let approved = essayWritingData?.status_processo_sel === 'Classificado' && 1 ||
-                    essayWritingData?.status_processo_sel === 'Desclassificado' && 0 || null
                 let essayData = {
-                    aprovado: approved,
+                    aprovado: essayWritingData?.status_processo_sel,
                     status_processo_sel: essayWritingData?.status_processo_sel,
                     nt_redacao: essayWritingData?.nt_redacao,
                     id_redacao: showEditWritingGrade?.writing?.id_redacao,
@@ -140,6 +137,19 @@ export default function EssayWritingList(props) {
         (data?.includes('Aprovado') && '#006400') ||
         (data?.includes('Reprovado') && 'red'))
 
+    const handleBlurNota = (event) => {
+
+        let nota = event.target.value;
+
+        if (nota > 50) {
+            setEssayWritingData({ ...essayWritingData, status_processo_sel: 'Classificado' })
+            return
+        }
+        if (nota <= 50) {
+            setEssayWritingData({ ...essayWritingData, status_processo_sel: 'Desclassificado' })
+            return
+        }
+    }
 
     return (
         <>
@@ -220,6 +230,7 @@ export default function EssayWritingList(props) {
                     <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
                         <TextInput placeholder='Nota da prova' name='nt_redacao'
                             type="number" onChange={handleChange}
+                            onBlur={handleBlurNota}
                             value={essayWritingData?.nt_redacao || ''}
                             label='Nota da prova'
                             sx={{ flex: 1, }}
