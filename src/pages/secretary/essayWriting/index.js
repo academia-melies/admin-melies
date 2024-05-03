@@ -268,9 +268,8 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
         { key: 'id_redacao', label: '#ID' },
         { key: 'nome', label: 'Nome' },
         { key: 'nome_curso', label: 'Curso', task: true },
-        { key: 'nivel_curso', label: 'Nível' },
         { key: 'modalidade_curso', label: 'Modalidade' },
-        { key: 'periodo_interesse', label: 'Período', participants: true },
+        // { key: 'periodo_interesse', label: 'Período', participants: true },
         { key: 'realizada', label: 'Realizada?' },
         { key: 'aprovado', label: 'Aprovado?' },
         { key: 'dt_realizacao', label: 'Realizada em', date: true },
@@ -344,27 +343,14 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                         }}>
                                             <Text>{item?.nome_curso || '-'}</Text>
                                         </TableCell>
-                                        <TableCell sx={{
-                                            padding: '15px 10px', textAlign: 'center',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            maxWidth: '180px',
-                                        }}>
-                                            <Text style={{
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                            }}>{item?.nivel_curso || '-'}</Text>
-                                        </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Text>{item?.modalidade_curso || '-'}</Text>
                                         </TableCell>
-                                        <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
+                                        {/* <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
                                                 <Text>{item?.periodo_interesse || '-'}</Text>
                                             </Box>
-                                        </TableCell>
+                                        </TableCell> */}
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{item?.realizada === 1 ? 'Sim' : 'Não' || '-'}</Text>
                                         </TableCell>

@@ -2200,10 +2200,10 @@ export const Payment = (props) => {
                                 <Text>{formatter.format(totalValueFinnaly)}</Text>
                             </Box>
                             <Divider distance={0} />
-                            <SelectList fullWidth data={groupDaysForPay} valueSelection={dayForPayment || ''} onSelect={(value) => setDayForPayment(value)}
+                            {/* <SelectList fullWidth data={groupDaysForPay} valueSelection={dayForPayment || ''} onSelect={(value) => setDayForPayment(value)}
                                 title="Selecione o dia do vencimento *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
+                            /> */}
                             <TextInput name='monthForPayment' onChange={(e) => {
                                 setMonthDayForPayment(e.target.value)
                                 let date = new Date(e.target.value)
@@ -2212,7 +2212,7 @@ export const Payment = (props) => {
                                 } else {
                                     return
                                 }
-                            }} value={(monthForPayment)?.split('T')[0] || ''} type="date" label='Primeira cobrança' sx={{ flex: 1, }} />
+                            }} value={(monthForPayment)?.split('T')[0] || ''} type="date" label='Dt cobrança' sx={{ flex: 1, }} />
                             <CheckBoxComponent
                                 padding={false}
                                 valueChecked={hasEntry}
@@ -2890,6 +2890,14 @@ export const ContractStudent = (props) => {
 
             try {
                 const documentDefinition = {
+                    // background: [
+                    //     {
+                    //         image: 'https://adm-melies.s3.amazonaws.com/doc_melies_contrato_page-0001.jpg',
+                    //         width: 595, // Largura da página A4 em pixels
+                    //         height: 842, // Altura da página A4 em pixels
+                    //         absolutePosition: { x: 0, y: 0 },
+                    //     },
+                    // ],
                     content: [
                         { text: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS', fontSize: 16, alignment: 'center', fontFamily: 'MetropolisBold', bold: true },
 
