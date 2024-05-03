@@ -230,20 +230,21 @@ export default function RequerimentEnrollmentStudent(props) {
         setLoading(true)
         setRequerimentData({ ...requerimentData, aprovado: aprovadoStatus === 'aprovado' ? parseInt(1) : parseInt(0) })
         try {
-            let status = aprovadoStatus === 'aprovado' ? parseInt(1) : parseInt(0);
-
-            if (parseInt(status) === 1) {
+            let status = aprovadoStatus;
+            let aprovved = aprovadoStatus === 'aprovado' ? parseInt(1) : parseInt(0);
+            if (parseInt(aprovved) === 1) {
                 if (disciplines?.some(item => parseInt(item?.aprovado) === 0) || fileUser?.some(file => parseInt(file?.aprovado) === 0)) {
                     status = 'Aprovado com ressalvas';
                 } else {
                     status = 'Aprovado';
                 }
-            } else if (parseInt(status) === 0) {
+            } else if (parseInt(aprovved) === 0) {
                 status = 'Reprovado';
             }
 
 
             requerimentData.status = status;
+            requerimentData.aprovado = aprovved;
             const response = await api.patch(`/requeriment/update/${id}`, { requerimentData })
             if (response?.status === 200) {
                 if (fileUser?.length > 0) {
