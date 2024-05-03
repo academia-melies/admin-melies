@@ -126,7 +126,7 @@ export default function EditUser() {
     const [showContract, setShowContract] = useState(false)
     const [showEnrollment, setShowEnrollment] = useState(false)
     const [showEnrollmentAdd, setShowEnrollmentAdd] = useState(false)
-    const [showSelectiveProcess, setShowSelectiveProcess] = useState(false)
+    const [showSelectiveProcess, setShowSelectiveProcess] = useState(true)
     const [selectiveProcessData, setSelectiveProcessData] = useState({
         agendamento_processo: '',
         nota_processo: '',
@@ -1043,16 +1043,16 @@ export default function EditUser() {
                 }
                 if (response?.status === 201) {
                     alert.success('Usuário cadastrado com sucesso.');
+                    router.push(`/administrative/users/list`)
                 }
-                if (response?.status === 422) {
-                    return alert.error('O CPF já está cadastrado.');
+                if (response?.status === 200) {
+                    return alert.error(response?.data?.msg);
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar usuário.');
                 console.log(error)
             } finally {
                 setLoading(false)
-                router.push(`/administrative/users/list`)
             }
             return setLoading(false)
         }
@@ -1899,7 +1899,7 @@ export default function EditUser() {
         },
         { id: '03', icon: '/icons/matricula_icon.png', text: 'Matrículas', queryId: true, screen: 'enrollments', perfil: ['aluno', 'interessado'] },
         { id: '04', icon: '/icons/cursos_icon_home.png', text: 'Inscrições e Interesses', queryId: true, screen: 'interests', perfil: ['aluno', 'interessado'] },
-        { id: '05', icon: '/icons/contract_icon.png', text: 'Contrato do Funcionário', queryId: true, screen: 'contractEmployee', perfil: ['interessado', 'funcionario'] },
+        { id: '05', icon: '/icons/contract_icon.png', text: 'Contrato do Funcionário', queryId: true, screen: 'contractEmployee', perfil: ['funcionario'] },
     ]
 
 
@@ -2244,7 +2244,7 @@ export default function EditUser() {
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Confirmar senha' name='confirmar_senha' onChange={handleChange} value={userData?.confirmar_senha || ''} type="password" label='Confirmar senha' sx={{ flex: 1, }} />
                                 </Box>}
                                 {userData?.perfil.includes('funcionario') && <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.admin_melies} group={groupAdmin} title="Acesso ao AdminMéliès *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, admin_melies: parseInt(value) })} />}
-                                {userData?.perfil.includes('aluno') && <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.portal_aluno} group={groupAdmin} title="Acesso ao Portal do aluno *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, portal_aluno: parseInt(value) })} />}
+                                {(userData?.perfil.includes('aluno') || userData?.perfil.includes('interessado')) && <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.portal_aluno} group={groupAdmin} title="Acesso ao Portal do aluno *" horizontal={mobile ? false : true} onSelect={(value) => setUserData({ ...userData, portal_aluno: parseInt(value) })} />}
 
                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'start', marginTop: 2, flexDirection: 'column', padding: '0px 0px 20px 12px' }}>
                                     <Button small text='permissões' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, permissions: true })} />
@@ -3901,7 +3901,7 @@ export default function EditUser() {
                                                                                             cursor: 'pointer'
                                                                                         }
                                                                                     }} onClick={() => {
-                                                                                        if (subscription?.forma_ingresso && subscription?.id_inscricao) {
+                                                                                        if (subscription?.forma_ingresso) {
                                                                                             if (isHaveRequeriment) {
                                                                                                 window.open(linkRequeriment, '_blank')
                                                                                             } else {
@@ -4079,7 +4079,7 @@ export default function EditUser() {
                                                                                             secondary={isHaveRequeriment}
                                                                                             small text={isHaveRequeriment ? 'Ver Requerimento' : "Enviar Requerimento"}
                                                                                             style={{ width: 160 }} onClick={() => {
-                                                                                                if (subscription?.forma_ingresso && subscription?.id_inscricao) {
+                                                                                                if (subscription?.forma_ingresso) {
                                                                                                     if (isHaveRequeriment) {
                                                                                                         window.open(linkRequeriment, '_blank')
                                                                                                     } else {

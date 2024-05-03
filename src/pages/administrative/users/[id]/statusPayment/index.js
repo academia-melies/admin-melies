@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { formatTimeStamp } from "../../../../../helpers";
 import { CheckBoxComponent, DeclarationPayment, SectionHeader, SelectList } from "../../../../../organisms";
 import { icons } from "../../../../../organisms/layout/Colors";
-import { Backdrop } from "@mui/material";
+import { Backdrop, Tooltip } from "@mui/material";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 
@@ -504,64 +504,54 @@ export default function StuatusPayment() {
                                                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', flex: 1, }}>
                                                             {item?.forma_pagamento === 'Boleto' ?
                                                                 <>
-                                                                    <Box sx={{ position: 'relative', display: 'flex' }}
-                                                                        onMouseEnter={() => handleGroupMouseEnter(index, 'generate')}
-                                                                        onMouseLeave={() => handleGroupMouseLeave(index, 'generate')}>
-                                                                        <Box sx={{
-                                                                            ...styles.menuIcon,
-                                                                            backgroundImage: `url('/icons/boleto_icon.png')`,
-                                                                            transition: '.3s',
-                                                                            width: 30, height: 'auto', aspectRatio: '1/1',
-                                                                            "&:hover": {
-                                                                                opacity: 0.8,
-                                                                                cursor: 'pointer'
-                                                                            }
-                                                                        }} onClick={() => emitirBoleto(item)} />
-                                                                        {groupStates[index]?.generate &&
-                                                                            <Box sx={{
-                                                                                position: 'absolute',
-                                                                                top: 10,
-                                                                                width: 'auto',
-                                                                                borderRadius: 2,
-                                                                                right: 30,
-                                                                                padding: '5px 10px',
-                                                                                backgroundColor: colorPalette.secondary,
-                                                                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                                            }}>
-                                                                                <Text xsmall bold>Emitir boleto</Text>
+                                                                    <Tooltip title="Emitir Boleto">
+                                                                        <div>
+                                                                            <Box sx={{ position: 'relative', display: 'flex' }}>
+                                                                                <Box sx={{
+                                                                                    ...styles.menuIcon,
+                                                                                    backgroundImage: `url('/icons/boleto_icon_barcode.png')`,
+                                                                                    transition: '.3s',
+                                                                                    width: 30, height: 'auto', aspectRatio: '1/1',
+                                                                                    "&:hover": {
+                                                                                        opacity: 0.8,
+                                                                                        cursor: 'pointer'
+                                                                                    }
+                                                                                }} onClick={() => emitirBoleto(item)} />
                                                                             </Box>
-                                                                        }
-                                                                    </Box>
-                                                                    <Box sx={{ position: 'relative', display: 'flex' }}
-                                                                        onMouseEnter={() => handleGroupMouseEnter(index, 'sendEmail')}
-                                                                        onMouseLeave={() => handleGroupMouseLeave(index, 'sendEmail')}>
-                                                                        <Box sx={{
-                                                                            ...styles.menuIcon,
-                                                                            width: 22,
-                                                                            height: 22,
-                                                                            backgroundImage: `url('${icons.send}')`,
-                                                                            transition: '.3s',
-                                                                            "&:hover": {
-                                                                                opacity: 0.8,
-                                                                                cursor: 'pointer'
-                                                                            }
-                                                                        }} onClick={() => sendEmailBoleto(item)} />
-                                                                        {groupStates[index]?.sendEmail &&
-                                                                            <Box sx={{
-                                                                                position: 'absolute',
-                                                                                zIndex: 999,
-                                                                                top: 10,
-                                                                                minWidth: '120px',
-                                                                                borderRadius: 2,
-                                                                                right: 30,
-                                                                                padding: '5px 10px',
-                                                                                backgroundColor: colorPalette.secondary,
-                                                                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                                            }}>
-                                                                                <Text xsmall bold>Enviar por e-mail</Text>
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                    <Tooltip title="Enviar por e-mail">
+                                                                        <div>
+                                                                            <Box sx={{ position: 'relative', display: 'flex' }}>
+                                                                                <Box sx={{
+                                                                                    ...styles.menuIcon,
+                                                                                    width: 22,
+                                                                                    height: 22,
+                                                                                    backgroundImage: `url('${icons.send}')`,
+                                                                                    transition: '.3s',
+                                                                                    "&:hover": {
+                                                                                        opacity: 0.8,
+                                                                                        cursor: 'pointer'
+                                                                                    }
+                                                                                }} onClick={() => sendEmailBoleto(item)} />
+                                                                                {groupStates[index]?.sendEmail &&
+                                                                                    <Box sx={{
+                                                                                        position: 'absolute',
+                                                                                        zIndex: 999,
+                                                                                        top: 10,
+                                                                                        minWidth: '120px',
+                                                                                        borderRadius: 2,
+                                                                                        right: 30,
+                                                                                        padding: '5px 10px',
+                                                                                        backgroundColor: colorPalette.secondary,
+                                                                                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                                    }}>
+                                                                                        <Text xsmall bold>Enviar por e-mail</Text>
+                                                                                    </Box>
+                                                                                }
                                                                             </Box>
-                                                                        }
-                                                                    </Box>
+                                                                        </div>
+                                                                    </Tooltip>
                                                                 </>
                                                                 : <Text>-</Text>}
                                                         </Box>
