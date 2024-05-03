@@ -226,9 +226,9 @@ export default function RequerimentEnrollmentStudent(props) {
         setFileUser(updatedFiles);
     };
 
-    const handleUpdateRequeriment = async ({ aprovadoStatus }) => {
+    const handleUpdateRequeriment = async ({ aprovadoStatus = 'aprovado' }) => {
         setLoading(true)
-        setRequerimentData({ ...requerimentData, aprovado: aprovadoStatus })
+        setRequerimentData({ ...requerimentData, aprovado: aprovadoStatus === 'aprovado' ? parseInt(1) : parseInt(0) })
         try {
             let status = requerimentData?.status;
 
@@ -792,8 +792,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                         transform: 'scale(1.1, 1.1)'
                                     },
                                 }} onClick={async () => {
-                                    let aprovvedStatus = (parseInt(requerimentData?.aprovado) === 1) ? '' : 1
-                                    await handleUpdateRequeriment({ aprovadoStatus: aprovvedStatus })
+                                    await handleUpdateRequeriment({ aprovadoStatus: 'aprovado' })
                                 }}>
                                     {parseInt(requerimentData?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />}
                                     <Text large style={{ color: parseInt(requerimentData?.aprovado) === 1 ? '#fff' : 'green' }}>
@@ -812,8 +811,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                     },
                                 }}
                                     onClick={async () => {
-                                        let aprovvedStatus = (parseInt(requerimentData?.aprovado) === 0) ? '' : 0
-                                        handleUpdateRequeriment({ aprovadoStatus: aprovvedStatus })
+                                        handleUpdateRequeriment({ aprovadoStatus: 'reprovado' })
                                     }}>
 
                                     {parseInt(requerimentData?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
