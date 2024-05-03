@@ -230,15 +230,15 @@ export default function RequerimentEnrollmentStudent(props) {
         setLoading(true)
         setRequerimentData({ ...requerimentData, aprovado: aprovadoStatus === 'aprovado' ? parseInt(1) : parseInt(0) })
         try {
-            let status = requerimentData?.status;
+            let status = aprovadoStatus === 'aprovado' ? parseInt(1) : parseInt(0);
 
-            if (parseInt(requerimentData?.aprovado) === 1) {
+            if (parseInt(status) === 1) {
                 if (disciplines?.some(item => parseInt(item?.aprovado) === 0) || fileUser?.some(file => parseInt(file?.aprovado) === 0)) {
                     status = 'Aprovado com ressalvas';
                 } else {
                     status = 'Aprovado';
                 }
-            } else if (parseInt(requerimentData?.aprovado) === 0) {
+            } else if (parseInt(status) === 0) {
                 status = 'Reprovado';
             }
 
@@ -291,14 +291,58 @@ export default function RequerimentEnrollmentStudent(props) {
 
 
     const documentsStudent = [
-        { id: '01', icon: '/icons/folder_icon.png', key: 'cpf', text: 'CPF' },
-        { id: '02', icon: '/icons/folder_icon.png', key: 'rg', text: 'RG' },
-        { id: '03', icon: '/icons/folder_icon.png', key: 'comprovante residencia', text: 'Comprovante de Residência' },
-        { id: '04', icon: '/icons/folder_icon.png', key: 'nascimento', text: 'Certidão de nascimento' },
-        { id: '05', icon: '/icons/folder_icon.png', key: 'historico/diploma', text: 'Histórico escolar/Diploma' },
-        { id: '06', icon: '/icons/folder_icon.png', key: 'titulo', text: 'Título de Eleitor' },
-        { id: '07', icon: '/icons/folder_icon.png', key: 'boletim', text: 'Boletim do ENEM(Caso necessário)' },
-        { id: '08', icon: '/icons/folder_icon.png', key: 'foto_perfil', text: 'Foto/Selfie (3/4)' }
+        {
+            id: '01', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'cpf', text: 'CPF'
+        },
+        {
+            id: '02', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'rg', text: 'RG'
+        },
+        {
+            id: '03', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'comprovante_residencia', text: 'Comprovante de Residência'
+        },
+        {
+            id: '04', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'nascimento', text: 'Certidão de nascimento'
+        },
+        {
+            id: '05', entryForm: ['Segunda Graduação'],
+            icon: '/icons/folder_icon.png', key: 'diploma_historico_graduacao', text: 'Diploma e histórico de graduação'
+        },
+        {
+            id: '05', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'historico_ensino_medio', text: 'Histórico do ensino médio'
+        },
+        {
+            id: '05', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'certificado_ensino_medio', text: 'Certificado do ensino médio'
+        },
+        {
+            id: '07', entryForm: ['Nota do Enem'],
+            icon: '/icons/folder_icon.png', key: 'boletim_enem', text: 'Boletim do ENEM'
+        },
+        {
+            id: '08', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'foto_perfil', text: 'Foto/Selfie (3/4)'
+        },
+        {
+            id: '09', entryForm: ['Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'declaracao_transferencia', text: 'Declaração de transferência'
+        },
+        {
+            id: '10', entryForm: ['Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'solicitacao_vaga', text: 'Solicitação de vaga'
+        },
+        {
+            id: '11', entryForm: ['Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'historico_escolar_graduacao', text: 'Histórico escolar de graduação'
+        },
+        {
+            id: '12', entryForm: ['Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'conteudo_programatico', text: 'Conteúdo programático das disciplinas cursadas'
+        },
     ]
 
     const formatter = new Intl.NumberFormat('pt-BR', {
@@ -791,8 +835,8 @@ export default function RequerimentEnrollmentStudent(props) {
                                         cursor: 'pointer',
                                         transform: 'scale(1.1, 1.1)'
                                     },
-                                }} onClick={async () => {
-                                    await handleUpdateRequeriment({ aprovadoStatus: 'aprovado' })
+                                }} onClick={() => {
+                                    handleUpdateRequeriment({ aprovadoStatus: 'aprovado' })
                                 }}>
                                     {parseInt(requerimentData?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />}
                                     <Text large style={{ color: parseInt(requerimentData?.aprovado) === 1 ? '#fff' : 'green' }}>
@@ -810,29 +854,29 @@ export default function RequerimentEnrollmentStudent(props) {
                                         transform: 'scale(1.1, 1.1)'
                                     },
                                 }}
-                                    onClick={async () => {
-                                        handleUpdateRequeriment({ aprovadoStatus: 'reprovado' })
-                                    }}>
+                                    onClick={() => {
+                                    handleUpdateRequeriment({ aprovadoStatus: 'reprovado' })
+                                }}>
 
-                                    {parseInt(requerimentData?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
-                                    <Text large style={{ color: parseInt(requerimentData?.aprovado) === 0 ? '#fff' : 'red' }}>
-                                        {parseInt(requerimentData?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
-                                    </Text>
-                                </Box>
+                                {parseInt(requerimentData?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
+                                <Text large style={{ color: parseInt(requerimentData?.aprovado) === 0 ? '#fff' : 'red' }}>
+                                    {parseInt(requerimentData?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
+                                </Text>
                             </Box>
-                            {parseInt(requerimentData?.aprovado) === 0 &&
-                                <TextInput
-                                    placeholder='Reprovado por falta de aderência das disciplinas cursadas anteriormente...'
-                                    name='obs_status' onChange={(e) => setRequerimentData({ ...requerimentData, obs_status: e.target.value })} value={requerimentData?.obs_status || ''}
-                                    label='Motivo:'
-                                    multiline
-                                    maxRows={5}
-                                    rows={3}
-                                    sx={{}} />
-                            }
                         </Box>
-                    </div>
-                </>
+                        {parseInt(requerimentData?.aprovado) === 0 &&
+                            <TextInput
+                                placeholder='Reprovado por falta de aderência das disciplinas cursadas anteriormente...'
+                                name='obs_status' onChange={(e) => setRequerimentData({ ...requerimentData, obs_status: e.target.value })} value={requerimentData?.obs_status || ''}
+                                label='Motivo:'
+                                multiline
+                                maxRows={5}
+                                rows={3}
+                                sx={{}} />
+                        }
+                    </Box>
+                </div>
+        </>
             }
         </>
     )
