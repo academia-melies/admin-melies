@@ -226,8 +226,9 @@ export default function RequerimentEnrollmentStudent(props) {
         setFileUser(updatedFiles);
     };
 
-    const handleUpdateRequeriment = async () => {
+    const handleUpdateRequeriment = async ({ aprovadoStatus }) => {
         setLoading(true)
+        setRequerimentData({ ...requerimentData, aprovado: aprovadoStatus })
         try {
             let status = requerimentData?.status;
 
@@ -329,8 +330,6 @@ export default function RequerimentEnrollmentStudent(props) {
                 <>
                     <SectionHeader
                         title={`Requerimento de Matrícula - ${requerimentData?.nome_curso} ${requerimentData?.modalidade_curso}_${requerimentData?.modulo_matricula}º Módulo/Semestre`}
-                        saveButton={true}
-                        saveButtonAction={handleUpdateRequeriment}
                     />
                     <div ref={componentPDF}>
 
@@ -792,12 +791,9 @@ export default function RequerimentEnrollmentStudent(props) {
                                         cursor: 'pointer',
                                         transform: 'scale(1.1, 1.1)'
                                     },
-                                }} onClick={() => {
-                                    if (parseInt(requerimentData?.aprovado) === 1) {
-                                        setRequerimentData({ ...requerimentData, aprovado: '' })
-                                    } else {
-                                        setRequerimentData({ ...requerimentData, aprovado: 1 })
-                                    }
+                                }} onClick={async () => {
+                                    let aprovvedStatus = (parseInt(requerimentData?.aprovado) === 1) ? '' : 1
+                                    await handleUpdateRequeriment({ aprovadoStatus: aprovvedStatus })
                                 }}>
                                     {parseInt(requerimentData?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />}
                                     <Text large style={{ color: parseInt(requerimentData?.aprovado) === 1 ? '#fff' : 'green' }}>
@@ -815,12 +811,9 @@ export default function RequerimentEnrollmentStudent(props) {
                                         transform: 'scale(1.1, 1.1)'
                                     },
                                 }}
-                                    onClick={() => {
-                                        if (parseInt(requerimentData?.aprovado) === 0) {
-                                            setRequerimentData({ ...requerimentData, aprovado: '' })
-                                        } else {
-                                            setRequerimentData({ ...requerimentData, aprovado: 0 })
-                                        }
+                                    onClick={async () => {
+                                        let aprovvedStatus = (parseInt(requerimentData?.aprovado) === 0) ? '' : 0
+                                        handleUpdateRequeriment({ aprovadoStatus: aprovvedStatus })
                                     }}>
 
                                     {parseInt(requerimentData?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
