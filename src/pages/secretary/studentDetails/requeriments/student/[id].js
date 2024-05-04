@@ -260,7 +260,7 @@ export default function RequerimentEnrollmentStudent(props) {
                         let statusDiscipline = (discipline?.aprovado !== null && discipline?.aprovado !== '' && discipline?.dispensado === 1) ?
                             (parseInt(discipline?.aprovado) === 1 ? 'Dispensa aprovada' : 'Dispensa reprovada') : 'Aprovada'
 
-                        let statusDisciplineNoDispensed = discipline?.dispensado !== 1 ? 1 : discipline?.aprovado;
+                        let statusDisciplineNoDispensed = discipline?.dispensado > 0 ? 1 : discipline?.aprovado;
                         let disciplineData = {
                             status: statusDiscipline,
                             dispensado: discipline?.dispensado,
