@@ -1528,6 +1528,7 @@ export const Payment = (props) => {
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
+    const [totalValueAVista, setTotalValueAVista] = useState()
     const [disciplineDispensedPorcent, setDisciplineDispensedPorcent] = useState()
     const [valueParcel, setValueParcel] = useState()
     const [valueParcelTwo, setValueParcelTwo] = useState()
@@ -1565,7 +1566,6 @@ export const Payment = (props) => {
 
         let disciplinesDispensed = quantityDisciplinesModule - quantityDisciplinesSelected;
         let porcentDisciplineDispensed = `${((disciplinesDispensed / quantityDisciplinesModule) * 100).toFixed(2)}%`;
-
         let valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
         let costDiscipline = (valueModuleCourse / quantityDisciplinesModule).toFixed(2);
         let calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
@@ -1624,6 +1624,16 @@ export const Payment = (props) => {
         let numberParcellsTwo;
         let paymentTwo;
         let totalValuePaymentFirst = totalValueFinnaly;
+        // let valueTotally = totalValueFinnaly
+
+        // if (numberParcells === 1) {
+        //     if (valuesCourse?.valor_total_avista) {
+        //         valueTotally = (totalValueFinnaly - (totalValueFinnaly * 0.05)).toFixed(2)
+        //         setTotalValueFinnaly(parseFloat(valueTotally))
+        //     }
+        // }
+
+
         if (twoCards && purchaseValues?.firstCard) {
             totalValuePaymentFirst = handleCalculationEntry(purchaseValues?.firstCard)
         }
@@ -2877,6 +2887,23 @@ export const ContractStudent = (props) => {
         });
     };
 
+    async function loadImageAsDataURL(url) {
+        return new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                const context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0, image.width, image.height);
+                const dataURL = canvas.toDataURL('image/jpg'); // Pode ser 'image/png' dependendo do formato da imagem
+                resolve(dataURL);
+            };
+            image.onerror = reject;
+            image.src = url;
+        });
+    }
+
     const handleGeneratePdf = async () => {
         return new Promise(async (resolve, reject) => {
 
@@ -2887,17 +2914,21 @@ export const ContractStudent = (props) => {
                 year: "numeric",
             };
             const formattedDate = new Intl.DateTimeFormat("pt-BR", options).format(currentDate);
+            const imageUrl = '/background/doc_melies_contrato.jpg';
+            const imageDataURL = await loadImageAsDataURL(imageUrl);
 
             try {
                 const documentDefinition = {
-                    // background: [
-                    //     {
-                    //         image: 'https://adm-melies.s3.amazonaws.com/doc_melies_contrato_page-0001.jpg',
-                    //         width: 595, // Largura da página A4 em pixels
-                    //         height: 842, // Altura da página A4 em pixels
-                    //         absolutePosition: { x: 0, y: 0 },
-                    //     },
-                    // ],
+                    background: function (currentPage, pageSize) {
+                        return {
+                            image: imageDataURL,
+                            width: pageSize.width,
+                            height: pageSize.height,
+                            absolutePosition: { x: 0, y: 0 },
+                            opacity: 0.5, // Opacidade da marca d'água (opcional)
+                        };
+
+                    },
                     content: [
                         { text: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS', fontSize: 16, alignment: 'center', fontFamily: 'MetropolisBold', bold: true },
 
@@ -3008,6 +3039,7 @@ export const ContractStudent = (props) => {
                     styles: {
                         header: { fontSize: 18, bold: true },
                     },
+                    pageMargins: [50, 100, 50, 100],
                 };
 
                 const pdfDocGenerator = pdfMake.createPdf(documentDefinition);
