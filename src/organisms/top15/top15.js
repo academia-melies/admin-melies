@@ -2,10 +2,11 @@ import { Avatar } from "@mui/material"
 import { Box, Text, Button, Divider } from "../../atoms"
 import { useAppContext } from "../../context/AppContext"
 import { formatTimeStamp } from "../../helpers"
+import { useRouter } from "next/router"
 
 export const Top15List = (props) => {
     const { data = [] } = props
-
+    const router = useRouter()
     const { colorPalette, theme } = useAppContext()
 
     return (
@@ -70,7 +71,8 @@ export const Top15List = (props) => {
                                         </Box>
                                     </Box>
                                     <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
-                                        <Button small secondary text="Ver" style={{ backgroundColor: colorPalette?.secondary }} />
+                                        <Button small secondary text="Ver" style={{ backgroundColor: colorPalette?.secondary }}
+                                            onClick={() => router.push(`/administrative/users/${item?.usuario_id}`)} />
                                     </Box>
                                 </Box>
                             )

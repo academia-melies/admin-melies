@@ -258,11 +258,13 @@ export default function RequerimentEnrollmentStudent(props) {
                     for (let discipline of disciplines) {
                         let disciplineId = discipline?.id_disc_req_mat
                         let statusDiscipline = (discipline?.aprovado !== null && discipline?.aprovado !== '' && discipline?.dispensado === 1) ?
-                            (parseInt(discipline?.aprovado) === 1 ? 'Dispensa aprovada' : 'Dispensa reprovada') : 'Em análise'
+                            (parseInt(discipline?.aprovado) === 1 ? 'Dispensa aprovada' : 'Dispensa reprovada') : 'Aprovada'
+
+                        let statusDisciplineNoDispensed = discipline?.dispensado !== 1 ? 1 : discipline?.aprovado;
                         let disciplineData = {
                             status: statusDiscipline,
                             dispensado: discipline?.dispensado,
-                            aprovado: discipline?.aprovado,
+                            aprovado: statusDisciplineNoDispensed,
                             motivo_reprovado: discipline?.motivo_reprovado,
                             nt_final_disc: discipline?.nt_final_disc
                         }
@@ -441,6 +443,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                                         {documentsStudent?.map((item, index) => {
 
+                                            const filteredEntryForm = item?.entryForm?.includes(requerimentData?.forma_ingresso)
                                             const fileInsert = fileUser?.filter(file => file?.campo === item?.key)?.length > 0;
                                             const associatedFile = fileUser?.find(file => file?.campo === item?.key);
 
@@ -459,170 +462,178 @@ export default function RequerimentEnrollmentStudent(props) {
                                                         ? 'Documento reprovado'
                                                         : ''
                                                 : '';
-                                            return (
-                                                <Box key={index}>
-                                                    <Tooltip title={titleTooltip}>
-                                                        <div>
-                                                            <Box key={index} sx={{
-                                                                display: 'flex', padding: '10px',
-                                                                borderRadius: 2,
-                                                                backgroundColor: boxBackgroundColor,
-                                                                // boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
-                                                                alignItems: 'center',
-                                                                justifyContent: 'flex-start',
-                                                                gap: 2,
-                                                                transition: '.3s',
-                                                                "&:hover": {
-                                                                    opacity: 0.8,
-                                                                    cursor: 'pointer',
-                                                                    transform: 'scale(1.1, 1.1)'
-                                                                }
-
-                                                            }} onClick={() => setShowDropFile({ ...showDropFile, active: true, campo: item?.key, title: item?.text })}>
-                                                                <Box sx={{
-                                                                    ...styles.menuIcon,
-                                                                    width: 13, height: 13, aspectRatio: '1/1',
-                                                                    backgroundImage: `url('${item?.icon}')`,
+                                            if (filteredEntryForm) {
+                                                return (
+                                                    <Box key={index}>
+                                                        <Tooltip title={titleTooltip}>
+                                                            <div>
+                                                                <Box key={index} sx={{
+                                                                    display: 'flex', padding: '10px',
+                                                                    borderRadius: 2,
+                                                                    backgroundColor: boxBackgroundColor,
+                                                                    // boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'flex-start',
+                                                                    gap: 2,
                                                                     transition: '.3s',
-                                                                    filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                                                    "&:hover": {
+                                                                        opacity: 0.8,
+                                                                        cursor: 'pointer',
+                                                                        transform: 'scale(1.1, 1.1)'
+                                                                    }
 
-                                                                }} />
-                                                                <Text small bold>{item?.text}</Text>
-                                                                {fileInsert ? (
-                                                                    <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />
-                                                                ) : (
-                                                                    <CancelIcon style={{ color: 'red', fontSize: 12 }} />
-                                                                )}
-                                                            </Box>
-                                                            <Backdrop open={showDropFile?.active} sx={{ zIndex: 999, backgroundColor: 'transparent' }}>
-                                                                <ContentContainer>
-                                                                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
-                                                                        <Text bold>Documento {showDropFile?.title}</Text>
-                                                                        <Box sx={{
-                                                                            ...styles.menuIcon,
-                                                                            backgroundImage: `url(${icons.gray_close})`,
-                                                                            transition: '.3s',
-                                                                            width: 14, height: 14, aspectRatio: '1/1',
-                                                                            borderRadius: 12,
-                                                                            padding: '2px',
-                                                                            "&:hover": {
-                                                                                opacity: 0.8,
-                                                                                cursor: 'pointer',
-                                                                                backgroundColor: colorPalette.secondary
-                                                                            }
-                                                                        }} onClick={() => setShowDropFile({ ...showDropFile, active: false, campo: '', title: '' })} />
-                                                                    </Box>
-                                                                    <DropZoneDocument setFilesDrop={setFileUser} filesDrop={fileUser} campo={showDropFile?.campo} />
+                                                                }} onClick={() => setShowDropFile({ ...showDropFile, active: true, campo: item?.key, title: item?.text })}>
+                                                                    <Box sx={{
+                                                                        ...styles.menuIcon,
+                                                                        width: 13, height: 13, aspectRatio: '1/1',
+                                                                        backgroundImage: `url('${item?.icon}')`,
+                                                                        transition: '.3s',
+                                                                        filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
 
-                                                                    {fileUser?.length > 0 &&
-                                                                        <Box sx={{ display: 'flex', gap: 2 }}>
-                                                                            {fileUser?.filter(item => item?.campo === showDropFile?.campo)?.map((item, index) => {
-                                                                                const nameFile = item?.name_file || item?.name;
-                                                                                const typePdf = item?.name?.includes('pdf') || null;
-                                                                                const fileUrl = item?.location || item?.preview || '';
-                                                                                return (
-                                                                                    <Box key={index} sx={{
-                                                                                        display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'column'
-                                                                                    }} >
-                                                                                        <Box sx={{ display: 'flex', gap: 1, padding: '0px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
-                                                                                            <Box sx={{
-                                                                                                textAlign: 'center',
-                                                                                                textOverflow: 'ellipsis',
-                                                                                                whiteSpace: 'nowrap',
-                                                                                                overflow: 'hidden',
-                                                                                                maxWidth: '100px',
-                                                                                            }}>
-                                                                                                <Text small>{decodeURI(nameFile)}</Text>
-                                                                                            </Box>
+                                                                    }} />
+                                                                    <Text small bold>{item?.text}</Text>
+                                                                    {fileInsert ? (
+                                                                        <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />
+                                                                    ) : (
+                                                                        <CancelIcon style={{ color: 'red', fontSize: 12 }} />
+                                                                    )}
+                                                                </Box>
+                                                                <Backdrop open={showDropFile?.active} sx={{ zIndex: 999, backgroundColor: 'transparent' }}>
+                                                                    <ContentContainer>
+                                                                        <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+                                                                            <Text bold>Documento {showDropFile?.title}</Text>
+                                                                            <Box sx={{
+                                                                                ...styles.menuIcon,
+                                                                                backgroundImage: `url(${icons.gray_close})`,
+                                                                                transition: '.3s',
+                                                                                width: 14, height: 14, aspectRatio: '1/1',
+                                                                                borderRadius: 12,
+                                                                                padding: '2px',
+                                                                                "&:hover": {
+                                                                                    opacity: 0.8,
+                                                                                    cursor: 'pointer',
+                                                                                    backgroundColor: colorPalette.secondary
+                                                                                }
+                                                                            }} onClick={() => setShowDropFile({ ...showDropFile, active: false, campo: '', title: '' })} />
+                                                                        </Box>
+                                                                        <DropZoneDocument setFilesDrop={setFileUser} filesDrop={fileUser} campo={showDropFile?.campo} />
 
-                                                                                            <Box sx={{
-                                                                                                ...styles.menuIcon,
-                                                                                                width: 12,
-                                                                                                height: 12,
-                                                                                                aspectRatio: '1:1',
-                                                                                                backgroundImage: `url(${icons.gray_close})`,
-                                                                                                transition: '.3s',
-                                                                                                zIndex: 9999,
-                                                                                                "&:hover": {
-                                                                                                    opacity: 0.8,
-                                                                                                    cursor: 'pointer'
-                                                                                                }
-                                                                                            }} onClick={() => handleRemoveFile(item)} />
-                                                                                        </Box>
-                                                                                        <Link href={item?.location || ''} target="_blank">
-                                                                                            <Box
-                                                                                                sx={{
-                                                                                                    backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : fileUrl}')`,
-                                                                                                    backgroundSize: 'cover',
-                                                                                                    backgroundRepeat: 'no-repeat',
-                                                                                                    backgroundPosition: 'center center',
-                                                                                                    width: { xs: '100%', sm: 100, md: 100, lg: 100, xl: 100 },
-                                                                                                    aspectRatio: '1/1',
-                                                                                                }} />
-                                                                                        </Link>
-
-                                                                                        <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center', flexDirection: 'column' }}>
-                                                                                            <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center', }}>
+                                                                        {fileUser?.length > 0 &&
+                                                                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                                                                {fileUser?.filter(item => item?.campo === showDropFile?.campo)?.map((item, index) => {
+                                                                                    const nameFile = item?.name_file || item?.name;
+                                                                                    const typePdf = item?.name?.includes('pdf') || null;
+                                                                                    const fileUrl = item?.location || item?.preview || '';
+                                                                                    return (
+                                                                                        <Box key={index} sx={{
+                                                                                            display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'column'
+                                                                                        }} >
+                                                                                            <Box sx={{ display: 'flex', gap: 1, padding: '0px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
                                                                                                 <Box sx={{
-                                                                                                    display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid green',
-                                                                                                    backgroundColor: parseInt(item?.aprovado) === 1 ? 'green' : 'transparent',
-                                                                                                    borderRadius: 2,
+                                                                                                    textAlign: 'center',
+                                                                                                    textOverflow: 'ellipsis',
+                                                                                                    whiteSpace: 'nowrap',
+                                                                                                    overflow: 'hidden',
+                                                                                                    maxWidth: '100px',
+                                                                                                }}>
+                                                                                                    <Text small>{decodeURI(nameFile)}</Text>
+                                                                                                </Box>
+
+                                                                                                <Box sx={{
+                                                                                                    ...styles.menuIcon,
+                                                                                                    width: 12,
+                                                                                                    height: 12,
+                                                                                                    aspectRatio: '1:1',
+                                                                                                    backgroundImage: `url(${icons.gray_close})`,
                                                                                                     transition: '.3s',
+                                                                                                    zIndex: 9999,
                                                                                                     "&:hover": {
                                                                                                         opacity: 0.8,
-                                                                                                        cursor: 'pointer',
-                                                                                                        transform: 'scale(1.1, 1.1)'
-                                                                                                    },
-                                                                                                }} onClick={() => handleChangeStatusFiles(item?.id_doc_req_matr, 1)}>
-                                                                                                    {parseInt(item?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />}
-                                                                                                    <Text small style={{ color: parseInt(item?.aprovado) === 1 ? '#fff' : 'green' }}>
-                                                                                                        {parseInt(item?.aprovado) === 1 ? 'Aprovado' : 'Aprovar'}
-                                                                                                    </Text>
-
-                                                                                                </Box>
-                                                                                                <Box sx={{
-                                                                                                    display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid red',
-                                                                                                    backgroundColor: parseInt(item?.aprovado) === 0 ? 'red' : 'transparent',
-                                                                                                    transition: '.3s',
-                                                                                                    borderRadius: 2, "&:hover": {
-                                                                                                        opacity: 0.8,
-                                                                                                        cursor: 'pointer',
-                                                                                                        transform: 'scale(1.1, 1.1)'
-                                                                                                    },
-                                                                                                }} onClick={() => handleChangeStatusFiles(item?.id_doc_req_matr, 0)}>
-
-                                                                                                    {parseInt(item?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 12 }} />}
-                                                                                                    <Text small style={{ color: parseInt(item?.aprovado) === 0 ? '#fff' : 'red' }}>
-                                                                                                        {parseInt(item?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
-                                                                                                    </Text>
-                                                                                                </Box>
+                                                                                                        cursor: 'pointer'
+                                                                                                    }
+                                                                                                }} onClick={() => handleRemoveFile(item)} />
                                                                                             </Box>
+                                                                                            <Link href={item?.location || ''} target="_blank">
+                                                                                                <Box
+                                                                                                    sx={{
+                                                                                                        backgroundImage: `url('${typePdf ? '/icons/pdf_icon.png' : fileUrl}')`,
+                                                                                                        backgroundSize: 'cover',
+                                                                                                        backgroundRepeat: 'no-repeat',
+                                                                                                        backgroundPosition: 'center center',
+                                                                                                        width: { xs: '100%', sm: 100, md: 100, lg: 100, xl: 100 },
+                                                                                                        aspectRatio: '1/1',
+                                                                                                    }} />
+                                                                                            </Link>
 
-                                                                                            {(parseInt(item?.aprovado) === 0 && showDocSection) &&
-                                                                                                <Box sx={{ display: 'flex', gap: 1, marginTop: 1, zIndex: 9999 }}>
-                                                                                                    <TextInput
-                                                                                                        placeholder='Documento vencido..'
-                                                                                                        name='motivo_reprovado' onChange={(e) => handleChangeReasonStatusDoc(item?.id_doc_req_matr, e.target.value)}
-                                                                                                        value={item?.motivo_reprovado || ''}
-                                                                                                        label='Motivo:'
-                                                                                                        multiline
-                                                                                                        maxRows={3}
-                                                                                                        rows={2}
-                                                                                                    />
+                                                                                            <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center', flexDirection: 'column' }}>
+                                                                                                <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center', }}>
+                                                                                                    <Box sx={{
+                                                                                                        display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid green',
+                                                                                                        backgroundColor: parseInt(item?.aprovado) === 1 ? 'green' : 'transparent',
+                                                                                                        borderRadius: 2,
+                                                                                                        transition: '.3s',
+                                                                                                        "&:hover": {
+                                                                                                            opacity: 0.8,
+                                                                                                            cursor: 'pointer',
+                                                                                                            transform: 'scale(1.1, 1.1)'
+                                                                                                        },
+                                                                                                    }} onClick={() => handleChangeStatusFiles(item?.id_doc_req_matr, 1)}>
+                                                                                                        {parseInt(item?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />}
+                                                                                                        <Text small style={{ color: parseInt(item?.aprovado) === 1 ? '#fff' : 'green' }}>
+                                                                                                            {parseInt(item?.aprovado) === 1 ? 'Aprovado' : 'Aprovar'}
+                                                                                                        </Text>
+
+                                                                                                    </Box>
+                                                                                                    <Box sx={{
+                                                                                                        display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid red',
+                                                                                                        backgroundColor: parseInt(item?.aprovado) === 0 ? 'red' : 'transparent',
+                                                                                                        transition: '.3s',
+                                                                                                        borderRadius: 2, "&:hover": {
+                                                                                                            opacity: 0.8,
+                                                                                                            cursor: 'pointer',
+                                                                                                            transform: 'scale(1.1, 1.1)'
+                                                                                                        },
+                                                                                                    }} onClick={() => handleChangeStatusFiles(item?.id_doc_req_matr, 0)}>
+
+                                                                                                        {parseInt(item?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 12 }} />}
+                                                                                                        <Text small style={{ color: parseInt(item?.aprovado) === 0 ? '#fff' : 'red' }}>
+                                                                                                            {parseInt(item?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
+                                                                                                        </Text>
+                                                                                                    </Box>
                                                                                                 </Box>
-                                                                                            }
-                                                                                        </Box>
-                                                                                    </Box>
-                                                                                )
-                                                                            })}
-                                                                        </Box>}
 
-                                                                </ContentContainer>
-                                                            </Backdrop>
-                                                        </div>
-                                                    </Tooltip>
-                                                </Box>
-                                            )
+                                                                                                {(parseInt(item?.aprovado) === 0 && showDocSection) &&
+                                                                                                    <Box sx={{ display: 'flex', gap: 1, marginTop: 1, zIndex: 9999 }}>
+                                                                                                        <TextInput
+                                                                                                            placeholder='Documento vencido..'
+                                                                                                            name='motivo_reprovado' onChange={(e) => handleChangeReasonStatusDoc(item?.id_doc_req_matr, e.target.value)}
+                                                                                                            value={item?.motivo_reprovado || ''}
+                                                                                                            label='Motivo:'
+                                                                                                            multiline
+                                                                                                            maxRows={3}
+                                                                                                            rows={2}
+                                                                                                        />
+                                                                                                    </Box>
+                                                                                                }
+                                                                                            </Box>
+                                                                                        </Box>
+                                                                                    )
+                                                                                })}
+                                                                            </Box>}
+
+                                                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                                                                            <Button text="Confirmar" small onClick={() => setShowDropFile({ ...showDropFile, active: false, campo: '', title: '' })} style={{
+                                                                                borderRadius: 2
+                                                                            }} />
+                                                                        </Box>
+
+                                                                    </ContentContainer>
+                                                                </Backdrop>
+                                                            </div>
+                                                        </Tooltip>
+                                                    </Box>
+                                                )
+                                            }
                                         })
                                         }
                                     </Box>
@@ -716,7 +727,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                             <Text light small>{item?.descricao_dp}</Text>
                                                                         </Box>
                                                                     </Box>
-                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                                    {/* <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                                                         <Text bold small>Softwares ultilizados:</Text>
                                                                         {
                                                                             softwares?.map((soft, index) => {
@@ -738,7 +749,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                 )
                                                                             })
                                                                         }
-                                                                    </Box>
+                                                                    </Box> */}
                                                                     {!selected &&
                                                                         <Box sx={{ display: 'flex', gap: 2, minWidth: 400, justifyContent: 'flex-start', flexDirection: 'column' }}>
                                                                             <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'flex-start' }}>
@@ -856,28 +867,28 @@ export default function RequerimentEnrollmentStudent(props) {
                                     },
                                 }}
                                     onClick={() => {
-                                    handleUpdateRequeriment({ aprovadoStatus: 'reprovado' })
-                                }}>
+                                        handleUpdateRequeriment({ aprovadoStatus: 'reprovado' })
+                                    }}>
 
-                                {parseInt(requerimentData?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
-                                <Text large style={{ color: parseInt(requerimentData?.aprovado) === 0 ? '#fff' : 'red' }}>
-                                    {parseInt(requerimentData?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
-                                </Text>
+                                    {parseInt(requerimentData?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
+                                    <Text large style={{ color: parseInt(requerimentData?.aprovado) === 0 ? '#fff' : 'red' }}>
+                                        {parseInt(requerimentData?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
+                                    </Text>
+                                </Box>
                             </Box>
+                            {parseInt(requerimentData?.aprovado) === 0 &&
+                                <TextInput
+                                    placeholder='Reprovado por falta de aderência das disciplinas cursadas anteriormente...'
+                                    name='obs_status' onChange={(e) => setRequerimentData({ ...requerimentData, obs_status: e.target.value })} value={requerimentData?.obs_status || ''}
+                                    label='Motivo:'
+                                    multiline
+                                    maxRows={5}
+                                    rows={3}
+                                    sx={{}} />
+                            }
                         </Box>
-                        {parseInt(requerimentData?.aprovado) === 0 &&
-                            <TextInput
-                                placeholder='Reprovado por falta de aderência das disciplinas cursadas anteriormente...'
-                                name='obs_status' onChange={(e) => setRequerimentData({ ...requerimentData, obs_status: e.target.value })} value={requerimentData?.obs_status || ''}
-                                label='Motivo:'
-                                multiline
-                                maxRows={5}
-                                rows={3}
-                                sx={{}} />
-                        }
-                    </Box>
-                </div>
-        </>
+                    </div>
+                </>
             }
         </>
     )
