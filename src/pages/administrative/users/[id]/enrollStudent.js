@@ -660,7 +660,7 @@ export default function InterestEnroll() {
         }
     }
 
-    const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData, urlDoc, contractData) => {
+    const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData, pdfBlob, contractData) => {
 
         let enrollmentData = {
             usuario_id: id,
@@ -739,7 +739,13 @@ export default function InterestEnroll() {
             if (response?.status === 201) {
                 setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
 
-                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { urlDoc, contractData, enrollmentId: data })
+                const formData = new FormData();
+                formData.append('file', pdfBlob, contractData?.name_file);
+
+                const response = await api.post(`/student/enrrolments/contract/upload?matricula_id=${data}`, formData)
+                const { fileId } = response?.data
+
+                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { fileId, contractData, enrollmentId: data })
                 if (sendDoc?.status === 200) {
                     alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
                     router.push(`/administrative/users/${id}`);
@@ -766,7 +772,7 @@ export default function InterestEnroll() {
     }
 
 
-    const handleCreateReEnrollStudentDp = async (enrollment, paymentsInfoData, urlDoc, contractData) => {
+    const handleCreateReEnrollStudentDp = async (enrollment, paymentsInfoData, pdfBlob, contractData) => {
         let reenrollmentDataDp = []
         const valueModuleCourse = (valuesCourse?.valor_total_curso)?.toFixed(2)
         const costDiscipline = (valueModuleCourse / quantityDisciplinesModule)?.toFixed(2);
@@ -886,7 +892,13 @@ export default function InterestEnroll() {
             if (response?.status === 201) {
                 setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
 
-                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { urlDoc, contractData, enrollmentId: data })
+                const formData = new FormData();
+                formData.append('file', pdfBlob, contractData?.name_file);
+
+                const response = await api.post(`/student/enrrolments/contract/upload?matricula_id=${data}`, formData)
+                const { fileId } = response?.data
+
+                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { fileId, contractData, enrollmentId: data })
                 if (sendDoc?.status === 200) {
                     alert.success('Re-Matrícula efetivada e contrato enviado por e-mail para assinatura.')
                     window.location.reload();
@@ -2845,8 +2857,6 @@ export const ContractStudent = (props) => {
 
         try {
             const pdfBlob = await handleGeneratePdf();
-            const urlDoc = await convertBlobToBase64(pdfBlob);
-            const pdfUrl = URL.createObjectURL(pdfBlob);
 
             let contractData = {
                 name_file: nameContract,
@@ -2864,9 +2874,9 @@ export const ContractStudent = (props) => {
             }
 
             if (isDp) {
-                handleCreateReEnrollStudentDp(paymentData, paymentsInfoData, urlDoc, contractData)
+                handleCreateReEnrollStudentDp(paymentData, paymentsInfoData, pdfBlob, contractData)
             } else {
-                handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData, urlDoc, contractData);
+                handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData, pdfBlob, contractData);
             }
 
         } catch (error) {
