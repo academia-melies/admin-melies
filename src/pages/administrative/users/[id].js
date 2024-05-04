@@ -1573,6 +1573,8 @@ export default function EditUser() {
 
 
     const handleChangeSubscriptionData = ({ interestId, field, value }) => {
+
+        setUserData({ ...userData, portal_aluno: 1 })
         setArrayInterests((prevClassDays) =>
             prevClassDays?.map((item) => {
 
@@ -2180,7 +2182,7 @@ export default function EditUser() {
                                             ...userData,
                                             perfil: value,
                                             admin_melies: !value.includes('funcionario') ? 0 : 1,
-                                            portal_aluno: !value.includes('aluno') ? 0 : 1,
+                                            // portal_aluno: !value.includes('aluno') ? 0 : 1,
                                         })}
                                         sx={{ flex: 1, }}
                                     />
@@ -2188,11 +2190,11 @@ export default function EditUser() {
                                 </Box>
                                 <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25, padding: '0px 0px 20px 15px' }}>
 
-                                    {(userData?.perfil?.includes('interessado') || userData?.perfil?.includes('aluno') || arrayInterests?.length > 0) &&
+                                    {/* {(userData?.perfil?.includes('interessado') || userData?.perfil?.includes('aluno') || arrayInterests?.length > 0) &&
                                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                             <Text bold small>Lista de interesses:</Text>
                                             <Button small text='interesses' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => setShowSections({ ...showSections, interest: true })} />
-                                        </Box>}
+                                        </Box>} */}
                                     {!newUser &&
                                         <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1, alignItems: 'center', marginTop: 2 }}>
                                             <Text bold small>Observações do {userData?.perfil}:</Text>
