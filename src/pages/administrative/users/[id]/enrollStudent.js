@@ -2896,7 +2896,7 @@ export const ContractStudent = (props) => {
                 canvas.height = image.height;
                 const context = canvas.getContext('2d');
                 context.drawImage(image, 0, 0, image.width, image.height);
-                const dataURL = canvas.toDataURL('image/jpg'); // Pode ser 'image/png' dependendo do formato da imagem
+                const dataURL = canvas.toDataURL('image/jpeg'); // Pode ser 'image/png' dependendo do formato da imagem
                 resolve(dataURL);
             };
             image.onerror = reject;
@@ -2914,7 +2914,7 @@ export const ContractStudent = (props) => {
                 year: "numeric",
             };
             const formattedDate = new Intl.DateTimeFormat("pt-BR", options).format(currentDate);
-            const imageUrl = '/background/doc_melies_contrato.jpg';
+            const imageUrl = '/background/doc_melies_contrato_compacto.jpeg';
             const imageDataURL = await loadImageAsDataURL(imageUrl);
 
             try {
