@@ -154,7 +154,7 @@ export default function RequerimentEnrollmentStudent(props) {
     const handleChangeStatusDiscipline = async (disciplineId, result) => {
         const updatedDisciplines = disciplines.map(discipline => {
             if (discipline.id_disc_req_mat === disciplineId) {
-                const newAprovado = discipline.aprovado === result ? null : parseInt(result);
+                const newAprovado = parseInt(discipline.aprovado) === parseInt(result) ? null : parseInt(result);
                 return {
                     ...discipline,
                     aprovado: newAprovado,
@@ -165,6 +165,8 @@ export default function RequerimentEnrollmentStudent(props) {
 
         setDisciplines(updatedDisciplines);
     };
+
+    console.log(disciplines)
 
     const handleChangeGradeDiscipline = async (disciplineId, value) => {
         const updatedDisciplines = disciplines.map(discipline => {
@@ -260,7 +262,7 @@ export default function RequerimentEnrollmentStudent(props) {
                         let statusDiscipline = (discipline?.aprovado !== null && discipline?.aprovado !== '' && discipline?.dispensado === 1) ?
                             (parseInt(discipline?.aprovado) === 1 ? 'Dispensa aprovada' : 'Dispensa reprovada') : 'Aprovada'
 
-                        let statusDisciplineNoDispensed = discipline?.dispensado > 0 ? 1 : discipline?.aprovado;
+                        let statusDisciplineNoDispensed = parseInt(discipline?.dispensado) === 0 ? 1 : parseInt(discipline?.aprovado);
                         let disciplineData = {
                             status: statusDiscipline,
                             dispensado: discipline?.dispensado,
@@ -779,7 +781,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                         cursor: 'pointer',
                                                                                         transform: 'scale(1.1, 1.1)'
                                                                                     },
-                                                                                }} onClick={() => handleChangeStatusDiscipline(item?.id_disc_req_mat, 0)}>
+                                                                                }} onClick={() => handleChangeStatusDiscipline(item?.id_disc_req_mat, '0')}>
 
                                                                                     {parseInt(item?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 12 }} />}
                                                                                     <Text small style={{ color: parseInt(item?.aprovado) === 0 ? '#fff' : 'red' }}>
