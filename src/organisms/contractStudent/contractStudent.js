@@ -27,9 +27,9 @@ export const ContractStudentComponent = (props) => {
 
     return (
 
-        <ContentContainer gap={6} style={{ boxShadow: 'none', backgroundColor: 'none', marginTop: 5 }}>
+        <ContentContainer gap={6} style={{ boxShadow: 'none', backgroundColor: 'none', marginTop: 5, backgroundImage: 'https://adm-melies.s3.amazonaws.com/doc_melies_contrato_page-0001.jpg' }}>
             <div ref={contractService} style={{ padding: '0px 40px' }}>
-                <Box sx={{ display: 'flex', gap: 6, marginTop: 5, flexDirection: 'column', backgroundColor: '#fff'}}>
+                <Box sx={{ display: 'flex', gap: 6, marginTop: 5, flexDirection: 'column', backgroundColor: '#fff' }}>
 
 
                     <Text bold title>CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</Text>
