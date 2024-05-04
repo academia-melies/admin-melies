@@ -262,7 +262,8 @@ export default function EditPricesCourse(props) {
         try {
             let valueTotal = pricesCourseData?.valor_total_curso;
             console.log(valueTotal)
-            let formattValue = valueTotal.replace(/\./g, '').replace(',', '.');
+            let formattValue = valueTotal.replace(/[^0-9,.]/g, ''); // Remove tudo exceto números, pontos e vírgulas
+            formattValue = formattValue.replace(',', '.');
             console.log(formattValue)
 
             valueTotal = parseFloat(formattValue)
