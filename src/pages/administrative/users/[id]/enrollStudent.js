@@ -745,7 +745,7 @@ export default function InterestEnroll() {
                 const response = await api.post(`/student/enrrolments/contract/upload?matricula_id=${data}`, formData)
                 const { fileId } = response?.data
 
-                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { fileId, contractData, enrollmentId: data })
+                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signers: userData, fileId, contractData, enrollmentId: data })
                 if (sendDoc?.status === 200) {
                     alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
                     router.push(`/administrative/users/${id}`);
@@ -3049,7 +3049,7 @@ export const ContractStudent = (props) => {
                     styles: {
                         header: { fontSize: 18, bold: true },
                     },
-                    pageMargins: [50, 100, 50, 100],
+                    pageMargins: [20, 100, 20, 100],
                 };
 
                 const pdfDocGenerator = pdfMake.createPdf(documentDefinition);

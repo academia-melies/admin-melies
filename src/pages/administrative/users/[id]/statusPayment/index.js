@@ -230,7 +230,7 @@ export default function StuatusPayment() {
         try {
             setLoading(true)
             if (item?.link_pdf) {
-                const response = await api.post(`/student/installment/sendEmail/boleto?linkPdf=${item?.link_pdf}`)
+                const response = await api.post(`/student/installment/sendEmail/boleto?linkPdf=${item?.link_pdf}`, { userData })
                 if (response.status === 200) {
                     alert.success('Email enviado com sucesso.')
                     return
