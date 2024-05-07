@@ -522,7 +522,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                 }
                                                                             }} onClick={() => setShowDropFile({ ...showDropFile, active: false, campo: '', title: '' })} />
                                                                         </Box>
-                                                                        <DropZoneDocument setFilesDrop={setFileUser} filesDrop={fileUser} campo={showDropFile?.campo} />
+                                                                        {/* <DropZoneDocument setFilesDrop={setFileUser} filesDrop={fileUser} campo={showDropFile?.campo} /> */}
 
                                                                         {fileUser?.length > 0 &&
                                                                             <Box sx={{ display: 'flex', gap: 2 }}>
@@ -540,11 +540,11 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                                     textOverflow: 'ellipsis',
                                                                                                     whiteSpace: 'nowrap',
                                                                                                     overflow: 'hidden',
-                                                                                                    maxWidth: '100px',
+                                                                                                    maxWidth: '120px',
                                                                                                 }}>
                                                                                                     <Text small>{decodeURI(nameFile)}</Text>
                                                                                                 </Box>
-
+{/* 
                                                                                                 <Box sx={{
                                                                                                     ...styles.menuIcon,
                                                                                                     width: 12,
@@ -557,7 +557,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                                         opacity: 0.8,
                                                                                                         cursor: 'pointer'
                                                                                                     }
-                                                                                                }} onClick={() => handleRemoveFile(item)} />
+                                                                                                }} onClick={() => handleRemoveFile(item)} /> */}
                                                                                             </Box>
                                                                                             <Link href={item?.location || ''} target="_blank">
                                                                                                 <Box
