@@ -238,7 +238,6 @@ export default function ListReceipts(props) {
                     usuario_resp: user?.id
                 }
                 const response = await api.post(`/student/installment/add/new`, { installmentData, userData })
-                console.log(response)
                 if (response.status === 201) {
                     alert.success('Parcela lançada.')
                     return
@@ -295,7 +294,6 @@ export default function ListReceipts(props) {
             try {
                 const response = await api.patch(`/student/installment/baixa`, { isToUpdate, baixaData, userRespId: user?.id })
                 const { status } = response?.data
-                console.log(response)
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
                     setInstallmentsSelected('');

@@ -43,9 +43,9 @@ export default function RequerimentEnrollmentStudent(props) {
     }
 
 
-    const getDocuments = async () => {
+    const getDocuments = async (userId) => {
         try {
-            const response = await api.get(`/requeriment/files/${id}`)
+            const response = await api.get(`/requeriment/files/${id}/${userId}`)
             if (response?.data?.length > 0) {
                 setFileUser(response?.data)
             }
@@ -95,7 +95,7 @@ export default function RequerimentEnrollmentStudent(props) {
         try {
             const requeriment = await getRequeriment()
             if (requeriment) {
-                await getDocuments()
+                await getDocuments(requeriment?.usuario_id)
                 await getDisciplines()
             }
         } catch (error) {
@@ -168,8 +168,6 @@ export default function RequerimentEnrollmentStudent(props) {
 
         setDisciplines(updatedDisciplines);
     };
-
-    console.log(disciplines)
 
     const handleChangeGradeDiscipline = async (disciplineId, value) => {
         const updatedDisciplines = disciplines.map(discipline => {
@@ -254,8 +252,10 @@ export default function RequerimentEnrollmentStudent(props) {
             if (response?.status === 200) {
                 if (fileUser?.length > 0) {
                     for (let file of fileUser) {
-                        let fileId = file?.id_doc_req_matr
-                        const fileUpdate = await api.patch(`/requeriment/file/update/${fileId}`, { file })
+                        if (!file?.id_doc_usuario) {
+                            let fileId = file?.id_doc_req_matr
+                            const fileUpdate = await api.patch(`/requeriment/file/update/${fileId}`, { file })
+                        }
                     }
                 }
 

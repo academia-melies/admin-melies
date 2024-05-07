@@ -247,7 +247,6 @@ export default function ClassDay(props) {
         try {
             let response;
             if (linkDisciplineData?.id_link_aula) {
-                console.log(linkDisciplineData)
                 response = await api.patch(`/classDay/update/linkClass/discipline`, { linkDisciplineData })
             } else {
 
