@@ -63,8 +63,6 @@ export default function EditInstitution(props) {
         }
     }
 
-    console.log(showFileContainer)
-
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
 

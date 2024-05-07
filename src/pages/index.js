@@ -82,7 +82,6 @@ function Home() {
       setLoading(true)
       try {
          const response = await api.get('/student/enrollments/lastEnrollments')
-         console.log(response.data)
          if (response.status === 200) {
             setLastEnrollments(response.data)
          }
@@ -134,7 +133,6 @@ function Home() {
       setLoading(true)
       try {
          const response = await api.get(`/classDay/month/now`)
-         console.log(response)
          if (response.status === 200) {
             setListClassesDay(response?.data)
          }

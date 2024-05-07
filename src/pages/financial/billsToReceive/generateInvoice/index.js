@@ -79,7 +79,6 @@ export default function ListInvoices(props) {
         setLoading(true)
         try {
             const response = await api.get('/student/installments/invoices')
-            console.log(response)
             const { data } = response;
             const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
             setAllSelected(groupIds)

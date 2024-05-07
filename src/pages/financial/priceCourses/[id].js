@@ -261,12 +261,10 @@ export default function EditPricesCourse(props) {
         setLoading(true)
         try {
             let valueTotal = pricesCourseData?.valor_total_curso;
-            console.log(valueTotal)
-            let formattValue = valueTotal.replace(/[^0-9,.]/g, ''); // Remove tudo exceto números, pontos e vírgulas
-            formattValue = formattValue.replace(',', '.');
-            console.log(formattValue)
-
+            let formattValue = valueTotal.replace(/\./g, '').replace(',', '.');
             valueTotal = parseFloat(formattValue)
+
+
             let alertMsg = ''
             if (remove) {
                 valueTotal = beforeValueCourse;
@@ -285,13 +283,12 @@ export default function EditPricesCourse(props) {
 
             }
             const valueParcels = (valueTotal / pricesCourseData?.n_parcelas).toFixed(2);
-            console.log(valueParcels)
-            
+
             const valueDiscount = (valueTotal - (valueTotal * 0.05)).toFixed(2)
             const formattedParcels = formatValueReal(valueParcels);
-            console.log(formattedParcels)
-
             const formattedDiscount = formatValueReal(valueDiscount);
+
+
             setPricesCourseData((prevValues) => ({
                 ...prevValues,
                 valor_total_curso: formatValueReal(valueTotal),

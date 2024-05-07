@@ -660,12 +660,10 @@ export default function EditUser() {
         let nota = event.target.value;
 
         if (nota > 50) {
-            console.log('entrou aqui')
             handleChangeSubscriptionData({ interestId: subscription?.interesse_id, field: 'status_processo_sel', value: 'Classificado' })
             return
         }
         if (nota <= 50) {
-            console.log('entrou ali')
             handleChangeSubscriptionData({ interestId: subscription?.interesse_id, field: 'status_processo_sel', value: 'Desclassificado' })
             return
         }
@@ -1969,7 +1967,7 @@ export default function EditUser() {
                 title={userData?.nome || `Novo ${userData?.perfil === 'funcionario' && 'Funcionário' || userData?.perfil === 'aluno' && 'Aluno' || userData?.perfil === 'interessado' && 'Interessado' || 'Usuário'}`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
-                deleteButton={!newUser && isPermissionEdit}
+                deleteButton={!newUser && isPermissionEdit && menuView === 'userData'}
                 deleteButtonAction={(event) => setShowConfirmationDialog({
                     active: true,
                     event,

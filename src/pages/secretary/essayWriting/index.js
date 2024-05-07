@@ -55,7 +55,6 @@ export default function EssayWritingList(props) {
         try {
             const response = await api.get(`/redacao-online`)
             const { data } = response;
-            console.log(data)
             setWritings(data)
         } catch (error) {
             console.log(error)
@@ -75,7 +74,7 @@ export default function EssayWritingList(props) {
                     id_redacao: showEditWritingGrade?.writing?.id_redacao,
                     interesse_id: showEditWritingGrade?.writing?.interesse_id
                 }
-                const response = await api.patch(`/redacao-online/approved/status`, { essayData })
+                const response = await api.patch(`/redacao-online/approved/status`, { essayData, userResp: user?.id })
 
                 if (response?.status === 200) {
                     alert.success('Nota lançada.')
@@ -85,7 +84,6 @@ export default function EssayWritingList(props) {
                 } else {
                     alert.error('Ocorreu um erro ao lançar nota. Tente novamente ou entre em contato com o Suporte.')
                 }
-                console.log(data)
                 setWritings(data)
             } catch (error) {
                 console.log(error)
@@ -158,7 +156,7 @@ export default function EssayWritingList(props) {
             />
 
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
-                <Text light style={{ marginRight: 10 }}>vizualizar por:</Text>
+                <Text light style={{ marginRight: 10 }}>visualizar por:</Text>
                 {menusFilters?.map((item, index) => {
                     const menu = item?.value === menuSelected;
                     return (
@@ -383,7 +381,7 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                                     </Box>
                                                 </Link>
 
-                                                {item?.aprovado === 1 ?
+                                                {item?.corrigido === 1 ?
                                                     <Box sx={{
                                                         display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
                                                         padding: '6px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
@@ -400,7 +398,7 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                                             backgroundImage: `url('/icons/grade_icon.png')`,
                                                             transition: '.3s',
                                                         }} />
-                                                        <Text small bold style={{ color: '#fff' }}>Vizualizar nota</Text>
+                                                        <Text small bold style={{ color: '#fff' }}>Visualizar nota</Text>
                                                     </Box>
 
                                                     : <Box sx={{
