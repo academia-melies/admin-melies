@@ -301,7 +301,6 @@ export default function StuatusPayment() {
                     usuario_resp: user?.id
                 }
                 const response = await api.post(`/student/installment/add/new`, { installmentData, userData })
-                console.log(response)
                 if (response.status === 201) {
                     alert.success('Parcela lançada.')
                     return

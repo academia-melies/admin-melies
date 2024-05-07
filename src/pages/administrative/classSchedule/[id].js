@@ -277,8 +277,6 @@ export default function EditClassSchedule(props) {
             }));
         } else if (isOptative) {
             setClassDaysOptative((prevClassDays) => prevClassDays?.map((item) => {
-                console.log(item[dayWeek]?.key)
-                console.log(key)
                 if (item[dayWeek]?.dia_semana === dayWeek && item[dayWeek]?.key === key) {
                     return {
                         ...item,
@@ -379,8 +377,6 @@ export default function EditClassSchedule(props) {
     });
 
     const diasDaSemanaOrdenados = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-
-    console.log(classDaysOptative)
 
     return (
         <>

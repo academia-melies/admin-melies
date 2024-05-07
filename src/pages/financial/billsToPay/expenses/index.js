@@ -41,7 +41,6 @@ export default function ListBillsToPay(props) {
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            console.log(actions)
             setIsPermissionEdit(actions)
         } catch (error) {
             console.log(error)
