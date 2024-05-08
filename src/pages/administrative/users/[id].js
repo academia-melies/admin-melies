@@ -746,7 +746,6 @@ export default function EditUser() {
 
         if (field === 'turma_id') {
 
-            const classSchedule = await verifyExistsClassSchedule()
             let [className] = classes?.filter(item => item.value === value).map(item => item.label)
             setInterests({
                 ...interests,
@@ -3364,12 +3363,14 @@ export default function EditUser() {
                                             const className = item?.nome_turma;
                                             const courseName = item?.nome_curso;
                                             const period = item?.periodo;
-                                            let datePeriod = new Date(item?.dt_inicio_cronograma || item?.dt_inicio)
+                                            let datePeriod = new Date(item?.dt_inicio)
+                                            // let datePeriod = new Date(item?.dt_inicio_cronograma || item?.dt_inicio)
                                             let year = datePeriod.getFullYear()
                                             let month = datePeriod.getMonth()
                                             let moduloYear = month >= 6 ? '2' : '1';
                                             let periodEnrollment = `${year}.${moduloYear}`
-                                            const startDate = formatDate(item?.dt_inicio_cronograma || item?.dt_inicio)
+                                            const startDate = formatDate(item?.dt_inicio)
+                                            // const startDate = formatDate(item?.dt_inicio_cronograma || item?.dt_inicio)
                                             const title = `${periodEnrollment} - ${className}_${item?.modulo}SEM_${courseName}_${startDate}_${period}`
                                             const enrollmentId = item?.id_matricula;
                                             const files = contractStudent?.filter((file) => file?.matricula_id === item?.id_matricula);
@@ -3490,12 +3491,12 @@ export default function EditUser() {
                                                             <Divider padding={0} />
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                                 <Text bold>Data de Início:</Text>
-                                                                <Text light>{formatTimeStamp(item?.dt_inicio_cronograma)}</Text>
+                                                                <Text light>{startDate}</Text>
                                                             </Box>
                                                             <Divider padding={0} />
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                                 <Text bold>Data Final:</Text>
-                                                                <Text light>{formatTimeStamp(item?.dt_fim_cronograma)}</Text>
+                                                                <Text light>{item?.dt_fim_cronograma ? formatTimeStamp(item?.dt_fim_cronograma) : 'Aguardando Criação do Cronograma'}</Text>
                                                             </Box>
                                                             <Divider padding={0} />
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
@@ -4195,19 +4196,19 @@ export default function EditUser() {
                                     <Button disabled={!isPermissionEdit && true} small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={async () => {
                                         let isClassExists = arrayInterests?.filter(item => item?.turma_id === interests?.turma_id)?.length > 0;
                                         let isPeriodExists = arrayInterests?.filter(item => item?.periodo_interesse === interests?.periodo_interesse)?.length > 0;
-                                        const classSchedule = await verifyExistsClassSchedule(interests?.turma_id)
+                                        // const classSchedule = await verifyExistsClassSchedule(interests?.turma_id)
 
-                                        if (classSchedule?.length > 0) {
+                                        // if (classSchedule?.length > 0) {
 
-                                            if (isClassExists && isPeriodExists) {
-                                                alert.info('Já existe um interesse cadastrado com as mesmas informações')
-                                            } else {
-                                                newUser ? addInterest() : handleAddInterest()
-                                                setShowSections({ ...showSections, addInterest: false })
-                                            }
+                                        if (isClassExists && isPeriodExists) {
+                                            alert.info('Já existe um interesse cadastrado com as mesmas informações')
                                         } else {
-                                            alert.info('Não existe cronograma cadastrado para a turma selecionada. Verifique com a secretaria a criação do cronograma, antes de prosseguir.')
+                                            newUser ? addInterest() : handleAddInterest()
+                                            setShowSections({ ...showSections, addInterest: false })
                                         }
+                                        // } else {
+                                        //     alert.info('Não existe cronograma cadastrado para a turma selecionada. Verifique com a secretaria a criação do cronograma, antes de prosseguir.')
+                                        // }
                                     }} />
                                 </ContentContainer>
                             }

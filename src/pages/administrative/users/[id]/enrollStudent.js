@@ -737,6 +737,8 @@ export default function InterestEnroll() {
             const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData, currentModule });
             const { data } = response
             if (response?.status === 201) {
+
+                const sendConfirmationEnrollment = await api.post(`/student/enrrolments/confirmationEnrollment`, { userData });
                 setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
 
                 const formData = new FormData();
