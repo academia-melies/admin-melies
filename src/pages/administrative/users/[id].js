@@ -237,6 +237,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/user/${id}`)
             const { data } = response
+            console.log(data)
             setUserData(data.response)
         } catch (error) {
             console.log(error)
