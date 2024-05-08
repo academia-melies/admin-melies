@@ -588,6 +588,15 @@ export default function InterestEnroll() {
         }
     }
 
+    const handleConfirmEnrollmentSend = async () => {
+        try {
+            const sendConfirmationEnrollment = await api.post(`/student/enrrolments/confirmationEnrollment`, { userData });
+            console.log(sendConfirmationEnrollment)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     const test = () => {
         let reenrollmentDataDp = []
         const valueModuleCourse = (valuesCourse?.valor_total_curso)?.toFixed(2)
@@ -740,7 +749,7 @@ export default function InterestEnroll() {
             const { data } = response
             if (response?.status === 201) {
 
-                const sendConfirmationEnrollment = await api.post(`/student/enrrolments/confirmationEnrollment`, { userData });
+                await handleConfirmEnrollmentSend()
                 setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
 
                 const formData = new FormData();
