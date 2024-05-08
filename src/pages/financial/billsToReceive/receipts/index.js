@@ -14,7 +14,7 @@ export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette, userPermissions, menuItemsList, user, alert, setShowConfirmationDialog,
-    theme } = useAppContext()
+        theme } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
     const [filterPayment, setFilterPayment] = useState('todos')
     const [installmentsSelected, setInstallmentsSelected] = useState(null);
@@ -314,6 +314,33 @@ export default function ListReceipts(props) {
         } else {
             alert.info('Selecione um item antes de dar baixa e preencha todos os campos corretamente.')
         }
+    }
+
+
+    const handleCancelValue = async () => {
+        console.log('entrou aqui')
+        setLoading(true)
+        try {
+            const isToUpdate = installmentsSelected.split(',').map(id => parseInt(id.trim(), 10));
+
+            const response = await api.patch(`/student/installment/cancel`, { isToUpdate })
+            const { status } = response?.data
+            if (status) {
+                alert.success('Parcelas canceladas com sucesso.');
+                setInstallmentsSelected('');
+                setShowBaixa(false)
+                setBaixaData({ dt_baixa: '', conta_recebimento: '' });
+                getInstallments()
+                return
+            }
+            alert.error('Tivemos um problema ao canceladas as parcelas.');
+        } catch (error) {
+            console.log(error)
+            alert.error('Tivemos um problema ao canceladas as parcelas.');
+        } finally {
+            setLoading(false)
+        }
+
     }
 
     const priorityColor = (data) => (
@@ -753,7 +780,14 @@ export default function ListReceipts(props) {
                     left: { xs: 20, sm: 20, md: 280, lg: 280, xl: 280 }, bottom: 20, display: 'flex', gap: 2, flexWrap: 'wrap'
                 }}>
                     <Button text="Dar baixa" style={{ width: '120px', height: '40px' }} onClick={() => setShowBaixa(true)} />
-                    <Button secondary text="Cancelar" style={{ width: '120px', height: '40px', backgroundColor: colorPalette.primary }} />
+                    <Button secondary text="Cancelar" style={{ width: '120px', height: '40px', backgroundColor: colorPalette.primary }}
+                        onClick={(event) => setShowConfirmationDialog({
+                            active: true,
+                            event,
+                            acceptAction: handleCancelValue,
+                            title: `Cancelar Parcelas?`,
+                            message: 'Tem certeza que deseja seguir com o cancelamento?'
+                        })} />
                 </Box>
                 <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2 }}>
                     <Button text="Salvar" style={{ width: '120px', height: '40px' }} />
