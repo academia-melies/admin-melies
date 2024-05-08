@@ -665,8 +665,10 @@ export default function InterestEnroll() {
         let enrollmentData = {
             usuario_id: id,
             pendencia_aluno: null,
-            dt_inicio: new Date(classScheduleData?.dt_inicio_cronograma) || new Date(classData?.inicio),
-            dt_final: new Date(classScheduleData?.dt_fim_cronograma) || new Date(classData?.fim),
+            dt_inicio: new Date(classData?.inicio),
+            //dt_inicio: new Date(classScheduleData?.dt_inicio_cronograma) || new Date(classData?.inicio),
+            dt_final: new Date(classData?.fim),
+            //dt_final: new Date(classScheduleData?.dt_fim_cronograma) || new Date(classData?.fim),
             status: 'Pendente de assinatura do contrato',
             turma_id: classData?.id_turma,
             motivo_desistencia: null,
