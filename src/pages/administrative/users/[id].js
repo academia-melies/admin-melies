@@ -732,7 +732,7 @@ export default function EditUser() {
         }))
     }
 
-    const handleChangeInterest = (value, field) => {
+    const handleChangeInterest = async (value, field) => {
 
         if (field === 'curso_id') {
             let [courseName] = courses?.filter(item => item.value === value).map(item => item.label)
@@ -745,6 +745,8 @@ export default function EditUser() {
         }
 
         if (field === 'turma_id') {
+
+            const classSchedule = await verifyExistsClassSchedule()
             let [className] = classes?.filter(item => item.value === value).map(item => item.label)
             setInterests({
                 ...interests,
@@ -1344,6 +1346,21 @@ export default function EditUser() {
         } catch (error) {
             alert.error('Ocorreu um erro ao remover a Habilidade selecionada.');
             console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const verifyExistsClassSchedule = async (turma_id) => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/classSchedule/verify/${turma_id}/1`)
+            const { data } = response
+            return data
+        } catch (error) {
+            console.log(error)
+            return error
         } finally {
             setLoading(false)
         }
@@ -4158,7 +4175,7 @@ export default function EditUser() {
                                             title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
-                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={interests?.turma_id ? period?.filter(item => item.idClass === interests?.turma_id) : period} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
+                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={interests?.turma_id ? period?.filter(item => item.idClass === interests?.turma_id) : []} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
                                             title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
@@ -4175,14 +4192,21 @@ export default function EditUser() {
                                         rows={3}
                                     />
                                     <Divider padding={0} />
-                                    <Button disabled={!isPermissionEdit && true} small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={() => {
+                                    <Button disabled={!isPermissionEdit && true} small text='incluir' style={{ padding: '5px 6px 5px 6px', width: 100 }} onClick={async () => {
                                         let isClassExists = arrayInterests?.filter(item => item?.turma_id === interests?.turma_id)?.length > 0;
                                         let isPeriodExists = arrayInterests?.filter(item => item?.periodo_interesse === interests?.periodo_interesse)?.length > 0;
-                                        if (isClassExists && isPeriodExists) {
-                                            alert.info('Já existe um interesse cadastrado com as mesmas informações')
+                                        const classSchedule = await verifyExistsClassSchedule(interests?.turma_id)
+
+                                        if (classSchedule?.length > 0) {
+
+                                            if (isClassExists && isPeriodExists) {
+                                                alert.info('Já existe um interesse cadastrado com as mesmas informações')
+                                            } else {
+                                                newUser ? addInterest() : handleAddInterest()
+                                                setShowSections({ ...showSections, addInterest: false })
+                                            }
                                         } else {
-                                            newUser ? addInterest() : handleAddInterest()
-                                            setShowSections({ ...showSections, addInterest: false })
+                                            alert.info('Não existe cronograma cadastrado para a turma selecionada. Verifique com a secretaria a criação do cronograma, antes de prosseguir.')
                                         }
                                     }} />
                                 </ContentContainer>
