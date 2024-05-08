@@ -24,10 +24,10 @@ export default function EssayWritingList(props) {
             if (menuSelected === 'Em andamento') {
                 const isData = item?.corrigido !== 1
                 return isData;
-            } if (menuSelected === 'Aprovados') {
+            } if (menuSelected === 'Classificados') {
                 return item?.corrigido === 1 && parseInt(item?.aprovado) === 1
             }
-            if (menuSelected === 'Reprovados') {
+            if (menuSelected === 'Desclassificados') {
                 return item?.corrigido === 1 && parseInt(item?.aprovado) < 1
             } else {
                 return true
@@ -118,8 +118,8 @@ export default function EssayWritingList(props) {
 
     const menusFilters = [
         { id: '01', text: 'Em andamento', value: 'Em andamento' },
-        { id: '02', text: 'Aprovados', value: 'Aprovados' },
-        { id: '03', text: 'Reprovado', value: 'Reprovados' },
+        { id: '02', text: 'Classificados', value: 'Classificados' },
+        { id: '03', text: 'Desclassificados', value: 'Desclassificados' },
     ]
 
     const groupStatusProcess = [
@@ -268,9 +268,9 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
         { key: 'nome_curso', label: 'Curso', task: true },
         { key: 'modalidade_curso', label: 'Modalidade' },
         // { key: 'periodo_interesse', label: 'Período', participants: true },
-        { key: 'realizada', label: 'Realizada?' },
-        { key: 'aprovado', label: 'Aprovado?' },
         { key: 'dt_realizacao', label: 'Realizada em', date: true },
+        { key: 'dt_atualizacao', label: 'Corrigido em' },
+        { key: 'aprovado', label: 'Classificado?' },
         { key: 'actions', label: 'Ações' },
 
     ];
@@ -350,13 +350,13 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                             </Box>
                                         </TableCell> */}
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.realizada === 1 ? 'Sim' : 'Não' || '-'}</Text>
+                                            <Text>{formatTimeStamp(item?.dt_realizacao, true) || '-'}</Text>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
+                                            <Text>{item?.corrigido === 1 ? formatTimeStamp(item?.dt_atualizacao, true) : '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{(item?.aprovado === 1 && 'Sim') || (item?.aprovado === 0 && 'Não') || '-'}</Text>
-                                        </TableCell>
-                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{formatTimeStamp(item?.dt_realizacao, true) || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 2, }}>
