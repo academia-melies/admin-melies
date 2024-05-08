@@ -25,6 +25,17 @@ export const ContractStudentComponent = (props) => {
     const formattedDate = new Intl.DateTimeFormat("pt-BR", options).format(currentDate);
 
 
+    const formatTimeDate = (date) => {
+        if (date) {
+            const formatDate = new Date(date);
+            formatDate.setHours(formatDate.getHours() + 3);
+
+            return formatDate
+        }
+        return null
+    }
+
+
     return (
 
         <ContentContainer gap={6} style={{ boxShadow: 'none', backgroundColor: 'none', marginTop: 5, backgroundImage: 'https://adm-melies.s3.amazonaws.com/doc_melies_contrato_page-0001.jpg' }}>
@@ -37,7 +48,7 @@ export const ContractStudentComponent = (props) => {
                         <TextLine label="Nome completo:" data={userData?.nome} />
                         <Box sx={styles.containerValues}>
                             <TextLine label="Sexo:" data={userData?.genero} />
-                            <TextLine label="Data do nascimento:" data={formatTimeStamp(userData?.nascimento)} />
+                            <TextLine label="Data do nascimento:" data={formatTimeStamp(formatTimeDate(userData?.nascimento))} />
                         </Box>
                         <Box sx={styles.containerValues}>
                             <TextLine label="RG:" data={userData?.rg} />
