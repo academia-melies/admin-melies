@@ -22,7 +22,7 @@ export const RadioItem = (props) => {
 
 
     return (
-        <FormControl sx={{ padding: '5px 13px', }}>
+        <FormControl sx={{ padding: '5px 5px', }}>
             <FormLabel sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}>{title}</FormLabel>
             <RadioGroup sx={{ gap: 1, ...style, ...sx }} row={horizontal}>
                 {group?.map((item) => (

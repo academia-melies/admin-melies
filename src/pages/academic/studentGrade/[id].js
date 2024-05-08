@@ -382,7 +382,7 @@ export default function EditStudentGrade(props) {
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {item?.nome}
                                                             </td>
-                                                            <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                                            <td style={{ fontSize: '14px', padding: '8px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 <RadioItem
                                                                     disabled={!isPermissionEdit && true}
                                                                     valueRadio={item?.avaliacao_status}
