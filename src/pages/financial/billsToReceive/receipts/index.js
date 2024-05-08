@@ -13,6 +13,13 @@ import { icons } from "../../../../organisms/layout/Colors"
 export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
     const [filterData, setFilterData] = useState('')
+    const [filters, setFilters] = useState({
+        parcel: 'todos',
+        typePayment: 'todos',
+        search: '',
+        startDate: '',
+        endDate: ''
+    })
     const { setLoading, colorPalette, userPermissions, menuItemsList, user, alert, setShowConfirmationDialog,
         theme } = useAppContext()
     const [filterAtive, setFilterAtive] = useState('todos')
@@ -49,29 +56,36 @@ export default function ListReceipts(props) {
             return error
         }
     }
-    const filter = (item) => {
-        const normalizeString = (str) => {
-            return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        };
-        const normalizedFilterData = normalizeString(filterData);
-
-        const matchesFilterData = (
-            normalizeString(item?.aluno)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
-            normalizeString(item?.pagante)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
-        );
-
-        const matchesFilterActive = (
-            filterAtive === 'todos' ||
-            normalizeString(item?.status_parcela) === filterAtive
-        );
-
-        const matchesFilterPayment = (
-            filterPayment === 'todos' ||
-            item.forma_pagamento === filterPayment
-        );
-
-        return matchesFilterData && matchesFilterActive && matchesFilterPayment;
+    const filterFunctions = {
+        parcel: (item) => filters.parcel === 'todos' || item?.status_parcela === filters.parcel,
+        typePayment: (item) => filters.typePayment === 'todos' || item?.forma_pagamento === filters.typePayment,
+        date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
+        search: (item) => {
+            const searchTerm = filters?.search;
+            if (typeof searchTerm === 'string') {
+                const normalizedSearchTerm = removeAccents(searchTerm?.toLowerCase());
+                const normalizedItemName = removeAccents(item?.aluno?.toLowerCase());
+                return normalizedItemName && normalizedItemName.includes(normalizedSearchTerm);
+            }
+            return true;
+        },
     };
+
+    const removeAccents = (str) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
+    const rangeDate = (dateString, startDate, endDate) => {
+        const date = new Date(dateString);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        return date >= start && date <= end;
+    }
+
+    const filter = (item) => {
+        return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
+    };;
 
 
     async function listCostCenter() {
@@ -430,27 +444,29 @@ export default function ListReceipts(props) {
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
                     <Text bold large>Filtros</Text>
                 </Box>
-                <TextInput placeholder="Buscar pelo pagante ou aluno" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <TextInput placeholder="Buscar pelo pagante ou aluno" name='filterData' type="search" onChange={(e) => setFilters({ ...filters, search: e.target.value })} value={filters?.search} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
                             data={listAtivo}
-                            valueSelection={filterAtive}
-                            onSelect={(value) => setFilterAtive(value)}
-                            title="status"
+                            valueSelection={filters?.parcel}
+                            onSelect={(value) => setFilters({ ...filters, parcel: value })}
+                            title="Status Parcela"
                             filterOpition="value"
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                             clean={false}
                         />
                         <SelectList
                             data={listPayment}
-                            valueSelection={filterPayment}
-                            onSelect={(value) => setFilterPayment(value)}
+                            valueSelection={filters?.typePayment}
+                            onSelect={(value) => setFilters({ ...filters, typePayment: value })}
                             title="tipo de pagamento"
                             filterOpition="value"
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                             clean={false}
                         />
+                        <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
+                        <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
 
                     </Box>
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
@@ -568,7 +584,7 @@ export default function ListReceipts(props) {
                 >
                     <Box sx={{ display: 'flex', backgroundColor: 'blue', padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
 
-                    <Text>Pagamentos aprovados (Cartão):</Text>
+                    <Text>Pagamentos em Processamento:</Text>
                     <Text bold>{formatter.format(totalValueToReceive('Aprovado')) || 'R$ 0,00'}</Text>
 
                 </Box>
