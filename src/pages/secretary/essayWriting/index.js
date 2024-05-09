@@ -276,6 +276,7 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
         // { key: 'periodo_interesse', label: 'Período', participants: true },
         { key: 'dt_realizacao', label: 'Realizada em', date: true },
         { key: 'dt_atualizacao', label: 'Corrigido em' },
+        { key: 'corrigido_por', label: 'Corrigido por' },
         { key: 'aprovado', label: 'Classificado?' },
         { key: 'actions', label: 'Ações' },
 
@@ -360,6 +361,9 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{item?.corrigido === 1 ? formatTimeStamp(item?.dt_atualizacao, true) : '-'}</Text>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
+                                            <Text>{item?.corrigido_por || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{(item?.aprovado === 1 && 'Sim') || (item?.aprovado === 0 && 'Não') || '-'}</Text>
