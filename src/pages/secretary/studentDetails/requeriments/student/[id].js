@@ -248,7 +248,7 @@ export default function RequerimentEnrollmentStudent(props) {
 
             requerimentData.status = status;
             requerimentData.aprovado = aprovved;
-            const response = await api.patch(`/requeriment/update/${id}`, { requerimentData })
+            const response = await api.patch(`/requeriment/update/${id}`, { requerimentData, userResp: user?.id })
             if (response?.status === 200) {
                 if (fileUser?.length > 0) {
                     for (let file of fileUser) {
