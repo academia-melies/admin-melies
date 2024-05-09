@@ -67,7 +67,7 @@ export const ContractStudentComponent = (props) => {
                             <TextLine label="Estado:" data={userData?.uf} />
                         </Box>
                         <Box sx={styles.containerValues}>
-                            <TextLine label="País:" data={''} />
+                            <TextLine label="País:" data={userData?.pais_origem || 'Brasil'} />
                             <TextLine label="Ocupação:" data={''} />
                             <TextLine label="Empresa/Instituição:" data={''} />
                         </Box>
@@ -93,7 +93,7 @@ export const ContractStudentComponent = (props) => {
                                 <TextLine label="Dados do(a) Responsável / Empresa / Pagante" style={{ title: { color: '#fff' } }} />
                             </Box>
                             <Box sx={styles.containerValues}>
-                                <TextLine label="Empresa/Nome do Resp:" data={responsiblePayerData.nome_resp || ''} />
+                                <TextLine label="Empresa/Nome do Resp:" data={responsiblePayerData.nome_resp || userData?.nome} />
                                 <TextLine label="Endereço:" data={responsiblePayerData.end_resp || userData?.rua} />
                             </Box>
                             <Box sx={styles.containerValues}>
@@ -105,7 +105,7 @@ export const ContractStudentComponent = (props) => {
                                 <TextLine label="Bairro:" data={responsiblePayerData.bairro_resp || userData?.bairro} />
                                 <TextLine label="Cidade:" data={responsiblePayerData.cidade_resp || userData?.cidade} />
                                 <TextLine label="Estado:" data={responsiblePayerData.estado_resp || userData?.uf} />
-                                <TextLine label="País:" data={responsiblePayerData.pais_resp || ''} />
+                                <TextLine label="País:" data={responsiblePayerData.pais_resp || userData?.pais_origem || 'Brasil'} />
                             </Box>
                             <TextLine label="E-mail:" data={responsiblePayerData.email_resp || userData?.email} />
                             <Box sx={styles.containerValues}>
@@ -245,9 +245,10 @@ export const ParagraphContainer = ({ children, gap = 0 }) => {
 export const ParagraphBody = ({ title = false, text }) => {
 
     return (
-        <>
-            <Text bold={title ? true : false} title={title ? true : false}>{text}</Text>
-        </>
+        <div style={{ whiteSpace: 'pre-wrap' }}>
+        <Text bold={title ? true : false} title={title ? true : false} style={{
+        }}>{text}</Text>
+    </div>
     )
 
 }
