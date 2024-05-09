@@ -13,7 +13,7 @@ import Link from "next/link"
 export default function EssayWritingList(props) {
     const [writings, setWritings] = useState([])
     const [filterData, setFilterData] = useState('')
-    const [menuSelected, setMenuSelected] = useState('Pendente de Correção')
+    const [menuSelected, setMenuSelected] = useState('Em andamento')
     const [showEditWritingGrade, setShowEditWritingGrade] = useState({ active: false, writing: {} })
     const [essayWritingData, setEssayWritingData] = useState({})
     const { setLoading, colorPalette, user, theme, alert } = useAppContext()
@@ -122,10 +122,10 @@ export default function EssayWritingList(props) {
     ]
 
     const menusFilters = [
-        { id: '03', text: 'Pendente de Correção', value: 'Pendente de Correção' },
         { id: '01', text: 'Em andamento', value: 'Em andamento' },
-        { id: '02', text: 'Classificados', value: 'Classificados' },
-        { id: '03', text: 'Desclassificados', value: 'Desclassificados' },
+        { id: '02', text: 'Pendente de Correção', value: 'Pendente de Correção' },
+        { id: '03', text: 'Classificados', value: 'Classificados' },
+        { id: '04', text: 'Desclassificados', value: 'Desclassificados' },
     ]
 
     const groupStatusProcess = [
