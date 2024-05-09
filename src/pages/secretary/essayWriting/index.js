@@ -13,7 +13,7 @@ import Link from "next/link"
 export default function EssayWritingList(props) {
     const [writings, setWritings] = useState([])
     const [filterData, setFilterData] = useState('')
-    const [menuSelected, setMenuSelected] = useState('Em andamento')
+    const [menuSelected, setMenuSelected] = useState('Pendente de Correção')
     const [showEditWritingGrade, setShowEditWritingGrade] = useState({ active: false, writing: {} })
     const [essayWritingData, setEssayWritingData] = useState({})
     const { setLoading, colorPalette, user, theme, alert } = useAppContext()
@@ -21,10 +21,15 @@ export default function EssayWritingList(props) {
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         writingsVizualization: (item) => {
-            if (menuSelected === 'Em andamento') {
-                const isData = item?.corrigido !== 1
+            if (menuSelected === 'Pendente de Correção') {
+                const isData = item?.corrigido !== 1 && item?.realizada === 1
                 return isData;
-            } if (menuSelected === 'Classificados') {
+            }
+            if (menuSelected === 'Em andamento') {
+                const isData = item?.realizada !== 1
+                return isData;
+            }
+            if (menuSelected === 'Classificados') {
                 return item?.corrigido === 1 && parseInt(item?.aprovado) === 1
             }
             if (menuSelected === 'Desclassificados') {
@@ -117,6 +122,7 @@ export default function EssayWritingList(props) {
     ]
 
     const menusFilters = [
+        { id: '03', text: 'Pendente de Correção', value: 'Pendente de Correção' },
         { id: '01', text: 'Em andamento', value: 'Em andamento' },
         { id: '02', text: 'Classificados', value: 'Classificados' },
         { id: '03', text: 'Desclassificados', value: 'Desclassificados' },
@@ -270,6 +276,7 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
         // { key: 'periodo_interesse', label: 'Período', participants: true },
         { key: 'dt_realizacao', label: 'Realizada em', date: true },
         { key: 'dt_atualizacao', label: 'Corrigido em' },
+        { key: 'corrigido_por', label: 'Corrigido por' },
         { key: 'aprovado', label: 'Classificado?' },
         { key: 'actions', label: 'Ações' },
 
@@ -354,6 +361,9 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{item?.corrigido === 1 ? formatTimeStamp(item?.dt_atualizacao, true) : '-'}</Text>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
+                                            <Text>{item?.corrigido_por || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{(item?.aprovado === 1 && 'Sim') || (item?.aprovado === 0 && 'Não') || '-'}</Text>
