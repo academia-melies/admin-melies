@@ -42,7 +42,7 @@ export const PaginationTable = (props) => {
                     opacity: (page + 1) !== 1 && 0.8,
                     cursor: (page + 1) !== 1 && 'pointer'
                 }
-            }} onClick={() => (page + 1) !== 1 && handlePrevPage()}>
+            }} onClick={handlePrevPage}>
                 <Box sx={{
                     ...styles.menuIcon,
                     backgroundImage: `url('/icons/arrow_right_icon.png')`,
@@ -51,7 +51,7 @@ export const PaginationTable = (props) => {
                     filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                     transform: 'rotate(180deg)',
                     transition: 'background-color 1s',
-                }} onClick={() => router.push('/')} />
+                }}  />
                 <Text light bold>Anterior</Text>
             </Box>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -95,7 +95,7 @@ export const PaginationTable = (props) => {
                     height: 13,
                     filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                     transition: 'background-color 1s',
-                }} onClick={() => router.push('/')} />
+                }} />
             </Box>
         </Box>
     )
