@@ -1102,7 +1102,7 @@ export default function EditUser() {
 
                         if (subscription) {
                             if (subscription?.id_inscricao) {
-                                await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription })
+                                await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription, userResp: user?.id })
                             } else if (subscription?.forma_ingresso) {
                                 await api.post(`/subscription/create`, {
                                     subscriptionData: {
@@ -3892,7 +3892,7 @@ export default function EditUser() {
                                                                     <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
                                                                         <div>
                                                                             {isRequerimentoAproved ?
-                                                                                < Box sx={{
+                                                                                <Box sx={{
                                                                                     display: 'flex', gap: 1, padding: '6px 8px', alignItems: 'center', border: '1px solid green',
                                                                                     backgroundColor: 'transparent',
                                                                                     borderRadius: `100px`,
@@ -3947,6 +3947,10 @@ export default function EditUser() {
                                                                             }} onClick={() => handleEnrollment(interest)} />
                                                                         </div>
                                                                     </Tooltip>
+                                                                </Box>
+                                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginTop: 3 }}>
+                                                                    <Text small bold>Responsável por análisar:</Text>
+                                                                    <Text small>{subscription?.analisado_por} Marcus</Text>
                                                                 </Box>
                                                             </Box>}
                                                         </>

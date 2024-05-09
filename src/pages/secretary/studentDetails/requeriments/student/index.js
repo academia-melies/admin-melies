@@ -100,7 +100,7 @@ export default function RequerimentList(props) {
             />
 
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
-                <Text light style={{ marginRight: 10 }}>vizualizar por:</Text>
+                <Text light style={{ marginRight: 10 }}>Visualizar por:</Text>
                 {menusFilters?.map((item, index) => {
                     const menu = item?.value === menuSelected;
                     return (
@@ -159,7 +159,11 @@ export default function RequerimentList(props) {
                                 filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
 
                             }} />
-                            <Text bold>{title}</Text>
+                            <Box sx={{ display: 'flex', gap: .3, flexDirection: 'column', alignItems: 'start', justifyContent: 'flex-end' }}>
+                                <Text bold>{title}</Text>
+                                <Text xsmall light style={{ color: 'gray' }}>Responsável por análisar: <strong>{item?.analisado_por}</strong></Text>
+                            </Box>
+
                             <Box sx={{
                                 display: 'flex', gap: 1, position: 'absolute', zIndex: 999, right: 5, top: -10,
                                 padding: '5px', borderRadius: 2, backgroundColor: colorPalette?.secondary, alignItems: 'center',

@@ -332,19 +332,20 @@ export default function ListReceipts(props) {
 
 
     const handleCancelValue = async () => {
-        console.log('entrou aqui')
         setLoading(true)
         try {
             const isToUpdate = installmentsSelected.split(',').map(id => parseInt(id.trim(), 10));
 
-            const response = await api.patch(`/student/installment/cancel`, { isToUpdate })
+            const response = await api.post(`/student/installment/cancel`, { isToUpdate })
             const { status } = response?.data
+
             if (status) {
                 alert.success('Parcelas canceladas com sucesso.');
                 setInstallmentsSelected('');
                 setShowBaixa(false)
                 setBaixaData({ dt_baixa: '', conta_recebimento: '' });
                 getInstallments()
+                window.onload()
                 return
             }
             alert.error('Tivemos um problema ao canceladas as parcelas.');
