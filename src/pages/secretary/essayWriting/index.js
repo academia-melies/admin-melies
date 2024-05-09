@@ -22,11 +22,11 @@ export default function EssayWritingList(props) {
     const filterFunctions = {
         writingsVizualization: (item) => {
             if (menuSelected === 'Pendente de Correção') {
-                const isData = item?.corrigido !== 1 && item?.realizada === 1
+                const isData = item?.corrigido !== 1 && item?.dt_realizacao
                 return isData;
             }
             if (menuSelected === 'Em andamento') {
-                const isData = item?.realizada !== 1
+                const isData = !item?.dt_realizacao
                 return isData;
             }
             if (menuSelected === 'Classificados') {

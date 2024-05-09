@@ -591,9 +591,37 @@ export default function InterestEnroll() {
     const handleConfirmEnrollmentSend = async () => {
         try {
             const sendConfirmationEnrollment = await api.post(`/student/enrrolments/confirmationEnrollment`, { userData });
-            console.log(sendConfirmationEnrollment)
         } catch (error) {
             console.log(error)
+        }
+    }
+
+
+    const handleUploadContract = async (pdfBlob, contractData, enrollmentId) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', pdfBlob, contractData?.name_file);
+
+            const fileResponse = await api.post(`/student/enrrolments/contract/upload?matricula_id=${enrollmentId}`, formData)
+            let file;
+            if (fileResponse?.data) {
+                const { fileId } = fileResponse?.data
+                file = fileId
+            }
+
+            return file
+        } catch (error) {
+            console.log('erro ao criar contrato para assinatura: ', error)
+        }
+    }
+
+
+    const handleSendContractSigners = async ({ signers, fileId, contractData, enrollmentId, responsiblePayerData }) => {
+        try {
+            const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signers, fileId, contractData, enrollmentId, responsiblePayerData })
+            return sendDoc?.status
+        } catch (error) {
+            console.log('error enviar contrato para assinatura: ', error)
         }
     }
 
@@ -750,16 +778,9 @@ export default function InterestEnroll() {
             if (response?.status === 201) {
 
                 await handleConfirmEnrollmentSend()
-                setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
-
-                const formData = new FormData();
-                formData.append('file', pdfBlob, contractData?.name_file);
-
-                const response = await api.post(`/student/enrrolments/contract/upload?matricula_id=${data}`, formData)
-                const { fileId } = response?.data
-
-                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signers: userData, fileId, contractData, enrollmentId: data, responsiblePayerData })
-                if (sendDoc?.status === 200) {
+                const fileId = await handleUploadContract(pdfBlob, contractData, data)
+                const sendDoc = await handleSendContractSigners({ signers: userData, fileId, contractData, enrollmentId: data, responsiblePayerData })
+                if (sendDoc === 200) {
                     alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
                     router.push(`/administrative/users/${id}`);
                     return;
@@ -3062,7 +3083,8 @@ export const ContractStudent = (props) => {
                     styles: {
                         header: { fontSize: 18, bold: true },
                     },
-                    pageMargins: [20, 100, 20, 100],
+                    pageMargins: [40, 80, 30, 80],
+
                 };
 
                 const pdfDocGenerator = pdfMake.createPdf(documentDefinition);

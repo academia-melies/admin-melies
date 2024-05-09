@@ -153,7 +153,7 @@ export const userDataTable = (userData) => {
         { title: 'CEP:', value: userData?.cep },
         { title: 'Cidade:', value: userData?.cidade },
         { title: 'Estado:', value: userData?.uf },
-        { title: 'País:', value: '' },
+        { title: 'País:', value: userData?.pais_origem || 'Brasil' },
         { title: 'Ocupação:', value: '' },
         { title: 'Empresa/Instituição:', value: '' },
         { title: 'Tel. residencial:', value: '' },
@@ -172,7 +172,7 @@ export const userDataTable = (userData) => {
 export const responsiblePayerDataTable = (responsiblePayerData, userData) => {
     let data = [
 
-        { title: 'Empresa/Nome do Resp:', value: responsiblePayerData.nome_resp || '' },
+        { title: 'Empresa/Nome do Resp:', value: responsiblePayerData.nome_resp || userData?.nome },
         { title: 'Endereço:', value: responsiblePayerData.end_resp || userData?.rua },
         { title: 'Número:', value: responsiblePayerData.numero_resp || userData?.numero },
         { title: 'CEP:', value: responsiblePayerData.cep_resp || userData?.cep },
@@ -180,7 +180,7 @@ export const responsiblePayerDataTable = (responsiblePayerData, userData) => {
         { title: 'Bairro:', value: responsiblePayerData.bairro_resp || userData?.bairro },
         { title: 'Cidade:', value: responsiblePayerData.cidade_resp || userData?.cidade },
         { title: 'Estado:', value: responsiblePayerData.estado_resp || userData?.uf },
-        { title: 'País:', value: responsiblePayerData.pais_resp || '' },
+        { title: 'País:', value: responsiblePayerData.pais_resp || userData?.pais_origem || 'Brasil' },
         { title: 'E-mail:', value: responsiblePayerData.email_resp || userData?.email },
         { title: 'Telefone:', value: responsiblePayerData.telefone_resp || userData?.telefone },
         { title: 'CPF / CNPJ:', value: responsiblePayerData.cpf_resp || userData?.cpf },
