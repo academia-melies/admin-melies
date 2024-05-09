@@ -1641,12 +1641,24 @@ export const Payment = (props) => {
             valorDescontoAdicional: aditionalDiscount?.desconto_formatado,
             valorFinal: valueFinally
         })
-        const dateNow = new Date();
-        const year = dateNow.getMonth() + 2 > 12 ? dateNow.getFullYear() + 1 : dateNow.getFullYear();
-        const nextMonth = dateNow.getMonth() + 2 > 12 ? 1 : dateNow.getMonth() + 2;
+
+        let datePayment;
+
+        const mesAtual = dataAtual.getMonth();
+        const anoAtual = dataAtual.getFullYear();
+        if (mesAtual > 5) {
+            datePayment = new Date();
+        } else {
+            datePayment = `${anoAtual}-07-01`
+            datePayment = new Date(datePayment)
+        }
+
+
+        const year = datePayment.getMonth() + 2 > 12 ? datePayment.getFullYear() + 1 : datePayment.getFullYear();
+        const nextMonth = datePayment.getMonth() + 2 > 12 ? 1 : datePayment.getMonth() + 2;
         const nextMonthString = String(nextMonth).padStart(2, '0');
-        const month = String(dateNow.getMonth() + 1).padStart(2, '0');
-        const day = String(dateNow.getDate()).padStart(2, '0');
+        const month = String(datePayment.getMonth() + 1).padStart(2, '0');
+        const day = String(datePayment.getDate()).padStart(2, '0');
         const formattedDate = `${year}-${nextMonthString}-${day}`;
         const formattedDateNow = `${year}-${month}-${day}`;
 
