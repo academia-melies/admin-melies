@@ -123,8 +123,8 @@ export default function EditUser() {
     const [permissionPerfil, setPermissionPerfil] = useState()
     const [permissionPerfilBefore, setPermissionPerfilBefore] = useState()
     const [foreigner, setForeigner] = useState(false)
-    const [showContract, setShowContract] = useState(false)
-    const [showEnrollment, setShowEnrollment] = useState(false)
+    const [showContract, setShowContract] = useState(true)
+    const [showEnrollment, setShowEnrollment] = useState(true)
     const [showEnrollmentAdd, setShowEnrollmentAdd] = useState(false)
     const [showSelectiveProcess, setShowSelectiveProcess] = useState(true)
     const [selectiveProcessData, setSelectiveProcessData] = useState({
@@ -1939,6 +1939,10 @@ export default function EditUser() {
             icon: '/icons/folder_icon.png', key: 'nascimento', text: 'Certidão de nascimento'
         },
         {
+            id: '12',
+            icon: '/icons/folder_icon.png', key: 'titulo', text: 'Título de Eleitor'
+        },
+        {
             id: '05',
             icon: '/icons/folder_icon.png', key: 'diploma_historico_graduacao', text: 'Diploma e histórico de graduação'
         },
@@ -2799,7 +2803,7 @@ export default function EditUser() {
                                 <Box sx={styles.inputSection}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *' onBlur={handleBlurCEP} sx={{ flex: 1, }} />
                                     <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, address: value })}
-                                        existsFiles={filesUser?.filter((file) => file.campo === 'comprovante residencia').length > 0}>
+                                        existsFiles={filesUser?.filter((file) => file.campo === 'comprovante_residencia').length > 0}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
                                         <EditFile
                                             setFilesUser={setFilesUser}
@@ -2814,15 +2818,15 @@ export default function EditUser() {
                                             title='Comprovante de residencia'
                                             text='Faça o upload do seu comprovante de residencia, precisa ser uma conta em seu nome ou comprovar que mora com o titular da conta.'
                                             textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
-                                            fileData={filesUser?.filter((file) => file.campo === 'comprovante residencia')}
+                                            fileData={filesUser?.filter((file) => file.campo === 'comprovante_residencia')}
                                             usuarioId={id}
-                                            campo='comprovante residencia'
+                                            campo='comprovante_residencia'
                                             tipo='documento usuario'
                                             callback={(file) => {
                                                 if (file.status === 201 || file.status === 200) {
                                                     if (!newUser) { handleItems() }
                                                     else {
-                                                        handleChangeFilesUser('comprovante residencia', file.fileId, file.filePreview)
+                                                        handleChangeFilesUser('comprovante_residencia', file.fileId, file.filePreview)
                                                     }
                                                 }
                                             }}
@@ -2973,7 +2977,7 @@ export default function EditUser() {
 
             {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'enrollments') &&
                 <>
-                    <ContentContainer style={{ ...styles.containerContract, padding: showEnrollmentAdd ? '40px' : '25px', border: `1px solid ${colorPalette.buttonColor}` }}>
+                    {/* <ContentContainer style={{ ...styles.containerContract, padding: showEnrollmentAdd ? '40px' : '25px', border: `1px solid ${colorPalette.buttonColor}` }}>
                         <Box sx={{
                             display: 'flex', alignItems: 'center', padding: showEnrollmentAdd ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
                                 opacity: 0.8,
@@ -3330,7 +3334,7 @@ export default function EditUser() {
                             </>
                         }
 
-                    </ContentContainer >
+                    </ContentContainer > */}
 
                     {(!newUser && menuView === 'enrollments') &&
                         <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>

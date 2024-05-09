@@ -758,7 +758,7 @@ export default function InterestEnroll() {
                 const response = await api.post(`/student/enrrolments/contract/upload?matricula_id=${data}`, formData)
                 const { fileId } = response?.data
 
-                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signers: userData, fileId, contractData, enrollmentId: data })
+                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signers: userData, fileId, contractData, enrollmentId: data, responsiblePayerData })
                 if (sendDoc?.status === 200) {
                     alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
                     router.push(`/administrative/users/${id}`);
@@ -911,7 +911,7 @@ export default function InterestEnroll() {
                 const response = await api.post(`/student/enrrolments/contract/upload?matricula_id=${data}`, formData)
                 const { fileId } = response?.data
 
-                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { fileId, contractData, enrollmentId: data })
+                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signers: userData, fileId, contractData, enrollmentId: data, responsiblePayerData })
                 if (sendDoc?.status === 200) {
                     alert.success('Re-Matrícula efetivada e contrato enviado por e-mail para assinatura.')
                     window.location.reload();
@@ -1746,7 +1746,7 @@ export const Payment = (props) => {
                     tipo: globalTypePaymentsSelected,
                     valor_parcela: paymentFirst,
                     data_pagamento: formattedPaymentDate,
-                    resp_pagante_id: null,
+                    resp_pagante_id: responsiblePayerData?.id_resp_pag || null,
                     n_parcela: i + 1,
                 });
             }
