@@ -1103,7 +1103,7 @@ export default function EditUser() {
                     for (let interest of arrayInterests) {
                         const subscription = { ...interest?.inscricao, id_redacao: interest?.id_redacao };
                         let sendEssayWriting = !interest?.id_redacao ? true : false
-
+                        let sendEmail = false;
                         if (subscription) {
                             if (subscription?.id_inscricao) {
                                 await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription, userResp: user?.id })
@@ -1117,8 +1117,9 @@ export default function EditUser() {
                                     }
                                 })
                             }
-                            if (sendEssayWriting) {
+                            if (sendEssayWriting && !sendEmail) {
                                 await handleSendSelectiveEssayWriting(interest)
+                                sendEmail = true;
                             }
                         }
                     }
