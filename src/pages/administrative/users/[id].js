@@ -1099,11 +1099,11 @@ export default function EditUser() {
                     await api.patch(`/user/dependent/update`, { arrayDependent })
                 }
 
+                console.log(arrayInterests)
+
                 if (arrayInterests?.length > 0) {
                     for (let interest of arrayInterests) {
                         const subscription = { ...interest?.inscricao, id_redacao: interest?.id_redacao };
-                        let sendEssayWriting = !interest?.id_redacao ? true : false
-                        let sendEmail = false;
                         if (subscription) {
                             if (subscription?.id_inscricao) {
                                 await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription, userResp: user?.id })
@@ -1117,10 +1117,7 @@ export default function EditUser() {
                                     }
                                 })
                             }
-                            if (sendEssayWriting && !sendEmail) {
-                                await handleSendSelectiveEssayWriting(interest)
-                                sendEmail = true;
-                            }
+
                         }
                     }
                 }
@@ -3799,6 +3796,20 @@ export default function EditUser() {
                                                                         type="datetime-local" value={(subscription?.agendamento_processo) || ''}
                                                                         label='Data do agendamento' sx={{ flex: 1, }} />
                                                                 </Box>
+
+                                                                <Divider padding={0} />
+                                                                {(!interest?.id_redacao && !newUser) &&
+                                                                    <>
+                                                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
+                                                                            <Text bold>Redação:</Text>
+                                                                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
+                                                                                <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveEssayWriting(interest)} style={{ width: 120, height: 30 }} />
+                                                                                {/* <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" style={{ width: 120, height: 30 }} /> */}
+                                                                            </Box>
+                                                                        </Box>
+                                                                        <Divider padding={0} />
+                                                                    </>
+                                                                }
 
                                                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
                                                                     <Text bold>Prova - Redação:</Text>
