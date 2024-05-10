@@ -1003,6 +1003,9 @@ export default function EditUser() {
         return true
     }
 
+    console.log(arrayInterests)
+
+
     const handleCreateUser = async () => {
         if (checkRequiredFields()) {
             setLoading(true)
@@ -1099,6 +1102,7 @@ export default function EditUser() {
                 if (arrayInterests?.length > 0) {
                     for (let interest of arrayInterests) {
                         const subscription = { ...interest?.inscricao, id_redacao: interest?.id_redacao };
+                        let sendEssayWriting = !interest?.id_redacao ? true : false
 
                         if (subscription) {
                             if (subscription?.id_inscricao) {
@@ -1113,7 +1117,9 @@ export default function EditUser() {
                                     }
                                 })
                             }
-
+                            if (sendEssayWriting) {
+                                await handleSendSelectiveEssayWriting(interest)
+                            }
                         }
                     }
                 }
@@ -3785,26 +3791,14 @@ export default function EditUser() {
                                                         }
                                                         {subscription?.forma_ingresso === 'Redação Online' &&
                                                             <>
-                                                                {/* <Divider padding={0} />
+                                                                <Divider padding={0} />
                                                                 <Box sx={{ ...styles.inputSection, maxWidth: 280 }}>
                                                                     <TextInput disabled={!isPermissionEdit && true} name='agendamento_processo' onChange={(e) =>
                                                                         handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
                                                                         type="datetime-local" value={(subscription?.agendamento_processo) || ''}
                                                                         label='Data do agendamento' sx={{ flex: 1, }} />
-                                                                </Box> */}
-                                                                <Divider padding={0} />
-                                                                {!interest?.id_redacao &&
-                                                                    <>
-                                                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
-                                                                            <Text bold>Redação:</Text>
-                                                                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                                                <Button disabled={!isPermissionEdit && true} text="enviar" onClick={() => handleSendSelectiveEssayWriting(interest)} style={{ width: 120, height: 30 }} />
-                                                                                {/* <Button disabled={!isPermissionEdit && true} secondary text="re-enviar" style={{ width: 120, height: 30 }} /> */}
-                                                                            </Box>
-                                                                        </Box>
-                                                                        <Divider padding={0} />
-                                                                    </>
-                                                                }
+                                                                </Box>
+
                                                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
                                                                     <Text bold>Prova - Redação:</Text>
                                                                     {interest?.id_redacao &&
@@ -4214,6 +4208,7 @@ export default function EditUser() {
                                         } else {
                                             newUser ? addInterest() : handleAddInterest()
                                             setShowSections({ ...showSections, addInterest: false })
+                                            setShowSections({ ...showSections, interest: false })
                                         }
                                         // } else {
                                         //     alert.info('Não existe cronograma cadastrado para a turma selecionada. Verifique com a secretaria a criação do cronograma, antes de prosseguir.')
