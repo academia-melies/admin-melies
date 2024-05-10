@@ -347,7 +347,7 @@ export default function ListReceipts(props) {
                 setShowBaixa(false)
                 setBaixaData({ dt_baixa: '', conta_recebimento: '' });
                 getInstallments()
-                window.location.reload();
+                // window.location.reload();
                 return
             }
             alert.error('Tivemos um problema ao canceladas as parcelas.');
@@ -362,7 +362,7 @@ export default function ListReceipts(props) {
 
     const priorityColor = (data) => (
         ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
-        ((data === 'Cancelada' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
+        ((data === 'Cancelado' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
         (data === 'Pago' && 'green') ||
         (data === 'Aprovado' && 'blue') ||
         (data === 'Inativa' && '#f0f0f0') ||
@@ -389,12 +389,12 @@ export default function ListReceipts(props) {
         { label: 'Inativa', value: 'Inativa' },
         { label: 'Aprovado', value: 'Aprovado' },
         { label: 'Pago', value: 'Pago' },
-        { label: 'Cancelada', value: 'Cancelada' },
+        { label: 'Cancelado', value: 'Cancelado' },
         { label: 'Pagamento reprovado', value: 'Pagamento reprovado' },
         { label: 'Em processamento', value: 'Em processamento' },
         { label: 'Estornada', value: 'Estornada' },
         { label: 'Não Autorizado', value: 'Não Autorizado' },
-        { label: 'Erro com o pagamento', value: 'Erro com o pagamento' },
+        { label: 'Erro com o pagamento', value: 'Erro com o pagamento' }
     ]
 
     const listPayment = [
@@ -434,7 +434,7 @@ export default function ListReceipts(props) {
 
 
     const totalValueCanceled = installmentsList
-        ?.filter(item => (item?.status_parcela === 'Cancelada') || (item?.status_parcela === 'Inativa') || (item?.status_parcela === 'Estornada'))
+        ?.filter(item => (item?.status_parcela === 'Cancelado') || (item?.status_parcela === 'Inativa') || (item?.status_parcela === 'Estornado'))
         ?.map(item => item?.valor_parcela)
         ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0);
 
@@ -474,9 +474,13 @@ export default function ListReceipts(props) {
                     </Box>
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
                         <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
-                            setFilterPayment('todos')
-                            setFilterAtive('todos')
-                            setFilterData('')
+                            setFilters({
+                                parcel: 'todos',
+                                typePayment: 'todos',
+                                search: '',
+                                startDate: '',
+                                endDate: ''
+                            })
                         }} />
                     </Box>
                 </Box>
@@ -558,6 +562,21 @@ export default function ListReceipts(props) {
                 overflowY: 'auto',
                 scrollbarColor: 'transparent transparent',
             }}>
+
+                <Box sx={{
+                    width: '180px', height: '35px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: '.3s',
+                    cursor: 'pointer',
+                    "&:hover": {
+                        transform: 'scale(1.1, 1.1)',
+                        opacity: .8,
+
+                    }
+                }} onClick={() => setShowNewParcel(true)}>
+                    <Text bold small style={{ color: '#fff' }}>Lançar nova parcela</Text>
+                </Box>
+
                 <Box sx={{
                     display: 'flex',
                     backgroundColor: colorPalette.secondary,
@@ -629,7 +648,7 @@ export default function ListReceipts(props) {
 
             </Box>
 
-            <Box sx={{
+            {/* <Box sx={{
                 display: 'flex',
                 display: 'flex', gap: 2, flexWrap: 'wrap'
             }}>
@@ -646,7 +665,7 @@ export default function ListReceipts(props) {
                 }} onClick={() => setShowNewParcel(true)}>
                     <Text bold small style={{ color: '#fff' }}>Lançar nova parcela</Text>
                 </Box>
-            </Box>
+            </Box> */}
 
             {installmentsList.length > 0 ?
                 <div style={{
@@ -656,7 +675,7 @@ export default function ListReceipts(props) {
                 }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                         <thead>
-                            <tr style={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
+                            <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
                                 <th style={{ padding: '8px 0px', display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
                                     Tudo
                                     <CheckBoxComponent
@@ -686,7 +705,7 @@ export default function ListReceipts(props) {
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>C. Custo</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Forma</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Conta</Text></th>
-                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Obs</Text></th>
+                                {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Obs</Text></th> */}
                                 {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Status BemPaggo</Text></th> */}
                                 <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Status</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>ID BemP</Text></th>
@@ -697,7 +716,23 @@ export default function ListReceipts(props) {
                             {sortedInstallments?.filter(filter)?.slice(startIndex, endIndex).map((item, index) => {
                                 const isSelected = installmentsSelected?.includes(item?.id_parcela_matr) || null;
                                 return (
-                                    <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary }}>
+                                    <tr key={index} style={{
+                                        backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary,
+                                        opacity: 1,
+                                        transition: 'opacity 0.3s, background-color 0.3s',
+                                        cursor: 'pointer',
+                                    }}
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.primary + '77';
+                                            e.currentTarget.style.opacity = '0.5';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary;
+                                            e.currentTarget.style.opacity = '1';
+                                        }}
+                                    // onClick={() => router.push(`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`)}
+                                    >
+
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                             <CheckBoxComponent
                                                 disabled={!isPermissionEdit && true}
@@ -712,36 +747,46 @@ export default function ListReceipts(props) {
                                                 padding={0}
                                                 gap={0}
                                                 sx={{ display: 'flex', maxWidth: 25 }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Impede a propagação do evento de clique
+                                                }}
                                             />
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            {item?.pagante || '-'}
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>
+                                                {item?.pagante || '-'}
+                                            </Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            {item?.aluno || '-'}
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>
+                                                {item?.aluno || '-'}
+                                            </Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} />
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>
+                                                {formatTimeStamp(item?.vencimento)}</Text>
+                                            {/* <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            <TextInput disabled={!isPermissionEdit && true} name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} />
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{item?.dt_pagamento ? formatTimeStamp(item?.dt_pagamento) : '-'}</Text>
+                                            {/* <TextInput disabled={!isPermissionEdit && true} name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            {formatter.format(item?.valor_parcela)}
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatter.format(item?.valor_parcela)}</Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            {item?.n_parcela || '-'}
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{item?.n_parcela || '-'}</Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            {item?.c_custo || '-'}
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{item?.c_custo || '-'}</Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            {item?.forma_pagamento || '-'}
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{item?.forma_pagamento || '-'}</Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            {item?.conta || '-'}
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{item?.conta || '-'}</Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                        {/* <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <TextInput
                                                 disabled={!isPermissionEdit && true}
                                                 name='obs_pagamento'
@@ -749,11 +794,11 @@ export default function ListReceipts(props) {
                                                 value={item?.obs_pagamento || ''}
                                                 sx={{ padding: '0px 8px' }}
                                             />
-                                        </td>
-                                        {/* <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                        </td> */}
+                                        {/* <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             {item?.status_gateway || '-'}
                                         </td> */}
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Box
                                                 sx={{
                                                     display: 'flex',
@@ -769,10 +814,10 @@ export default function ListReceipts(props) {
                                                 <Text small bold style={{ textAlign: 'center', flex: 1 }}>{item?.status_parcela || ''}</Text>
                                             </Box>
                                         </td>
-                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            {item?.referenceId || '-'}
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{item?.referenceId || '-'}</Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                        <td style={{ fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.parc_protestada} group={groupProstated} horizontal={true} onSelect={(value) => handleChangeInstallmentDate(item?.id_parcela_matr, 'parc_protestada', parseInt(value))} />
                                         </td>
                                     </tr>
