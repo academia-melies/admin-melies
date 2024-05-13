@@ -28,7 +28,7 @@ export const ContractStudentComponent = (props) => {
     const formatTimeDate = (date) => {
         if (date) {
             const formatDate = new Date(date);
-            formatDate.setHours(formatDate.getHours() + 3);
+            formatDate.setHours(formatDate.getHours() + 10);
 
             return formatDate
         }

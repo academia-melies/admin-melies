@@ -139,10 +139,21 @@ export const bodyContractEnrollment = [
 
 
 export const userDataTable = (userData) => {
+
+    const formatTimeDate = (date) => {
+        if (date) {
+            const formatDate = new Date(date);
+            formatDate.setHours(formatDate.getHours() + 10);
+
+            return formatDate
+        }
+        return null
+    }
+
     let data = [
         { title: 'Nome completo:', value: userData?.nome },
         { title: 'Sexo:', value: userData?.genero },
-        { title: 'Data do nascimento:', value: formatTimeStamp(userData?.nascimento) },
+        { title: 'Data do nascimento:', value: formatTimeStamp(formatTimeDate(userData?.nascimento)) },
         { title: 'RG:', value: userData?.rg },
         { title: 'CPF:', value: userData?.cpf },
         { title: 'Naturalidade:', value: userData?.naturalidade },
