@@ -362,7 +362,7 @@ export default function ListReceipts(props) {
 
     const priorityColor = (data) => (
         ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
-        ((data === 'Cancelado' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
+        ((data === 'Cancelada' || data === 'Cancelado' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
         (data === 'Pago' && 'green') ||
         (data === 'Aprovado' && 'blue') ||
         (data === 'Inativa' && '#f0f0f0') ||
