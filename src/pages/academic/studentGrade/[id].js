@@ -186,6 +186,7 @@ export default function EditStudentGrade(props) {
                         turma_id: student?.turma_id,
                         modulo_nota: student?.modulo_nota,
                         nome: student?.nome,
+                        nome_social: student?.nome_social,
                         nt_avaliacao_sem: student?.nt_avaliacao_sem,
                         nt_substitutiva: student?.nt_substitutiva,
                         nt_exame: student?.nt_exame,
@@ -272,6 +273,7 @@ export default function EditStudentGrade(props) {
                 turma_id: parseInt(id),
                 modulo_nota: studentGradeData?.modulo_nota || null,
                 nome: student.nome,
+                nome_social: student.nome_social,
                 avaliacao_status: 0,
                 nt_avaliacao_sem: null,
                 nt_substitutiva: null,
@@ -376,11 +378,11 @@ export default function EditStudentGrade(props) {
                                                         ||
                                                         (item?.avaliacao_status === 0 && (substitutive !== null && substitutive < 6));
 
-
+                                                    const name = item?.nome_social || item?.nome;
                                                     return (
                                                         <tr key={`${item}-${index}`}>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {item?.nome}
+                                                                {name}
                                                             </td>
                                                             <td style={{ fontSize: '14px', padding: '8px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 <RadioItem

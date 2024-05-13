@@ -139,6 +139,7 @@ export default function EditFrequency(props) {
                         turma_id: parseInt(id),
                         usuario_id: student.usuario_id,
                         nome: student.nome,
+                        nome_social: student.nome_social
                     })),
                 };
 
@@ -482,6 +483,8 @@ export default function EditFrequency(props) {
                             const yesterday = new Date(today);
                             const todayClass = classDay.getTime() === yesterday.getTime();
 
+                            console.log(classData)
+
                             return (
                                 <Box key={`${item}-${index}`} sx={{ position: 'relative' }}>
                                     {todayClass && <Box sx={{
@@ -541,10 +544,11 @@ export default function EditFrequency(props) {
                                                         <tbody style={{ flex: 1 }}>
                                                             {
                                                                 classData?.map((item, index) => {
+                                                                    const name = item?.nome_social || item?.nome;
                                                                     return (
                                                                         <tr key={`${item}-${index}`}>
                                                                             <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                                <Text>{item?.nome}</Text>
+                                                                                <Text>{name}</Text>
                                                                             </td>
                                                                             <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
                                                                                 <RadioItem
