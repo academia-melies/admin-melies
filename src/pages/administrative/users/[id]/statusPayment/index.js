@@ -5,8 +5,9 @@ import { useAppContext } from "../../../../../context/AppContext";
 import { api } from "../../../../../api/api";
 import { useEffect, useRef, useState } from "react";
 import { formatTimeStamp } from "../../../../../helpers";
-import { CheckBoxComponent, DeclarationPayment, SectionHeader, SelectList } from "../../../../../organisms";
+import { CheckBoxComponent, DeclarationPayment, RadioItem, SectionHeader, SelectList } from "../../../../../organisms";
 import { icons } from "../../../../../organisms/layout/Colors";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Backdrop, Tooltip } from "@mui/material";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
@@ -27,7 +28,8 @@ export default function StuatusPayment() {
         n_parcela: 0,
         c_custo: '',
         forma_pagamento: '',
-        conta: ''
+        conta: '',
+        responsavel_financeiro: 0
     })
     const [showNewParcel, setShowNewParcel] = useState(false)
     const [showDeclatation, setShowDeclaration] = useState({
@@ -284,11 +286,34 @@ export default function StuatusPayment() {
         if (await checkValuesNewInstallment()) {
             try {
                 setLoading(true)
+                let userDataPayment = {}
+
+                if (newInstallment?.responsavel_financeiro !== 0) {
+                    userDataPayment = {
+                        nome: responsiblePayerData?.nome_resp,
+                        rua: responsiblePayerData?.end_resp,
+                        numero: responsiblePayerData?.numero_resp,
+                        cep: responsiblePayerData?.cep_resp,
+                        complemento: responsiblePayerData?.compl_resp,
+                        bairro: responsiblePayerData?.bairro_resp,
+                        cidade: responsiblePayerData?.cidade_resp,
+                        estado: responsiblePayerData?.estado_resp,
+                        uf: responsiblePayerData?.uf_resp,
+                        pais: responsiblePayerData?.pais_resp,
+                        email: responsiblePayerData?.email_resp,
+                        telefone: responsiblePayerData?.telefone_resp,
+                        cpf: responsiblePayerData?.cpf_resp,
+                        rg: responsiblePayerData?.rg_resp,
+                    }
+                } else {
+                    userDataPayment = userData
+                }
+
                 const installmentData = {
                     usuario_id: id,
                     matricula_id: enrollmentId,
                     cartao_credito_id: '',
-                    resp_pagante_id: responsiblePayerData?.id_resp_pag || userData?.id,
+                    resp_pagante_id: newInstallment?.responsavel_financeiro !== 0 ? responsiblePayerData?.id_resp_pag : userData?.id,
                     aluno: userData?.nome,
                     vencimento: newInstallment?.vencimento,
                     valor_parcela: newInstallment?.valor_parcela,
@@ -300,9 +325,20 @@ export default function StuatusPayment() {
                     status_parcela: 'Pendente',
                     usuario_resp: user?.id
                 }
-                const response = await api.post(`/student/installment/add/new`, { installmentData, userData })
+                const response = await api.post(`/student/installment/add/new`, { installmentData, userData: userDataPayment })
                 if (response.status === 201) {
                     alert.success('Parcela lançada.')
+                    setShowNewParcel(false)
+                    setNewInstallment({
+                        vencimento: '',
+                        valor_parcela: '',
+                        n_parcela: 0,
+                        c_custo: '',
+                        forma_pagamento: '',
+                        conta: '',
+                        responsavel_financeiro: 0
+                    })
+                    await handleItems()
                     return
                 }
 
@@ -452,6 +488,7 @@ export default function StuatusPayment() {
                                     </thead>
                                     <tbody style={{ flex: 1, }}>
                                         {installmentsData?.map((item, index) => {
+                                            const responsiblePay = item?.responsavel_pagante ? item?.responsavel_pagante : item?.aluno;
                                             return (
                                                 <tr key={index} style={{ backgroundColor: colorPalette?.secondary }}>
                                                     <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
@@ -470,7 +507,7 @@ export default function StuatusPayment() {
                                                         {formatTimeStamp(item?.dt_pagamento) || '-'}
                                                     </td>
                                                     <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                        {item?.pagante || '-'}
+                                                        {responsiblePay || '-'}
                                                     </td>
                                                     <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                                         {formatter.format(item?.valor_parcela)}
@@ -659,6 +696,37 @@ export default function StuatusPayment() {
                                 label='Valor' sx={{ flex: 1, }} />
                             <TextInput placeholder='Nº Parcela' name='n_parcela' type="number" onChange={handleChange} value={newInstallment?.n_parcela || ''}
                                 label='Nº Parcela' sx={{ flex: 1, }} />
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                            {newInstallment?.responsavel_financeiro !== 0 ?
+                                <Box onClick={() => setNewInstallment({ ...newInstallment, responsavel_financeiro: 0 })} sx={{
+                                    "&:hover": {
+                                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                        opacity: 0.8,
+                                        cursor: 'pointer',
+                                        transform: 'scale(1.03, 1.03)'
+                                    },
+                                }}>
+                                    <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
+                                </Box>
+                                :
+                                <Box sx={{
+                                    display: 'flex', gap: 2, padding: '5px', height: 19, width: 19, alignItems: 'center', border: '2px solid green',
+                                    borderRadius: 22,
+                                    transition: '.3s',
+                                    "&:hover": {
+                                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                        opacity: 0.8,
+                                        cursor: 'pointer',
+                                        transform: 'scale(1.03, 1.03)'
+                                    },
+                                }} onClick={() => {
+                                    setNewInstallment({ ...newInstallment, responsavel_financeiro: responsiblePayerData?.id_resp_pag })
+                                }} />
+                            }
+
+                            <Text bold={newInstallment?.responsavel_financeiro !== 0}
+                                light style={{ color: newInstallment?.responsavel_financeiro !== 0 ? 'green' : colorPalette?.textColor, }}>Responsável Financeiro</Text>
                         </Box>
                         <SelectList fullWidth data={costCenterList} valueSelection={newInstallment?.c_custo} onSelect={(value) => setNewInstallment({ ...newInstallment, c_custo: value })}
                             title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}

@@ -310,7 +310,7 @@ export default function ListReceipts(props) {
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
-                    setInstallmentsSelected('');
+                    setInstallmentsSelected(null);
                     setShowBaixa(false)
                     setBaixaData({ dt_baixa: '', conta_recebimento: '' });
                     getInstallments()
@@ -339,11 +339,9 @@ export default function ListReceipts(props) {
             const response = await api.post(`/student/installment/cancel`, { isToUpdate })
             const { status } = response?.data
 
-            console.log(response)
-
             if (status) {
                 alert.success('Parcelas canceladas com sucesso.');
-                setInstallmentsSelected('');
+                setInstallmentsSelected(null);
                 setShowBaixa(false)
                 setBaixaData({ dt_baixa: '', conta_recebimento: '' });
                 getInstallments()
@@ -715,6 +713,7 @@ export default function ListReceipts(props) {
                         <tbody style={{ flex: 1, }}>
                             {sortedInstallments?.filter(filter)?.slice(startIndex, endIndex).map((item, index) => {
                                 const isSelected = installmentsSelected?.includes(item?.id_parcela_matr) || null;
+                                const responsiblePay = item?.responsavel_pagante ? item?.responsavel_pagante : item?.aluno; 
                                 return (
                                     <tr key={index} style={{
                                         backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary,
@@ -754,7 +753,7 @@ export default function ListReceipts(props) {
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>
-                                                {item?.pagante || '-'}
+                                                {responsiblePay || '-'}
                                             </Text>
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
