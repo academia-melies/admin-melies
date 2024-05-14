@@ -544,7 +544,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                                 }}>
                                                                                                     <Text small>{decodeURI(nameFile)}</Text>
                                                                                                 </Box>
-{/* 
+                                                                                                {/* 
                                                                                                 <Box sx={{
                                                                                                     ...styles.menuIcon,
                                                                                                     width: 12,
@@ -770,7 +770,14 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                                             opacity: 0.8,
                                                                                             cursor: 'pointer',
                                                                                         }
-                                                                                    }} onClick={() => setShowDropFileDiscipline({ active: true, fileUrl: fileUrl, title: nameFile })}
+                                                                                    }} onClick={() => {
+                                                                                        if (file?.location) {
+                                                                                            window.open(file?.location, '_blank');
+                                                                                        } else {
+                                                                                            setShowDropFileDiscipline({ active: true, fileUrl: fileUrl, title: nameFile })
+                                                                                        }
+                                                                                    }
+                                                                                    }
                                                                                     >{decodeURI(nameFile)}</Text>
                                                                                 </Box>
                                                                             )
@@ -928,7 +935,7 @@ export default function RequerimentEnrollmentStudent(props) {
             <Backdrop open={showDropFileDiscipline?.active} sx={{ zIndex: 99999, backgroundColor: 'transparent' }}>
                 <ContentContainer>
                     <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Text bold>{showDropFileDiscipline?.title}</Text>
+                        <Text bold>{decodeURI(showDropFileDiscipline?.title)}</Text>
                         <Box sx={{
                             ...styles.menuIcon,
                             backgroundImage: `url(${icons.gray_close})`,
@@ -946,7 +953,7 @@ export default function RequerimentEnrollmentStudent(props) {
                         }} onClick={() => setShowDropFileDiscipline({ active: false, fileUrl: '', title: '' })} />
                     </Box>
                     <Box sx={{
-                        backgroundImage: `url('${showDropFileDiscipline?.fileUrl}')`,
+                        backgroundImage: `url('${showDropFileDiscipline?.fileUrl?.includes("pdf") ? '/icons/pdf_icon.png' : showDropFileDiscipline?.fileUrl}')`,
                         backgroundSize: 'contain',
                         backgroundRepeat: 'no-repeat',
                         backgroundPosition: 'center center',
