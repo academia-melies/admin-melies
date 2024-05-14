@@ -730,7 +730,7 @@ export default function ListReceipts(props) {
                                             e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary;
                                             e.currentTarget.style.opacity = '1';
                                         }}
-                                    // onClick={() => router.push(`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`)}
+                                        onClick={() => router.push(`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`)}
                                     >
 
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
