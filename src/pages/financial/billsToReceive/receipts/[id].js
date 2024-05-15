@@ -11,6 +11,7 @@ import { formatTimeStamp } from "../../../../helpers"
 import { icons } from "../../../../organisms/layout/Colors"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 import { PaymentDetailsBox, PaymentDetailsContainer, PaymentDetailsInfo, PaymentDetailsStatus, PaymentDetailsTitle } from "../../../../organisms/paymentDetails"
+import Link from "next/link"
 
 export default function EditBillsReceived(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -184,7 +185,19 @@ export default function EditBillsReceived(props) {
         <>
             <SectionHeader
                 title={`Detalhes da Parcela`}
-            />
+            >
+
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', }}>
+                    <Link href={`/administrative/users/${installmentData?.usuario_id}/statusPayment?enrollmentId=${installmentData?.matricula_id}`} target="_blank">
+                        <Button text="Nova Parcela" small style={{ borderRadius: 2, }}
+                        />
+                    </Link>
+                    <Button text="Dar Baixa" small style={{ borderRadius: 2, }} />
+                    <Button text="Excluir" secondary small style={{ borderRadius: 2, }} />
+                </Box>
+
+            </SectionHeader>
+
 
             <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
                 <Box sx={{ display: 'flex', gap: 1.8 }}>
@@ -209,7 +222,8 @@ export default function EditBillsReceived(props) {
                                 <PaymentDetailsInfo flexDirection="row" align="center" header="Valor:" value={formatter.format(installmentData?.valor_parcela) || '-'} textLarge />
                                 <PaymentDetailsStatus flexDirection="row" align="center" value={installmentData?.status_parcela || '-'} />
                             </Box>
-                            <PaymentDetailsInfo gap={3} flexDirection="row" icon location="/icons/user_avatar.png" value={installmentData?.aluno || '-'} />
+                            <PaymentDetailsInfo flexDirection="row" align="center" header="ID Usuário:" value={installmentData?.usuario_id || '-'} />
+                            <PaymentDetailsInfo gap={3} flexDirection="row" icon link={`/administrative/users/${installmentData?.usuario_id}`} location="/icons/user_avatar.png" value={installmentData?.aluno || '-'} />
                             <PaymentDetailsInfo gap={3} flexDirection="row" icon location="/icons/calendar_icon_home.png" value={formatTimeStamp(installmentData?.vencimento) || '-'} />
                             <PaymentDetailsInfo gap={3} flexDirection="row" icon
                                 location={`/icons/${installmentData?.forma_pagamento === 'Boleto' ? 'barcode_icon' : 'creditCard_icon'}.png`}
