@@ -8,9 +8,19 @@ export const PaymentDetailsInfo = ({ header = '',
     flexDirection = 'column',
     align = 'start',
     textLarge = false,
+    link = false,
     textSmall = false }) => {
     return (
-        <Box sx={{ display: 'flex', gap: gap, alignItems: align, flexDirection: flexDirection }}>
+        <Box sx={{
+            display: 'flex', gap: gap, alignItems: align, flexDirection: flexDirection,
+            '&:hover': {
+                cursor: link && 'pointer'
+            }
+        }} onClick={() => {
+            if (link) {
+                window.open(link, '_blank')
+            }
+        }}>
             {header && <Text bold>{header}</Text>}
             {icon && <Box sx={{
                 ...styles.menuIcon,
@@ -19,7 +29,21 @@ export const PaymentDetailsInfo = ({ header = '',
                 width: 18, height: 18,
                 aspectRatio: '1/1'
             }} />}
-            <Text large={textLarge} small={textSmall} light>{value}</Text>
+            <Box sx={{ display: 'flex', gap: .5 }}>
+                <Text style={{
+                    ...(link && {
+                        textDecoration: 'underline',
+                        color: 'blue'
+                    }),
+                }} large={textLarge} small={textSmall} light>{value}</Text>
+                {link && <Box sx={{
+                    ...styles.menuIcon,
+                    backgroundImage: `url('/icons/external_link_icon.png')`,
+                    transition: '.3s',
+                    width: 18, height: 18,
+                    aspectRatio: '1/1'
+                }} />}
+            </Box>
         </Box >
     )
 }

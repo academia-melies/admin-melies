@@ -561,7 +561,7 @@ export default function ListReceipts(props) {
                 scrollbarColor: 'transparent transparent',
             }}>
 
-                <Box sx={{
+                {/* <Box sx={{
                     width: '180px', height: '35px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: '.3s',
@@ -573,7 +573,7 @@ export default function ListReceipts(props) {
                     }
                 }} onClick={() => setShowNewParcel(true)}>
                     <Text bold small style={{ color: '#fff' }}>Lançar nova parcela</Text>
-                </Box>
+                </Box> */}
 
                 <Box sx={{
                     display: 'flex',

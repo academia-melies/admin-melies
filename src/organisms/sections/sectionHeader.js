@@ -20,6 +20,7 @@ export const SectionHeader = (props) => {
       customButton = false,
       customButtonText = '',
       customButtonAction = () => { },
+      children
    } = props;
 
    const { colorPalette } = useAppContext()
@@ -33,10 +34,10 @@ export const SectionHeader = (props) => {
          }}>
             <Box sx={{
                display: 'flex', flex: 1, height: '100%', maxWidth: { xs: '90%', sm: '100%', md: '100%', lg: '100%' }, gap: 2,
-                overflow: { sm: 'hidden', md: 'hidden', lg: 'hidden' }, position: 'relative', alignItems: 'center',
+               overflow: { sm: 'hidden', md: 'hidden', lg: 'hidden' }, position: 'relative', alignItems: 'center',
                flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap' },
             }}>
-               <Box sx={{height: '100%', width: 6, backgroundColor: colorPalette.buttonColor}}/>
+               <Box sx={{ height: '100%', width: 6, backgroundColor: colorPalette.buttonColor }} />
                <Text
                   veryLarge='true'
                   bold='true'
@@ -76,7 +77,9 @@ export const SectionHeader = (props) => {
                {deleteButton && <Button secondary text='Excluir' style={{ width: 150 }} onClick={deleteButtonAction} />}
                {inativeButton && <Button secondary text='Inativar' style={{ width: 150 }} onClick={inativeButtonAction} />}
                {customButton && <Button tertiary text={customButtonText} style={{ width: 150 }} onClick={customButtonAction} />}
+
             </Box>
+               {children}
          </Box>
       </>
    )
