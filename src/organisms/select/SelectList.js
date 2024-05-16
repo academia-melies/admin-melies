@@ -65,7 +65,6 @@ export const SelectList = (props) => {
                                     }
                                 }}
                                 sx={{
-                                    ...inputStyle,
                                     transition: 'background-color 1s',
                                     disableUnderline: true,
                                     borderRadius: '8px',
@@ -77,6 +76,7 @@ export const SelectList = (props) => {
                                     '&.disabled': {
                                         color: 'white',
                                     },
+                                    ...inputStyle,
                                 }}
                             />
                         )}
