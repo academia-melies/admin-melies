@@ -24,6 +24,7 @@ export default function EditDiscipline(props) {
         ementa: null,
         objetivo_dp: null,
         ativo: null,
+        disciplina_cobrada: 1,
         metodologia: null,
         recurso_apoio: null,
         bibl_basica: null,
@@ -341,6 +342,11 @@ export default function EditDiscipline(props) {
         { label: 'inativo', value: 0 },
     ]
 
+    const groupValue = [
+        { label: 'Sim', value: 1 },
+        { label: 'Não', value: 0 },
+    ]
+
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -388,6 +394,7 @@ export default function EditDiscipline(props) {
                     maxRows={5}
                     rows={3}
                     sx={{}} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={disciplineData?.disciplina_cobrada} group={groupValue} title="Disciplina Cobrada:" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, disciplina_cobrada: parseInt(value) })} />
                 <RadioItem disabled={!isPermissionEdit && true} valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value) })} />
             </ContentContainer>
             <ContentContainer>
