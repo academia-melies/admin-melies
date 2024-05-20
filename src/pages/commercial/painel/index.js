@@ -14,8 +14,8 @@ export default function CommercialPainel(props) {
 
     const { user, colorPalette, theme, setLoading, alert, notificationUser, permissionTop15 } = useAppContext()
     const [filters, setFilters] = useState({
-        year: '',
-        semestre: '',
+        year: 2024,
+        semestre: '2º Semestre',
         classId: 'todos',
         status: 'todos'
     })
@@ -268,13 +268,13 @@ export default function CommercialPainel(props) {
                                     </div>
                                 </Box>
                                 <Box sx={{
-                                    ...styles.graph, width: '100%', padding: '30px 20px', height: 450, backgroundColor: colorPalette?.secondary,
+                                    ...styles.graph, width: '100%', padding: '30px 20px', height: 'auto', backgroundColor: colorPalette?.secondary,
                                     flexDirection: 'column', alignItems: 'center'
                                 }}>
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center', width: '100%', }}>
                                         <Text large bold>Matrículas Realizadas</Text>
                                     </Box>
-                                    <TableIndicatorClasses data={reportIndicators?.enrollmentsToClassId} title={`NOVAS TURMAS DE GRADUAÇÃO E PÓS-GRADUAÇÃO ${filters?.year}.${filters?.semestre}`} />
+                                    <TableIndicatorClasses reportIndicators={reportIndicators} data={reportIndicators?.enrollmentsToClassId} title={`NOVAS TURMAS DE GRADUAÇÃO E PÓS-GRADUAÇÃO ${filters?.year}.${filters?.semestre}`} />
                                 </Box>
                             </Box>
                         </Box>
@@ -287,7 +287,7 @@ export default function CommercialPainel(props) {
     )
 }
 
-const TableIndicatorClasses = ({ data = [], title }) => {
+const TableIndicatorClasses = ({ data = [], title, reportIndicators }) => {
 
     const { setLoading, theme, colorPalette, user } = useAppContext()
     const [page, setPage] = useState(0);
@@ -355,7 +355,23 @@ const TableIndicatorClasses = ({ data = [], title }) => {
                             </tr>
                         </React.Fragment>
                     ))}
-
+                    <tr style={{ borderBottom: `1px solid ${colorPalette.primary}`, backgroundColor: colorPalette?.primary + '77' }}>
+                        <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                            <Text bold >
+                                Total:
+                            </Text>
+                        </td>
+                        <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                            <Text bold >
+                                {reportIndicators?.aguardandoAssinatura || 0}
+                            </Text>
+                        </td>
+                        <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                            <Text bold >
+                                {reportIndicators?.aguardandoInicio || 0}
+                            </Text>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
             <PaginationTable data={data}

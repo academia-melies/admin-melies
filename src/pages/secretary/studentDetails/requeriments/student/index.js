@@ -1,9 +1,10 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text } from "../../../../../atoms"
+import { Box, Text, TextInput } from "../../../../../atoms"
 import { SectionHeader } from "../../../../../organisms"
 import { api } from "../../../../../api/api"
 import { useAppContext } from "../../../../../context/AppContext"
+import { formatTimeStamp } from "../../../../../helpers"
 
 
 export default function RequerimentList(props) {
@@ -42,7 +43,7 @@ export default function RequerimentList(props) {
         };
 
         const normalizedFilterData = normalizeString(filterData);
-        const normalizedTituloChamado = normalizeString(item.nome_curso);
+        const normalizedTituloChamado = normalizeString(item?.nome);
 
         return (
             normalizedTituloChamado?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
@@ -94,9 +95,9 @@ export default function RequerimentList(props) {
 
 
     return (
-        <>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, justifyContent: 'flex-start' }}>
             <SectionHeader
-                title={`Requerimentos de Matrícula`}
+                title={`Requerimentos de Matrícula (${requeriments?.filter(filter)?.length})`}
             />
 
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
@@ -129,59 +130,73 @@ export default function RequerimentList(props) {
                 })}
             </Box>
 
-            {requeriments?.filter(filter)?.length > 0 ? <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxWidth: 800 }}>
-                {requeriments?.filter(filter)?.map((item, index) => {
-                    const title = `#${item?.id_req_matricula} Requerimento - ${item?.nome}. ${item?.nome_curso}-${item?.modalidade_curso}${item?.nome_turma}_${item?.modulo_matricula}`;
-
-                    return (
-                        <Box key={index} sx={{
-                            display: 'flex', padding: '25px',
-                            position: 'relative',
-                            borderRadius: 2,
-                            backgroundColor: colorPalette.secondary,
-                            boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
-                            alignItems: 'center',
-                            justifyContent: 'flex-start',
-                            gap: 2,
-                            transition: '.3s',
-                            "&:hover": {
-                                opacity: 0.8,
-                                cursor: 'pointer',
-                                transform: 'scale(1.1, 1.1)'
-                            }
-
-                        }} onClick={() => router.push(`/secretary/studentDetails/requeriments/student/${item?.id_req_matricula}`)}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 22, height: 22, aspectRatio: '1/1',
-                                backgroundImage: `url('/icons/folder_icon.png')`,
-                                transition: '.3s',
-                                filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
-
-                            }} />
-                            <Box sx={{ display: 'flex', gap: .3, flexDirection: 'column', alignItems: 'start', justifyContent: 'flex-end' }}>
-                                <Text bold>{title}</Text>
-                                <Text xsmall light style={{ color: 'gray' }}>Responsável por análisar: <strong>{item?.analisado_por}</strong></Text>
-                            </Box>
-
-                            <Box sx={{
-                                display: 'flex', gap: 1, position: 'absolute', zIndex: 999, right: 5, top: -10,
-                                padding: '5px', borderRadius: 2, backgroundColor: colorPalette?.secondary, alignItems: 'center',
-                                boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
-                            }}>
-                                <Box sx={{
-                                    display: 'flex', width: 10, height: '20px', backgroundColor: statusColor(item?.status)
-                                }} />
-                                <Text bold small >{item?.status}</Text>
-                            </Box>
-                        </Box>
-                    )
-                })
+            <TextInput InputProps={{
+                style: {
+                    backgroundColor: colorPalette?.secondary,
+                    maxWidth: '800px'
                 }
-            </Box> :
-                <Text light>Não foi possível encontrar requerimentos cadastrados.</Text>}
+            }}
+                placeholder="Buscar pelo nome" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
 
-        </>
+
+            {requeriments?.filter(filter)?.length > 0 ?
+                <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxWidth: 800, justifyContent: 'flex-start' }}>
+                    {requeriments?.filter(filter)?.map((item, index) => {
+                        const title = `#${item?.id_req_matricula} Requerimento - ${item?.nome}. ${item?.nome_curso}-${item?.modalidade_curso}${item?.nome_turma}_${item?.modulo_matricula}`;
+
+                        return (
+                            <Box key={index} sx={{
+                                display: 'flex', padding: '25px',
+                                position: 'relative',
+                                borderRadius: 2,
+                                backgroundColor: colorPalette.secondary,
+                                boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
+                                alignItems: 'center',
+                                justifyContent: 'flex-start',
+                                gap: 2,
+                                transition: '.3s',
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer',
+                                    transform: 'scale(1.1, 1.1)'
+                                }
+
+                            }} onClick={() => router.push(`/secretary/studentDetails/requeriments/student/${item?.id_req_matricula}`)}>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    width: 22, height: 22, aspectRatio: '1/1',
+                                    backgroundImage: `url('/icons/folder_icon.png')`,
+                                    transition: '.3s',
+                                    filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+
+                                }} />
+                                <Box sx={{ display: 'flex', gap: .3, flexDirection: 'column', alignItems: 'start', justifyContent: 'flex-end' }}>
+                                    <Text bold>{title}</Text>
+                                    <Box sx={{ display: 'flex', gap: 4, marginTop: 1 }}>
+                                        <Text xsmall light style={{ color: 'gray' }}><Text xsmall style={{ color: colorPalette?.buttonColor }}>Responsável por análisar: </Text>{item?.analisado_por || '-'}</Text>
+                                        <Text xsmall light style={{ color: 'gray' }}><Text xsmall style={{ color: colorPalette?.buttonColor }}>Enviado em: </Text>{formatTimeStamp(item?.dt_criacao, true)}</Text>
+                                        <Text xsmall light style={{ color: 'gray' }}><Text xsmall style={{ color: colorPalette?.buttonColor }}>Última atualização: </Text>{formatTimeStamp(item?.dt_atualizacao, true)}</Text>
+                                    </Box>
+                                </Box>
+
+                                <Box sx={{
+                                    display: 'flex', gap: 1, position: 'absolute', zIndex: 999, right: 5, top: -10,
+                                    padding: '5px', borderRadius: 2, backgroundColor: colorPalette?.secondary, alignItems: 'center',
+                                    boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                                }}>
+                                    <Box sx={{
+                                        display: 'flex', width: 10, height: '20px', backgroundColor: statusColor(item?.status)
+                                    }} />
+                                    <Text bold small >{item?.status}</Text>
+                                </Box>
+                            </Box>
+                        )
+                    })
+                    }
+                </Box>
+                :
+                <Text light>Não foi possível encontrar requerimentos cadastrados.</Text>}
+        </Box>
     )
 }
 
