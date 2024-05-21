@@ -33,7 +33,7 @@ export default function Editaccount(props) {
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [saldoAccount, setSaldoAccount] = useState({ credit: 0, debit: 0, saldoAccount: 0 })
     const [extractAccount, setSextractAccount] = useState([])
-    const [transferData, setTransferData] = useState({ active: false, data: {} })
+    const [transferData, setEditAccount] = useState({ active: false, data: {} })
     const [accountToTransfer, setAccountToTransfer] = useState()
     const [accountList, setAccountList] = useState([])
     const [filters, setFilters] = useState({
@@ -274,7 +274,7 @@ export default function Editaccount(props) {
 
                 if (response?.status === 200) {
                     alert.success('Transferência realizada!');
-                    setTransferData({ active: false, data: {} })
+                    setEditAccount({ active: false, data: {} })
                     handleItems()
                     return
                 }
@@ -381,7 +381,7 @@ export default function Editaccount(props) {
                                                 />
                                             </Box>
 
-                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column'}}>
+                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
                                                 <Text small light style={{ flexWrap: 'wrap', display: 'flex', maxWidth: 400 }}>{item?.descricao_evento}</Text>
                                                 <div ref={containerRef}>
                                                     <Box sx={{
@@ -474,7 +474,7 @@ export default function Editaccount(props) {
                                 </Box>
                             </Box>
                             {extractAccount?.length > 0 ?
-                                <TableExtract data={extractAccount} setTransferData={setTransferData} />
+                                <TableExtract data={extractAccount} setEditAccount={setEditAccount} />
                                 :
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
                                     <Text large light>Não foi possível encontrar movimentações na conta.</Text>
@@ -493,7 +493,7 @@ export default function Editaccount(props) {
             <Backdrop open={transferData?.active} sx={{ zIndex: 99 }}>
                 <ContentContainer>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
-                        <Text bold large>Dados da Transferência</Text>
+                        <Text bold large>Dados do Pagamento</Text>
                         <Box sx={{
                             ...styles.menuIcon,
                             width: 15, height: 15,
@@ -504,7 +504,7 @@ export default function Editaccount(props) {
                                 opacity: 0.8,
                                 cursor: 'pointer'
                             }
-                        }} onClick={() => setTransferData({ active: false, data: {} })} />
+                        }} onClick={() => setEditAccount({ active: false, data: {} })} />
                     </Box>
                     <Divider distance={0} />
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
@@ -549,10 +549,15 @@ export default function Editaccount(props) {
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
                         <Divider />
+
                         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
                             <Button text="Transferir" small style={{ height: 35, width: '100%' }} onClick={() => handleTrasnferDataAccount()} />
                             < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setTransferData({ active: false, data: {} })} />
                         </Box>
+                        {/* <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
+                            <Button text="Salvar" small style={{ height: 35, width: '100%' }} />
+                            < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setEditAccount({ active: false, data: {} })} />
+                        </Box> */}
                     </Box>
                 </ContentContainer>
             </Backdrop>
@@ -561,7 +566,7 @@ export default function Editaccount(props) {
 }
 
 
-const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransferData }) => {
+const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount }) => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
 
     const columns = [
@@ -649,7 +654,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
                                                 }}
                                             >
                                                 <Box sx={{ display: 'flex', backgroundColor: statusColor(item?.status), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                <Text xsmall bold style={{padding: '5px 5px'}}>{item?.status}</Text>
+                                                <Text xsmall bold style={{ padding: '5px 5px' }}>{item?.status}</Text>
                                             </Box>
                                         </TableCell>
                                         <Tooltip title={item?.credito}>
@@ -690,17 +695,11 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setTransfe
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{item?.c_custo || '-'}</Text>
                                         </TableCell>
-                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            {item?.transferido === 1 ?
-                                                <Box sx={{
-                                                    display: 'flex', padding: '8px 10px', borderRadius: 2, height: 30, border: `1px solid green`, alignItems: 'center',
-                                                    justifyContent: 'center', gap: 1
-                                                }}>
-                                                    <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />
-                                                    <Text bold small style={{ color: 'green' }}>Transferido</Text></Box>
-                                                :
-                                                <Button small text="Trasnferir" style={{ height: 30, borderRadius: 2 }} onClick={() => setTransferData({ active: true, data: item })} />
-                                            }
+                                        <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                                <Button small text="Editar" style={{ height: 30, borderRadius: 2 }} onClick={() => setEditAccount({ active: true, data: item })} />
+                                                <Button small cancel text="Excluir" style={{ height: 30, borderRadius: 2, backgroundColor: 'red' }} onClick={() => setEditAccount({ active: true, data: item })} />
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 );

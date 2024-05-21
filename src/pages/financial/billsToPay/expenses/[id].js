@@ -17,7 +17,9 @@ export default function EditExpenses(props) {
     const router = useRouter()
     const { id } = router.query;
     const newBill = id === 'new';
-    const [billToPayData, setBillToPayData] = useState({})
+    const [billToPayData, setBillToPayData] = useState({
+        status: 'Pendente'
+    })
     const [newReadjustment, setNewReadjustment] = useState(0)
     const [showHistoric, setShowHistoric] = useState(false)
     const [listHistoric, setListHistoric] = useState([])
@@ -396,9 +398,20 @@ export default function EditExpenses(props) {
                 <Box>
                     <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Dados da Despesa</Text>
                 </Box>
-                <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição' name='descricao' onChange={handleChange} value={billToPayData?.descricao || ''} label='Descrição:' sx={{}} />
                 <Box sx={styles.inputSection}>
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento:' sx={{ flex: 1, }} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição' name='descricao' onChange={handleChange} value={billToPayData?.descricao || ''} label='Descrição:' sx={{flex: 1}} />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data do vencimento' name='dt_vencimento' onChange={handleChange} value={(billToPayData?.dt_vencimento)?.split('T')[0] || ''} type="date" label='Data do vencimento:' sx={{ width: 250, }} />
+                    <TextInput disabled={!isPermissionEdit && true}
+                        placeholder='0.00'
+                        name='valor_desp'
+                        type="coin"
+                        onChange={handleChange}
+                        value={(billToPayData?.valor_desp) || ''}
+                        label='Valor Total'
+                    // onBlur={() => calculationValues(pricesCourseData)}
+                    />
+                </Box>
+                <Box sx={styles.inputSection}>
                     {newBill && <TextInput disabled={!isPermissionEdit && true} placeholder='Nº Lançamentos' name='n_lancamento' onChange={handleChange} value={billToPayData?.n_lancamento || ''} type="number" label='Nº Lançamentos:' sx={{ width: 150, }} />}
                     {newBill && <TextInput disabled={!isPermissionEdit && true} placeholder='Dia de Pagamento' name='dia_pagamento' onChange={handleChange} value={billToPayData?.dia_pagamento || ''} type="number" label='Dia de Pagamento:' sx={{ width: 150, }} />}
                     <SelectList fullWidth disabled={!isPermissionEdit && true} data={groupRecorrency} valueSelection={billToPayData?.recorrencia} onSelect={(value) => setBillToPayData({ ...billToPayData, recorrencia: value })}
@@ -408,15 +421,6 @@ export default function EditExpenses(props) {
                 </Box>
                 <TextInput disabled={!isPermissionEdit && true} placeholder='Observação' name='observacao' onChange={handleChange} value={billToPayData?.observacao || ''} label='Observação:' sx={{ flex: 1, }} multiline rows={4} />
                 <Box sx={styles.inputSection}>
-                    <TextInput disabled={!isPermissionEdit && true}
-                        placeholder='0.00'
-                        name='valor_desp'
-                        type="coin"
-                        onChange={handleChange}
-                        value={(billToPayData?.valor_desp) || ''}
-                        label='Valor Total' sx={{ flex: 1, }}
-                    // onBlur={() => calculationValues(pricesCourseData)}
-                    />
                     <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountTypesList} valueSelection={billToPayData?.tipo} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo: value })}
                         title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}

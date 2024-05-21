@@ -166,7 +166,7 @@ export default function ListBillsReceived(props) {
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
-                    setReceivedSelected('');
+                    setReceivedSelected(null);
                     setShowBaixa(false)
                     setBaixaData({ dt_baixa: '', conta_recebimento: '', forma_pagamento: '' });
                     getReceiveds()
