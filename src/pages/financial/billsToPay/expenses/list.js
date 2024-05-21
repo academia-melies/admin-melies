@@ -192,7 +192,7 @@ export default function ListBillsToPay(props) {
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
-                    setExpensesSelected('');
+                    setExpensesSelected(null);
                     setShowBaixa(false)
                     setBaixaData({ dt_baixa: '', conta_pagamento: '' });
                     getExpenses()

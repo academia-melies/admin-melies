@@ -10,6 +10,7 @@ export const Button = (props) => {
    const {
       secondary = false,
       tertiary = false,
+      cancel = false,
       small = false,
       large = false,
       overallSize = 'regular',
@@ -54,6 +55,15 @@ export const Button = (props) => {
                   backgroundColor: colorPalette.buttonColor + '33',
                   cursor: !disabled && 'pointer'
                }
+            }),
+            ...(cancel && {
+               ...styles.buttonContainer,
+               backgroundColor: 'red',
+               transition: 'background-color 3s',
+               "&:hover": {
+                  opacity: 0.8,
+                  cursor: !disabled && 'pointer'
+               },
             }),
             ...(tertiary && {
                backgroundColor: Colors.background,
