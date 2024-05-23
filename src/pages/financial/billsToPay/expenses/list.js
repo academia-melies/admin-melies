@@ -24,6 +24,7 @@ export default function ListBillsToPay(props) {
     })
 
     const [expensesList, setExpensesList] = useState([])
+    const [recurrencyExpenses, setRecurrencyExpenses] = useState([])
     const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_pagamento: '' })
     const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
     const [expensesSelected, setExpensesSelected] = useState(null);
@@ -32,6 +33,7 @@ export default function ListBillsToPay(props) {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [showBaixa, setShowBaixa] = useState(false)
+    const [showRecurrencyExpense, setShowRecurrencyExpense] = useState(false)
     const [accountList, setAccountList] = useState([])
     const [filterData, setFilterData] = useState('')
     const [accountTypesList, setAccountTypesList] = useState([])
@@ -82,14 +84,19 @@ export default function ListBillsToPay(props) {
     }, [])
 
     async function listAccounts() {
-        const response = await api.get(`/accounts`)
-        const { data } = response
-        const groupCostCenter = data?.map(cc => ({
-            label: cc.nome_conta,
-            value: cc?.id_conta
-        }));
+        try {
+            const response = await api.get(`/accounts`)
+            const { data } = response
+            const groupCostCenter = data?.map(cc => ({
+                label: cc.nome_conta,
+                value: cc?.id_conta
+            }));
 
-        setAccountList(groupCostCenter)
+            setAccountList(groupCostCenter)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
     }
 
 
@@ -118,16 +125,23 @@ export default function ListBillsToPay(props) {
         setAccountTypesList(groupCostCenter)
     }
 
-    const handleLoadData = () => {
-        getExpenses()
-        listAccounts()
+    const handleLoadData = async () => {
+        setLoading(true)
+        try {
+            await getExpenses()
+            await listAccounts()
+            await getRecurrencyExpenses()
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+
     }
 
 
-
-
     const getExpenses = async () => {
-        setLoading(true)
         try {
             const response = await api.get(`/expenses`)
             const { data } = response;
@@ -143,8 +157,26 @@ export default function ListBillsToPay(props) {
             }
         } catch (error) {
             console.log(error)
-        } finally {
-            setLoading(false)
+        }
+    }
+
+
+    const getRecurrencyExpenses = async () => {
+        try {
+            const response = await api.get(`/expenses/recurrency/list`)
+            console.log(response)
+            const { data } = response;
+            if (data?.length > 0) {
+                setRecurrencyExpenses(data?.map(item => {
+                    const valorDesp = parseFloat(item.valor);
+                    return {
+                        ...item,
+                        valor: isNaN(valorDesp) ? item.valor : valorDesp.toFixed(2)
+                    };
+                }));
+            }
+        } catch (error) {
+            console.log(error)
         }
     }
 
@@ -367,154 +399,157 @@ export default function ListBillsToPay(props) {
 
             </Box>
 
-            <Box sx={{ overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap' }}>
 
-                <Box sx={{
-                    display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                    border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
-                }}>
-
-
-                    <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', paddingTop: '20px', paddingRight: '20px' }}>
-                        <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/expenses/new`)} />
-                        <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
-                            active: true,
-                            event,
-                            acceptAction: handleDelete,
-                            title: `Excluir Despesa?`,
-                            message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
-                        })} />
-                        <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
-                            onClick={() => setShowBaixa(true)} />
-                    </Box>
-
-                    <div style={{
-                        borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%',
-                    }}>
-                        {expensesData?.filter(item => filter(item)).length > 0 ?
-                            <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
-                                        <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
-                                            <CheckBoxComponent
-                                                disabled={!isPermissionEdit && true}
-                                                boxGroup={[{ value: 'allSelect' }]}
-                                                valueChecked={'select'}
-                                                horizontal={true}
-                                                onSelect={() => {
-                                                    if (expensesSelected?.length < allSelected?.length) {
-                                                        let allInstallmentSelected = expensesData?.filter(filter)?.map(item => item?.id_despesa)
-                                                        setExpensesSelected(allInstallmentSelected?.toString())
-                                                    } else {
-                                                        setExpensesSelected(null)
-                                                    }
-                                                }}
-                                                padding={0}
-                                                gap={0}
-                                                sx={{ display: 'flex', maxWidth: 15 }}
-                                            />
-                                        </th>
-                                        {columnExpense?.map((item, index) => (
-                                            <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>{item.label}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody style={{ flex: 1, }}>
-                                    {expensesData?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
-                                        let itemId = item?.id_despesa
-                                        const isSelected = expensesSelected?.includes(itemId) || null;
-
-                                        return (
-                                            <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
-                                                <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                    <CheckBoxComponent
-                                                        disabled={!isPermissionEdit && true}
-                                                        boxGroup={
-                                                            groupSelect(itemId)
-                                                        }
-                                                        valueChecked={expensesSelected}
-                                                        horizontal={true}
-                                                        onSelect={(value) => {
-                                                            if (itemId) {
-                                                                setExpensesSelected(value);
-                                                            }
-                                                        }}
-                                                        padding={0}
-                                                        gap={0}
-                                                        sx={{ display: 'flex', maxWidth: 15 }}
-                                                    />
-                                                </td>
-                                                {columnExpense?.map((column, colIndex) => (
-                                                    <td key={colIndex} style={{
-                                                        textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}`,
-                                                        minWidth: column?.label === 'id' ? 60 : 0
-                                                    }}
-                                                        onClick={(e) => {
-                                                            column?.label === 'id' ? pusBillId(item)
-                                                                :
-                                                                e.preventDefault()
-                                                            e.stopPropagation()
-                                                        }}>
-                                                        {item[column?.key] ? (
-                                                            <Box sx={{
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: column?.label === 'id' && 'pointer', '&:hover': {
-                                                                    opacity: column?.label === 'id' && 0.7
-                                                                }
-                                                            }} >
-                                                                {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={item[column?.avatarUrl || '']} />}
-
-                                                                {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
-                                                                    formatTimeStamp(item[column?.key || '-'])
-                                                                ) : (
-                                                                    column.status ? (
-                                                                        <Box
-                                                                            sx={{
-                                                                                display: 'flex',
-                                                                                height: 30,
-                                                                                gap: 2,
-                                                                                alignItems: 'center',
-                                                                                borderRadius: 2,
-                                                                                justifyContent: 'center',
-                                                                                border: `1px solid ${colorPalette?.primary}`
-                                                                            }}
-                                                                        >
-                                                                            <Box sx={{ display: 'flex', backgroundColor: priorityColor(item[column.key]), width: '10px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                                            <Text small bold style={{ padding: '0px 15px 0px 0px' }}>{item[column.key]}</Text>
-                                                                        </Box>
-                                                                    ) :
-                                                                        (column.date ? formatDate(item[column?.key]) : column.price ? formatter.format(parseFloat((item[column?.key]))) : item[column?.key || '-'])
-                                                                )}
-                                                            </Box>
-                                                        ) : (
-                                                            <Text sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>-</Text>
-                                                        )}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                            :
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
-                                <Text large light>Não foi possível encontrar Despesas.</Text>
-                                <Box sx={{
-                                    backgroundSize: 'cover',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                    width: 350, height: 250,
-                                    backgroundImage: `url('/background/no_results.png')`,
-                                }} />
-                            </Box>
-                        }
-                        <Box sx={{ marginTop: 2 }}>
-
-                            <PaginationTable data={expensesData?.filter(filter)}
-                                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
-                            />
-                        </Box>
-                    </div>
+            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between', }}>
+                <Box sx={{ display: 'flex' }}>
+                    <Button disabled={!isPermissionEdit && true} small text="Cadastrar Recorrência" style={{ height: '30px', borderRadius: '6px' }} onClick={() => setShowRecurrencyExpense(true)} />
                 </Box>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/expenses/new`)} />
+                    <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
+                        active: true,
+                        event,
+                        acceptAction: handleDelete,
+                        title: `Excluir Despesa?`,
+                        message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
+                    })} />
+                    <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                        onClick={() => setShowBaixa(true)} />
+                </Box>
+            </Box>
+
+            <Box sx={{
+                display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, overflow: 'auto', borderRadius: 2
+            }}>
+
+                <div style={{
+                    borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', width: '100%',
+                }}>
+                    {expensesData?.filter(item => filter(item)).length > 0 ?
+                        <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', border: `1px solid ${colorPalette.primary}` }}>
+                            <thead>
+                                <tr style={{ backgroundColor: colorPalette.secondary, borderBottom: `1px solid ${colorPalette?.primary}` }}>
+                                    <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px', }}>
+                                        <CheckBoxComponent
+                                            disabled={!isPermissionEdit && true}
+                                            boxGroup={[{ value: 'allSelect' }]}
+                                            valueChecked={'select'}
+                                            horizontal={true}
+                                            onSelect={() => {
+                                                if (expensesSelected?.length < allSelected?.length) {
+                                                    let allInstallmentSelected = expensesData?.filter(filter)?.map(item => item?.id_despesa)
+                                                    setExpensesSelected(allInstallmentSelected?.toString())
+                                                } else {
+                                                    setExpensesSelected(null)
+                                                }
+                                            }}
+                                            padding={0}
+                                            gap={0}
+                                            sx={{ display: 'flex', maxWidth: 15 }}
+                                        />
+                                    </th>
+                                    {columnExpense?.map((item, index) => (
+                                        <th key={index} style={{ padding: '8px 0px' }}><Text bold>{item.label}</Text></th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody style={{ flex: 1, }}>
+                                {expensesData?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
+                                    let itemId = item?.id_despesa
+                                    const isSelected = expensesSelected?.includes(itemId) || null;
+
+                                    return (
+                                        <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
+                                            <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                <CheckBoxComponent
+                                                    disabled={!isPermissionEdit && true}
+                                                    boxGroup={
+                                                        groupSelect(itemId)
+                                                    }
+                                                    valueChecked={expensesSelected}
+                                                    horizontal={true}
+                                                    onSelect={(value) => {
+                                                        if (itemId) {
+                                                            setExpensesSelected(value);
+                                                        }
+                                                    }}
+                                                    padding={0}
+                                                    gap={0}
+                                                    sx={{ display: 'flex', maxWidth: 15 }}
+                                                />
+                                            </td>
+                                            {columnExpense?.map((column, colIndex) => (
+                                                <td key={colIndex} style={{
+                                                    textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular',
+                                                    color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette?.primary}`,
+                                                    minWidth: column?.label === 'id' ? 60 : 0
+                                                }}
+                                                    onClick={(e) => {
+                                                        column?.label === 'id' ? pusBillId(item)
+                                                            :
+                                                            e.preventDefault()
+                                                        e.stopPropagation()
+                                                    }}>
+                                                    {item[column?.key] ? (
+                                                        <Box sx={{
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: column?.label === 'id' && 'pointer', '&:hover': {
+                                                                opacity: column?.label === 'id' && 0.7
+                                                            }
+                                                        }} >
+                                                            {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={item[column?.avatarUrl || '']} />}
+
+                                                            {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
+                                                                formatTimeStamp(item[column?.key || '-'])
+                                                            ) : (
+                                                                column.status ? (
+                                                                    <Box
+                                                                        sx={{
+                                                                            display: 'flex',
+                                                                            height: 30,
+                                                                            gap: 2,
+                                                                            alignItems: 'center',
+                                                                            borderRadius: 2,
+                                                                            justifyContent: 'center',
+                                                                            borderBottom: `1px solid ${colorPalette?.primary}`
+                                                                        }}
+                                                                    >
+                                                                        <Box sx={{ display: 'flex', backgroundColor: priorityColor(item[column.key]), width: '10px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                                                        <Text small bold style={{ padding: '0px 15px 0px 0px' }}>{item[column.key]}</Text>
+                                                                    </Box>
+                                                                ) :
+                                                                    (column.date ? formatDate(item[column?.key]) : column.price ? formatter.format(parseFloat((item[column?.key]))) : item[column?.key || '-'])
+                                                            )}
+                                                        </Box>
+                                                    ) : (
+                                                        <Text sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>-</Text>
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                        :
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text large light>Não foi possível encontrar Despesas.</Text>
+                            <Box sx={{
+                                backgroundSize: 'cover',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center',
+                                width: 350, height: 250,
+                                backgroundImage: `url('/background/no_results.png')`,
+                            }} />
+                        </Box>
+                    }
+                    <Box sx={{ marginTop: 2 }}>
+
+                        <PaginationTable data={expensesData?.filter(filter)}
+                            page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+                        />
+                    </Box>
+                </div>
             </Box>
 
 
@@ -564,7 +599,145 @@ export default function ListBillsToPay(props) {
                     </Box>
                 </ContentContainer>
             </Backdrop>
+
+
+
+            <Backdrop open={showRecurrencyExpense} sx={{ zIndex: 999 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Despesas Recorrentes</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowRecurrencyExpense(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                        {recurrencyExpenses?.length > 0 ?
+                            <TableRecurrencyExpenses data={recurrencyExpenses} callBack={() => handleLoadData()} />
+                            :
+                            <Text light>Não existem despesas recorrentes.</Text>}
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'flex-end' }}>
+                        <Button disabled={!isPermissionEdit && true} text="Cadastrar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/new`)} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
         </>
+    )
+}
+
+
+const TableRecurrencyExpenses = ({ data = [], callBack = () => { } }) => {
+
+    const { setLoading, theme, colorPalette, alert, setShowConfirmationDialog, showConfirmationDialog } = useAppContext()
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [expenseSelected, setExpenseSelected] = useState(null);
+    const router = useRouter()
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+    const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+
+    const priorityColor = (data) => (
+        ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
+        ((data === 'Cancelada' || data === 'Cancelado' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
+        (data === 'Pago' && 'green') ||
+        (data === 'Aprovado' && 'blue') ||
+        (data === 'Inativa' && '#f0f0f0') ||
+        (data === 'Erro com o pagamento' && 'red') ||
+        (data === 'Estornada' && '#f0f0f0'))
+
+
+    const handleDeleteRecurrencyExpense = async (expenseId) => {
+        setLoading(true)
+        try {
+            const response = await api.delete(`/expense/recurrency/delete/${expenseId}`)
+            if (response.status === 200) {
+                alert.success('Items excluídos.');
+                setExpenseSelected(null);
+                callBack()
+            } else {
+                alert.error('Erro ao excluir itens.');
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    return (
+        <div style={{
+            borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap',
+            backgroundColor: colorPalette?.secondary,
+            border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+        }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
+                <thead>
+                    <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Descrição</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dia de Vencimento</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold></Text></th>
+                    </tr>
+                </thead>
+                <tbody style={{ flex: 1, }}>
+                    {data?.slice(startIndex, endIndex).map((item, index) => {
+                        return (
+                            <tr key={index} style={{
+                                backgroundColor: colorPalette?.secondary
+                            }}>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light>
+                                        {item?.descricao}
+                                    </Text>
+                                </td>
+
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light >
+                                        {item?.dia_vencimento}
+                                    </Text>
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light >{formatter.format(item?.valor)}</Text>
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        gap: 1,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }} >
+                                        <Button small style={{ borderRadius: 2 }} text="Editar" onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/${item?.id_desp_recorrente}`)} />
+                                        <Button cancel small style={{ borderRadius: 2 }} text="Excluir" onClick={(event) => { handleDeleteRecurrencyExpense(item?.id_desp_recorrente) }} />
+                                    </Box>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+
+            </table>
+
+            <PaginationTable data={data}
+                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+            />
+
+        </div>
     )
 }
 

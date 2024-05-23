@@ -1707,6 +1707,13 @@ export default function EditUser() {
         { label: 'Trânsferência', value: 'Trânsferência' },
     ]
 
+    const groupPayment = [
+        { label: 'Pagamento estendido', value: 'Pagamento estendido' },
+        { label: 'PRAVALER', value: 'PRAVALER' },
+        { label: 'Boleto', value: 'Boleto' },
+        { label: 'Cartão de Crédito', value: 'Cartão de Crédito' },
+    ]
+
     const groupContact = [
         { label: 'WhatsApp', value: 'WhatsApp' },
         { label: 'E-mail', value: 'E-mail' },
@@ -3733,6 +3740,10 @@ export default function EditUser() {
 
                                                         <RadioItem disabled={!isPermissionEdit && true} valueRadio={subscription?.forma_ingresso} group={groupIngresso} title="Forma de Ingresso:" horizontal={mobile ? false : true}
                                                             onSelect={(value) => handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'forma_ingresso', value })} />
+
+
+                                                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={subscription?.forma_pagamento} group={groupPayment} title="Forma Pagamento:" horizontal={mobile ? false : true}
+                                                            onSelect={(value) => handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'forma_pagamento', value })} />
 
                                                         <CheckBoxComponent disabled={!isPermissionEdit && true}
                                                             valueChecked={subscription?.forma_contato || ''}
