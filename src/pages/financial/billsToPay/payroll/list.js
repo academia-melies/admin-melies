@@ -339,11 +339,14 @@ export default function ListPayroll(props) {
 
             <Box sx={{ overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap' }}>
 
-                <Box sx={{ display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-            border: `1px solid ${theme ? '#eaeaea' : '#404040'}` }}>
+                <Box sx={{
+                    display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                    border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+                }}>
 
 
                     <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', paddingTop: '20px', paddingRight: '20px' }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Cadastrar Salário" style={{ height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new?padronizado=true`)} />
                         <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new`)} />
                         <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
                             active: true,

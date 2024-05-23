@@ -15,9 +15,12 @@ export default function EditPayroll(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
-    const { id } = router.query;
+    const { id, padronizado } = router.query;
     const newBill = id === 'new';
-    const [billToPayData, setBillToPayData] = useState({})
+    const [billToPayData, setBillToPayData] = useState({
+        tipo_pagamento: 'Salário',
+        status: 'Pendente'
+    })
     const [newReadjustment, setNewReadjustment] = useState(0)
     const [showHistoric, setShowHistoric] = useState(false)
     const [listHistoric, setListHistoric] = useState([])
@@ -374,7 +377,7 @@ export default function EditPayroll(props) {
     return (
         <>
             <SectionHeader
-                title={billToPayData?.funcionario || `Novo Pagamento na Folha`}
+                title={billToPayData?.funcionario || padronizado ? 'Cadastrar Salário' : `Novo Pagamento na Folha`}
                 perfil={'Folha de Pagamento'}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newBill ? handleCreate : handleEdit}
@@ -410,10 +413,10 @@ export default function EditPayroll(props) {
 
                 </Box>
                 <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
-                    <SelectList disabled={!isPermissionEdit && true} data={groupTypePayment} valueSelection={billToPayData?.tipo_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo_pagamento: value })}
+                    {!padronizado && <SelectList disabled={!isPermissionEdit && true} data={groupTypePayment} valueSelection={billToPayData?.tipo_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo_pagamento: value })}
                         title="Tipo de pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
+                    />}
                     <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountTypesList} valueSelection={billToPayData?.tipo} onSelect={(value) => setBillToPayData({ ...billToPayData, tipo: value })}
                         title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
@@ -424,12 +427,12 @@ export default function EditPayroll(props) {
                     />
                 </Box>
                 <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start' }}>
-                    <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
+                   {!padronizado && <SelectList disabled={!isPermissionEdit && true} data={groupStatus} valueSelection={billToPayData?.status} onSelect={(value) => {
                         setBillToPayData({ ...billToPayData, status: value })
                     }}
                         title="Status do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor, width: 250 }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
+                    />}
                     {billToPayData?.status === 'Pago' &&
                         <>
                             <SelectList disabled={!isPermissionEdit && true} data={accountList} valueSelection={billToPayData?.conta_pagamento} onSelect={(value) => setBillToPayData({ ...billToPayData, conta_pagamento: value })}
@@ -447,10 +450,10 @@ export default function EditPayroll(props) {
                     }
                 </Box>
 
-                <RadioItem disabled={!isPermissionEdit && true} valueRadio={newReadjustment} group={groupReadjustment} title="Reajuste de valor:" horizontal={true}
+               {!padronizado && <RadioItem disabled={!isPermissionEdit && true} valueRadio={newReadjustment} group={groupReadjustment} title="Reajuste de valor:" horizontal={true}
                     onSelect={(value) => {
                         setNewReadjustment(parseInt(value))
-                    }} />
+                    }} />}
 
                 {newReadjustment === 1 &&
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Observação de ajuste'
@@ -482,7 +485,7 @@ export default function EditPayroll(props) {
                 </Box>
             </ContentContainer>
 
-            <ContentContainer style={{ ...styles.containerRegister, padding: showHistoric ? '40px' : '25px' }}>
+            {!padronizado && <ContentContainer style={{ ...styles.containerRegister, padding: showHistoric ? '40px' : '25px' }}>
                 <Box sx={{
                     display: 'flex', alignItems: 'center', gap: 1, padding: showHistoric ? '0px 0px 20px 0px' : '0px', "&:hover": {
                         opacity: 0.8,
@@ -510,7 +513,7 @@ export default function EditPayroll(props) {
                         }
                     </>
                 }
-            </ContentContainer>
+            </ContentContainer>}
 
         </>
     )

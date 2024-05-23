@@ -86,7 +86,7 @@ export default function EditClassSchedule(props) {
             const response = await api.get(`/classSchedule/disciplines/${classScheduleData?.turma_id}/${moduleClass}`)
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
-                label: disciplines.nome_disciplina,
+                label: `${disciplines?.id_disciplina} - ${disciplines.nome_disciplina} - ${disciplines?.carga_hr_dp}hrs`,
                 value: disciplines?.id_disciplina
             }));
 

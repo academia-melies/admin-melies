@@ -178,7 +178,7 @@ export default function EditGrid(props) {
             const response = await api.get(`/disciplines/active`)
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
-                label: disciplines.nome_disciplina,
+                label: `${disciplines?.id_disciplina} - ${disciplines.nome_disciplina} - ${disciplines?.carga_hr_dp}hrs`,
                 value: disciplines?.id_disciplina
             }));
 

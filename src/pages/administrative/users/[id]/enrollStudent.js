@@ -43,10 +43,12 @@ export default function InterestEnroll() {
         telefone_resp: '',
         cpf_resp: '',
         rg_resp: '',
+        uf_resp: ''
     })
     const [disciplines, setDisciplines] = useState([])
     const [userData, setUserData] = useState({})
     const [disciplinesSelected, setDisciplinesSelected] = useState()
+    const [disciplinesSelectedForCalculation, setDisciplinesSelectedForCalculation] = useState()
     const [disciplinesDpSelected, setDisciplinesDpSelected] = useState()
     const [indiceTela, setIndiceTela] = useState(0);
     const [routeScreen, setRouteScreen] = useState('interesse >')
@@ -241,7 +243,7 @@ export default function InterestEnroll() {
             const groupDisciplines = classScheduleData.map(disciplines => ({
                 label: disciplines?.nome_disciplina,
                 value: disciplines?.id_disciplina.toString(),
-
+                disciplina_cobrada: disciplines?.disciplina_cobrada
             }));
 
             const requerimentResponse = await api.get(`/requeriment/disciplines/enrollment/${turma_id}/${currentModule}/${id}`);
@@ -250,6 +252,7 @@ export default function InterestEnroll() {
             const groupDisciplinesDispensed = requerimentData?.map(discipline => ({
                 label: discipline?.disciplina_id,
                 value: discipline?.disciplina_id.toString(),
+                disciplina_cobrada: parseInt(discipline?.disciplina_cobrada)
             })) || [];
 
 
@@ -260,6 +263,7 @@ export default function InterestEnroll() {
 
             setQuantityDisciplinesModule(groupDisciplines?.length);
             setDisciplinesSelected(filteredDisciplines?.map(discipline => discipline.value).join(', '));
+            setDisciplinesSelectedForCalculation(filteredDisciplines)
             setDisciplines(groupDisciplines);
 
         } catch (error) {
@@ -357,20 +361,23 @@ export default function InterestEnroll() {
     const handlePaymentsProfile = async () => {
         try {
             const response = await api.get(`/order/paymentProfile/${id}`)
-            const { data } = response
-            if (data?.length > 0) {
-                data?.sort((a, b) => new Date(b.dt_criacao) - new Date(a.dt_criacao));
-                const groupPaymentsPerfil = [
-                    ...data?.map(payment => ({
-                        label: `final - ${payment?.numero_cartao.split(' ')[3]}`,
-                        value: payment?.id_cartao_credito
-                    }))
+            const { success } = response?.data
+            if (success) {
+                const { crediCardData } = response?.data
+                const groupPaymentsPerfil = [{
+                    label: `${crediCardData?.primeiros_numeros} XXXX XXXX ${crediCardData?.ultimos_numeros}`,
+                    value: crediCardData?.id_cartao_credito
+                }
                 ];
                 setShowPaymentPerfl({ newProfile: false, registeredProfile: true })
                 setGroupPayment(groupPaymentsPerfil)
-                setPaymentsProfile(data)
+                setPaymentsProfile(crediCardData)
+                return crediCardData
+            } else {
+                return null
             }
         } catch (error) {
+            console.log(error)
             return error
         }
     }
@@ -577,7 +584,8 @@ export default function InterestEnroll() {
                 const response = await api.post(`/order/paymentProfile/create/${id}`, { newPaymentProfile, cpfUser: userData?.cpf })
                 if (response?.status === 201) {
                     alert.success('Cartão de crédito adicionado.')
-                    handlePaymentsProfile()
+                    const creditCard = await handlePaymentsProfile()
+                    return creditCard
                 }
             } catch (error) {
                 console.log(error)
@@ -591,8 +599,14 @@ export default function InterestEnroll() {
     const handleConfirmEnrollmentSend = async () => {
         try {
             const sendConfirmationEnrollment = await api.post(`/student/enrrolments/confirmationEnrollment`, { userData });
+            if (sendConfirmationEnrollment?.status === 201) {
+                return true
+            } else {
+                return false
+            }
         } catch (error) {
-            console.log(error)
+            console.log('Erro ao enviar e-mail', error)
+            return error
         }
     }
 
@@ -604,6 +618,7 @@ export default function InterestEnroll() {
 
             const fileResponse = await api.post(`/student/enrrolments/contract/upload?matricula_id=${enrollmentId}`, formData)
             let file;
+            console.log('criou contrato', fileResponse)
             if (fileResponse?.data) {
                 const { fileId } = fileResponse?.data
                 file = fileId
@@ -616,9 +631,53 @@ export default function InterestEnroll() {
     }
 
 
-    const handleSendContractSigners = async ({ signers, fileId, contractData, enrollmentId, responsiblePayerData }) => {
+    const handleCreateInstallments = async ({ enrollmentId, paymentInstallmentsEnrollment, creditCard }) => {
         try {
-            const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signers, fileId, contractData, enrollmentId, responsiblePayerData })
+            let responsibleData;
+            if (responsiblePayerData) {
+                responsibleData = {
+                    nome: responsiblePayerData?.nome_resp,
+                    rua: responsiblePayerData?.end_resp,
+                    numero: responsiblePayerData?.numero_resp,
+                    cep: responsiblePayerData?.cep_resp,
+                    complemento: responsiblePayerData?.compl_resp,
+                    bairro: responsiblePayerData?.bairro_resp,
+                    uf: responsiblePayerData?.uf_resp,
+                    cidade: responsiblePayerData?.cidade_resp,
+                    estado: responsiblePayerData?.estado_resp,
+                    pais: responsiblePayerData?.pais_resp,
+                    email: responsiblePayerData?.email_resp,
+                    telefone: responsiblePayerData?.telefone_resp,
+                    cpf: responsiblePayerData?.cpf_resp,
+                    rg: responsiblePayerData?.rg_resp,
+                }
+            }
+            const batchSize = 6;
+            let success = true
+            for (let i = 0; i < paymentInstallmentsEnrollment.length; i += batchSize) {
+                const paymentInstallmentsLote = paymentInstallmentsEnrollment.slice(i, i + batchSize);
+                const paymentsInstallments = await api.post(`/student/enrrolments/create/installments/enrollment`, {
+                    userId: userData?.id,
+                    paymentInstallmentsLote,
+                    enrollmentId,
+                    responsibleData,
+                    creditCard
+                })
+                success = paymentsInstallments?.data?.success
+            }
+            return success;
+        } catch (error) {
+            console.log('Erro ao criar parcelas: ', error)
+            return false
+        }
+    }
+
+
+    const handleSendContractSigners = async ({ signerId, fileId, contractData, enrollmentId, responsiblePayerData }) => {
+        try {
+            const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signerId, fileId, contractData, enrollmentId, responsiblePayerData })
+            console.log('contrato enviado para assinatura', sendDoc)
+
             return sendDoc?.status
         } catch (error) {
             console.log('error enviar contrato para assinatura: ', error)
@@ -702,10 +761,10 @@ export default function InterestEnroll() {
         let enrollmentData = {
             usuario_id: id,
             pendencia_aluno: null,
+            // dt_inicio: new Date(classScheduleData?.dt_inicio_cronograma) || new Date(classData?.inicio),
             dt_inicio: new Date(classData?.inicio),
-            //dt_inicio: new Date(classScheduleData?.dt_inicio_cronograma) || new Date(classData?.inicio),
             dt_final: new Date(classData?.fim),
-            //dt_final: new Date(classScheduleData?.dt_fim_cronograma) || new Date(classData?.fim),
+            // dt_final: new Date(classScheduleData?.dt_fim_cronograma) || new Date(classData?.fim),
             status: 'Pendente de assinatura do contrato',
             turma_id: classData?.id_turma,
             motivo_desistencia: null,
@@ -735,10 +794,10 @@ export default function InterestEnroll() {
                 dt_pagamento: null,
                 valor_parcela: parseFloat(item?.valor_parcela).toFixed(2),
                 n_parcela: item?.n_parcela,
-                c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
+                c_custo: 178,
                 forma_pagamento: item?.tipo,
                 cartao_credito_id: item?.pagamento > 0 ? item?.pagamento : null,
-                conta: 'Melies - Bradesco',
+                conta: 34,
                 obs_pagamento: null,
                 status_gateway: null,
                 status_parcela: 'Pendente',
@@ -758,10 +817,10 @@ export default function InterestEnroll() {
                 dt_pagamento: dateForPaymentEntry,
                 valor_parcela: parseFloat(paymentsInfoData?.valueEntry).toFixed(2),
                 n_parcela: 0,
-                c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
+                c_custo: 178,
                 forma_pagamento: paymentsInfoData?.typePaymentEntry,
                 cartao_credito_id: null,
-                conta: 'Melies - Bradesco',
+                conta: 34,
                 obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
                 status_gateway: 'Pago',
                 status_parcela: 'Pago',
@@ -773,34 +832,43 @@ export default function InterestEnroll() {
         setLoadingEnrollment(true);
 
         try {
-            const response = await api.post(`/student/enrrolments/create/${id}`, { userData, enrollmentData, paymentInstallmentsEnrollment, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData, currentModule });
+            const response = await api.post(`/student/enrrolments/create/${id}`, { enrollmentData, disciplinesSelected, disciplinesModule: disciplines, paymentEntryData, currentModule },);
             const { data } = response
             if (response?.status === 201) {
 
-                await handleConfirmEnrollmentSend()
-                const fileId = await handleUploadContract(pdfBlob, contractData, data)
-                const sendDoc = await handleSendContractSigners({ signers: userData, fileId, contractData, enrollmentId: data, responsiblePayerData })
-                if (sendDoc === 200) {
-                    alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
-                    router.push(`/administrative/users/${id}`);
-                    return;
+                console.log('criou a matricula', data)
+
+                const createInstallments = await handleCreateInstallments({ enrollmentId: data, paymentInstallmentsEnrollment, creditCard: paymentsProfile })
+                console.log('createInstallments', createInstallments)
+
+                if (createInstallments) {
+                    const fileId = await handleUploadContract(pdfBlob, contractData, data)
+                    console.log('criou o contrato na aws', fileId)
+
+                    const sendDoc = await handleSendContractSigners({ signerId: id, fileId, contractData, enrollmentId: data, responsiblePayerData })
+                    console.log('enviou o contrato para assinatura', sendDoc)
+
+                    if (sendDoc === 200) {
+                        alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
+                    } else {
+                        alert.error('Houve um erro ao enviar contrato para assinatura.')
+                    }
+                    alert.success('Matrícula efetivada. Seu contrato será enviado por e-mail..')
                 } else {
                     alert.error('Houve um erro ao enviar contrato para assinatura.')
                 }
-                alert.success('Matrícula efetivada. Confira se o contrato foi enviado para o aluno.')
-                router.push(`/administrative/users/${id}`);
-                return
             }
             else {
                 setEnrollmentCompleted({ ...enrollmentCompleted, status: 500 });
                 alert.error('Ocorreu um erro ao maticular o aluno.')
-                return
             }
+            router.push(`/`);
         } catch (error) {
             console.log(error);
             alert.error('Ocorreu um erro ao maticular o aluno.')
             return error;
         } finally {
+            handleConfirmEnrollmentSend()
             setLoadingEnrollment(false)
         }
     }
@@ -882,10 +950,10 @@ export default function InterestEnroll() {
                 dt_pagamento: null,
                 valor_parcela: parseFloat(item?.valor_parcela).toFixed(2),
                 n_parcela: item?.n_parcela,
-                c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
+                c_custo: 178,
                 forma_pagamento: item?.tipo,
                 cartao_credito_id: item?.pagamento > 0 ? item?.pagamento : null,
-                conta: 'Melies - Bradesco',
+                conta: 34,
                 obs_pagamento: null,
                 status_gateway: null,
                 status_parcela: 'Pendente',
@@ -905,10 +973,10 @@ export default function InterestEnroll() {
                 dt_pagamento: dateForPaymentEntry,
                 valor_parcela: parseFloat(paymentsInfoData?.valueEntry).toFixed(2),
                 n_parcela: 0,
-                c_custo: `${classData?.nome_turma}-${currentModule}SEM`,
+                c_custo: 178,
                 forma_pagamento: paymentsInfoData?.typePaymentEntry,
                 cartao_credito_id: null,
-                conta: 'Melies - Bradesco',
+                conta: 34,
                 obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
                 status_gateway: 'Pago',
                 status_parcela: 'Pago',
@@ -920,20 +988,15 @@ export default function InterestEnroll() {
         setLoadingEnrollment(true);
 
         try {
-            const response = await api.post(`/student/reenrrolments/dp/create/${id}`, { userData, reenrollmentDataDp, paymentInstallmentsEnrollment, classesDisciplinesDpSelected, paymentEntryData });
+            const response = await api.post(`/student/reenrrolments/dp/create/${id}`, { reenrollmentDataDp, paymentInstallmentsEnrollment, classesDisciplinesDpSelected, paymentEntryData });
             const { data } = response
 
             if (response?.status === 201) {
-                setEnrollmentCompleted({ ...enrollmentCompleted, status: 201 });
+                await handleConfirmEnrollmentSend()
+                const fileId = await handleUploadContract(pdfBlob, contractData, data)
+                const sendDoc = await handleSendContractSigners({ signerId: id, fileId, contractData, enrollmentId: data, responsiblePayerData })
 
-                const formData = new FormData();
-                formData.append('file', pdfBlob, contractData?.name_file);
-
-                const response = await api.post(`/student/enrrolments/contract/upload?matricula_id=${data}`, formData)
-                const { fileId } = response?.data
-
-                const sendDoc = await api.post('/contract/enrollment/signatures/upload', { signers: userData, fileId, contractData, enrollmentId: data, responsiblePayerData })
-                if (sendDoc?.status === 200) {
+                if (sendDoc === 200) {
                     alert.success('Re-Matrícula efetivada e contrato enviado por e-mail para assinatura.')
                     window.location.reload();
                 } else {
@@ -954,7 +1017,6 @@ export default function InterestEnroll() {
             setLoadingEnrollment(false)
         }
     }
-
     const telas = [
         (
             <>
@@ -1023,6 +1085,8 @@ export default function InterestEnroll() {
         (
             <>
                 <Payment
+                    disciplines={disciplines}
+                    disciplinesSelectedForCalculation={disciplinesSelectedForCalculation}
                     setCheckValidateScreen={setCheckValidateScreen}
                     isReenrollment={isReenrollment}
                     quantityDisciplinesSelected={quantityDisciplinesSelected}
@@ -1261,6 +1325,7 @@ export const EnrollStudentDetails = (props) => {
         (
             <>
                 <Payment
+                    disciplines={disciplines}
                     setCheckValidateScreen={setCheckValidateScreen}
                     isReenrollment={isReenrollment}
                     quantityDisciplinesSelected={quantityDisciplinesSelected}
@@ -1570,11 +1635,14 @@ export const Payment = (props) => {
         disciplinesDpSelected,
         classScheduleData,
         classesDisciplinesDpSelected,
-        isDp
+        isDp,
+        disciplinesSelectedForCalculation,
+        disciplines
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
     const [totalValueAVista, setTotalValueAVista] = useState()
+    const [creditCardSelected, setCreditCardSelected] = useState(null)
     const [disciplineDispensedPorcent, setDisciplineDispensedPorcent] = useState()
     const [valueParcel, setValueParcel] = useState()
     const [valueParcelTwo, setValueParcelTwo] = useState()
@@ -1608,15 +1676,58 @@ export const Payment = (props) => {
     const [dateForPaymentEntry, setDateForPaymentEntry] = useState()
 
 
+    const calculationDayPayment = async () => {
+
+        if (globalTypePaymentsSelected === 'Cartão') {
+            const currentDate = new Date();
+            const year = currentDate.getMonth() + 2 > 12 ? currentDate.getFullYear() + 1 : currentDate.getFullYear();
+            const nextMonth = currentDate.getMonth() + 2 > 12 ? 1 : currentDate.getMonth() + 2;
+            const nextMonthString = String(nextMonth).padStart(2, '0');
+            const day = String(currentDate.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${nextMonthString}-${day}`;
+            setDayForPayment(day)
+            setMonthDayForPayment(formattedDate)
+        } else {
+
+            const dataAtual = new Date();
+            let datePayment;
+
+            const mesAtual = dataAtual.getMonth();
+            const anoAtual = dataAtual.getFullYear();
+            if (mesAtual > 5) {
+                datePayment = new Date();
+            } else {
+                datePayment = `${anoAtual}-07-01`
+                datePayment = new Date(datePayment)
+            }
+
+            const year = datePayment.getMonth() + 2 > 12 ? datePayment.getFullYear() + 1 : datePayment.getFullYear();
+            const nextMonth = datePayment.getMonth() + 2 > 12 ? 1 : datePayment.getMonth() + 2;
+            const nextMonthString = String(nextMonth).padStart(2, '0');
+            const month = String(datePayment.getMonth() + 1).padStart(2, '0');
+            const day = String(datePayment.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${nextMonthString}-${day}`;
+            const formattedDateNow = `${year}-${month}-${day}`;
+
+            setMonthDayForPayment(formattedDate)
+            setDateForPaymentEntry(formattedDateNow)
+        }
+    }
+
+
     useEffect(() => {
 
-        let disciplinesDispensed = quantityDisciplinesModule - quantityDisciplinesSelected;
-        let porcentDisciplineDispensed = `${((disciplinesDispensed / quantityDisciplinesModule) * 100).toFixed(2)}%`;
+        let calculationDisciplinesModule = disciplines?.filter(item => item?.disciplina_cobrada === 1)?.length;
+        let calculationDisciplinesSelected = disciplinesSelectedForCalculation?.filter(item => item?.disciplina_cobrada === 1)?.length;
+        let disciplinesDispensed = calculationDisciplinesModule - calculationDisciplinesSelected;
+        let porcentDisciplineDispensed = `${((disciplinesDispensed / calculationDisciplinesModule) * 100).toFixed(2)}%`;
+
         let valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
-        let costDiscipline = (valueModuleCourse / quantityDisciplinesModule).toFixed(2);
+        let costDiscipline = (valueModuleCourse / calculationDisciplinesModule).toFixed(2);
         let calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
         let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
         let valuesDisciplineDpTotal = (costDiscipline * (classesDisciplinesDpSelected?.length)).toFixed(2)
+
 
         if (isReenrollment) {
             if (isDp) {
@@ -1642,28 +1753,8 @@ export const Payment = (props) => {
             valorFinal: valueFinally
         })
 
-        let datePayment;
 
-        const mesAtual = dataAtual.getMonth();
-        const anoAtual = dataAtual.getFullYear();
-        if (mesAtual > 5) {
-            datePayment = new Date();
-        } else {
-            datePayment = `${anoAtual}-07-01`
-            datePayment = new Date(datePayment)
-        }
-
-
-        const year = datePayment.getMonth() + 2 > 12 ? datePayment.getFullYear() + 1 : datePayment.getFullYear();
-        const nextMonth = datePayment.getMonth() + 2 > 12 ? 1 : datePayment.getMonth() + 2;
-        const nextMonthString = String(nextMonth).padStart(2, '0');
-        const month = String(datePayment.getMonth() + 1).padStart(2, '0');
-        const day = String(datePayment.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${nextMonthString}-${day}`;
-        const formattedDateNow = `${year}-${month}-${day}`;
-
-        setMonthDayForPayment(formattedDate)
-        setDateForPaymentEntry(formattedDateNow)
+        calculationDayPayment()
     }, [])
 
     const handleCalculationEntry = (value) => {
@@ -1676,21 +1767,33 @@ export const Payment = (props) => {
         return 0
     }
 
+    // const handleCalculationDiscountAvista = async () => {
+    //     if (numberOfInstallments === 1) {
+    //         const totalValue = parseFloat(totalValueFinnaly);
+    //         let discountPercentage = 5; // Desconto a vista
+    //         const discountValue = (totalValue * (discountPercentage / 100)).toFixed(2);
+    //         const updatedTotal = (totalValue - parseFloat(discountValue)).toFixed(2);
+    //         setTotalValueComDiscount(updatedTotal)
+    //         setAditionalDiscount({ desconto_adicional: 5, desconto_formatado: discountValue })
+    //         return updatedTotal
+    //     } else {
+    //         setTotalValueComDiscount(0)
+    //         setAditionalDiscount({ desconto_adicional: 0, desconto_formatado: 0 })
+    //         return 0
+    //     }
+    // }
 
-    useEffect(() => {
+
+    const handleCalculationValues = async () => {
+        // const totalValue = await handleCalculationDiscountAvista()
         let numberParcells = numberOfInstallments;
         let numberParcellsTwo;
         let paymentTwo;
         let totalValuePaymentFirst = totalValueFinnaly;
-        // let valueTotally = totalValueFinnaly
 
-        // if (numberParcells === 1) {
-        //     if (valuesCourse?.valor_total_avista) {
-        //         valueTotally = (totalValueFinnaly - (totalValueFinnaly * 0.05)).toFixed(2)
-        //         setTotalValueFinnaly(parseFloat(valueTotally))
-        //     }
+        // if (numberParcells === 1 && totalValue > 0) {
+        //     totalValuePaymentFirst = totalValue
         // }
-
 
         if (twoCards && purchaseValues?.firstCard) {
             totalValuePaymentFirst = handleCalculationEntry(purchaseValues?.firstCard)
@@ -1705,7 +1808,8 @@ export const Payment = (props) => {
             paymentFirst = (totalValuePaymentFirst - handleCalculationEntry(paymentEntry)) / numberParcells;
         }
 
-        const totalParcelCourse = valuesCourse?.n_parcelas || 6;
+        // let totalParcelCourse = valuesCourse?.n_parcelas || 6;
+        let totalParcelCourse = 24;
         const updatedNumberParcel = Array.from({ length: totalParcelCourse }, (_, index) => ({
             label: index + 1,
             value: index + 1
@@ -1721,20 +1825,25 @@ export const Payment = (props) => {
         setValueParcelTwo(paymentTwo)
         setTotalParcel(updatedNumberParcel)
 
+        await calculationDayPayment()
+
+
         setTypePaymentsSelected(prevTypePaymentsSelected => {
             const updatedArray = [];
 
             for (let i = 0; i < numberOfInstallments; i++) {
                 let date = monthForPayment ? new Date(monthForPayment) : new Date()
+                let selectedDay = dayForPayment;
                 const paymentDate = date;
-                const selectedDay = dayForPayment;
                 const typePayment = prevTypePaymentsSelected[i + 1]
                 let month = (paymentDate.getMonth() + i + 1) % 12;
-                month = month === 0 ? 12 : month;
+                let yearIncrement = Math.floor((paymentDate.getMonth() + i + 1) / 12);
+                // month = month === 0 ? 12 : month;
                 let isSaturday = false; // Sabado
                 let isSunday = false; // Domingo
 
                 paymentDate.setMonth(month - 1);
+                paymentDate.setFullYear(paymentDate.getFullYear() + yearIncrement);
 
                 const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
                 if (selectedDay > lastDayOfMonth) {
@@ -1765,21 +1874,28 @@ export const Payment = (props) => {
                     paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
                 }
 
-                const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
-                let payments = paymentsProfile?.map(item => item)[0]
+                let formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
 
-                let paymentForm = (globalTypePaymentsSelected === 'Cartão' && payments?.id_cartao_credito) ||
+                let januaryDate = updatedArray?.filter(item => item?.data_pagamento?.includes('/01/'));
+                let isFebruary = updatedArray?.filter(item => item?.data_pagamento?.includes('/02/'));
+                if (januaryDate?.length > 0 && isFebruary?.length < 1 && formattedPaymentDate?.includes('/03/')) {
+                    let partsDate = formattedPaymentDate?.split('/');
+                    formattedPaymentDate = `${partsDate[0]}/02/${partsDate[2]}`
+                }
+
+                let payments = paymentsProfile;
+
+                let paymentForm = (globalTypePaymentsSelected === 'Cartão' && (creditCardSelected || payments?.id_cartao_credito)) ||
                     (globalTypePaymentsSelected === 'pix' && 'Pix') ||
                     (globalTypePaymentsSelected === 'Boleto' && 'Boleto') ||
                     (globalTypePaymentsSelected === 'Boleto(PRAVALER)' && 'Boleto(PRAVALER)')
-                if (globalTypePaymentsSelected === 'Cartão' && paymentsProfile?.length <= 0) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
-                if (globalTypePaymentsSelected === 'Cartão' && paymentsProfile?.length > 0) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
+                if (globalTypePaymentsSelected === 'Cartão' && !paymentsProfile) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
                 updatedArray.push({
                     pagamento: paymentForm,
                     tipo: globalTypePaymentsSelected,
                     valor_parcela: paymentFirst,
                     data_pagamento: formattedPaymentDate,
-                    resp_pagante_id: responsiblePayerData?.id_resp_pag || null,
+                    resp_pagante_id: twoCards ? null : (responsiblePayerData?.id_resp_pag || null),
                     n_parcela: i + 1,
                 });
             }
@@ -1831,14 +1947,14 @@ export const Payment = (props) => {
                 }
 
                 const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
-                let payments = paymentsProfile?.map(item => item)[0]
+                let payments = paymentsProfile;
 
-                let paymentForm = (globalTypePaymentsSelectedTwo === 'Cartão' && payments?.id_cartao_credito) || (globalTypePaymentsSelectedTwo === 'Pix' && 'Pix') ||
+                let paymentForm = (globalTypePaymentsSelectedTwo === 'Cartão' && (creditCardSelected || payments?.id_cartao_credito)) || (globalTypePaymentsSelectedTwo === 'Pix' && 'Pix') ||
                     (globalTypePaymentsSelectedTwo === 'Boleto' && 'Boleto') ||
                     (globalTypePaymentsSelectedTwo === 'Boleto(PRAVALER)' && 'Boleto(PRAVALER)')
 
-                if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile?.length <= 0) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
-                if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile?.length > 0) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
+                if (globalTypePaymentsSelectedTwo === 'Cartão' && !paymentsProfile) { alert.info('Você não possui um cartão de crédito cadastrado. Por favor, primeiro cadastre um cartão.') }
+                if (globalTypePaymentsSelectedTwo === 'Cartão' && paymentsProfile) { alert.info('Selecione o cartão que deseja efetuar o pagamento.') }
                 updatedArray.push({
                     pagamento: paymentForm,
                     tipo: globalTypePaymentsSelectedTwo,
@@ -1852,23 +1968,12 @@ export const Payment = (props) => {
             return updatedArray;
         });
 
+    }
+
+    useEffect(() => {
+        handleCalculationValues()
     }, [purchaseValues, paymentEntry, numberOfInstallments, twoCards, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, globalTypePaymentsSelectedTwo, dayForPayment])
 
-
-    // const handleTypePayment = (index, value, installmentNumber, formattedPaymentDate, payment) => {
-    //     setTypePaymentsSelected((prevTypePaymentsSelected) => {
-    //         let paymentForm = (value === 'Cartão' && '') || (value === 'Pix' && 'Pix') || (value === 'Boleto' && 'Boleto')
-    //         const updatedTypePaymentsSelected = [...prevTypePaymentsSelected];
-    //         updatedTypePaymentsSelected[index] = {
-    //             pagamento: paymentForm,
-    //             tipo: value,
-    //             valor_parcela: valueParcel,
-    //             data_pagamento: formattedPaymentDate,
-    //             n_parcela: installmentNumber
-    //         };
-    //         return updatedTypePaymentsSelected;
-    //     });
-    // };
 
     const handlePaymentProfile = (index, value) => {
         setTypePaymentsSelected((prevTypePaymentsSelected) => {
@@ -2006,8 +2111,6 @@ export const Payment = (props) => {
         return
     }
 
-
-
     const handleCalculationDiscount = (action) => {
 
         if (typeDiscountAdditional.real) {
@@ -2061,13 +2164,13 @@ export const Payment = (props) => {
         try {
             const { value } = event.target;
             const data = await findCEP(value);
-
             setResponsiblePayerData((prevValues) => ({
                 ...prevValues,
                 end_resp: data.logradouro,
                 cidade_resp: data.localidade,
-                estado_resp: data.uf,
+                estado_resp: data?.state,
                 bairro_resp: data.bairro,
+                uf_resp: data?.uf
             }))
         } catch (error) {
             return error
@@ -2360,6 +2463,7 @@ export const Payment = (props) => {
                                 <Box sx={{ ...styles.inputSection }}>
                                     <TextInput placeholder='Cidade' name='cidade_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.cidade_resp || ''} label='Cidade *' sx={{ flex: 1, }} />
                                     <TextInput placeholder='Estado' name='estado_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.estado_resp || ''} label='Estado *' sx={{ flex: 1, }} />
+                                    <TextInput placeholder='UF' name='uf_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.uf_resp || ''} label='UF *' sx={{ flex: 1, }} />
                                 </Box>
                                 <Box sx={{ ...styles.inputSection }}>
                                     <TextInput placeholder='Bairro' name='bairro_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.bairro_resp || ''} label='Bairro *' sx={{ flex: 1, }} />
@@ -2417,7 +2521,7 @@ export const Payment = (props) => {
 
                 <Box sx={{ display: 'flex', gap: 3, flexDirection: twoCards ? 'column' : { xs: 'column', xm: 'column', md: 'column', lg: `column`, xl: 'row' } }}>
 
-                    <ContentContainer gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 30px' }}>
+                    {globalTypePaymentsSelected === 'Cartão' && <ContentContainer gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 30px' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, flexDirection: 'column' }}>
                             <Text bold title>Cartão de crédito</Text>
                             <Box sx={{ display: 'flex' }}>
@@ -2452,52 +2556,57 @@ export const Payment = (props) => {
                                             <TextInput name='cvc' onChange={handleChangePerfilPayment} value={newPaymentProfile?.cvc || ''} label='CVC *' sx={{ flex: 1, }} onFocus={handleFocused} />
                                         </Box>
                                     </Box>
-                                    <Box sx={{ display: 'flex', flex: 1, justifyContent: 'end', marginTop: 2 }}>
-                                        <Button small style={{ width: 100, height: 30 }} text="cadastrar" onClick={() => handleCreatePaymentProfile()} />
-                                    </Box>
+                                    <Button small style={{ width: 100, height: 30 }} text="cadastrar" onClick={async () => {
+                                        {
+                                            const creditCard = await handleCreatePaymentProfile()
+                                            if (creditCard) {
+                                                setCreditCardSelected(creditCard?.id_cartao_credito)
+                                            }
+                                        }
+                                    }} />
                                 </Box>
 
-                            ) : (
+                            ) :
+                            (
                                 <Box sx={{ display: 'flex', flexDirection: twoCards ? 'row' : { xs: 'row', xm: 'row', md: 'row', lg: `row`, xl: 'column' }, gap: 2, maxHeight: 400, overflow: 'auto' }}>
 
-                                    {showPaymentPerfl?.registeredProfile && paymentsProfile.length > 0 ?
-                                        paymentsProfile?.map((item, index) => {
-                                            const createdAt = `Criado em ${formatTimeStamp(item?.dt_criacao, true)}`
-                                            return (
-                                                <Box key={index} sx={{
-                                                    display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 1.8, padding: '30px 40px', borderRadius: 3,
-                                                    transition: '0.3s',
-                                                    "&:hover": {
-                                                        backgroundColor: colorPalette.primary,
-                                                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                        transform: 'scale(0.9)',
-                                                    }
-                                                }}>
-                                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                                        <Text bold>{item?.apelido_cartao}</Text>
-                                                        {index === 0 &&
-                                                            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-                                                                <CheckCircleIcon style={{ color: 'green', fontSize: 18 }} />
-                                                                <Text small style={{}}>padrão</Text>
-                                                            </Box>
-                                                        }
-                                                    </Box>
-                                                    <Cards
-                                                        cvc={item?.cvc || ''}
-                                                        expiry={item?.dt_expiracao || ''}
-                                                        name={item?.nome_cartao || ''}
-                                                        number={item?.numero_cartao || ''}
-                                                    />
-                                                    <Text small light>{createdAt}</Text>
+                                    {showPaymentPerfl?.registeredProfile && paymentsProfile ?
+                                        <Box sx={{
+                                            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 1.8, padding: '30px 40px', borderRadius: 3,
+                                            transition: '0.3s',
+                                            "&:hover": {
+                                                backgroundColor: colorPalette.primary,
+                                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`
+                                            }
+                                        }}>
+                                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                <Text bold>{paymentsProfile?.apelido_cartao}</Text>
+                                                <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+                                                    <CheckCircleIcon style={{ color: 'green', fontSize: 18 }} />
+                                                    <Text small style={{}}>padrão</Text>
                                                 </Box>
-                                            )
-                                        })
+                                            </Box>
+                                            <Cards
+                                                cvc={paymentsProfile?.cvc || ''}
+                                                expiry={paymentsProfile?.dt_expiracao || ''}
+                                                name={paymentsProfile?.nome_cartao || ''}
+                                                number={paymentsProfile?.numero_cartao || ''}
+                                                focused={focusedCreditCard}
+                                            />
+                                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: '100%' }}>
+                                                <TextInput name='cvc' onChange={(e) => setPaymentsProfile({ ...paymentsProfile, cvc: e.target.value })} value={paymentsProfile?.cvc || ''} label='CVC *' sx={{ flex: 1, }} onFocus={handleFocused} />
+                                                <Button small text="Confirmar" onClick={() => {
+                                                    setShowCreditCard(false)
+                                                    setCreditCardSelected(paymentsProfile?.id_cartao_credito)
+                                                }} style={{ borderRadius: 2 }} />
+                                            </Box>
+                                        </Box>
                                         :
                                         <Text light small>Não existem perfís de pagamento cadastrados</Text>
                                     }
                                 </Box>
                             )}
-                    </ContentContainer>
+                    </ContentContainer>}
 
                     <ContentContainer fullWidth gap={4} sx={{ display: 'flex', flexDirection: 'column', padding: '30px 40px', position: 'relative' }}>
                         <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', position: 'relative' }}>
@@ -2544,15 +2653,15 @@ export const Payment = (props) => {
                                         </Box>
                                     }
                                     <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
-                                        <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallments || ''} onSelect={(value) => setNumberOfInstallments(value)}
-                                            title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
                                         <SelectList fullWidth data={listPaymentType} valueSelection={globalTypePaymentsSelected || ''} onSelect={(value) => setGlobalTypePaymentsSelected(value)}
                                             filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             title="Selecione a forma de pagamento *"
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                             clean={false}
+                                        />
+                                        <SelectList fullWidth data={totalParcel} valueSelection={numberOfInstallments || ''} onSelect={(value) => setNumberOfInstallments(value)}
+                                            title="Selecione o numero de parcelas *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
                                         {twoCards && <>
 
@@ -2857,7 +2966,8 @@ export const ContractStudent = (props) => {
 
 
     const className = classData?.nome_turma;
-    const startDateClass = formatTimeStamp(classScheduleData?.dt_inicio_cronograma) || formatDate(classData?.inicio);
+    const startDateClass = formatDate(classData?.inicio);
+    // const startDateClass = formatTimeStamp(classScheduleData?.dt_inicio_cronograma) || formatDate(classData?.inicio);
     const courseSigle = courseData?.sigla;
     const courseName = courseData?.nome_curso;
     const modalityCourse = courseData?.modalidade_curso;
@@ -2897,12 +3007,35 @@ export const ContractStudent = (props) => {
         }
     }
 
+    const base64toBlob = (base64, contentType) => {
+        const byteCharacters = atob(base64);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, { type: contentType });
+        return blob;
+    };
+
 
     const handleSubmitEnrollment = async () => {
-        setLoading(true);
-
         try {
             const pdfBlob = await handleGeneratePdf();
+            // const pdfBase64 = await convertBlobToBase64(pdfBlob);
+            // const blob = base64toBlob(pdfBase64, 'application/pdf');
+            // const blobUrl = URL.createObjectURL(blob);
+            // window.open(blobUrl, '_blank');
+
 
             let contractData = {
                 name_file: nameContract,
@@ -2920,15 +3053,12 @@ export const ContractStudent = (props) => {
             }
 
             if (isDp) {
-                handleCreateReEnrollStudentDp(paymentData, paymentsInfoData, pdfBlob, contractData)
+                await handleCreateReEnrollStudentDp(paymentData, paymentsInfoData, pdfBlob, contractData)
             } else {
-                handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData, pdfBlob, contractData);
+                await handleCreateEnrollStudent(paymentData, valuesContract, paymentsInfoData, pdfBlob, contractData);
             }
-
         } catch (error) {
             console.error(error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -3071,8 +3201,8 @@ export const ContractStudent = (props) => {
                         },
 
                         ...(paymentsInfoData?.valueEntry > 0 ? [{ text: 'Forma de pagamento escolhida:', bold: true, margin: [0, 40, 0, 10], alignment: 'center' }] : []),
-                        ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20], alignment: 'center' }] : []),
-                        createPaymentEntryTable(paymentsInfoData),
+                        // ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20], alignment: 'center' }] : []),
+                        // createPaymentEntryTable(paymentsInfoData),
                         ...(paymentData?.map((payment, index) => {
                             const nonNullPayments = payment?.filter(pay => pay?.valor_parcela);
                             if (nonNullPayments?.length > 0) {
@@ -3106,6 +3236,7 @@ export const ContractStudent = (props) => {
 
                 resolve(pdfBlob);
             } catch (error) {
+                console.log(error)
                 reject(error);
             }
         });
@@ -3134,13 +3265,17 @@ export const ContractStudent = (props) => {
             ]);
         });
 
+
         const tableDefinition = {
             table: {
                 widths: ['auto', 'auto', 'auto', 'auto', 'auto'],
                 body: tableBody,
+                styles: {
+                    fontSize: 13
+                },
                 alignment: 'center'
             },
-            margin: [60, 0, 0, 0],
+            margin: [20, 0, 0, 0],
             layout: {
                 hLineWidth: function (i, node) {
                     return i === 0 ? 0 : 1;
@@ -3185,13 +3320,17 @@ export const ContractStudent = (props) => {
                 return null; // or handle it accordingly
             }
 
+
             const tableDefinition = {
                 table: {
-                    widths: ['auto', 'auto', 'auto', 'auto'],
+                    widths: ['auto', 'auto', 'auto', 'auto', 'auto'],
                     body: tableBody,
-                    alignment: 'center',
+                    styles: {
+                        fontSize: 13
+                    },
+                    alignment: 'center'
                 },
-                margin: [60, 10],
+                margin: [20, 0, 0, 0],
                 layout: {
                     hLineWidth: function (i, node) {
                         return i === 0 ? 0 : 1;

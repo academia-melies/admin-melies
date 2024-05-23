@@ -140,11 +140,12 @@ export const bodyContractEnrollment = [
 
 export const userDataTable = (userData) => {
 
+    
     const formatTimeDate = (date) => {
         if (date) {
             const formatDate = new Date(date);
             formatDate.setHours(formatDate.getHours() + 10);
-
+            
             return formatDate
         }
         return null
