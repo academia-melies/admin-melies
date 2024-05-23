@@ -234,7 +234,7 @@ export default function EditExpenses(props) {
     const handleDelete = async () => {
         setLoading(true)
         try {
-            const response = await api.delete(`/expense/${id}`)
+            const response = await api.delete(`/expense/delete/${id}`)
             if (response?.status == 200) {
                 alert.success('Despesa excluída com sucesso.');
                 router.push(`/financial/billsToPay/expenses`)
