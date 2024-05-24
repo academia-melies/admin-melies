@@ -11,6 +11,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import { IconStatus } from "../../../organisms/Table/table"
 import Link from "next/link"
+import { formatValueReal } from "../../../helpers"
 
 export default function EditCompensation(props) {
     const { setLoading, alert, colorPalette, user, theme, userPermissions, menuItemsList } = useAppContext()
@@ -22,10 +23,14 @@ export default function EditCompensation(props) {
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [contract, setContract] = useState({})
+    const [costCenterList, setCostCenterList] = useState([])
+    const [accountTypesList, setAccountTypesList] = useState([])
     const [superiorData, setSuperiorData] = useState({})
     const [files, setFiles] = useState([])
     const [menuView, setMenuView] = useState('remuneracao')
-    const [compensationData, setCompensationData] = useState({})
+    const [compensationData, setCompensationData] = useState({
+        houve_alteracao: 2
+    })
     const [usersForCoordinator, setUsersForCoordinator] = useState([])
 
 
@@ -45,7 +50,6 @@ export default function EditCompensation(props) {
         try {
             const response = await api.get(`/user/${id}`)
             const { data } = response
-            console.log(data)
             setUserData(data.response)
         } catch (error) {
             console.log(error)
@@ -62,8 +66,8 @@ export default function EditCompensation(props) {
                 const { data } = superiorData
                 let contractDatas = data.response;
                 setSuperiorData(data.response)
-                console.log
                 setCompensationData({
+                    houve_alteracao: 2,
                     area: contractData?.data?.area,
                     funcao: contractData?.data?.funcao,
                     superior: contractData?.data?.superior,
@@ -97,6 +101,30 @@ export default function EditCompensation(props) {
     }
 
 
+    async function listCostCenter() {
+        const response = await api.get(`/costCenters`)
+        const { data } = response
+        const groupCostCenter = data?.filter(item => item)?.map(cc => ({
+            label: cc.nome_cc,
+            value: cc?.id_centro_custo
+        }));
+        setCostCenterList(groupCostCenter)
+    }
+
+
+
+    async function listAccountTypes() {
+        const response = await api.get(`/account/types`)
+        const { data } = response
+        const groupCostCenter = data?.filter(item => item)?.map(cc => ({
+            label: cc.nome_tipo,
+            value: cc?.id_tipo
+        }));
+
+        setAccountTypesList(groupCostCenter)
+    }
+
+
     useEffect(() => {
         handleItems();
     }, [])
@@ -109,6 +137,8 @@ export default function EditCompensation(props) {
             await getUserData()
             await getContract()
             await listUserByArea()
+            await listCostCenter()
+            await listAccountTypes()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Curso')
         } finally {
@@ -300,7 +330,8 @@ export default function EditCompensation(props) {
 
                 {menuView === 'remuneracao' &&
                     <Compensation compensationData={compensationData} setCompensationData={setCompensationData} isPermissionEdit={isPermissionEdit}
-                        usersForCoordinator={usersForCoordinator} />
+                        usersForCoordinator={usersForCoordinator}
+                        accountTypesList={accountTypesList} costCenterList={costCenterList} />
                 }
 
             </Box>
@@ -309,12 +340,15 @@ export default function EditCompensation(props) {
 }
 
 const Compensation = (props) => {
-    const { compensationData, setCompensationData, isPermissionEdit, usersForCoordinator } = props
+    const { compensationData, setCompensationData, isPermissionEdit, usersForCoordinator,
+        accountTypesList, costCenterList } = props
     const { setLoading, alert, colorPalette, user, theme, userPermissions, menuItemsList } = useAppContext()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [newCompensation, setNewCompensation] = useState(5000);
     const [showCompensationData, setShowCompensationData] = useState(false);
-    const newSalario = 5000
+    const [showCompensationSalary, setShowCompensationSalary] = useState(false);
+    const salarioAtual = 5000
     const router = useRouter()
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
@@ -329,7 +363,7 @@ const Compensation = (props) => {
 
     const handleChange = async (event) => {
 
-        if (event.target.name === 'valor') {
+        if (event.target.name === 'valor' || event.target.name === 'acrecimo_valor') {
             const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
             if (rawValue === '') {
@@ -360,6 +394,41 @@ const Compensation = (props) => {
             [event.target.name]: event.target.value,
         }))
     }
+
+    const handleBlur = async (event) => {
+        const { name, value } = event.target
+        const newCompensation = await calculationNewCompensation(name, value)
+        setNewCompensation(newCompensation)
+    }
+
+    const calculationNewCompensation = async (typeUpdate, value) => {
+        try {
+            let formattValue = value;
+            let salary = parseFloat(salarioAtual);
+
+            if (typeUpdate === 'valor') {
+                formattValue = value.replace(/\./g, '').replace(',', '.');
+                formattValue = parseFloat(formattValue)
+                salary = formattValue;
+            } else if (typeUpdate === 'porcentagem') {
+                formattValue = parseFloat(formattValue)
+                let aumento = (salary * (formattValue / 100)).toFixed(2);
+                salary = (salary + parseFloat(aumento));
+            } else if (typeUpdate === 'acrecimo_valor') {
+                formattValue = value.replace(/\./g, '').replace(',', '.');
+                formattValue = parseFloat(formattValue)
+                salary = (salary + formattValue);
+            }
+
+            console.log(salary);
+
+            return salary
+        } catch (error) {
+            console.log(error);
+            return error;
+        }
+    }
+
 
     const groupLevelEmployee = [
         { label: 'Junior', value: 'Junior' },
@@ -425,18 +494,25 @@ const Compensation = (props) => {
 
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
                         <Text bold>Remuneração Atual:</Text>
-                        <Text large>R$ 5.000,00</Text>
+                        {compensationData?.salario ?
+                            <Text large>{formatter.format(compensationData?.salario)}</Text>
+                            :
+                            <Button text="Cadastrar" small style={{ borderRadius: 2 }} onClick={() => setShowCompensationSalary(true)} />
+                        }
                     </Box>
                     <Box sx={{ display: 'flex', height: '50px', width: '1px', backgroundColor: theme ? '#eaeaea' : '#404040' }} />
 
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
                         <Text bold>Nível Atual:</Text>
-                        <Text large>Sênior</Text>
+                        <Text large>{compensationData?.nivel_cargo || 'Sem nível'}</Text>
                     </Box>
                     <Box sx={{ display: 'flex', height: '50px', width: '1px', backgroundColor: theme ? '#eaeaea' : '#404040' }} />
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
                         <Text bold>Alteração Salárial:</Text>
-                        <Button text="Promover" small style={{ borderRadius: 2 }} onClick={() => setShowCompensationData(true)} />
+                       {compensationData?.salario ?
+                        <Button text="Reajustar" small style={{ borderRadius: 2 }} onClick={() => setShowCompensationData(true)} />
+                    :
+                    <Text light>Cadastre o Salário</Text>}
                     </Box>
                 </Box>
 
@@ -494,10 +570,10 @@ const Compensation = (props) => {
                 </Box>
             </Box>
 
-            <Backdrop open={showCompensationData} sx={{ zIndex: 999 }}>
-                <ContentContainer sx={{ zIndex: 9999 }}>
+            <Backdrop open={showCompensationData} sx={{ zIndex: 999, paddingTop: 5 }}>
+                <ContentContainer sx={{ zIndex: 9999, }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
-                        <Text bold large>Dados da Promoção</Text>
+                        <Text bold large>Dados do Reajuste</Text>
                         <Box sx={{
                             ...styles.menuIcon,
                             backgroundImage: `url(${icons.gray_close})`,
@@ -510,17 +586,20 @@ const Compensation = (props) => {
                         }} onClick={() => setShowCompensationData(false)} />
                     </Box>
                     <Divider distance={0} />
-                    <Box sx={{ display: 'flex', gap: 1.75, flexDirection: 'column', padding: '20px' }}>
+                    <Box sx={{
+                        display: 'flex', gap: 1.75, flexDirection: 'column', padding: '20px',
+                        maxHeight: { xs: 380, sm: 350, md: 350, lg: 400, xl: 600 }, overflow: 'auto'
+                    }}>
 
                         <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'space-between', padding: '20px 0px' }}>
-                            <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column',padding: '10px', width: '100%', borderRadius: 2, backgroundColor: colorPalette?.primary }}>
+                            <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column', padding: '10px', width: '100%', borderRadius: 2, backgroundColor: colorPalette?.primary }}>
                                 <Text bold>Salário Atual:</Text>
-                                <Text large>{formatter.format(newSalario)}</Text>
+                                <Text large>{formatter.format(salarioAtual)}</Text>
                             </Box>
 
                             <Box sx={{ display: 'flex', gap: .5, padding: '10px', flexDirection: 'column', borderRadius: 2, width: '100%', backgroundColor: '#90ee90' }}>
                                 <Text bold>Novo Salário:</Text>
-                                <Text large>{formatter.format(newSalario)}</Text>
+                                <Text large>{formatter.format(newCompensation)}</Text>
                             </Box>
                         </Box>
                         <TextInput disabled={!isPermissionEdit && true}
@@ -545,16 +624,27 @@ const Compensation = (props) => {
                             name='valor'
                             type="coin"
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             value={(compensationData?.valor) || ''}
                         />}
                         {compensationData?.forma_reajuste === 2 &&
-                            < TextInput placeholder="0.5" name='dissidio'
+                            < TextInput placeholder="0.5" name='porcentagem'
                                 label='Porcentagem do aumento'
-                                onChange={(event) => setCompensationData({ ...compensationData, procentagem: event.target.value })} value={compensationData?.procentagem} sx={{ flex: 1 }} />
+                                onBlur={handleBlur}
+                                onChange={(event) => setCompensationData({ ...compensationData, porcentagem: event.target.value })} value={compensationData?.porcentagem} sx={{ flex: 1 }} />
                         }
 
-                        <TextInput disabled={!isPermissionEdit && true} placeholder='Observação' name='observacao'
-                            onChange={handleChange} value={compensationData?.observacao || ''} label='Observação:' sx={{ flex: 1, }} multiline rows={2} />
+                        {compensationData?.forma_reajuste === 3 && <TextInput disabled={!isPermissionEdit && true}
+                            label='Acrécimo de Valor'
+                            placeholder='0.00'
+                            name='acrecimo_valor'
+                            type="coin"
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            value={(compensationData?.acrecimo_valor) || ''}
+                        />}
+                        {compensationData?.forma_reajuste && <TextInput disabled={!isPermissionEdit && true} placeholder='Observação' name='observacao'
+                            onChange={handleChange} value={compensationData?.observacao || ''} label='Observação:' sx={{ flex: 1, }} multiline rows={2} />}
 
                         <RadioItem disabled={!isPermissionEdit && true} valueRadio={compensationData?.houve_alteracao} group={groupAlteration}
                             horizontal={true}
@@ -585,6 +675,25 @@ const Compensation = (props) => {
                                     title="Nível do cargo:" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
+
+                                <Text light>Dados de Pagamento</Text>
+
+                                <TextInput disabled={!isPermissionEdit && true} type="number"
+                                    placeholder='ex: 5' name='dia_pagamento'
+                                    onChange={handleChange}
+                                    value={compensationData?.dia_pagamento || ''} label='Dia de Pagamento' sx={{ flex: 1, }} />
+
+                                <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountTypesList}
+                                    valueSelection={compensationData?.tipo}
+                                    onSelect={(value) => setCompensationData({ ...compensationData, tipo: value })}
+                                    title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <SelectList fullWidth disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={compensationData?.centro_custo}
+                                    onSelect={(value) => setCompensationData({ ...compensationData, centro_custo: value })}
+                                    title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
                             </>
                             :
                             <>
@@ -604,6 +713,24 @@ const Compensation = (props) => {
                                     <Text bold small>Nível do cargo:</Text>
                                     <Text small>{compensationData?.nivel_cargo}</Text>
                                 </Box>
+                                <Divider />
+
+                                <Text light>Dados de Pagamento</Text>
+
+                                <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                    <Text bold small>Dia de Pagamento:</Text>
+                                    <Text small>{compensationData?.dia_pagamento || '-'}</Text>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                    <Text bold small>Tipo:</Text>
+                                    <Text small>{compensationData?.tipo ? accountTypesList?.filter(item => item?.value === compensationData?.tipo)
+                                        ?.map(item => item.label) : '-'}</Text>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                    <Text bold small>Centro de Custo:</Text>
+                                    <Text small>{compensationData?.centro_custo ? costCenterList?.filter(item => item?.value === compensationData?.centro_custo)
+                                        ?.map(item => item.label) : '-'}</Text>
+                                </Box>
                             </>
                         }
                     </Box>
@@ -617,6 +744,70 @@ const Compensation = (props) => {
                     </Box>
                 </ContentContainer>
             </Backdrop>
+
+
+            <Backdrop open={showCompensationSalary} sx={{ zIndex: 999, paddingTop: 5 }}>
+                <ContentContainer sx={{ zIndex: 9999, }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Dados da Remuneração</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowCompensationSalary(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{
+                        display: 'flex', gap: 1.75, flexDirection: 'column', padding: '20px',
+                        maxHeight: { xs: 380, sm: 350, md: 350, lg: 400, xl: 600 }, overflow: 'auto'
+                    }}>
+
+                        <TextInput disabled={!isPermissionEdit && true}
+                            label='Novo salário'
+                            placeholder='0.00'
+                            name='valor'
+                            type="coin"
+                            onChange={handleChange}
+                            value={(compensationData?.valor) || ''}
+                        />
+
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Observação' name='observacao'
+                            onChange={handleChange} value={compensationData?.observacao || ''} label='Observação:' sx={{ flex: 1, }} multiline rows={2} />
+
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição da função' name='funcao' onChange={handleChange}
+                            value={compensationData?.funcao || ''} label='Descrição da função' sx={{ flex: 1, }} />
+
+                        <TextInput disabled={!isPermissionEdit && true} type="number"
+                            placeholder='ex: 5' name='dia_pagamento'
+                            onChange={handleChange}
+                            value={compensationData?.dia_pagamento || ''} label='Dia de Pagamento' sx={{ flex: 1, }} />
+
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountTypesList}
+                            valueSelection={compensationData?.tipo}
+                            onSelect={(value) => setCompensationData({ ...compensationData, tipo: value })}
+                            title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={compensationData?.centro_custo}
+                            onSelect={(value) => setCompensationData({ ...compensationData, centro_custo: value })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'center' }}>
+                        <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }} />
+                        <Button disabled={!isPermissionEdit && true} cancel text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => {
+                                setShowCompensationSalary(false)
+                            }} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop >
         </>
     )
 }
