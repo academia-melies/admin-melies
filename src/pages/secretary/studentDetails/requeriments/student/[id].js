@@ -24,6 +24,7 @@ export default function RequerimentEnrollmentStudent(props) {
     const [disciplinesSelected, setDisciplinesSelected] = useState()
     const [statusRequeriment, setStatusRequeriment] = useState()
     const [disciplinesCourse, setDisciplinesCourse] = useState()
+    const [showReasonReproved, setShowReasonReproved] = useState(false)
     const [requerimentData, setRequerimentData] = useState({})
     const [fileUser, setFileUser] = useState([])
     const [showDocSection, setShowDocSection] = useState(true)
@@ -884,11 +885,13 @@ export default function RequerimentEnrollmentStudent(props) {
                                     transition: '.3s',
                                     "&:hover": {
                                         opacity: 0.8,
-                                        cursor: 'pointer',
-                                        transform: 'scale(1.1, 1.1)'
+                                        cursor: parseInt(requerimentData?.aprovado) !== 1 && 'pointer',
+                                        transform: parseInt(requerimentData?.aprovado) !== 1 && 'scale(1.1, 1.1)'
                                     },
                                 }} onClick={() => {
-                                    handleUpdateRequeriment({ aprovadoStatus: 'aprovado' })
+                                    if (parseInt(requerimentData?.aprovado) !== 1) {
+                                        handleUpdateRequeriment({ aprovadoStatus: 'aprovado' })
+                                    }
                                 }}>
                                     {parseInt(requerimentData?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />}
                                     <Text large style={{ color: parseInt(requerimentData?.aprovado) === 1 ? '#fff' : 'green' }}>
@@ -902,12 +905,14 @@ export default function RequerimentEnrollmentStudent(props) {
                                     transition: '.3s',
                                     borderRadius: 2, "&:hover": {
                                         opacity: 0.8,
-                                        cursor: 'pointer',
-                                        transform: 'scale(1.1, 1.1)'
+                                        cursor: parseInt(requerimentData?.aprovado) !== 0 && 'pointer',
+                                        transform: parseInt(requerimentData?.aprovado) !== 0 && 'scale(1.1, 1.1)'
                                     },
                                 }}
                                     onClick={() => {
-                                        handleUpdateRequeriment({ aprovadoStatus: 'reprovado' })
+                                        if (parseInt(requerimentData?.aprovado) !== 0) {
+                                            setShowReasonReproved(true)
+                                        }
                                     }}>
 
                                     {parseInt(requerimentData?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 20 }} />}
@@ -930,8 +935,27 @@ export default function RequerimentEnrollmentStudent(props) {
                     </div >
                 </>
             }
-
-
+            <Backdrop open={showReasonReproved} sx={{ zIndex: 99999, backgroundColor: 'transparent' }}>
+                <ContentContainer>
+                    <Text title bold>Motivo pela reprovação</Text>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', minWidth: 400 }}>
+                        <TextInput
+                            fullWidth
+                            placeholder='Reprovado por falta de aderência das disciplinas cursadas anteriormente...'
+                            name='obs_status' onChange={(e) => setRequerimentData({ ...requerimentData, obs_status: e.target.value })} value={requerimentData?.obs_status || ''}
+                            label='Motivo:'
+                            multiline
+                            maxRows={5}
+                            rows={3}
+                            sx={{}} />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center' }}>
+                        <Button text="Salvar" style={{ borderRadius: 2 }} onClick={() => handleUpdateRequeriment({ aprovadoStatus: 'reprovado' })} />
+                        <Button cancel text="Cancelar" style={{ borderRadius: 2 }} onClick={() => setShowReasonReproved(false)} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
             <Backdrop open={showDropFileDiscipline?.active} sx={{ zIndex: 99999, backgroundColor: 'transparent' }}>
                 <ContentContainer>
                     <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', justifyContent: 'space-between' }}>
