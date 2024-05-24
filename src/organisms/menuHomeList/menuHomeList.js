@@ -12,7 +12,7 @@ const menuApoio = [
     { id: '06', icon: '/icons/turmas_icon_home.png', text: 'Turmas', to: '/administrative/class/list', description: 'Lista de todas as turmas da Faculdade.' },
     { id: '07', icon: '/icons/student_icon_home.png', text: 'Área do Aluno', to: '/academic/teacherArea/list', description: 'Acesse o resumo do aluno, para vizualizar suas notas, disciplinas matriculadas, atividades complementares, entre outras.' },
     { id: '08', icon: '/icons/cronograma_icon_home.png', text: 'Cronograma', to: '/administrative/classSchedule/list', description: 'Lista de cronogramas de aulas por módulo.' },
-    { id: '09', icon: '/icons/partners.png', text: 'Conhecça as Equipes Méliès', to: '/administrative/classSchedule/list', description: 'Organograma dos funcionários, por área.' },
+    { id: '09', icon: '/icons/partners.png', text: 'Conheça as Equipes Méliès', to: '/administrative/classSchedule/list', description: 'Organograma dos funcionários, por área.' },
 ]
 
 export const MenuHomeList = (props) => {
