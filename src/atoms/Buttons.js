@@ -58,7 +58,7 @@ export const Button = (props) => {
             }),
             ...(cancel && {
                ...styles.buttonContainer,
-               backgroundColor: 'red',
+               backgroundColor: '#ff4d4d',
                transition: 'background-color 3s',
                "&:hover": {
                   opacity: 0.8,
