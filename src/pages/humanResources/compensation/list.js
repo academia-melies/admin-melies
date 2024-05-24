@@ -169,7 +169,7 @@ export default function ListUsersCompensation(props) {
     return (
         <>
             <SectionHeader
-                title={`Remuneração (${usersList.filter(filter)?.length})`}
+                title={`Gestão de Pessoas (${usersList.filter(filter)?.length})`}
             />
             <Box sx={{
                 display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' },

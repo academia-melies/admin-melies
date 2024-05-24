@@ -179,10 +179,11 @@ export default function EditGrid(props) {
             const { data } = response
             const groupDisciplines = data.map(disciplines => ({
                 label: `${disciplines?.id_disciplina} - ${disciplines.nome_disciplina} - ${disciplines?.carga_hr_dp}hrs`,
-                value: disciplines?.id_disciplina
+                value: disciplines?.id_disciplina,
+                name: disciplines.nome_disciplina
             }));
 
-            const sortedDisciplines = groupDisciplines.sort((a, b) => a.label.localeCompare(b.label, 'pt', { sensitivity: 'base' }));
+            const sortedDisciplines = groupDisciplines.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' }));
 
             setDisciplines(sortedDisciplines);
         } catch (error) {
@@ -422,6 +423,8 @@ export const SemesterFields = (props) => {
                 return (
                     <Box sx={{ ...styles.inputSection, alignItems: "center" }} key={planGrid.modulo_grade}>
                         <SelectList disabled={!isPermissionEdit && true}
+                            onFilter={true}
+                            filterValue='label'
                             clean={false}
                             fullWidth={true}
                             data={disciplines}
@@ -457,6 +460,8 @@ export const SemesterFields = (props) => {
             })}
             <Box sx={{ ...styles.inputSection, alignItems: "center" }}>
                 <SelectList disabled={!isPermissionEdit && true}
+                    onFilter={true}
+                    filterValue='label'
                     fullWidth
                     data={disciplines}
                     valueSelection={moduleData[`disciplina_id-${semesterNumber}`] || ''}
