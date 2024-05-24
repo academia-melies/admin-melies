@@ -160,7 +160,8 @@ export default function EditUser() {
         titleDoc: false,
         ctps: false,
         enem: false,
-        cert_nascimento: false
+        cert_nascimento: false,
+        pis: false
     })
     const [historicData, setHistoricData] = useState({
         responsavel: user?.nome
@@ -1942,6 +1943,10 @@ export default function EditUser() {
             icon: '/icons/folder_icon.png', key: 'rg', text: 'RG'
         },
         {
+            id: '13',
+            icon: '/icons/folder_icon.png', key: 'pis', text: 'PIS'
+        },
+        {
             id: '03',
             icon: '/icons/folder_icon.png', key: 'comprovante_residencia', text: 'Comprovante de Residência'
         },
@@ -2944,7 +2949,37 @@ export default function EditUser() {
                                     </FileInput>
 
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Série' name='serie' onChange={handleChangeContract} value={contract?.serie || ''} label='Série' sx={{ flex: 1, }} />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
+                                    <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, pis: value })}
+                                        existsFiles={filesUser?.filter((file) => file.campo === 'pis').length > 0}>
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='PIS' name='pis' onChange={handleChangeContract} value={contract?.pis || ''} label='PIS' sx={{ flex: 1, }} />
+
+                                        <EditFile
+                                            setFilesUser={setFilesUser}
+                                            filesUser={filesUser}
+                                            isPermissionEdit={isPermissionEdit}
+                                            columnId="id_doc_usuario"
+                                            open={showEditFile.pis}
+                                            newUser={newUser}
+                                            onSet={(set) => {
+                                                setShowEditFiles({ ...showEditFile, pis: set })
+                                            }}
+                                            title='Pis'
+                                            text='Faça o upload do seu PIS, depois clique em salvar.'
+                                            textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
+                                            fileData={filesUser?.filter((file) => file.campo === 'pis')}
+                                            usuarioId={id}
+                                            campo='pis'
+                                            tipo='documento usuario'
+                                            callback={(file) => {
+                                                if (file.status === 201 || file.status === 200) {
+                                                    if (!newUser) { handleItems() }
+                                                    else {
+                                                        handleChangeFilesUser('pis', file.fileId, file.filePreview)
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    </FileInput>
                                 </Box>
                                 <Box sx={styles.inputSection}>
                                     <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupBank} valueSelection={contract?.banco_1} onSelect={(value) => setContract({ ...contract, banco_1: value })}
@@ -3705,10 +3740,13 @@ export default function EditUser() {
                                             const requeriments = interest?.requeriments && interest?.requeriments?.some(item => item?.aprovado === 1);
                                             const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula);
                                             const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
+                                            const [isRequerimentoReproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 0);
                                             const approvedRequeriment = requeriments ? true : false;
                                             const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
                                             const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}`;
                                             const subscription = interest?.inscricao;
+                                            const [respAnalisar] = interest?.requeriments?.map(req => req.analisado_por);
+                                            console.log(respAnalisar)
                                             let linkRequeriment;
                                             if (isHaveRequeriment) {
                                                 linkRequeriment = `/secretary/studentDetails/requeriments/student/${isHaveRequeriment}`
@@ -3910,7 +3948,7 @@ export default function EditUser() {
                                                             {!newUser && <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
                                                                 <Text bold>Requerimento de Matrícula/Cadastro:</Text>
                                                                 <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                                    <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
+                                                                    <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isRequerimentoReproved ? 'Requerimento reprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
                                                                         <div>
                                                                             {isRequerimentoAproved ?
                                                                                 <Box sx={{
@@ -3930,28 +3968,47 @@ export default function EditUser() {
                                                                                     </Text>
                                                                                 </Box>
                                                                                 :
-                                                                                <Button disabled={(!isPermissionEdit || subscription?.status_processo_sel !== 'Classificado') && true}
-                                                                                    secondary={isHaveRequeriment}
-                                                                                    small text={isHaveRequeriment ? 'Ver Requerimento' : "Enviar Requerimento"} sx={{
-                                                                                        // width: 25,
+
+                                                                                isRequerimentoReproved ?
+                                                                                    <Box sx={{
+                                                                                        display: 'flex', gap: 1, padding: '6px 8px', alignItems: 'center', border: '1px solid red',
+                                                                                        backgroundColor: 'transparent',
+                                                                                        borderRadius: `100px`,
+                                                                                        justifyContent: 'space-around',
                                                                                         transition: '.3s',
-                                                                                        zIndex: 999999999,
                                                                                         "&:hover": {
                                                                                             opacity: 0.8,
                                                                                             cursor: 'pointer'
-                                                                                        }
-                                                                                    }} onClick={() => {
-                                                                                        if (subscription?.forma_ingresso) {
-                                                                                            if (isHaveRequeriment) {
-                                                                                                window.open(linkRequeriment, '_blank')
-                                                                                            } else {
-                                                                                                handleSendRequeriment({ classId: interest?.turma_id, courseId: interest?.curso_id, entryForm: subscription?.forma_ingresso })
+                                                                                        },
+                                                                                    }} onClick={() => window.open(linkRequeriment, '_blank')}>
+                                                                                        <CancelIcon style={{ color: 'red', fontSize: 15 }} />
+                                                                                        <Text style={{ color: 'red' }}>
+                                                                                            Ver Requerimento
+                                                                                        </Text>
+                                                                                    </Box>
+                                                                                    :
+                                                                                    <Button disabled={(!isPermissionEdit || subscription?.status_processo_sel !== 'Classificado') && true}
+                                                                                        secondary={isHaveRequeriment}
+                                                                                        small text={isHaveRequeriment ? 'Ver Requerimento' : "Enviar Requerimento"} sx={{
+                                                                                            // width: 25,
+                                                                                            transition: '.3s',
+                                                                                            zIndex: 999999999,
+                                                                                            "&:hover": {
+                                                                                                opacity: 0.8,
+                                                                                                cursor: 'pointer'
                                                                                             }
-                                                                                        } else {
-                                                                                            alert.info('Preencha primeiro a forma de ingresso do candidato.')
-                                                                                        }
-                                                                                    }}
-                                                                                />
+                                                                                        }} onClick={() => {
+                                                                                            if (subscription?.forma_ingresso) {
+                                                                                                if (isHaveRequeriment) {
+                                                                                                    window.open(linkRequeriment, '_blank')
+                                                                                                } else {
+                                                                                                    handleSendRequeriment({ classId: interest?.turma_id, courseId: interest?.curso_id, entryForm: subscription?.forma_ingresso })
+                                                                                                }
+                                                                                            } else {
+                                                                                                alert.info('Preencha primeiro a forma de ingresso do candidato.')
+                                                                                            }
+                                                                                        }}
+                                                                                    />
                                                                             }
                                                                         </div>
                                                                     </Tooltip>
@@ -3971,7 +4028,7 @@ export default function EditUser() {
                                                                 </Box>
                                                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginTop: 3 }}>
                                                                     <Text small bold>Responsável por análisar:</Text>
-                                                                    <Text small>{subscription?.analisado_por} Marcus</Text>
+                                                                    <Text small>{respAnalisar || '-'}</Text>
                                                                 </Box>
                                                             </Box>}
                                                         </>
