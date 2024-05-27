@@ -39,6 +39,7 @@ export default function EditUser() {
         motivo_desistencia: null,
         dt_desistencia: null,
         certificado_emitido: 0,
+        adimplente: 0,
         preferencia_pagamento: null,
         disciplinesData: [],
     })
@@ -1232,6 +1233,7 @@ export default function EditUser() {
                 motivo_desistencia: enrollmentRegisterData?.motivo_desistencia,
                 dt_desistencia: enrollmentRegisterData?.dt_desistencia,
                 certificado_emitido: enrollmentRegisterData?.certificado_emitido,
+                adimplente: enrollmentRegisterData?.adimplente,
                 preferencia_pagamento: enrollmentRegisterData?.preferencia_pagamento,
                 disciplinesData: enrollmentRegisterData?.disciplinesData
             }])
@@ -1248,6 +1250,7 @@ export default function EditUser() {
                 motivo_desistencia: null,
                 dt_desistencia: null,
                 certificado_emitido: 0,
+                adimplente: 0,
                 preferencia_pagamento: null,
                 disciplinesData: []
             })
@@ -1730,6 +1733,11 @@ export default function EditUser() {
     const groupCertificate = [
         { label: 'Sim', value: 1 },
         { label: 'Não', value: 0 },
+    ]
+
+    const groupAdimplente = [
+        { label: 'Em dia', value: 1 },
+        { label: 'Pendência financeira', value: 0 },
     ]
 
     const groupAdmin = [
@@ -3588,6 +3596,15 @@ export default function EditUser() {
                                                             />
                                                             <Divider padding={0} />
 
+                                                            <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.adimplente}
+                                                                group={groupAdimplente}
+                                                                title="Adimplente?"
+                                                                horizontal={mobile ? false : true}
+                                                            />
+                                                            <Divider padding={0} />
+
+                                                            
+
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                                 <Text bold>Usuário responsável:</Text>
                                                                 <Text light>{item?.nome_usuario_resp}</Text>
@@ -3699,6 +3716,13 @@ export default function EditUser() {
                             horizontal={mobile ? false : true}
                             onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, certificado_emitido: parseInt(value) })} />
                         <Divider padding={0} />
+                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={enrollmentStudentEditData?.adimplente}
+                            group={groupAdimplente}
+                            title="Adimplente?"
+                            horizontal={mobile ? false : true}
+                            onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, adimplente: parseInt(value) })} />
+                        <Divider padding={0} />
+                        
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flex: 1, justifyContent: 'flex-start' }}>
                             <Button disabled={!isPermissionEdit && true} small text="salvar" onClick={() => handleEnrollStudentEdit()} />
                             <Button disabled={!isPermissionEdit && true} secondary small text="cancelar" style={{}} onClick={() => setShowSections({ ...showSections, editEnroll: false })} />
