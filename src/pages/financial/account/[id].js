@@ -285,7 +285,7 @@ export default function Editaccount(props) {
                 setLoading(false)
             }
         } else {
-            alert.info('Selecione a conta que deseja trasnferir')
+            alert.info('Selecione a conta que deseja transferir')
         }
     }
 
@@ -323,22 +323,28 @@ export default function Editaccount(props) {
             <SectionHeader
                 perfil={'conta bancária'}
                 title={accountData?.nome_conta || `Nova Conta`}
-                saveButton={isPermissionEdit}
-                saveButtonAction={newAccount ? handleCreate : handleEdit}
-                deleteButton={!newAccount && isPermissionEdit}
-                deleteButtonAction={(event) => setShowConfirmationDialog({
-                    active: true,
-                    event,
-                    acceptAction: handleDelete,
-                    title: 'Deseja excluír a Conta?',
-                    message: 'A Conta será excluída do sistema, sem chance de recuperação.'
-                })}
-            />
+                saveButton={newAccount && isPermissionEdit}
+            >
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    {(!newAccount && isPermissionEdit) && <Button text="Salvar" style={{ borderRadius: 2 }} onClick={() => { if (newAccount) { handleCreate() } else { handleEdit() } }} />}
+                    {(!newAccount && isPermissionEdit) && <Button cancel text="Excluir Conta" style={{ borderRadius: 2 }} onClick={
+                        (event) => setShowConfirmationDialog({
+                            active: true,
+                            event,
+                            acceptAction: handleDelete,
+                            title: 'Deseja excluír a Conta?',
+                            message: 'A Conta será excluída do sistema, sem chance de recuperação.'
+                        })} />}
+                </Box>
+            </SectionHeader>
 
             {/* usuario */}
             <Box sx={{ display: 'flex', gap: 3, width: '100%', flexDirection: 'column' }}>
                 <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
-                    <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, width: '65%' }}>
+                    <ContentContainer style={{
+                        display: 'flex', flexDirection: 'column',
+                        justifyContent: 'space-between', gap: 1.8, padding: 5, width: '65%'
+                    }}>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
                             <Text title bold >Dados da Conta</Text>
@@ -352,13 +358,23 @@ export default function Editaccount(props) {
                             <TextInput disabled={!isPermissionEdit && true} placeholder='16770-01' name='conta' onChange={handleChange} value={accountData?.conta || ''} label='Conta:' sx={{ width: '100%', }} />
                         </Box>
                         <RadioItem disabled={!isPermissionEdit && true} valueRadio={accountData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setAccountData({ ...accountData, ativo: parseInt(value) })} />
+
+                        <Box sx={{
+                            display: 'flex', width: '100%',
+                            padding: '5px'
+                        }}>
+                            <Button style={{ borderRadius: 2 }} text="Adicionar Saldo Inicial" />
+                        </Box>
                     </ContentContainer>
-                    <ContentContainer style={{ display: 'flex', flexDirection: 'column', gap: 1.8, padding: 5, width: '35%' }}>
+                    <ContentContainer style={{
+                        display: 'flex', flexDirection: 'column', gap: 1.8, padding: 5, width: '35%',
+                        position: 'relative'
+                    }}>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
                             <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Histórico de transferência</Text>
                         </Box>
-                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxHeight: 280, overflowX: 'auto', minHeight: 280 }}>
+                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxHeight: 280, minHeight: 280 }}>
                             {accountHistoricList?.length > 0 ?
                                 accountHistoricList?.map((item, index) => {
                                     return (
@@ -441,6 +457,13 @@ export default function Editaccount(props) {
                                 })
                                 :
                                 <Text light>Não foi encontrado histórico de trasnferências</Text>}
+                            <Box sx={{
+                                display: 'flex', width: '100%', position: 'absolute', bottom: 20,
+                                justifyContent: 'flex-end', right: 20,
+                                padding: '5px'
+                            }}>
+                                <Button style={{ borderRadius: 2 }} text="Nova Transferência" />
+                            </Box>
                         </Box>
                     </ContentContainer>
                 </Box>
@@ -543,7 +566,7 @@ export default function Editaccount(props) {
                             <Text>{accountData?.nome_conta}</Text>
                         </Box>
 
-                        <Text bold>Trasnferir Para:</Text>
+                        <Text bold>Transferir Para:</Text>
                         <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountList} valueSelection={accountToTransfer} onSelect={(value) => setAccountToTransfer(value)}
                             title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
