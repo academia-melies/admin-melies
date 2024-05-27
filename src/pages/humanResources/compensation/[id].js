@@ -11,7 +11,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import { IconStatus } from "../../../organisms/Table/table"
 import Link from "next/link"
-import { formatValueReal } from "../../../helpers"
+import { formatTimeStamp, formatValueReal } from "../../../helpers"
 
 export default function EditCompensation(props) {
     const { setLoading, alert, colorPalette, user, theme, userPermissions, menuItemsList } = useAppContext()
@@ -31,8 +31,10 @@ export default function EditCompensation(props) {
     const [compensationData, setCompensationData] = useState({
         houve_alteracao: 2
     })
+    const [compensationHistoricData, setCompensationHistoricData] = useState([])
     const [usersForCoordinator, setUsersForCoordinator] = useState([])
-
+    const [showCompensationData, setShowCompensationData] = useState(false);
+    const [showCompensationSalary, setShowCompensationSalary] = useState(false);
 
 
 
@@ -51,6 +53,31 @@ export default function EditCompensation(props) {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             setUserData(data.response)
+            return data?.response
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+    const getCompensation = async (userId, contract) => {
+        try {
+            const response = await api.get(`/compensation/employee/${userId}`)
+            const { data } = response
+            if (data) {
+                setCompensationData({
+                    ...data,
+                    houve_alteracao: 2,
+                    area: contract?.data?.area,
+                    funcao: contract?.data?.funcao,
+                    superior: contract?.data?.superior,
+                    nivel_cargo: contract?.data?.nivel_cargo
+                })
+                const historic = await api.get(`/compensation/employee/historic/${data?.id_remuneracao}`)
+                if (historic?.data?.length > 0) {
+                    setCompensationHistoricData(historic?.data)
+                }
+            }
         } catch (error) {
             console.log(error)
             return error
@@ -66,15 +93,9 @@ export default function EditCompensation(props) {
                 const { data } = superiorData
                 let contractDatas = data.response;
                 setSuperiorData(data.response)
-                setCompensationData({
-                    houve_alteracao: 2,
-                    area: contractData?.data?.area,
-                    funcao: contractData?.data?.funcao,
-                    superior: contractData?.data?.superior,
-                    nivel_cargo: contractData?.data?.nivel_cargo
-                })
             }
             setContract(contractData?.data)
+            return contractData
         } catch (error) {
             console.log(error)
             return error
@@ -134,11 +155,14 @@ export default function EditCompensation(props) {
         setLoading(true)
         try {
             await fetchPermissions()
-            await getUserData()
-            await getContract()
+            const userdata = await getUserData()
+            const contractdata = await getContract()
             await listUserByArea()
             await listCostCenter()
             await listAccountTypes()
+            if (userdata && contractdata) {
+                await getCompensation(userdata?.id, contractdata)
+            }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Curso')
         } finally {
@@ -166,53 +190,50 @@ export default function EditCompensation(props) {
         return true
     }
 
-    const handleCreateCourse = async () => {
+    const handleCreateCompensation = async () => {
         setLoading(true)
         if (checkRequiredFields()) {
             try {
-                const response = await createCourse(userData, userId, files);
+
+                const response = await api.post(`/compensation/employee/create/${id}`, {
+                    userResp: user?.id,
+                    compensationData: {
+                        ...compensationData,
+                        usuario_id: id,
+                        salario: compensationData?.valor
+                    }
+                });
                 const { data } = response
-                if (response?.status === 201) {
-                    alert.success('Curso cadastrado com sucesso.');
-                    router.push(`/administrative/course/list`)
+                if (data?.success) {
+                    alert.success('Salário Cadastrado.');
+                    setShowCompensationSalary(false)
+                    await handleItems()
+                } else {
+                    alert.error('Tivemos um problema ao cadastrar o Salário.');
                 }
             } catch (error) {
-                alert.error('Tivemos um problema ao cadastrar o curso.');
+                alert.error('Tivemos um problema ao cadastrar o Salário.');
             } finally {
                 setLoading(false)
             }
         }
     }
 
-    const handleDeleteCourse = async () => {
+    const handleEditCompensation = async () => {
         setLoading(true)
         try {
-            const response = await deleteCourse(id)
-            if (response?.status == 201) {
-                alert.success('Curso excluído com sucesso.');
-                router.push(`/administrative/course/list`)
+            const response = await api.patch(`/compensation/employee/update/${compensationData?.id_remuneracao}`,
+                { userResp: user?.id, compensationData })
+            const { data } = response
+            if (data?.success) {
+                alert.success('Salário atualizado com sucesso.');
+                await handleItems()
+                setShowCompensationData(false)
+            } else {
+                alert.error('Tivemos um problema ao atualizar Salário.');
             }
-
         } catch (error) {
-            alert.error('Tivemos um problema ao excluir o curso.');
-            console.log(error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const handleEditCourse = async () => {
-        setLoading(true)
-        try {
-            const response = await editCourse({ id, userData })
-            if (response?.status === 201) {
-                alert.success('Curso atualizado com sucesso.');
-                handleItems()
-                return
-            }
-            alert.error('Tivemos um problema ao atualizar Curso.');
-        } catch (error) {
-            alert.error('Tivemos um problema ao atualizar Curso.');
+            alert.error('Tivemos um problema ao atualizar Salário.');
         } finally {
             setLoading(false)
         }
@@ -277,7 +298,7 @@ export default function EditCompensation(props) {
                     <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', marginTop: .5 }}>
                             <Text light style={{ color: 'gray' }}>Departamento:</Text>
-                            <Text light large>{contract?.area}</Text>
+                            <Text light large>{contract?.area || '-'}</Text>
                         </Box>
                     </Box>
 
@@ -329,9 +350,21 @@ export default function EditCompensation(props) {
 
 
                 {menuView === 'remuneracao' &&
-                    <Compensation compensationData={compensationData} setCompensationData={setCompensationData} isPermissionEdit={isPermissionEdit}
+                    <Compensation
+                        compensationData={compensationData}
+                        setCompensationData={setCompensationData}
+                        isPermissionEdit={isPermissionEdit}
                         usersForCoordinator={usersForCoordinator}
-                        accountTypesList={accountTypesList} costCenterList={costCenterList} />
+                        accountTypesList={accountTypesList}
+                        costCenterList={costCenterList}
+                        handleCreateCompensation={handleCreateCompensation}
+                        handleEditCompensation={handleEditCompensation}
+                        compensationHistoricData={compensationHistoricData}
+                        showCompensationData={showCompensationData}
+                        setShowCompensationData={setShowCompensationData}
+                        showCompensationSalary={showCompensationSalary}
+                        setShowCompensationSalary={setShowCompensationSalary}
+                    />
                 }
 
             </Box>
@@ -341,13 +374,13 @@ export default function EditCompensation(props) {
 
 const Compensation = (props) => {
     const { compensationData, setCompensationData, isPermissionEdit, usersForCoordinator,
-        accountTypesList, costCenterList } = props
+        accountTypesList, costCenterList, handleCreateCompensation, handleEditCompensation,
+        compensationHistoricData, showCompensationData, showCompensationSalary,
+        setShowCompensationSalary, setShowCompensationData } = props
     const { setLoading, alert, colorPalette, user, theme, userPermissions, menuItemsList } = useAppContext()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [newCompensation, setNewCompensation] = useState(5000);
-    const [showCompensationData, setShowCompensationData] = useState(false);
-    const [showCompensationSalary, setShowCompensationSalary] = useState(false);
     const salarioAtual = 5000
     const router = useRouter()
     const startIndex = page * rowsPerPage;
@@ -357,9 +390,6 @@ const Compensation = (props) => {
         style: 'currency',
         currency: 'BRL'
     });
-
-    const historicCompensation = [
-    ]
 
     const handleChange = async (event) => {
 
@@ -398,13 +428,13 @@ const Compensation = (props) => {
     const handleBlur = async (event) => {
         const { name, value } = event.target
         const newCompensation = await calculationNewCompensation(name, value)
-        setNewCompensation(newCompensation)
+        setCompensationData({ ...compensationData, novo_salario: newCompensation })
     }
 
     const calculationNewCompensation = async (typeUpdate, value) => {
         try {
             let formattValue = value;
-            let salary = parseFloat(salarioAtual);
+            let salary = parseFloat(compensationData?.salario);
 
             if (typeUpdate === 'valor') {
                 formattValue = value.replace(/\./g, '').replace(',', '.');
@@ -509,10 +539,10 @@ const Compensation = (props) => {
                     <Box sx={{ display: 'flex', height: '50px', width: '1px', backgroundColor: theme ? '#eaeaea' : '#404040' }} />
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
                         <Text bold>Alteração Salárial:</Text>
-                       {compensationData?.salario ?
-                        <Button text="Reajustar" small style={{ borderRadius: 2 }} onClick={() => setShowCompensationData(true)} />
-                    :
-                    <Text light>Cadastre o Salário</Text>}
+                        {compensationData?.salario ?
+                            <Button text="Reajustar" small style={{ borderRadius: 2 }} onClick={() => setShowCompensationData(true)} />
+                            :
+                            <Text light>Cadastre o Salário</Text>}
                     </Box>
                 </Box>
 
@@ -523,7 +553,7 @@ const Compensation = (props) => {
                     boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
                 }}>
                     <TitleDetails title="Evolução Salárial" />
-                    {historicCompensation?.length > 0 ?
+                    {compensationHistoricData?.length > 0 ?
                         <div style={{
                             borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap',
                             backgroundColor: colorPalette?.secondary,
@@ -538,13 +568,13 @@ const Compensation = (props) => {
                                     </tr>
                                 </thead>
                                 <tbody style={{ flex: 1, }}>
-                                    {historicCompensation?.slice(startIndex, endIndex).map((item, index) => {
+                                    {compensationHistoricData?.sort((a, b) => new Date(b.dt_criacao) - new Date(a.dt_criacao))?.slice(startIndex, endIndex)?.map((item, index) => {
                                         return (
                                             <tr key={index} style={{
                                                 backgroundColor: colorPalette?.secondary
                                             }}>
                                                 <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                    <Text light>{formatTimeStamp(item?.vencimento)}</Text>
+                                                    <Text light>{formatTimeStamp(item?.dt_criacao, true)}</Text>
                                                 </td>
 
                                                 <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
@@ -552,7 +582,7 @@ const Compensation = (props) => {
                                                 </td>
 
                                                 <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                    <Text light>{formatter.format(item?.valor)}</Text>
+                                                    <Text light>{formatter.format(item?.salario)}</Text>
                                                 </td>
                                             </tr>
                                         );
@@ -561,7 +591,7 @@ const Compensation = (props) => {
 
                             </table>
 
-                            <PaginationTable data={historicCompensation}
+                            <PaginationTable data={compensationHistoricData}
                                 page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
                             />
                         </div>
@@ -594,12 +624,12 @@ const Compensation = (props) => {
                         <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'space-between', padding: '20px 0px' }}>
                             <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column', padding: '10px', width: '100%', borderRadius: 2, backgroundColor: colorPalette?.primary }}>
                                 <Text bold>Salário Atual:</Text>
-                                <Text large>{formatter.format(salarioAtual)}</Text>
+                                <Text large>{formatter.format(parseFloat(compensationData?.salario))}</Text>
                             </Box>
 
                             <Box sx={{ display: 'flex', gap: .5, padding: '10px', flexDirection: 'column', borderRadius: 2, width: '100%', backgroundColor: '#90ee90' }}>
                                 <Text bold>Novo Salário:</Text>
-                                <Text large>{formatter.format(newCompensation)}</Text>
+                                <Text large>{formatter.format(compensationData?.novo_salario || parseFloat(compensationData?.salario))}</Text>
                             </Box>
                         </Box>
                         <TextInput disabled={!isPermissionEdit && true}
@@ -735,11 +765,11 @@ const Compensation = (props) => {
                         }
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'center' }}>
-                        <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }} />
+                        <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => handleEditCompensation()} />
                         <Button disabled={!isPermissionEdit && true} cancel text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
                             onClick={() => {
-                                setShowCompensationData(false)
-                                setCompensationData({});
+                                setShowCompensationData(false);
                             }} />
                     </Box>
                 </ContentContainer>
@@ -800,7 +830,7 @@ const Compensation = (props) => {
                         />
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'center' }}>
-                        <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }} />
+                        <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }} onClick={() => handleCreateCompensation()} />
                         <Button disabled={!isPermissionEdit && true} cancel text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
                             onClick={() => {
                                 setShowCompensationSalary(false)
