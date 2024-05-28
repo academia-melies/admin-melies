@@ -202,8 +202,8 @@ export default function ListBillsToPay(props) {
             }
             if (allStatus200) {
                 alert.success('Items excluídos.');
-                setExpensesSelected('');
-                handleLoadData()
+                setExpensesSelected(null);
+                await handleLoadData()
             } else {
                 alert.error('Erro ao excluir itens.');
             }
