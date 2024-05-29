@@ -216,10 +216,10 @@ export default function EditExpenses(props) {
                 const { status } = response?.data
                 if (status?.expense && status?.historic) {
                     alert.success('Despesa cadastrada.');
-                    router.push(`/financial/billsToPay/expenses`)
+                    router.push(`/financial/billsToPay/expenses/list`)
                 } else {
                     alert.error('Ocorreu um erro ao criar Despesa ou Registrar o hitórico.')
-                    router.push(`/financial/billsToPay/expenses`)
+                    router.push(`/financial/billsToPay/expenses/list`)
                 }
             } catch (error) {
                 console.log(error)
@@ -237,7 +237,7 @@ export default function EditExpenses(props) {
             const response = await api.delete(`/expense/delete/${id}`)
             if (response?.status == 200) {
                 alert.success('Despesa excluída com sucesso.');
-                router.push(`/financial/billsToPay/expenses`)
+                router.push(`/financial/billsToPay/expenses/list`)
             }
 
         } catch (error) {
