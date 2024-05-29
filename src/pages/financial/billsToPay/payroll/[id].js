@@ -300,6 +300,7 @@ export default function EditPayroll(props) {
         { label: 'Bônus', value: 'Bônus' },
         { label: '13º Salário', value: '13º Salário' },
         { label: 'Férias', value: 'Férias' },
+        { label: 'Horas extras', value: 'Horas extras' },
     ]
 
     const groupReadjustment = [

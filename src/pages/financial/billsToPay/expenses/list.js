@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
-import { CheckBoxComponent, PaginationTable, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
+import { CheckBoxComponent, ConfirmModal, PaginationTable, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
@@ -28,7 +28,9 @@ export default function ListBillsToPay(props) {
     const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_pagamento: '' })
     const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
     const [expensesSelected, setExpensesSelected] = useState(null);
+    const [expenseRecurrencySelected, setExpenseRecurrencySelected] = useState([]);
     const [allSelected, setAllSelected] = useState();
+    const [allSelectedRecurrency, setAllSelectedRecurrency] = useState();
     const router = useRouter()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -39,6 +41,8 @@ export default function ListBillsToPay(props) {
     const [accountTypesList, setAccountTypesList] = useState([])
     const [costCenterList, setCostCenterList] = useState([])
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [showExclude, setShowExclude] = useState({ active: false, data: null, event: () => { } })
+
 
     const fetchPermissions = async () => {
         try {
@@ -244,6 +248,26 @@ export default function ListBillsToPay(props) {
         }
     }
 
+
+    const handleDeleteRecurrencyExpense = async (expenseId) => {
+        setLoading(true)
+        try {
+            console.log(expenseId)
+            // const response = await api.delete(`/expense/recurrency/delete/${expenseId}`)
+            // if (response.status === 200) {
+            //     alert.success('Items excluídos.');
+            //     setShowRecurrencyExpense(false)
+            //     await handleLoadData()
+            // } else {
+            //     alert.error('Erro ao excluir itens.');
+            // }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const pusBillId = async (item) => {
         let itemId = item?.id_despesa || 'new';
         let queryRoute = `/financial/billsToPay/expenses/${itemId}`
@@ -437,7 +461,7 @@ export default function ListBillsToPay(props) {
                                             valueChecked={'select'}
                                             horizontal={true}
                                             onSelect={() => {
-                                                if (expensesSelected?.length < allSelected?.length) {
+                                                if (expensesSelected?.length === allSelected?.length) {
                                                     let allInstallmentSelected = expensesData?.filter(filter)?.map(item => item?.id_despesa)
                                                     setExpensesSelected(allInstallmentSelected?.toString())
                                                 } else {
@@ -602,7 +626,7 @@ export default function ListBillsToPay(props) {
 
 
 
-            <Backdrop open={showRecurrencyExpense} sx={{ zIndex: 999 }}>
+            <Backdrop open={showRecurrencyExpense} sx={{ zIndex: 999, paddingTop: 5 }}>
                 <ContentContainer sx={{ zIndex: 9999 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
                         <Text bold large>Despesas Recorrentes</Text>
@@ -615,33 +639,58 @@ export default function ListBillsToPay(props) {
                                 opacity: 0.8,
                                 cursor: 'pointer'
                             }
-                        }} onClick={() => setShowRecurrencyExpense(false)} />
+                        }} onClick={() => {
+                            setShowRecurrencyExpense(false)
+                            setExpenseRecurrencySelected([])
+                            setAllSelectedRecurrency(false)
+                        }} />
                     </Box>
                     <Divider distance={0} />
-                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                    <Box sx={{
+                        display: 'flex', gap: 1.75, alignItems: 'start',
+                        maxHeight: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '1280px' },
+                        overflow: 'auto',
+                    }}>
                         {recurrencyExpenses?.length > 0 ?
-                            <TableRecurrencyExpenses data={recurrencyExpenses} callBack={() => handleLoadData()} />
+                            <TableRecurrencyExpenses
+                                data={recurrencyExpenses}
+                                handleDeleteRecurrencyExpense={handleDeleteRecurrencyExpense}
+                                setShowExclude={setShowExclude}
+                                expenseRecurrencySelected={expenseRecurrencySelected}
+                                setExpenseRecurrencySelected={setExpenseRecurrencySelected}
+                                allSelectedRecurrency={allSelectedRecurrency}
+                                setAllSelectedRecurrency={setAllSelectedRecurrency}
+                            />
                             :
                             <Text light>Não existem despesas recorrentes.</Text>}
                     </Box>
                     <Divider />
-                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'flex-end' }}>
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Button disabled={!isPermissionEdit && true} text="Lançar" style={{ height: '30px', borderRadius: '6px' }} />
+
                         <Button disabled={!isPermissionEdit && true} text="Cadastrar" style={{ height: '30px', borderRadius: '6px' }}
                             onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/new`)} />
                     </Box>
                 </ContentContainer>
             </Backdrop>
+
+
+            <ConfirmModal
+                showExclude={showExclude}
+                onConfirm={handleDeleteRecurrencyExpense}
+                onCancel={() => setShowExclude({ active: false, data: null, event: () => { } })}
+            />
         </>
     )
 }
 
 
-const TableRecurrencyExpenses = ({ data = [], callBack = () => { } }) => {
+const TableRecurrencyExpenses = ({ data = [], handleDeleteRecurrencyExpense, setShowExclude,
+    expenseRecurrencySelected, setExpenseRecurrencySelected, allSelectedRecurrency, setAllSelectedRecurrency }) => {
 
-    const { setLoading, theme, colorPalette, alert, setShowConfirmationDialog, showConfirmationDialog } = useAppContext()
+    const { setLoading, theme, colorPalette } = useAppContext()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [expenseSelected, setExpenseSelected] = useState(null);
     const router = useRouter()
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
@@ -651,33 +700,37 @@ const TableRecurrencyExpenses = ({ data = [], callBack = () => { } }) => {
         currency: 'BRL'
     });
 
-    const priorityColor = (data) => (
-        ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
-        ((data === 'Cancelada' || data === 'Cancelado' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
-        (data === 'Pago' && 'green') ||
-        (data === 'Aprovado' && 'blue') ||
-        (data === 'Inativa' && '#f0f0f0') ||
-        (data === 'Erro com o pagamento' && 'red') ||
-        (data === 'Estornada' && '#f0f0f0'))
 
+    const toggleSelectAll = () => {
+        if (allSelectedRecurrency) {
+            setExpenseRecurrencySelected([]);
+        } else {
+            const allRecurrencies = data?.reduce((acc, item) => {
+                if (!expenseRecurrencySelected.some(recurrency => recurrency.recurrencyId === item.id_desp_recorrente)) {
+                    acc.push({ recurrencyId: item.id_desp_recorrente });
+                }
+                return acc;
+            }, [...expenseRecurrencySelected]);
 
-    const handleDeleteRecurrencyExpense = async (expenseId) => {
-        setLoading(true)
-        try {
-            const response = await api.delete(`/expense/recurrency/delete/${expenseId}`)
-            if (response.status === 200) {
-                alert.success('Items excluídos.');
-                setExpenseSelected(null);
-                callBack()
-            } else {
-                alert.error('Erro ao excluir itens.');
-            }
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setLoading(false)
+            setExpenseRecurrencySelected(allRecurrencies);
         }
-    }
+        setAllSelectedRecurrency(!allSelectedRecurrency);
+    };
+
+    const selectedRecurrency = (value) => {
+
+        const alreadySelected = expenseRecurrencySelected.some(recurrency => recurrency.recurrencyId === value);
+
+        const updatedRecurrencySelected = alreadySelected ? expenseRecurrencySelected.filter(recurrency => recurrency.recurrencyId !== value)
+            : [...expenseRecurrencySelected, { recurrencyId: value }];
+
+        setExpenseRecurrencySelected(updatedRecurrencySelected);
+        if (updatedRecurrencySelected?.length === data?.length) {
+            setAllSelectedRecurrency(true);
+        } else if (alreadySelected) {
+            setAllSelectedRecurrency(false);
+        }
+    };
 
 
     return (
@@ -689,6 +742,28 @@ const TableRecurrencyExpenses = ({ data = [], callBack = () => { } }) => {
             <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                 <thead>
                     <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
+                        <th style={{ padding: '8px 5px', minWidth: '50px' }}>
+                            <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column', alignItems: 'center' }}>
+                                <Text xsmall>Selecionar tudo</Text>
+                                <Box sx={{
+                                    display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                    backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => toggleSelectAll()}>
+                                    {allSelectedRecurrency &&
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 20, height: 20,
+                                            backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                            transition: '.3s',
+                                        }} />
+                                    }
+                                </Box>
+                            </Box>
+                        </th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Descrição</Text></th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dia de Vencimento</Text></th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
@@ -697,10 +772,34 @@ const TableRecurrencyExpenses = ({ data = [], callBack = () => { } }) => {
                 </thead>
                 <tbody style={{ flex: 1, }}>
                     {data?.slice(startIndex, endIndex).map((item, index) => {
+                        const recurrencyId = item?.id_desp_recorrente;
+                        const selected = expenseRecurrencySelected.some(recurrency => recurrency.recurrencyId === recurrencyId);
                         return (
                             <tr key={index} style={{
                                 backgroundColor: colorPalette?.secondary
                             }}>
+                                <td style={{ textAlign: 'center', padding: '5px 5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                        <Box sx={{
+                                            display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                            backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => selectedRecurrency(recurrencyId)}>
+                                            {selected &&
+                                                <Box sx={{
+                                                    ...styles.menuIcon,
+                                                    width: 20, height: 20,
+                                                    backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                                    transition: '.3s',
+                                                }} />
+                                            }
+                                        </Box>
+                                    </Box>
+                                </td>
                                 <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                     <Text light>
                                         {item?.descricao}
@@ -723,7 +822,16 @@ const TableRecurrencyExpenses = ({ data = [], callBack = () => { } }) => {
                                         justifyContent: 'center',
                                     }} >
                                         <Button small style={{ borderRadius: 2 }} text="Editar" onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/${item?.id_desp_recorrente}`)} />
-                                        <Button cancel small style={{ borderRadius: 2 }} text="Excluir" onClick={(event) => { handleDeleteRecurrencyExpense(item?.id_desp_recorrente) }} />
+                                        <Button cancel small style={{ borderRadius: 2 }} text="Excluir"
+                                            onClick={(e) =>
+                                                setShowExclude({
+                                                    active: true,
+                                                    data: item?.id_desp_recorrente,
+                                                    title: 'Excluir Conta',
+                                                    description: 'Tem certeza que deseja excluir a conta? Uma vez excluído, não será possível recupera-la, e não aparecerá no relatório final.',
+                                                    event: handleDeleteRecurrencyExpense
+                                                })
+                                            } />
                                     </Box>
                                 </td>
                             </tr>
@@ -737,7 +845,7 @@ const TableRecurrencyExpenses = ({ data = [], callBack = () => { } }) => {
                 page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
             />
 
-        </div>
+        </div >
     )
 }
 

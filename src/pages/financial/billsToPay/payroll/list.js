@@ -346,7 +346,6 @@ export default function ListPayroll(props) {
 
 
                     <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', paddingTop: '20px', paddingRight: '20px' }}>
-                        <Button disabled={!isPermissionEdit && true} small text="Cadastrar Salário" style={{ height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new?padronizado=true`)} />
                         <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new`)} />
                         <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
                             active: true,
@@ -358,7 +357,7 @@ export default function ListPayroll(props) {
                         <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
                             onClick={() => setShowBaixa(true)} />
 
-                        <Button disabled={!isPermissionEdit && true} small secondary text="aplicar dissídio para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }}
+                        {/* <Button disabled={!isPermissionEdit && true} small secondary text="aplicar dissídio para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }}
                             onClick={() => {
                                 if (expensesSelected) {
                                     setShowDissidioBox(true)
@@ -367,7 +366,7 @@ export default function ListPayroll(props) {
                                 }
 
                             }}
-                        />
+                        /> */}
                     </Box>
 
                     <div style={{
