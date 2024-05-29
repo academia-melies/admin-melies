@@ -23,6 +23,8 @@ export default function Editaccount(props) {
     const [accountHistoricList, setAccountHistoricList] = useState([])
     const [startSearch, setStartSearch] = useState(false)
     const [showDetailsHistoric, setShowDetailsHistoric] = useState({ active: false, id: null })
+    const [newBalanceData, setNewBalanceData] = useState({})
+    const [transferData, setTransferData] = useState({})
     const [accountData, setAccountData] = useState({
         nome_conta: null,
         agencia: '',
@@ -33,8 +35,13 @@ export default function Editaccount(props) {
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [saldoAccount, setSaldoAccount] = useState({ credit: 0, debit: 0, saldoAccount: 0 })
     const [extractAccount, setSextractAccount] = useState([])
-    const [transferData, setEditAccount] = useState({ active: false, data: {} })
+    const [accountExtractData, setEditAccount] = useState({ active: false, data: {} })
+    const [newBalance, setNewBalance] = useState(false)
+    const [showTransfer, setShowTransfer] = useState(false)
+    const [showExclude, setShowExclude] = useState({ active: false, data: null, event: () => { } })
     const [accountToTransfer, setAccountToTransfer] = useState()
+    const [costCenterList, setCostCenterList] = useState([])
+    const [accountTypesList, setAccountTypesList] = useState([])
     const [accountList, setAccountList] = useState([])
     const [filters, setFilters] = useState({
         search: '',
@@ -96,6 +103,30 @@ export default function Editaccount(props) {
     }
 
 
+    async function listCostCenter() {
+        const response = await api.get(`/costCenters`)
+        const { data } = response
+        const groupCostCenter = data?.filter(item => item)?.map(cc => ({
+            label: cc.nome_cc,
+            value: cc?.id_centro_custo
+        }));
+        setCostCenterList(groupCostCenter)
+    }
+
+
+
+    async function listAccountTypes() {
+        const response = await api.get(`/account/types`)
+        const { data } = response
+        const groupCostCenter = data?.filter(item => item)?.map(cc => ({
+            label: cc.nome_tipo,
+            value: cc?.id_tipo
+        }));
+
+        setAccountTypesList(groupCostCenter)
+    }
+
+
 
     useEffect(() => {
         (async () => {
@@ -106,6 +137,8 @@ export default function Editaccount(props) {
 
         })();
     }, [id])
+
+    console.log(showExclude)
 
 
     const getExtract = async () => {
@@ -170,6 +203,8 @@ export default function Editaccount(props) {
             await getAccount()
             await getHistoricAccount()
             await listAccounts()
+            await listCostCenter()
+            await listAccountTypes()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar o Conta')
         } finally {
@@ -184,6 +219,101 @@ export default function Editaccount(props) {
             [event.target.name]: event.target.value,
         }))
     }
+
+    const handleChangeNewBalance = async (event) => {
+
+        if (event.target.name === 'credito') {
+            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                event.target.value = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                event.target.value = formattedValue;
+
+            }
+
+            setNewBalanceData((prevValues) => ({
+                ...prevValues,
+                [event.target.name]: event.target.value,
+            }));
+
+            return;
+        }
+
+        setNewBalanceData((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }))
+    }
+
+
+
+    const handleChangeTransfer = async (event) => {
+
+        if (event.target.name === 'valor') {
+            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                event.target.value = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                event.target.value = formattedValue;
+
+            }
+        }
+
+        setTransferData((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }))
+    }
+
+
+    const handleChangeEditExtractAccount = async (event) => {
+
+        if (event.target.name === 'credito' || event.target.name === 'debito') {
+            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                event.target.value = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                event.target.value = formattedValue;
+
+            }
+        }
+
+        setEditAccount((prevValues) => ({
+            ...prevValues,
+            data: {
+                ...prevValues.data,
+                [event.target.name]: event.target.value,
+            }
+        }));
+    }
+
 
     const checkRequiredFields = () => {
         // if (!accountData.nome) {
@@ -238,7 +368,7 @@ export default function Editaccount(props) {
                 const response = await api.patch(`/account/update/${id}`, { accountData })
                 if (response?.status === 201) {
                     alert.success('Conta atualizada com sucesso.');
-                    handleItems()
+                    await handleItems()
                     return
                 }
                 alert.error('Tivemos um problema ao atualizar Conta.');
@@ -251,15 +381,74 @@ export default function Editaccount(props) {
     }
 
 
+
+    const addBalanceAccount = async () => {
+        setLoading(true)
+        try {
+
+            const response = await api.post(`/account/extract/create`, {
+                newBalanceData: {
+                    ...newBalanceData,
+                    status: 'Baixa realizada',
+                    observacao: 'Saldo adicionado',
+                    usuario_resp: user?.id,
+                    transferido: 0,
+                    dt_baixa: new Date(),
+                    conta_id: id
+                }
+            });
+            const { data } = response
+            if (data?.success) {
+                alert.success('Saldo adicionado.');
+                setNewBalance(false)
+                setNewBalanceData({})
+                await handleItems()
+            } else {
+                alert.error('Tivemos um problema ao adicionar Saldo.')
+            }
+        } catch (error) {
+            alert.error('Tivemos um problema ao adicionar Saldo.');
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleEditAccountExtract = async () => {
+        setLoading(true)
+        try {
+
+            const response = await api.patch(`/account/extract/update`, { accountExtractData: accountExtractData?.data });
+            const { data } = response
+
+            if (data?.success) {
+                alert.success('Conta atualizada.');
+                setEditAccount({ active: false, data: {} })
+                await getExtract()
+                await handleItems()
+            } else {
+                alert.error('Tivemos um problema ao atualizar Conta.')
+            }
+        } catch (error) {
+            alert.error('Tivemos um problema ao atualizar Conta.');
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleTrasnferDataAccount = async () => {
-        if (accountToTransfer) {
+        if (transferData?.conta_id) {
             setLoading(true)
             try {
-                let [nameAccountTo] = accountList?.filter(item => item?.value === accountToTransfer)?.map(y => y.label)
-                const response = await api.patch(`/account/transfer/update`, {
-                    transferData: transferData?.data,
+                let [nameAccountTo] = accountList?.filter(item => item?.value === transferData?.conta_id)?.map(y => y.label)
+                const response = await api.post(`/account/extract/transfer/create`, {
+                    transferData,
                     accountTo: {
-                        id: accountToTransfer,
+                        id: transferData?.conta_id,
                         nome_conta: nameAccountTo
                     },
                     accountBy: {
@@ -274,11 +463,13 @@ export default function Editaccount(props) {
 
                 if (response?.status === 200) {
                     alert.success('Transferência realizada!');
-                    setEditAccount({ active: false, data: {} })
-                    handleItems()
-                    return
+                    setTransferData({})
+                    setShowTransfer(false)
+                    await getExtract()
+                    await handleItems()
+                } else {
+                    alert.error('Tivemos um problema ao realizar transferência entre contas.');
                 }
-                alert.error('Tivemos um problema ao realizar transferência entre contas.');
             } catch (error) {
                 alert.error('Tivemos um problema ao realizar transferência entre contas.');
             } finally {
@@ -288,6 +479,31 @@ export default function Editaccount(props) {
             alert.info('Selecione a conta que deseja transferir')
         }
     }
+
+
+    const handleDeleteAccountExtract = async (accountExtractId) => {
+        setLoading(true)
+        try {
+            if (accountExtractId) {
+                const response = await api.delete(`/account/extract/delete/${accountExtractId}`);
+                if (response?.status === 200) {
+                    alert.success('Conta excluída.');
+                    setShowExclude({ active: false, data: null, event: () => { } })
+                    await getExtract()
+                    await handleItems()
+                }
+            } else {
+                alert.info('Selecione uma conta.')
+            }
+
+        } catch (error) {
+            alert.error('Tivemos um problema ao excluir a Conta.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
     const containerRef = useRef(null);
 
@@ -300,7 +516,6 @@ export default function Editaccount(props) {
             };
 
             document.addEventListener('mousedown', handleClickOutside);
-
             return () => {
                 document.removeEventListener('mousedown', handleClickOutside);
             };
@@ -363,7 +578,7 @@ export default function Editaccount(props) {
                             display: 'flex', width: '100%',
                             padding: '5px'
                         }}>
-                            <Button style={{ borderRadius: 2 }} text="Adicionar Saldo Inicial" />
+                            <Button style={{ borderRadius: 2 }} text="Adicionar Saldo Inicial" onClick={() => setNewBalance(true)} />
                         </Box>
                     </ContentContainer>
                     <ContentContainer style={{
@@ -462,7 +677,7 @@ export default function Editaccount(props) {
                                 justifyContent: 'flex-end', right: 20,
                                 padding: '5px'
                             }}>
-                                <Button style={{ borderRadius: 2 }} text="Nova Transferência" />
+                                <Button style={{ borderRadius: 2 }} text="Nova Transferência" onClick={() => setShowTransfer(true)} />
                             </Box>
                         </Box>
                     </ContentContainer>
@@ -497,7 +712,8 @@ export default function Editaccount(props) {
                                 </Box>
                             </Box>
                             {extractAccount?.length > 0 ?
-                                <TableExtract data={extractAccount} setEditAccount={setEditAccount} />
+                                <TableExtract data={extractAccount} setEditAccount={setEditAccount}
+                                    handleDeleteAccountExtract={handleDeleteAccountExtract} setShowExclude={setShowExclude} />
                                 :
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
                                     <Text large light>Não foi possível encontrar movimentações na conta.</Text>
@@ -513,7 +729,7 @@ export default function Editaccount(props) {
 
                 </ContentContainer>}
             </Box>
-            <Backdrop open={transferData?.active} sx={{ zIndex: 99 }}>
+            <Backdrop open={accountExtractData?.active} sx={{ zIndex: 99 }}>
                 <ContentContainer>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
                         <Text bold large>Dados do Pagamento</Text>
@@ -531,51 +747,69 @@ export default function Editaccount(props) {
                     </Box>
                     <Divider distance={0} />
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
-                        <Box>
-                            <Text bold>Descrição:</Text>
-                            <Text>{transferData?.data?.descricao}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Text bold>Dt Pagamento:</Text>
-                            <Text>{formatTimeStamp(transferData?.data?.dt_baixa)}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Text bold>Status:</Text>
-                            <Text>{transferData?.data?.status}</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Text bold>Valor do {transferData?.data?.credito ? 'Crédito:' : 'Débito:'}</Text>
-                            <Text>{formatter.format(transferData?.data?.credito ? transferData?.data?.credito : -transferData?.data?.debito)}</Text>
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Ex: Blusa de frio' name='descricao'
+                            onChange={handleChangeEditExtractAccount} value={accountExtractData?.data?.descricao || ''}
+                            label='Descrição:' sx={{ width: '100%', }} />
+
+                        <TextInput disabled={!isPermissionEdit && true} type="date" name='dt_baixa'
+                            onChange={handleChangeEditExtractAccount} value={(accountExtractData?.data?.dt_baixa)?.split('T')[0] || ''}
+                            label='Dt Pagamento:' sx={{ width: '100%', }} />
+
+                        <Box sx={{ display: 'flex', gap: .5, width: '100%' }}>
                             <Box sx={{
                                 ...styles.menuIcon,
                                 width: 14,
                                 height: 14,
                                 aspectRatio: '1/1',
-                                backgroundImage: `url('/icons/${transferData?.data?.credito ? 'arrow_up_green_icon' : 'arrow_down_red_icon'}.png')`,
+                                backgroundImage: `url('/icons/${accountExtractData?.data?.credito ? 'arrow_up_green_icon' : 'arrow_down_red_icon'}.png')`,
                                 transition: '.3s',
                             }} />
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Text bold>Centro de Custo:</Text>
-                            <Text>{transferData?.data?.c_custo}</Text>
-                        </Box>
-                        <Divider />
-
-                        <Box>
-                            <Text bold>Conta Atual:</Text>
-                            <Text>{accountData?.nome_conta}</Text>
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00' type="coin"
+                                name={accountExtractData?.data?.credito ? 'credito' : 'debito'}
+                                onChange={handleChangeEditExtractAccount}
+                                value={accountExtractData?.data?.credito ? accountExtractData?.data?.credito : accountExtractData?.data?.debito}
+                                label={`Valor do ${accountExtractData?.data?.credito ? 'Crédito' : 'Débito'}:`} sx={{ width: '100%', }} />
                         </Box>
 
-                        <Text bold>Transferir Para:</Text>
-                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountList} valueSelection={accountToTransfer} onSelect={(value) => setAccountToTransfer(value)}
-                            title="Conta do pagamento" filterOpition="value" sx={{ color: colorPalette.textColor }}
+                        <SelectList fullWidth disabled={!isPermissionEdit && true}
+                            data={accountTypesList}
+                            valueSelection={accountExtractData?.data?.tipo}
+                            onSelect={(value) => setEditAccount({
+                                ...accountExtractData, data: {
+                                    ...accountExtractData?.data,
+                                    tipo: value
+                                }
+                            })}
+                            title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true}
+                            data={costCenterList}
+                            valueSelection={accountExtractData?.data?.centro_custo}
+                            onSelect={(value) => setEditAccount({
+                                ...accountExtractData, data: {
+                                    ...accountExtractData?.data,
+                                    centro_custo: value
+                                }
+                            })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountList} valueSelection={accountExtractData?.data?.conta_id}
+                            onSelect={(value) => setEditAccount({
+                                ...accountExtractData, data: {
+                                    ...accountExtractData?.data,
+                                    conta_id: value
+                                }
+                            })}
+                            title="Conta do pagamento:" filterOpition="value" sx={{ color: colorPalette.textColor }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
                         <Divider />
 
                         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
-                            <Button text="Transferir" small style={{ height: 35, width: '100%' }} onClick={() => handleTrasnferDataAccount()} />
-                            < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setTransferData({ active: false, data: {} })} />
+                            <Button text="Salvar" small style={{ height: 35, width: '100%' }} onClick={() => handleEditAccountExtract()} />
+                            < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setEditAccount({ active: false, data: {} })} />
                         </Box>
                         {/* <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
                             <Button text="Salvar" small style={{ height: 35, width: '100%' }} />
@@ -584,12 +818,146 @@ export default function Editaccount(props) {
                     </Box>
                 </ContentContainer>
             </Backdrop>
+
+
+            <Backdrop open={newBalance} sx={{ zIndex: 99 }}>
+                <ContentContainer>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Adicionar Saldo</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 15, height: 15,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setNewBalance(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+
+                        <TextInput disabled={!isPermissionEdit && true} placeholder='Ex: Saldo inicial' name='descricao' onChange={handleChangeNewBalance}
+                            value={newBalanceData?.descricao || ''} label='Descrição:' sx={{ width: '100%' }} />
+
+                        <TextInput disabled={!isPermissionEdit && true}
+                            label='Saldo'
+                            placeholder='0.00'
+                            name='credito'
+                            type="coin"
+                            onChange={handleChangeNewBalance}
+                            value={(newBalanceData?.credito) || ''}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountTypesList}
+                            valueSelection={newBalanceData?.tipo}
+                            onSelect={(value) => setNewBalanceData({ ...newBalanceData, tipo: value })}
+                            title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={newBalanceData?.centro_custo}
+                            onSelect={(value) => setNewBalanceData({ ...newBalanceData, centro_custo: value })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <Divider />
+
+                        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
+                            <Button text="Adicionar" small style={{ height: 35, width: '100%' }} onClick={() => addBalanceAccount()} />
+                            < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setNewBalance(false)} />
+                        </Box>
+                        {/* <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
+                            <Button text="Salvar" small style={{ height: 35, width: '100%' }} />
+                            < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setEditAccount({ active: false, data: {} })} />
+                        </Box> */}
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+
+            <Backdrop open={showTransfer} sx={{ zIndex: 99 }}>
+                <ContentContainer>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Dados da Transferência</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            width: 15, height: 15,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowTransfer(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
+                            <Text bold>Saldo Atual:</Text>
+                            <Text>{formatter.format(saldoAccount?.saldoAccount)}</Text>
+                        </Box>
+
+                        <TextInput disabled={!isPermissionEdit && true}
+                            label='Valor da Transferência:'
+                            placeholder='0.00'
+                            name='valor'
+                            type="coin"
+                            onChange={handleChangeTransfer}
+                            value={(transferData?.valor) || ''}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountTypesList}
+                            valueSelection={transferData?.tipo}
+                            onSelect={(value) => setTransferData({ ...transferData, tipo: value })}
+                            title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={costCenterList}
+                            valueSelection={transferData?.centro_custo}
+                            onSelect={(value) => setTransferData({ ...transferData, centro_custo: value })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+
+                        <Text light>Transferir para Conta:</Text>
+                        <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountList} valueSelection={transferData?.conta_id}
+                            onSelect={(value) => setTransferData({
+                                ...transferData,
+                                conta_id: value
+                            })}
+                            title="Conta do pagamento:" filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <Divider />
+
+                        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
+                            <Button text="Transferir" small style={{ height: 35, width: '100%' }} onClick={() => handleTrasnferDataAccount()} />
+                            < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setShowTransfer(false)} />
+                        </Box>
+                        {/* <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
+                            <Button text="Salvar" small style={{ height: 35, width: '100%' }} />
+                            < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setEditAccount({ active: false, data: {} })} />
+                        </Box> */}
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+
+
+            <ConfirmModal
+                showExclude={showExclude}
+                onConfirm={handleDeleteAccountExtract}
+                onCancel={() => setShowExclude({ active: false, data: null, event: () => { } })}
+            />
         </>
     )
 }
 
 
-const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount }) => {
+const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount,
+    handleDeleteAccountExtract, setShowExclude }) => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
 
     const columns = [
@@ -721,7 +1089,15 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                         <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 2 }}>
                                                 <Button small text="Editar" style={{ height: 30, borderRadius: 2 }} onClick={() => setEditAccount({ active: true, data: item })} />
-                                                <Button small cancel text="Excluir" style={{ height: 30, borderRadius: 2, backgroundColor: 'red' }} onClick={() => setEditAccount({ active: true, data: item })} />
+                                                <Button small cancel text="Excluir" style={{ height: 30, borderRadius: 2, backgroundColor: 'red' }} onClick={(e) =>
+                                                    setShowExclude({
+                                                        active: true,
+                                                        data: item?.id_extrato,
+                                                        title: 'Excluir Conta',
+                                                        description: 'Tem certeza que deseja excluir a conta? Uma vez excluído, não será possível recupera-la, e não aparecerá no relatório final.',
+                                                        event: handleDeleteAccountExtract
+                                                    })
+                                                } />
                                             </Box>
                                         </TableCell>
                                     </TableRow>
@@ -735,6 +1111,42 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
         </ContentContainer >
     )
 }
+
+const ConfirmModal = ({ showExclude, onConfirm, onCancel }) => {
+    const { setLoading, colorPalette, theme, user } = useAppContext()
+    if (!showExclude.active) return null;
+
+    return (
+        <Backdrop open={showExclude?.active} sx={{ zIndex: 99 }}>
+            <ContentContainer style={{ maxWidth: 400 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
+                    <Text bold large>{showExclude?.title}</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        width: 15, height: 15,
+                        backgroundImage: `url(${icons.gray_close})`,
+                        transition: '.3s',
+                        zIndex: 999999999,
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={onCancel} />
+                </Box>
+                <Divider distance={0} />
+                <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                    <Text>{showExclude?.description}</Text>
+                    <Divider />
+
+                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
+                        <Button cancel text="Exluir" style={{ height: 35, width: '100%' }} onClick={() => onConfirm(showExclude.data)} />
+                        < Button text="Cancelar" style={{ height: 35, width: '100%' }} onClick={onCancel} />
+                    </Box>
+                </Box>
+            </ContentContainer>
+        </Backdrop>
+    );
+};
 
 const styles = {
     menuIcon: {

@@ -192,8 +192,8 @@ export default function EditBillsReceived(props) {
                         <Button text="Nova Parcela" small style={{ borderRadius: 2, }}
                         />
                     </Link>
-                    <Button text="Dar Baixa" small style={{ borderRadius: 2, }} />
-                    <Button text="Excluir" secondary small style={{ borderRadius: 2, }} />
+                    <Button text="Dar Baixa" small secondary style={{ borderRadius: 2, }} />
+                    <Button text="Excluir" cancel small style={{ borderRadius: 2, }} />
                 </Box>
 
             </SectionHeader>

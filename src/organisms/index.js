@@ -22,7 +22,7 @@ export { BirthDaysMonth } from './birthDays/birthDays'
 export { ClassDays } from './classDays/classDays'
 export { MenuHomeList } from './menuHomeList/menuHomeList'
 export { PaginationTable } from './pagination/Pagination'
-
+export { ConfirmModal } from './modalConfirm/modalConfirm'
 
 
 
