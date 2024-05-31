@@ -38,7 +38,7 @@ export const SelectList = (props) => {
                         getOptionLabel={(option) => option[filterValue]}
                         value={data.find(item => item[filterOpition] === valueSelection) || null}
                         onChange={(event, newValue) => onSelect(newValue ? newValue[filterOpition] : "")}
-                        sx={{ height: '45px', }}
+                        sx={{ height: '45px' }} 
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -49,6 +49,7 @@ export const SelectList = (props) => {
                                         borderRadius: '8px',
                                         ...params.InputProps.style,
                                         height: '45px',
+                                        padding: '0 14px',
                                     },
                                 }}
                                 InputLabelProps={{

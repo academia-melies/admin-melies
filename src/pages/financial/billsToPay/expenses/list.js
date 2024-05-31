@@ -14,6 +14,8 @@ import { icons } from "../../../../organisms/layout/Colors"
 
 export default function ListBillsToPay(props) {
     const [expensesData, setExpensesData] = useState([])
+    const [monthReleaseSelected, setMonthReleaseSelected] = useState()
+    const [showMonths, setShowMonths] = useState(false)
     const [filters, setFilters] = useState({
         status: 'todos',
         startDate: '',
@@ -37,7 +39,7 @@ export default function ListBillsToPay(props) {
     const [showBaixa, setShowBaixa] = useState(false)
     const [showRecurrencyExpense, setShowRecurrencyExpense] = useState(false)
     const [accountList, setAccountList] = useState([])
-    const [filterData, setFilterData] = useState('')
+    const [totalValue, setTotalValue] = useState(0)
     const [accountTypesList, setAccountTypesList] = useState([])
     const [costCenterList, setCostCenterList] = useState([])
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
@@ -55,17 +57,17 @@ export default function ListBillsToPay(props) {
     }
 
     const filter = (item) => {
-        let date = new Date(item?.dt_vencimento);
-        let filteredDate = (filters?.startDate && filters?.endDate) ?
-            rangeDate(date, filters?.startDate, filters?.endDate) :
-            item;
+        // let date = new Date(item?.dt_vencimento);
+        // let filteredDate = (filters?.startDate && filters?.endDate) ?
+        //     rangeDate(date, filters?.startDate, filters?.endDate) :
+        //     item;
         let filterStatus = filters?.status.includes('todos') ? item : filters?.status.includes(item?.status)
         const normalizedFilterData = normalizeString(filters?.search);
         const filterSearch = filters?.search ? normalizeString(item?.descricao)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) : item
         let costCenter = filters?.centro_custo ? filters?.centro_custo === item?.centro_custo : item
         let accountType = filters?.tipo ? filters?.tipo === item?.tipo : item
 
-        return (filteredDate && filterStatus && filterSearch && costCenter && accountType);
+        return (filterStatus && filterSearch && costCenter && accountType);
     }
 
     const normalizeString = (str) => {
@@ -132,9 +134,20 @@ export default function ListBillsToPay(props) {
     const handleLoadData = async () => {
         setLoading(true)
         try {
-            await getExpenses()
-            await listAccounts()
-            await getRecurrencyExpenses()
+            await listAccounts();
+            await getRecurrencyExpenses();
+
+            // const currentData = new Date();
+            // const currentYear = currentData.getFullYear();
+            // const currentMonth = currentData.getMonth() + 1;
+            // const currentDay = currentData.getDate();
+            // const start = `${currentYear}-${currentMonth}-01`;
+            // const end = `${currentYear}-${currentMonth}-${currentDay + 1}`;
+            // setFilters({
+            //     ...filters,
+            //     startDate: start, endDate: end
+            // })
+
         } catch (error) {
             console.log(error)
             return error
@@ -147,20 +160,26 @@ export default function ListBillsToPay(props) {
 
     const getExpenses = async () => {
         try {
-            const response = await api.get(`/expenses`)
-            const { data } = response;
-            if (data.length > 0) {
-                setExpensesList(data)
-                setExpensesData(data.map(item => {
+            setLoading(true)
+            const response = await api.get(`/expenses/forDate?startDate=${filters?.startDate}&endDate=${filters?.endDate}`)
+            const { expenses, totalValue } = response?.data;
+            if (expenses?.length > 0) {
+                setExpensesData(expenses.map(item => {
                     const valorDesp = parseFloat(item.valor_desp);
                     return {
                         ...item,
                         valor_tipo: isNaN(valorDesp) ? item.valor_desp : valorDesp.toFixed(2)
                     };
                 }));
+            } else {
+                setExpensesData(expenses)
             }
+            setExpensesList(expenses)
+            setTotalValue(totalValue)
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -168,7 +187,6 @@ export default function ListBillsToPay(props) {
     const getRecurrencyExpenses = async () => {
         try {
             const response = await api.get(`/expenses/recurrency/list`)
-            console.log(response)
             const { data } = response;
             if (data?.length > 0) {
                 setRecurrencyExpenses(data?.map(item => {
@@ -207,7 +225,7 @@ export default function ListBillsToPay(props) {
             if (allStatus200) {
                 alert.success('Items excluídos.');
                 setExpensesSelected(null);
-                await handleLoadData()
+                await getExpenses()
             } else {
                 alert.error('Erro ao excluir itens.');
             }
@@ -249,18 +267,50 @@ export default function ListBillsToPay(props) {
     }
 
 
+    const handleCreateRecurrencyExpense = async () => {
+        try {
+            setLoading(true)
+            let successStatus = true;
+            for (let recurrency of expenseRecurrencySelected) {
+
+                const response = await api.post(`/expense/recurrency/release/padronizado/create`,
+                    { recurrencyId: recurrency?.recurrencyId, monthSelected: monthReleaseSelected, userResp: user?.id })
+
+                const { success } = response.data
+                if (!success) { successStatus = false }
+            }
+
+            if (successStatus) {
+                alert.success('Despesas recorrentes cadastradas.');
+                setShowRecurrencyExpense(false)
+                setExpenseRecurrencySelected([])
+                setAllSelectedRecurrency(false)
+                setShowMonths(false)
+                setMonthReleaseSelected(null)
+                await getExpenses()
+            } else {
+                alert.error('Erro ao lançar despesas recorrentes.');
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
     const handleDeleteRecurrencyExpense = async (expenseId) => {
         setLoading(true)
         try {
-            console.log(expenseId)
-            // const response = await api.delete(`/expense/recurrency/delete/${expenseId}`)
-            // if (response.status === 200) {
-            //     alert.success('Items excluídos.');
-            //     setShowRecurrencyExpense(false)
-            //     await handleLoadData()
-            // } else {
-            //     alert.error('Erro ao excluir itens.');
-            // }
+            const response = await api.delete(`/expense/recurrency/delete/${expenseId}`)
+            if (response.status === 200) {
+                alert.success('Items excluídos.');
+                setShowRecurrencyExpense(false)
+                await getExpenses()
+            } else {
+                alert.error('Erro ao excluir itens.');
+            }
         } catch (error) {
             console.log(error)
         } finally {
@@ -310,6 +360,22 @@ export default function ListBillsToPay(props) {
         { label: 'Cancelado', value: 'Cancelado' }
     ]
 
+    const groupMonths = [
+        { label: 'Janeiro', value: '0' },
+        { label: 'Fevereiro', value: '1' },
+        { label: 'Março', value: '2' },
+        { label: 'Abril', value: '3' },
+        { label: 'Maio', value: '4' },
+        { label: 'Junho', value: '5' },
+        { label: 'Julho', value: '6' },
+        { label: 'Agosto', value: '7' },
+        { label: 'Setembro', value: '8' },
+        { label: 'Outubro', value: '9' },
+        { label: 'Novembro', value: '10' },
+        { label: 'Dezembro', value: '11' }
+    ]
+
+
     const groupProstated = [
         { label: 'sim', value: 1 },
         { label: 'não', value: 0 },
@@ -320,12 +386,18 @@ export default function ListBillsToPay(props) {
         currency: 'BRL'
     });
 
+    const selectedMonths = (value) => {
+        const alreadySelected = monthReleaseSelected === value;
+        if (alreadySelected) {
+            setMonthReleaseSelected(null);
+        } else {
+            setMonthReleaseSelected(value);
+        }
+    };
 
-    let valueExpenses = expensesList?.map(item => parseFloat(item.valor_desp))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-    let totalExpenses = parseFloat(valueExpenses);
     let totalExpensesView = expensesData?.filter(filter)?.map(item => parseFloat(item.valor_tipo)).reduce((acc, currentValue) => acc + (currentValue || 0), 0)
 
-    const percentualExpenses = (parseFloat(totalExpensesView) / totalExpenses) * 100;
+    const percentualExpenses = (parseFloat(totalExpensesView) / totalValue) * 100;
 
     return (
         <>
@@ -352,7 +424,7 @@ export default function ListBillsToPay(props) {
                                     backgroundImage: `url('/icons/arrow_down_red_icon.png')`,
                                     transition: '.3s',
                                 }} />
-                                <Text bold title style={{ color: 'red' }}>{formatter.format(parseFloat(totalExpenses))}</Text>
+                                <Text bold title style={{ color: 'red' }}>{formatter.format(parseFloat(totalValue))}</Text>
                             </Box>
                             <Text light>Despesa</Text>
                         </Box>
@@ -367,7 +439,7 @@ export default function ListBillsToPay(props) {
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', transition: '.5s', }}>
                                     <Text bold style={{ color: colorPalette.buttonColor }}>{formatter.format(parseFloat(totalExpensesView))}</Text>
                                     <Text>de</Text>
-                                    <Text light style={{ color: 'rgb(75 85 99)' }}>{formatter.format(parseFloat(totalExpenses))}</Text>
+                                    <Text light style={{ color: 'rgb(75 85 99)' }}>{formatter.format(parseFloat(totalValue))}</Text>
                                 </Box>
                             </Box>
                             <div style={{ marginTop: '10px', width: '100%', height: '10px', borderRadius: '10px', background: '#ccc', transition: '.5s', }}>
@@ -382,32 +454,24 @@ export default function ListBillsToPay(props) {
                 <Text bold large>Filtros:</Text>
                 <Box sx={{
                     display: 'flex', gap: 1.8, alignItems: 'start', justifyContent: 'center',
-                    flexDirection: 'column'
                 }}>
                     <TextInput placeholder="Buscar pela descrição da despesa.." name='filterData' type="search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} value={filters?.search} sx={{ width: '100%' }} />
-                    <Box sx={{
-                        display: 'flex', gap: 1.8, alignItems: 'center', justifyContent: 'center',
-                        flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
-                    }}>
-                        <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
-                        <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
-                        <SelectList disabled={!isPermissionEdit && true} data={accountTypesList} valueSelection={filters?.tipo} onSelect={(value) => setFilters({ ...filters, tipo: value })}
-                            title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                        />
-                        <SelectList disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={filters?.centro_custo} onSelect={(value) => setFilters({ ...filters, centro_custo: value })}
-                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                        />
-                        <Button text="Limpar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() =>
-                            setFilters({
-                                status: 'todos',
-                                startDate: '',
-                                endDate: '',
-                                centro_custo: '',
-                                tipo: ''
-                            })} />
-                    </Box>
+                    <SelectList disabled={!isPermissionEdit && true} data={accountTypesList} valueSelection={filters?.tipo} onSelect={(value) => setFilters({ ...filters, tipo: value })}
+                        title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
+                    <SelectList minWidth={200} disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={filters?.centro_custo} onSelect={(value) => setFilters({ ...filters, centro_custo: value })}
+                        title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
+                    <Button text="Limpar" style={{ borderRadius: 2, height: '100%', width: 180 }} onClick={() =>
+                        setFilters({
+                            status: 'todos',
+                            startDate: '',
+                            endDate: '',
+                            centro_custo: '',
+                            tipo: ''
+                        })} />
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -422,7 +486,6 @@ export default function ListBillsToPay(props) {
                 </Box>
 
             </Box>
-
 
             <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between', }}>
                 <Box sx={{ display: 'flex' }}>
@@ -442,10 +505,17 @@ export default function ListBillsToPay(props) {
                 </Box>
             </Box>
 
+
             <Box sx={{
                 display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                 border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, overflow: 'auto', borderRadius: 2
             }}>
+
+                <Box sx={{ display: 'flex', gap: 1, padding: '15px' }}>
+                    <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
+                    <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
+                    <Button text="Buscar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => getExpenses()} />
+                </Box>
 
                 <div style={{
                     borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', width: '100%',
@@ -479,7 +549,7 @@ export default function ListBillsToPay(props) {
                                 </tr>
                             </thead>
                             <tbody style={{ flex: 1, }}>
-                                {expensesData?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
+                                {expensesData?.slice(startIndex, endIndex)?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
                                     let itemId = item?.id_despesa
                                     const isSelected = expensesSelected?.includes(itemId) || null;
 
@@ -557,7 +627,7 @@ export default function ListBillsToPay(props) {
                         </table>
                         :
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
-                            <Text large light>Não foi possível encontrar Despesas.</Text>
+                            <Text large light>Não foi possível encontrar Despesas para o período selecionado.</Text>
                             <Box sx={{
                                 backgroundSize: 'cover',
                                 backgroundRepeat: 'no-repeat',
@@ -643,12 +713,14 @@ export default function ListBillsToPay(props) {
                             setShowRecurrencyExpense(false)
                             setExpenseRecurrencySelected([])
                             setAllSelectedRecurrency(false)
+                            setShowMonths(false)
+                            setMonthReleaseSelected(null)
                         }} />
                     </Box>
                     <Divider distance={0} />
                     <Box sx={{
                         display: 'flex', gap: 1.75, alignItems: 'start',
-                        maxHeight: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '1280px' },
+                        maxHeight: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '580px' },
                         overflow: 'auto',
                     }}>
                         {recurrencyExpenses?.length > 0 ?
@@ -666,10 +738,87 @@ export default function ListBillsToPay(props) {
                     </Box>
                     <Divider />
                     <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Button disabled={!isPermissionEdit && true} text="Lançar" style={{ height: '30px', borderRadius: '6px' }} />
+                        {expenseRecurrencySelected?.length > 0 &&
+                            <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text>Selecione o mês de lancamento:</Text>
+                                <Button secondary disabled={!isPermissionEdit && true} text="Selecionar" style={{ height: '30px', borderRadius: '6px' }}
+                                    onClick={() => setShowMonths(true)} />
+                            </Box>}
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            {(monthReleaseSelected?.length > 0 && expenseRecurrencySelected?.length > 0) ?
+                                <Button disabled={!isPermissionEdit && true} text="Lançar"
+                                    style={{ height: '30px', borderRadius: '6px' }} onClick={() => handleCreateRecurrencyExpense()} />
+                                :
+                                <Button disabled={!isPermissionEdit && true} text="Cadastrar" style={{ height: '30px', borderRadius: '6px' }}
+                                    onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/new`)} />}
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
 
-                        <Button disabled={!isPermissionEdit && true} text="Cadastrar" style={{ height: '30px', borderRadius: '6px' }}
-                            onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/new`)} />
+
+            <Backdrop open={showMonths} sx={{ zIndex: 999, paddingTop: 5 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Selecione o Mês de lançamento</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setShowMonths(false)
+                        }} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{
+                        display: 'flex', gap: 1.75, alignItems: 'start',
+                        flexWrap: 'wrap',
+                        maxHeight: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '580px' },
+                        maxWidth: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '580px' },
+                    }}>
+                        {groupMonths?.map((item, index) => {
+                            const selected = item?.value === monthReleaseSelected;
+                            return (
+                                <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Box sx={{
+                                            display: 'flex', gap: 1, width: 15, height: 15, border: '1px solid', borderRadius: '15px',
+                                            backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => selectedMonths(item?.value)}>
+                                            {selected &&
+                                                <Box sx={{
+                                                    ...styles.menuIcon,
+                                                    width: 17, height: 17,
+                                                    backgroundImage: `url('/icons/check_around_icon.png')`,
+                                                    transition: '.3s',
+                                                }} />
+                                            }
+                                        </Box>
+                                    </Box>
+                                    <Text>{item?.label}</Text>
+                                </Box>
+                            )
+                        })}
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'flex-end' }}>
+                        <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => setShowMonths(false)} />
+
+                        <Button cancel disabled={!isPermissionEdit && true} text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => {
+                                setShowMonths(false)
+                                setMonthReleaseSelected(null)
+                            }} />
                     </Box>
                 </ContentContainer>
             </Backdrop>
