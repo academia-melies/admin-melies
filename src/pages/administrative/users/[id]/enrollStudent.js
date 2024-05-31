@@ -2037,7 +2037,69 @@ export const Payment = (props) => {
         }
     }
 
+    console.log()
 
+    const handleChangeValueInstallment = async (value, index) => {
+        const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+        if (rawValue === '') {
+            value = '';
+        } else {
+            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+            if (intValue === '0' && rawValue.length > 2) {
+                intValue = '';
+            }
+
+            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+            value = formattedValue;
+
+        }
+
+        const formatterValue = value.replace(/[^\d,]/g, '').replace(',', '.');
+
+
+        setTypePaymentsSelected((prevTypePaymentsSelected) => {
+            const updatedTypePaymentsSelected = [...prevTypePaymentsSelected];
+            updatedTypePaymentsSelected[index] = {
+                ...updatedTypePaymentsSelected[index],
+                valor_parcela: formatterValue,
+            };
+            return updatedTypePaymentsSelected;
+        });
+    };
+
+    // const handleBlurCalculationInstallments = (value, index) => {
+    //     console.log(value, index)
+
+    //     const formatterValue = value;
+    //     const updatedTypePaymentsSelected = typePaymentsSelected;
+    //     const totalValue = totalValueFinnaly;
+
+    //     // Número de parcelas restantes
+    //     const remainingInstallmentsCount = numberOfInstallments - 1;
+
+    //     console.log(formatterValue)
+    //     // Valor das parcelas restantes
+    //     const remainingValue = parseFloat(totalValue) - parseFloat(formatterValue);
+    //     console.log(formatterValue)
+
+    //     const newInstallmentValue = (remainingValue / remainingInstallmentsCount).toFixed(2);
+    //     console.log(newInstallmentValue)
+
+    //     // Atualiza as parcelas restantes
+    //     for (let i = 0; i < updatedTypePaymentsSelected.length; i++) {
+    //         if (i !== index) {
+    //             updatedTypePaymentsSelected[i] = {
+    //                 ...updatedTypePaymentsSelected[i],
+    //                 valor_parcela: newInstallmentValue,
+    //             };
+    //         }
+    //     }
+    // }
+
+    console.log(typePaymentsSelected)
 
     const handleChangeResponsibleData = (event) => {
 
@@ -2096,8 +2158,10 @@ export const Payment = (props) => {
         if (secondValueTotal) { totalValueSecond = secondValueTotal?.reduce((acc, curr) => acc += curr, 0); }
         if (paymentEntry) { totalValueEntry = handleCalculationEntry(paymentEntry) }
         totalValue = totalValueFirst + totalValueSecond + totalValueEntry;
+        const divergencyPayment = ((parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) > 0.05 ||
+            (parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) < -0.05) ? true : false;
 
-        if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly)) {
+        if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly) || divergencyPayment) {
             alert.info('Existe divergência no saldo devedor. Verifique os valores das parcelas e entradas, antes de prosseguir.')
             return
         }
@@ -2305,6 +2369,10 @@ export const Payment = (props) => {
         { label: 'Dez', value: 11 },
     ]
 
+    const divergencyPayment = ((parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) > 0.05 ||
+        (parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) < -0.05) ? true : false;
+    const totalPaymentsInstallment = typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)
+    const calculationDiferenceValues = (parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0))
     return (
         <>
             <ContentContainer style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
@@ -2625,7 +2693,7 @@ export const Payment = (props) => {
                                 }} style={{ height: '30px', borderRadius: 0 }} />
                             </Box>
 
-                            {twoCards &&
+                            {(twoCards) &&
                                 <Box sx={{ display: 'flex', top: -20, left: 250, position: 'absolute', justifyContent: 'center', alignItems: 'center', gap: 1.5, backgroundColor: colorPalette?.primary, padding: '5px 10px' }}>
                                     <Box sx={{
                                         ...styles.menuIcon,
@@ -2641,6 +2709,68 @@ export const Payment = (props) => {
                                         <Text large bold>{formatter.format((parseFloat(totalValueFinnaly) - handleCalculationEntry(paymentEntry)) - (handleCalculationEntry(purchaseValues?.firstCard) + handleCalculationEntry(purchaseValues?.secondCard)))}</Text>
                                         <Text light>Saldo devedor:</Text>
                                     </Box>
+                                </Box>
+                            }
+
+                            {globalTypePaymentsSelected === 'Boleto(PRAVALER)' &&
+                                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5, backgroundColor: colorPalette?.primary, padding: '5px 10px' }}>
+
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5, backgroundColor: colorPalette?.primary, padding: '5px 10px' }}>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 25,
+                                            height: 25,
+                                            aspectRatio: '1/1',
+                                            backgroundImage: `url('/icons/coin_icon.png')`,
+                                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                            transition: 'background-color 1s',
+                                            transition: '.3s',
+                                        }} />
+                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                            <Text large bold>{formatter.format(parseFloat(totalValueFinnaly))}</Text>
+                                            <Text light>Valor da Matrícula:</Text>
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{
+                                        display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5,
+                                        backgroundColor: divergencyPayment ? parseFloat(totalValueFinnaly) == typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0) ?
+                                            'green' : 'red' : colorPalette?.primary, padding: '5px 10px'
+                                    }}>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 25,
+                                            height: 25,
+                                            aspectRatio: '1/1',
+                                            backgroundImage: `url('/icons/coin_icon.png')`,
+                                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                            transition: 'background-color 1s',
+                                            transition: '.3s',
+                                        }} />
+                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                            <Text large bold>{formatter.format(totalPaymentsInstallment)}</Text>
+                                            <Text light>Soma das Parcelas:</Text>
+                                        </Box>
+                                    </Box>
+
+                                    {divergencyPayment && <Box sx={{
+                                        display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5,
+                                        backgroundColor: colorPalette?.primary, padding: '5px 10px'
+                                    }}>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 25,
+                                            height: 25,
+                                            aspectRatio: '1/1',
+                                            backgroundImage: `url('/icons/coin_icon.png')`,
+                                            filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
+                                            transition: 'background-color 1s',
+                                            transition: '.3s',
+                                        }} />
+                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                            <Text large bold>{formatter.format(calculationDiferenceValues)}</Text>
+                                            <Text light>Saldo Divergente:</Text>
+                                        </Box>
+                                    </Box>}
                                 </Box>
                             }
 
@@ -2738,11 +2868,6 @@ export const Payment = (props) => {
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {installmentNumber}</td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
-                                                                {/* <SelectList fullWidth data={listPaymentType} valueSelection={typePaymentsSelected[index]?.tipo || ''} onSelect={(value) => handleTypePayment(index, value, installmentNumber, formattedPaymentDate,)}
-                                                                    filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                                    clean={false}
-                                                                /> */}
                                                                 {typePaymentsSelected[index]?.tipo}
                                                             </td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, border: '1px solid lightgray' }}>
@@ -2755,7 +2880,16 @@ export const Payment = (props) => {
                                                                     typePaymentsSelected[index]?.tipo}
                                                             </td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {formatter.format(valueParcel)}</td>
+                                                                {globalTypePaymentsSelected === 'Boleto(PRAVALER)' ?
+                                                                    <TextInput
+                                                                        placeholder='R$5,00'
+                                                                        name='valor_parcela'
+                                                                        type="coin"
+                                                                        onChange={(e) => handleChangeValueInstallment(e.target.value, index)}
+                                                                        value={(typePaymentsSelected[index]?.valor_parcela) || ''}
+                                                                    /> :
+                                                                    <Text>{formatter.format(typePaymentsSelected[index]?.valor_parcela)}</Text>}
+                                                            </td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                                                 {formattedPaymentDate}
                                                             </td>

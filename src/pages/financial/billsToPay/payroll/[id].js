@@ -215,7 +215,7 @@ export default function EditPayroll(props) {
                 const response = await api.post(`/expense/personal/create/${usuario_id}`, { billToPayData });
                 if (response?.status === 201) {
                     alert.success('Pagamento cadastrado.');
-                    router.push(`/financial/billsToPay/payroll`)
+                    router.push(`/financial/billsToPay/payroll/list`)
                 }
             } catch (error) {
                 alert.error('Tivemos um problema ao cadastrar o Pagamento.');
@@ -231,7 +231,7 @@ export default function EditPayroll(props) {
             const response = await api.delete(`/expense/personal/${id}`)
             if (response?.status == 200) {
                 alert.success('Pagamento excluído com sucesso.');
-                router.push(`/financial/billsToPay/payroll`)
+                router.push(`/financial/billsToPay/payroll/list`)
             }
 
         } catch (error) {
@@ -288,10 +288,7 @@ export default function EditPayroll(props) {
     const groupRecorrency = [
         { label: 'Não recorrente', value: 1 },
         { label: 'Semanal', value: 7 },
-        { label: 'Quinzenal', value: 15 },
         { label: 'Mensal', value: 30 },
-        { label: 'Trismestral', value: 90 },
-        { label: 'Semestral', value: 182 },
         { label: 'Anual', value: 365 }
     ]
 

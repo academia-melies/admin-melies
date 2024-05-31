@@ -39,6 +39,7 @@ export default function ListBillsReceived(props) {
     const [allSelected, setAllSelected] = useState();
     const router = useRouter()
     const [receiveds, setReceiveds] = useState([]);
+    const [totalValue, setTotalValue] = useState(0)
     const [showBaixa, setShowBaixa] = useState(false)
     const [accountList, setAccountList] = useState([])
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
@@ -88,7 +89,6 @@ export default function ListBillsReceived(props) {
     }
 
     const handleLoadData = () => {
-        getReceiveds()
         listAccounts()
     }
 
@@ -103,17 +103,21 @@ export default function ListBillsReceived(props) {
     const getReceiveds = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/receiveds`)
-            const { data } = response;
-            if (data?.length > 0) {
-                setReceiveds(data?.map(item => {
+            const response = await api.get(`/receiveds/forDate?startDate=${filters?.startDate}&endDate=${filters?.endDate}`)
+            const { receiveds, totalValue } = response?.data;
+            if (receiveds?.length > 0) {
+                setReceiveds(receiveds?.map(item => {
                     const valorDesp = parseFloat(item.valor);
                     return {
                         ...item,
                         valor: isNaN(valorDesp) ? item.valor : valorDesp.toFixed(2)
                     };
                 }));
+            } else {
+                setReceiveds([])
             }
+            setTotalValue(totalValue)
+
         } catch (error) {
             console.log(error)
         } finally {
@@ -143,8 +147,8 @@ export default function ListBillsReceived(props) {
             }
             if (allStatus200) {
                 alert.success('Items excluídos.');
-                setReceivedSelected('');
-                getReceiveds()
+                setReceivedSelected(null);
+                await getReceiveds()
             } else {
                 alert.error('Erro ao excluir itens.');
             }
@@ -169,7 +173,7 @@ export default function ListBillsReceived(props) {
                     setReceivedSelected(null);
                     setShowBaixa(false)
                     setBaixaData({ dt_baixa: '', conta_recebimento: '', forma_pagamento: '' });
-                    getReceiveds()
+                    await getReceiveds()
                     return
                 }
                 alert.error('Tivemos um problema ao efetivar as Baixa.');
@@ -273,10 +277,8 @@ export default function ListBillsReceived(props) {
     ]
 
 
-    let valueReceiveds = receiveds?.map(item => parseFloat(item.valor))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-    let totalReceived = parseFloat(valueReceiveds)
     let totalReceivedView = receiveds?.filter(filter)?.map(item => parseFloat(item.valor)).reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-    const percentualReceived = (totalReceivedView / totalReceived) * 100;
+    const percentualReceived = (totalReceivedView / totalValue) * 100;
 
     return (
         <>
@@ -303,7 +305,7 @@ export default function ListBillsReceived(props) {
                                     backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
                                     transition: '.3s',
                                 }} />
-                                <Text bold title style={{ color: 'green' }}>{formatter.format(parseFloat(totalReceived))}</Text>
+                                <Text bold title style={{ color: 'green' }}>{formatter.format(parseFloat(totalValue))}</Text>
                             </Box>
                             <Text light>Receita</Text>
                         </Box>
@@ -319,7 +321,7 @@ export default function ListBillsReceived(props) {
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', transition: '.5s', }}>
                                     <Text bold style={{ color: colorPalette.buttonColor }}>{formatter.format(parseFloat(totalReceivedView))}</Text>
                                     <Text>de</Text>
-                                    <Text light style={{ color: 'rgb(75 85 99)' }}>{formatter.format(parseFloat(totalReceived))}</Text>
+                                    <Text light style={{ color: 'rgb(75 85 99)' }}>{formatter.format(parseFloat(totalValue))}</Text>
                                 </Box>
                             </Box>
                             <div style={{ marginTop: '10px', width: '100%', height: '10px', borderRadius: '10px', background: '#ccc', transition: '.5s', }}>
@@ -329,201 +331,177 @@ export default function ListBillsReceived(props) {
                     </Box>
                 </ContentContainer>
             </Box>
-            <Box sx={{
-                display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
-                flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
-            }}>
-                <TextInput
-                    name="year"
-                    value={filterYear || ''}
-                    label='Ano:'
-                    onChange={(event) => setFilterYear(event.target.value)}
-                    sx={{ width: 200 }}
-                    InputProps={{
-                        style: {
-                            backgroundColor: colorPalette.secondary
-                        }
-                    }}
-                    type="number"
-                />
-
-                <Box sx={{ display: 'flex', flexWrap: { xs: 'wrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' } }}>
-                    {monthFilter?.map((item, index) => {
-                        const monthSelected = item?.value === filterMonth;
-                        return (
-                            <Box key={index} sx={{
-                                display: 'flex',
-                                padding: { xs: '7px 17px', sm: '7px 17px', md: '7px 17px', lg: '7px 17px', xl: '7px 28px' },
-                                backgroundColor: monthSelected ? colorPalette.buttonColor : colorPalette.secondary,
-                                border: `1px solid ${colorPalette.primary}`,
-                                "&:hover": {
-                                    opacity: 0.8,
-                                    cursor: 'pointer'
-                                },
-                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                            }} onClick={() => {
-                                if (monthSelected) {
-                                    setFilterMonth('todos')
-                                }
-                                else {
-                                    setFilterMonth(item?.value)
-                                }
-                            }}>
-                                <Text large style={{ color: monthSelected ? '#fff' : colorPalette.textColor }}>{item?.month}</Text>
-                            </Box>
-                        )
-                    })}
-                </Box>
-            </Box>
-
-            <Box sx={{ overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap' }}>
+            <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column', padding: '30px 30px', backgroundColor: colorPalette?.secondary, borderRadius: 2 }}>
+                <Text bold large>Filtros:</Text>
                 <Box sx={{
-                    display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                    border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+                    display: 'flex', gap: 1.8, alignItems: 'start', justifyContent: 'center',
                 }}>
-                    <Box sx={{ display: 'flex', padding: '20px 40px', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <CheckBoxComponent disabled={!isPermissionEdit && true}
-                            boxGroup={groupStatus}
-                            valueChecked={filters?.status}
-                            horizontal={true}
-                            onSelect={(value) => {
-                                setFilters({ ...filters, status: value })
-                            }}
-                            sx={{ width: 1 }} />
+                    <TextInput placeholder="Buscar pela descrição do recebimento.." name='filterData' type="search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} value={filters?.search} sx={{ width: '100%' }} />
+                    <Button text="Limpar" style={{ borderRadius: 2, height: '100%', width: 180 }} onClick={() =>
+                        setFilters({
+                            status: 'todos',
+                            startDate: '',
+                            endDate: '',
+                            search: ''
+                        })} />
+                </Box>
 
-                        <Box sx={{ display: 'flex', gap: 1, }}>
-                            <Button disabled={!isPermissionEdit && true} small text="Lançar Recebimento" style={{ height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToReceive/billsReceived/new`)} />
-                            <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
-                                active: true,
-                                event,
-                                acceptAction: handleDelete,
-                                title: `Excluir Recebído?`,
-                                message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
-                            })} />
-                            <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
-                                onClick={() => setShowBaixa(true)} />
-                        </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <CheckBoxComponent disabled={!isPermissionEdit && true}
+                        boxGroup={groupStatus}
+                        valueChecked={filters?.status}
+                        horizontal={true}
+                        onSelect={(value) => {
+                            setFilters({ ...filters, status: value })
+                        }}
+                        sx={{ width: 1 }} />
+                </Box>
 
-                    </Box>
-                    <div style={{ borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
-                        {receiveds?.filter(filter).length > 0 ?
-                            <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
-                                        <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
-                                            <CheckBoxComponent
-                                                disabled={!isPermissionEdit && true}
-                                                boxGroup={[{ value: 'allSelect' }]}
-                                                valueChecked={'select'}
-                                                horizontal={true}
-                                                onSelect={() => {
-                                                    if (receivedSelected?.length < allSelected?.length) {
-                                                        let allReceivedSelected = receiveds?.filter(filter)?.map(item => item?.id_recebiveis)
-                                                        setReceivedSelected(allReceivedSelected?.toString())
-                                                    } else {
-                                                        setReceivedSelected(null)
-                                                    }
-                                                }}
-                                                padding={0}
-                                                gap={0}
-                                                sx={{ display: 'flex', maxWidth: 15 }}
-                                            />
-                                        </th>
-                                        {columnReceived?.map((item, index) => (
-                                            <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>{item.label}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody style={{ flex: 1, }}>
-                                    {receiveds?.filter(filter)?.slice(startIndex, endIndex)?.map((item, index) => {
-                                        let itemId = item?.id_recebiveis;
-                                        const isSelected = receivedSelected?.includes(itemId) || null;
+            </Box>
 
-                                        return (
-                                            <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
-                                                <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                    <CheckBoxComponent
-                                                        disabled={!isPermissionEdit && true}
-                                                        boxGroup={
-                                                            groupSelect(itemId)
-                                                        }
-                                                        valueChecked={receivedSelected}
-                                                        horizontal={true}
-                                                        onSelect={(value) => {
-                                                            if (itemId) {
-                                                                setReceivedSelected(value);
-                                                            }
-                                                        }}
-                                                        padding={0}
-                                                        gap={0}
-                                                        sx={{ display: 'flex', maxWidth: 15 }}
-                                                    />
-                                                </td>
-                                                {columnReceived?.map((column, colIndex) => (
-                                                    <td key={colIndex} style={{
-                                                        textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}`,
-                                                        minWidth: column?.label === 'id' ? 60 : 0
-                                                    }}
-                                                        onClick={(e) => {
-                                                            column?.label === 'id' ? pusBillId(item)
-                                                                :
-                                                                e.preventDefault()
-                                                            e.stopPropagation()
-                                                        }}>
-                                                        {item[column?.key] ? (
-                                                            <Box sx={{
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: column?.label === 'id' && 'pointer', '&:hover': {
-                                                                    opacity: column?.label === 'id' && 0.7
-                                                                }
-                                                            }} >
-
-                                                                {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
-                                                                    formatTimeStamp(item[column?.key || '-'])
-                                                                ) : (
-                                                                    column.status ? (
-                                                                        <Box
-                                                                            sx={{
-                                                                                display: 'flex',
-                                                                                height: 30,
-                                                                                gap: 2,
-                                                                                alignItems: 'center',
-                                                                                borderRadius: 2,
-                                                                                justifyContent: 'center',
-                                                                                border: `1px solid ${colorPalette?.primary}`
-                                                                            }}
-                                                                        >
-                                                                            <Box sx={{ display: 'flex', backgroundColor: priorityColor(item[column.key]), width: '10px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                                            <Text small bold style={{ padding: '0px 15px 0px 0px' }}>{item[column.key]}</Text>
-                                                                        </Box>
-                                                                    ) :
-                                                                        (column.date ? formatDate(item[column?.key]) : column.price ? formatter.format(parseFloat((item[column?.key]))) : item[column?.key || '-'])
-                                                                )}
-                                                            </Box>
-                                                        ) : (
-                                                            <Text sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>-</Text>
-                                                        )}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                            :
-                            <Box sx={{ display: 'flex', flex: 1 }}>
-                                <Text light>Não existem dados para o mês selecionado</Text>
-                            </Box>
-                        }
-                        <Box sx={{ marginTop: 2 }}>
-
-                            <PaginationTable data={receiveds?.filter(filter)}
-                                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
-                            />
-                        </Box>
-                    </div>
+            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between', }}>
+                <Button disabled={!isPermissionEdit && true} small text="Lançar Recebimento" style={{ height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToReceive/billsReceived/new`)} />
+                <Box sx={{ display: 'flex', gap: 1, }}>
+                    <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
+                        active: true,
+                        event,
+                        acceptAction: handleDelete,
+                        title: `Excluir Recebído?`,
+                        message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
+                    })} />
+                    <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                        onClick={() => setShowBaixa(true)} />
                 </Box>
             </Box>
 
+            <Box sx={{
+                display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, overflow: 'auto', borderRadius: 2
+            }}>
+
+                <Box sx={{ display: 'flex', gap: 1, padding: '15px' }}>
+                    <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
+                    <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
+                    <Button text="Buscar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => getReceiveds()} />
+                </Box>
+
+                <div style={{ borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%', }}>
+                    {receiveds?.filter(filter).length > 0 ?
+                        <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', border: `1px solid ${colorPalette.primary}` }}>
+                            <thead>
+                                <tr style={{ backgroundColor: colorPalette.secondary, borderBottom: `1px solid ${colorPalette?.primary}` }}>
+                                    <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px', }}>
+                                        <CheckBoxComponent
+                                            disabled={!isPermissionEdit && true}
+                                            boxGroup={[{ value: 'allSelect' }]}
+                                            valueChecked={'select'}
+                                            horizontal={true}
+                                            onSelect={() => {
+                                                if (receivedSelected?.length < allSelected?.length) {
+                                                    let allReceivedSelected = receiveds?.filter(filter)?.map(item => item?.id_recebiveis)
+                                                    setReceivedSelected(allReceivedSelected?.toString())
+                                                } else {
+                                                    setReceivedSelected(null)
+                                                }
+                                            }}
+                                            padding={0}
+                                            gap={0}
+                                            sx={{ display: 'flex', maxWidth: 15 }}
+                                        />
+                                    </th>
+                                    {columnReceived?.map((item, index) => (
+                                        <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>{item.label}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody style={{ flex: 1, }}>
+                                {receiveds?.filter(filter)?.slice(startIndex, endIndex)?.map((item, index) => {
+                                    let itemId = item?.id_recebiveis;
+                                    const isSelected = receivedSelected?.includes(itemId) || null;
+
+                                    return (
+                                        <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
+                                            <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <CheckBoxComponent
+                                                    disabled={!isPermissionEdit && true}
+                                                    boxGroup={
+                                                        groupSelect(itemId)
+                                                    }
+                                                    valueChecked={receivedSelected}
+                                                    horizontal={true}
+                                                    onSelect={(value) => {
+                                                        if (itemId) {
+                                                            setReceivedSelected(value);
+                                                        }
+                                                    }}
+                                                    padding={0}
+                                                    gap={0}
+                                                    sx={{ display: 'flex', maxWidth: 15 }}
+                                                />
+                                            </td>
+                                            {columnReceived?.map((column, colIndex) => (
+                                                <td key={colIndex} style={{
+                                                    textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`,
+                                                    minWidth: column?.label === 'id' ? 60 : 0
+                                                }}
+                                                    onClick={(e) => {
+                                                        column?.label === 'id' ? pusBillId(item)
+                                                            :
+                                                            e.preventDefault()
+                                                        e.stopPropagation()
+                                                    }}>
+                                                    {item[column?.key] ? (
+                                                        <Box sx={{
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: column?.label === 'id' && 'pointer', '&:hover': {
+                                                                opacity: column?.label === 'id' && 0.7
+                                                            }
+                                                        }} >
+
+                                                            {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
+                                                                formatTimeStamp(item[column?.key || '-'])
+                                                            ) : (
+                                                                column.status ? (
+                                                                    <Box
+                                                                        sx={{
+                                                                            display: 'flex',
+                                                                            height: 30,
+                                                                            gap: 2,
+                                                                            alignItems: 'center',
+                                                                            borderRadius: 2,
+                                                                            justifyContent: 'center',
+                                                                            borderBottom: `1px solid ${colorPalette?.primary}`
+                                                                        }}
+                                                                    >
+                                                                        <Box sx={{ display: 'flex', backgroundColor: priorityColor(item[column.key]), width: '10px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                                                        <Text small bold style={{ padding: '0px 15px 0px 0px' }}>{item[column.key]}</Text>
+                                                                    </Box>
+                                                                ) :
+                                                                    (column.date ? formatDate(item[column?.key]) : column.price ? formatter.format(parseFloat((item[column?.key]))) : item[column?.key || '-'])
+                                                            )}
+                                                        </Box>
+                                                    ) : (
+                                                        <Text sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>-</Text>
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                        :
+                        <Box sx={{ display: 'flex', flex: 1 }}>
+                            <Text light>Não existem dados para o mês selecionado</Text>
+                        </Box>
+                    }
+                    <Box sx={{ marginTop: 2 }}>
+
+                        <PaginationTable data={receiveds?.filter(filter)}
+                            page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+                        />
+                    </Box>
+                </div>
+            </Box>
 
             <Backdrop open={showBaixa} sx={{ zIndex: 999 }}>
                 <ContentContainer sx={{ zIndex: 9999 }}>
