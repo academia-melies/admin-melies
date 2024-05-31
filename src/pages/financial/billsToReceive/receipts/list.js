@@ -399,7 +399,8 @@ export default function ListReceipts(props) {
         { label: 'Todos', value: 'todos' },
         { label: 'Cartão de crédito', value: 'Cartão' },
         { label: 'Boleto', value: 'Boleto' },
-        { label: 'Pix', value: 'Pix' },
+        { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
+        { label: 'Cartão', value: 'Cartão' },
     ]
 
     const groupSelect = (id) => [
