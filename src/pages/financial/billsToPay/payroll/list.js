@@ -14,6 +14,7 @@ import { icons } from "../../../../organisms/layout/Colors"
 
 export default function ListPayroll(props) {
     const [expensesData, setExpensesData] = useState([])
+    const [totalValue, setTotalValue] = useState(0)
     const [personalExpenses, setPersonalExpenses] = useState([])
     const [filters, setFilters] = useState({
         status: 'todos',
@@ -46,13 +47,10 @@ export default function ListPayroll(props) {
 
     const filter = (item) => {
         let date = new Date(item?.dt_pagamento);
-        let filteredDate = (filters?.startDate !== '' && filters?.endDate !== '') ?
-            rangeDate(date, filters?.startDate, filters?.endDate) :
-            item;
         let filterStatus = filters?.status.includes('todos') ? item : filters?.status.includes(item?.status)
         const normalizedFilterData = normalizeString(filterData);
 
-        return (filteredDate && filterStatus && normalizeString(item?.funcionario)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()));
+        return (filterStatus && normalizeString(item?.funcionario)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()));
     }
 
     const normalizeString = (str) => {
@@ -83,31 +81,32 @@ export default function ListPayroll(props) {
         setAccountList(groupCostCenter)
     }
 
-    const handleLoadData = () => {
-        getPersonalExpenses()
-        listAccounts()
+    const handleLoadData = async () => {
+        await listAccounts()
     }
 
 
     const getPersonalExpenses = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/expenses/personal`)
-            const { data } = response;
-            if (data?.length > 0) {
-                setPersonalExpenses(data)
+            const response = await api.get(`/expenses/personal/forDate?startDate=${filters?.startDate}&endDate=${filters?.endDate}`)
+            const { personalExpenses, totalValue } = response?.data;
 
-                let allInstallmentSelected = data?.map(item => item?.id_pagamento_folha)
+            if (personalExpenses?.length > 0) {
+                let allInstallmentSelected = personalExpenses?.map(item => item?.id_pagamento_folha)
                 setAllSelected(allInstallmentSelected?.toString())
-
-                setExpensesData(data.map(item => {
+                setExpensesData(personalExpenses.map(item => {
                     const valorDesp = parseFloat(item.vl_pagamento);
                     return {
                         ...item,
                         valor_tipo: isNaN(valorDesp) ? item.vl_pagamento : valorDesp.toFixed(2)
                     };
                 }));
+            } else {
+                setExpensesData([])
             }
+            setTotalValue(totalValue)
+
         } catch (error) {
             console.log(error)
         } finally {
@@ -137,8 +136,8 @@ export default function ListPayroll(props) {
             }
             if (allStatus200) {
                 alert.success('Items excluídos.');
-                setExpensesSelected('');
-                handleLoadData()
+                setExpensesSelected(null);
+                await getPersonalExpenses()
             } else {
                 alert.error('Erro ao excluir itens.');
             }
@@ -162,7 +161,7 @@ export default function ListPayroll(props) {
                     setExpensesSelected('');
                     setShowBaixa(false)
                     setBaixaData({ dt_baixa: '', conta_pagamento: '' });
-                    getPersonalExpenses()
+                    await getPersonalExpenses()
                     return
                 }
                 alert.error('Tivemos um problema ao efetivar as Baixa.');
@@ -191,7 +190,7 @@ export default function ListPayroll(props) {
                 alert.success('Dissídio aplicado para todos.');
                 setExpensesSelected('');
                 setShowDissidioBox(false)
-                getPersonalExpenses()
+                await getPersonalExpenses()
                 return
             }
             alert.error('Tivemos um problema ao aplicado dissídio.');
@@ -248,10 +247,8 @@ export default function ListPayroll(props) {
     });
 
 
-    let valuePersonal = personalExpenses?.map(item => parseFloat(item.vl_pagamento))?.reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-    let totalExpenses = parseFloat(valuePersonal)
     let totalExpensesView = expensesData?.filter(filter)?.map(item => parseFloat(item.valor_tipo)).reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-    const percentualExpenses = (parseFloat(totalExpensesView) / totalExpenses) * 100;
+    const percentualExpenses = (parseFloat(totalExpensesView) / totalValue) * 100;
 
     return (
         <>
@@ -278,7 +275,7 @@ export default function ListPayroll(props) {
                                     backgroundImage: `url('/icons/arrow_down_red_icon.png')`,
                                     transition: '.3s',
                                 }} />
-                                <Text bold title style={{ color: 'red' }}>{formatter.format(parseFloat(totalExpenses))}</Text>
+                                <Text bold title style={{ color: 'red' }}>{formatter.format(parseFloat(totalValue))}</Text>
                             </Box>
                             <Text light>Folha de Pagamento</Text>
                         </Box>
@@ -293,7 +290,7 @@ export default function ListPayroll(props) {
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', transition: '.5s', }}>
                                     <Text bold style={{ color: colorPalette.buttonColor }}>{formatter.format(parseFloat(totalExpensesView))}</Text>
                                     <Text>de</Text>
-                                    <Text light style={{ color: 'rgb(75 85 99)' }}>{formatter.format(parseFloat(totalExpenses))}</Text>
+                                    <Text light style={{ color: 'rgb(75 85 99)' }}>{formatter.format(parseFloat(totalValue))}</Text>
                                 </Box>
                             </Box>
                             <div style={{ marginTop: '10px', width: '100%', height: '10px', borderRadius: '10px', background: '#ccc', transition: '.5s', }}>
@@ -311,8 +308,6 @@ export default function ListPayroll(props) {
                     flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
                 }}>
                     <TextInput placeholder="Buscar pelo nome do Funcionário" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
-                    <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
-                    <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
                     <Button text="Limpar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => {
                         setFilters({
                             status: 'todos',
@@ -337,165 +332,157 @@ export default function ListPayroll(props) {
 
             </Box>
 
-            <Box sx={{ overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap' }}>
+            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', paddingTop: '20px', paddingRight: '20px' }}>
+                <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new`)} />
+                <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
+                    active: true,
+                    event,
+                    acceptAction: handleDelete,
+                    title: `Excluir Pagamento selecionado?`,
+                    message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
+                })} />
+                <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                    onClick={() => setShowBaixa(true)} />
+            </Box>
 
-                <Box sx={{
-                    display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                    border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
-                }}>
+            <Box sx={{
+                display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, overflow: 'auto', borderRadius: 2
+            }}>
 
 
-                    <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', paddingTop: '20px', paddingRight: '20px' }}>
-                        <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new`)} />
-                        <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
-                            active: true,
-                            event,
-                            acceptAction: handleDelete,
-                            title: `Excluir Pagamento selecionado?`,
-                            message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
-                        })} />
-                        <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
-                            onClick={() => setShowBaixa(true)} />
-
-                        {/* <Button disabled={!isPermissionEdit && true} small secondary text="aplicar dissídio para todos" style={{ width: '200px', height: '30px', borderRadius: '6px' }}
-                            onClick={() => {
-                                if (expensesSelected) {
-                                    setShowDissidioBox(true)
-                                } else {
-                                    alert.info('Selecione um item para aplicar o dissídio')
-                                }
-
-                            }}
-                        /> */}
-                    </Box>
-
-                    <div style={{
-                        borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', padding: '40px 40px 20px 40px', width: '100%',
-                    }}>
-                        {expensesData?.filter(filter).length > 0 ?
-                            <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: colorPalette.buttonColor, color: '#fff' }}>
-                                        <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
-                                            <CheckBoxComponent
-                                                disabled={!isPermissionEdit && true}
-                                                boxGroup={[{ value: 'allSelect' }]}
-                                                valueChecked={'select'}
-                                                horizontal={true}
-                                                onSelect={() => {
-                                                    if ((expensesSelected?.length < allSelected?.length)) {
-                                                        let allInstallmentSelected = expensesData?.map(item => item?.id_pagamento_folha)
-                                                        setExpensesSelected(allInstallmentSelected?.toString())
-                                                    } else {
-                                                        setExpensesSelected(null)
-                                                    }
-                                                }}
-                                                padding={0}
-                                                gap={0}
-                                                sx={{ display: 'flex', maxWidth: 15 }}
-                                            />
-                                        </th>
-                                        {columnPersonal?.map((item, index) => (
-                                            <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>{item.label}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody style={{ flex: 1, }}>
-                                    {expensesData?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
-                                        let itemId = item?.id_pagamento_folha
-                                        const isSelected = expensesSelected?.includes(itemId) || null;
-
-                                        return (
-                                            <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
-                                                <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                    <CheckBoxComponent
-                                                        disabled={!isPermissionEdit && true}
-                                                        boxGroup={
-                                                            groupSelect(itemId)
-                                                        }
-                                                        valueChecked={expensesSelected}
-                                                        horizontal={true}
-                                                        onSelect={(value) => {
-                                                            if (itemId) {
-                                                                setExpensesSelected(value);
-                                                            }
-                                                        }}
-                                                        padding={0}
-                                                        gap={0}
-                                                        sx={{ display: 'flex', maxWidth: 15 }}
-                                                    />
-                                                </td>
-                                                {columnPersonal?.map((column, colIndex) => (
-                                                    <td key={colIndex} style={{
-                                                        textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}`,
-                                                        minWidth: column?.label === 'id' ? 60 : 0
-                                                    }}
-                                                        onClick={(e) => {
-                                                            column?.label === 'id' ? router.push(`/financial/billsToPay/payroll/${item?.id_pagamento_folha}`)
-                                                                :
-                                                                e.preventDefault()
-                                                            e.stopPropagation()
-                                                        }}>
-                                                        {item[column?.key] ? (
-                                                            <Box sx={{
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: column?.label === 'id' && 'pointer', '&:hover': {
-                                                                    opacity: column?.label === 'id' && 0.7
-                                                                }
-                                                            }} >
-                                                                {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={item[column?.avatarUrl || '']} />}
-
-                                                                {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
-                                                                    formatTimeStamp(item[column?.key || '-'])
-                                                                ) : (
-                                                                    column.status ? (
-                                                                        <Box
-                                                                            sx={{
-                                                                                display: 'flex',
-                                                                                height: 30,
-                                                                                gap: 2,
-                                                                                alignItems: 'center',
-                                                                                borderRadius: 2,
-                                                                                justifyContent: 'center',
-                                                                                border: `1px solid ${colorPalette?.primary}`
-                                                                            }}
-                                                                        >
-                                                                            <Box sx={{ display: 'flex', backgroundColor: priorityColor(item[column.key]), width: '10px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                                            <Text small bold style={{ padding: '0px 15px 0px 0px' }}>{item[column.key]}</Text>
-                                                                        </Box>
-                                                                    ) :
-                                                                        (column.date ? formatDate(item[column?.key]) : column.price ? formatter.format(parseFloat((item[column?.key]))) : item[column?.key || '-'])
-                                                                )}
-                                                            </Box>
-                                                        ) : (
-                                                            <Text sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>-</Text>
-                                                        )}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                            :
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
-                                <Text large light>Não foi possível encontrar Pagamentos.</Text>
-                                <Box sx={{
-                                    backgroundSize: 'cover',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                    width: 350, height: 250,
-                                    backgroundImage: `url('/background/no_results.png')`,
-                                }} />
-                            </Box>
-                        }
-                        <Box sx={{ marginTop: 2 }}>
-
-                            <PaginationTable data={expensesData?.filter(filter)}
-                                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
-                            />
-                        </Box>
-                    </div>
+                <Box sx={{ display: 'flex', gap: 1, padding: '15px' }}>
+                    <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
+                    <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
+                    <Button text="Buscar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => getPersonalExpenses()} />
                 </Box>
+
+                <div style={{
+                    borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', width: '100%',
+                }}>
+                    {expensesData?.filter(filter).length > 0 ?
+                        <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                            <thead>
+                                <tr style={{ backgroundColor: colorPalette.secondary, borderBottom: `1px solid ${colorPalette?.primary}` }}>
+                                    <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px', }}>
+                                        <CheckBoxComponent
+                                            disabled={!isPermissionEdit && true}
+                                            boxGroup={[{ value: 'allSelect' }]}
+                                            valueChecked={'select'}
+                                            horizontal={true}
+                                            onSelect={() => {
+                                                if ((expensesSelected?.length < allSelected?.length)) {
+                                                    let allInstallmentSelected = expensesData?.map(item => item?.id_pagamento_folha)
+                                                    setExpensesSelected(allInstallmentSelected?.toString())
+                                                } else {
+                                                    setExpensesSelected(null)
+                                                }
+                                            }}
+                                            padding={0}
+                                            gap={0}
+                                            sx={{ display: 'flex', maxWidth: 15 }}
+                                        />
+                                    </th>
+                                    {columnPersonal?.map((item, index) => (
+                                        <th key={index} style={{ padding: '8px 0px', fontSize: '14px', fontFamily: 'MetropolisBold' }}>{item.label}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody style={{ flex: 1, }}>
+                                {expensesData?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
+                                    let itemId = item?.id_pagamento_folha
+                                    const isSelected = expensesSelected?.includes(itemId) || null;
+
+                                    return (
+                                        <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
+                                            <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <CheckBoxComponent
+                                                    disabled={!isPermissionEdit && true}
+                                                    boxGroup={
+                                                        groupSelect(itemId)
+                                                    }
+                                                    valueChecked={expensesSelected}
+                                                    horizontal={true}
+                                                    onSelect={(value) => {
+                                                        if (itemId) {
+                                                            setExpensesSelected(value);
+                                                        }
+                                                    }}
+                                                    padding={0}
+                                                    gap={0}
+                                                    sx={{ display: 'flex', maxWidth: 15 }}
+                                                />
+                                            </td>
+                                            {columnPersonal?.map((column, colIndex) => (
+                                                <td key={colIndex} style={{
+                                                    textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`,
+                                                    minWidth: column?.label === 'id' ? 60 : 0
+                                                }}
+                                                    onClick={(e) => {
+                                                        column?.label === 'id' ? router.push(`/financial/billsToPay/payroll/${item?.id_pagamento_folha}`)
+                                                            :
+                                                            e.preventDefault()
+                                                        e.stopPropagation()
+                                                    }}>
+                                                    {item[column?.key] ? (
+                                                        <Box sx={{
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: column?.label === 'id' && 'pointer', '&:hover': {
+                                                                opacity: column?.label === 'id' && 0.7
+                                                            }
+                                                        }} >
+                                                            {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={item[column?.avatarUrl || '']} />}
+
+                                                            {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
+                                                                formatTimeStamp(item[column?.key || '-'])
+                                                            ) : (
+                                                                column.status ? (
+                                                                    <Box
+                                                                        sx={{
+                                                                            display: 'flex',
+                                                                            height: 30,
+                                                                            gap: 2,
+                                                                            alignItems: 'center',
+                                                                            borderRadius: 2,
+                                                                            justifyContent: 'center',
+                                                                            border: `1px solid ${colorPalette?.primary}`
+                                                                        }}
+                                                                    >
+                                                                        <Box sx={{ display: 'flex', backgroundColor: priorityColor(item[column.key]), width: '10px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                                                        <Text small bold style={{ padding: '0px 15px 0px 0px' }}>{item[column.key]}</Text>
+                                                                    </Box>
+                                                                ) :
+                                                                    (column.date ? formatDate(item[column?.key]) : column.price ? formatter.format(parseFloat((item[column?.key]))) : item[column?.key || '-'])
+                                                            )}
+                                                        </Box>
+                                                    ) : (
+                                                        <Text sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>-</Text>
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                        :
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text large light>Não foi possível encontrar Pagamentos.</Text>
+                            <Box sx={{
+                                backgroundSize: 'cover',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center',
+                                width: 350, height: 250,
+                                backgroundImage: `url('/background/no_results.png')`,
+                            }} />
+                        </Box>
+                    }
+                    <Box sx={{ marginTop: 2 }}>
+
+                        <PaginationTable data={expensesData?.filter(filter)}
+                            page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+                        />
+                    </Box>
+                </div>
             </Box>
 
 
