@@ -2161,10 +2161,10 @@ export const Payment = (props) => {
         const divergencyPayment = ((parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) > 0.05 ||
             (parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) < -0.05) ? true : false;
 
-        if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly) || divergencyPayment) {
+       /* if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly) || divergencyPayment) {
             alert.info('Existe divergência no saldo devedor. Verifique os valores das parcelas e entradas, antes de prosseguir.')
             return
-        }
+        }*/
 
         if (!globalTypePaymentsSelected || (twoCards && !globalTypePaymentsSelectedTwo)) {
             alert.info('Insira uma forma de pagamento válida.')
