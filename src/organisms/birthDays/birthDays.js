@@ -7,7 +7,6 @@ import { icons } from "../layout/Colors"
 
 export const BirthDaysMonth = (props) => {
     const { listBirthDay = [] } = props
-
     const { colorPalette, theme } = useAppContext()
     const [showMessageBirthDay, setShowMessageBirthDay] = useState(false)
     const [idSelected, setIdSelected] = useState()
@@ -30,16 +29,16 @@ export const BirthDaysMonth = (props) => {
             <Box sx={{
                 display: 'flex', justifyContent: 'center', width: '100%', overflowY: 'auto',
             }}>
-                {listBirthDay.length > 0 ?
+                {listBirthDay?.length > 0 ?
                     <Box sx={{ borderRadius: '8px', width: '100%', display: 'flex', flexDirection: 'column', gap: 1, }}>
                         {listBirthDay?.map((item, index) => {
                             const date = item?.nascimento?.split('T')[0]
                             const day = date?.split('-')[2]
                             const month = date?.split('-')[1]
-                            const functionFormatted = item?.funcao.split(' ')[0][0].toUpperCase()
-                            const restoNome = item?.funcao.slice(1)
+                            const functionFormatted = item?.funcao ? item?.funcao.split(' ')[0][0].toUpperCase() : ''
+                            const restoNome = item?.funcao && item?.funcao.slice(1)
                             const totalName = `${functionFormatted}${restoNome}`
-                            const partsName = item?.nome?.split(' ')
+                            const partsName = item?.nome && item?.nome?.split(' ')
                             const firstName = partsName[0]
                             const lastName = partsName[partsName?.length - 1]
                             return (
@@ -68,7 +67,7 @@ export const BirthDaysMonth = (props) => {
                                     <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                         <Box key={index} sx={{ display: 'flex', flexDirection: 'column' }}>
                                             <Text light bold>{firstName} {lastName}</Text>
-                                            <Text light small>{totalName || 'Nenhum(a)'}</Text>
+                                            <Text light small>{item?.funcao ? totalName : 'Nenhum(a)'}</Text>
                                         </Box>
                                     </Box>
                                     <Box key={index} sx={{ display: 'flex', position: 'absolute', right: 5, bottom: 10 }}>
