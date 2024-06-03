@@ -3063,6 +3063,7 @@ export const ContractStudent = (props) => {
     const { colorPalette, setLoading, alert } = useAppContext()
     const [paymentData, setPaymentData] = useState([])
     const [userData, setUserData] = useState({})
+    const [valueContractPravaler, setValueContract] = useState(0)
     const contractService = useRef()
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -3088,13 +3089,28 @@ export const ContractStudent = (props) => {
     useEffect(() => {
 
         const updatedPaymentForm = paymentForm.map((payment) =>
-            payment?.map((items) => ({
+          
+            payment?.map((items) => ({  
                 ...items,
                 pagamento: items?.pagamento || items?.tipo,
                 valor_parcela: items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
             }))
         );
+        const valueContract = paymentForm.map((payment) =>
+            payment?.map((items) => ({                 
+              valor_parcela: +items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
+            }))
+          );
+          
+          // Somar todas as parcelas
+          const totalValueContract = paymentForm.flat().reduce((acc, payment) => {
+            const valor = parseFloat(payment?.valor_parcela);
+            return acc + (isNaN(valor) ? 0 : valor);
+          }, 0).toFixed(2);
+          setValueContract(totalValueContract)
 
+         
+         
         setPaymentData(updatedPaymentForm)
     }, [])
 
@@ -3311,7 +3327,9 @@ export const ContractStudent = (props) => {
                                 body: [
                                     userData?.nome ? ['Aluno:', userData?.nome] : [],
                                     ['Resp. pagante:', responsiblePayerData?.nome_resp || userData?.nome],
-                                    isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
+                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['Valor total do semestre:', formatter.format(formatter.format(valueContractPravaler))]  :  isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
+                                   
+
                                     ['Disciplinas dispensadas:', valuesContract?.qntDispensadas],
                                     classesDisciplinesDpSelected?.length > 0 && ['Disciplinas DP:', classesDisciplinesDpSelected?.length],
                                     valuesContract?.descontoDispensadas > 0 && ['Disciplinas dispensadas - Desconto (R$):', formatter.format(valuesContract.descontoDispensadas)],
@@ -3321,7 +3339,9 @@ export const ContractStudent = (props) => {
                                         || '0'],
                                     (valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0) && ['DESCONTO TOTAL:', formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))],
                                     paymentsInfoData?.valueEntry > 0 && ['VALOR DE ENTRADA:', formatter.format(paymentsInfoData?.valueEntry)],
-                                    ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],
+
+                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['VALOR A PAGAR:', formatter.format(valueContractPravaler)]  : ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],                                    
+                                    
                                 ].filter(row => row.length > 0),
                                 layout: {
                                     hLineWidth: function (i, node) {
@@ -3533,7 +3553,20 @@ export const ContractStudent = (props) => {
                                 </Box>
                                 <Box sx={styles.containerValues}>
                                     <Text small style={styles.textDataPayments} bold>Valor total do semestre:</Text>
-                                    <Text small style={styles.textDataPayments}>{isDp ? formatter?.format(valuesContract?.valorFinal) : formatter.format(valuesContract?.valorSemestre)}</Text>
+                                    <Text small style={styles.textDataPayments}>
+                                    {
+                                            paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ?
+
+                                            formatter.format(valueContractPravaler) 
+
+                                            :  
+                                            
+                                            isDp ? formatter?.format(valuesContract?.valorFinal) : formatter.format(valuesContract?.valorSemestre)
+                                    }
+
+                                      
+                                        
+                                    </Text>
                                 </Box>
                                 {isDp && <Box sx={styles.containerValues}>
                                     <Text small style={styles.textDataPayments} bold>Disciplinas DP:</Text>
@@ -3579,7 +3612,14 @@ export const ContractStudent = (props) => {
                                 {valuesContract?.valorFinal &&
                                     <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
                                         <Text small style={styles.textDataPayments} bold>VALOR A PAGAR:</Text>
-                                        <Text small style={styles.textDataPayments}>{formatter.format(valuesContract?.valorFinal)}</Text>
+                                        <Text small style={styles.textDataPayments}>
+                                        {
+                                            paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ?
+                                            formatter.format(valueContractPravaler) :  formatter.format(valuesContract?.valorFinal)
+                                        }
+                                        
+                                            
+                                        </Text>
                                     </Box>
                                 }
                             </Box>
