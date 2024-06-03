@@ -123,6 +123,7 @@ function Home() {
          });
          setListBirthDay(sorted)
       } catch (error) {
+         console.log(error)
          return error
       } finally {
          setLoading(false)
