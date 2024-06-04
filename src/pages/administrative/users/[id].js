@@ -1863,6 +1863,7 @@ export default function EditUser() {
         { label: 'Transferido ', value: 'Transferido ' },
         { label: 'Desistente ', value: 'Desistente ' },
         { label: 'Nenhuma', value: 'Nenhuma' },
+        { label: 'Trancamento', value: 'Trancamento' },
     ]
 
     const groupReasonsDroppingOut = [
