@@ -19,9 +19,9 @@ export const getDialogPosition = (event, maxDialogWidth) => {
 }
 export const formatTimeStamp = (timestamp, time) => {
    try {
-      if (timestamp) {
+      if (timestamp && time) {
          const date = new Date(timestamp);
-         date.setHours(date.getHours() - 3); // Ajuste para o fuso horário da América/São Paulo
+         date.setHours(date.getHours() + 3);
          
          if (time) {
             const options = {
