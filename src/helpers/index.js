@@ -19,26 +19,28 @@ export const getDialogPosition = (event, maxDialogWidth) => {
 }
 export const formatTimeStamp = (timestamp, time) => {
    try {
-      if (timestamp && time) {
-         const date = new Date(timestamp);
-         const options = {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            timeZone: 'America/Sao_Paulo'
-         };
-         return new Intl.DateTimeFormat('pt-BR', options).format(date);
-      }
       if (timestamp) {
          const date = new Date(timestamp);
-         const day = String(date.getDate()).padStart(2, '0');
-         const month = String(date.getMonth() + 1).padStart(2, '0');
-         const year = String(date.getFullYear());
-
-         return `${day}/${month}/${year}`;
+         date.setHours(date.getHours() - 3); // Ajuste para o fuso horário da América/São Paulo
+         
+         if (time) {
+            const options = {
+               year: 'numeric',
+               month: '2-digit',
+               day: '2-digit',
+               hour: '2-digit',
+               minute: '2-digit',
+               second: '2-digit'
+            };
+            console.log('aqui',date.toLocaleString('pt-BR', options))
+            return date.toLocaleString('pt-BR', options);
+         } else {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear());
+            
+            return `${day}/${month}/${year}`;
+         }
       }
    } catch (error) {
       return null;
