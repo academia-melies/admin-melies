@@ -23,6 +23,7 @@ export default function EditClass(props) {
         inicio: null,
         fim: null,
         qnt_alunos: null,
+        studentsOff: null,
     })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
@@ -194,6 +195,7 @@ export default function EditClass(props) {
 
     const handleInterestByClass = async () => {
         try {
+           
             const response = await api.get(`/interest/classes/${id}`)
             const { numero_de_interesses } = response.data
             setNumberRegistrations(numero_de_interesses)
@@ -205,7 +207,7 @@ export default function EditClass(props) {
 
     const handleStudents = async () => {
         try {
-            const response = await api.get(`/class/students/${id}`)
+            let response = await api.get(`/class/students/${id}`)
             const { data } = response
             setEnrolledStudents(data)
         } catch (error) {
@@ -214,6 +216,26 @@ export default function EditClass(props) {
         }
     }
 
+    const student = async (value = 0 ) =>{
+        setClassData({ ...classData, studentsOff: parseInt(value) })
+
+        try {
+            let response = null
+            if(value == 0){
+                 response = await api.get(`/class/studentsoff/${id}`)
+                
+            }else{
+                 response = await api.get(`/class/students/${id}`)
+            }
+            const { data } = response
+            console.log('aqui',response)
+           await setEnrolledStudents(data)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+
+    }
     const groupStatus = [
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
@@ -293,6 +315,7 @@ export default function EditClass(props) {
                     <Box>
                         <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Lista de alunos mátriculados ({enrolledStudents?.length})</Text>
                     </Box>
+                    <RadioItem disabled={!isPermissionEdit && true} valueRadio={classData?.studentsOff} group={groupStatus} title="Alunos inativos" horizontal={mobile ? false : true} onSelect={(value) => student(value)} />
                     {enrolledStudents?.length > 0 ?
                         <div style={{ borderRadius: '8px', overflow: 'hidden', marginTop: '10px' }}>
                             <table style={{ borderCollapse: 'collapse', width: '100%', borderRadius: '8px', }}>
