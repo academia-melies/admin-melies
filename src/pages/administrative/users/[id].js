@@ -3032,7 +3032,7 @@ export default function EditUser() {
 
             {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'enrollments') &&
                 <>
-                    {/* <ContentContainer style={{ ...styles.containerContract, padding: showEnrollmentAdd ? '40px' : '25px', border: `1px solid ${colorPalette.buttonColor}` }}>
+                   <ContentContainer style={{ ...styles.containerContract, padding: showEnrollmentAdd ? '40px' : '25px', border: `1px solid ${colorPalette.buttonColor}` }}>
                         <Box sx={{
                             display: 'flex', alignItems: 'center', padding: showEnrollmentAdd ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
                                 opacity: 0.8,
@@ -3051,7 +3051,7 @@ export default function EditUser() {
                                     cursor: 'pointer'
                                 }
                             }} />
-                        </Box>
+                        </Box> 
                         {showEnrollmentAdd &&
                             <>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -3389,7 +3389,7 @@ export default function EditUser() {
                             </>
                         }
 
-                    </ContentContainer > */}
+                    </ContentContainer > 
 
                     {(!newUser && menuView === 'enrollments') &&
                         <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>

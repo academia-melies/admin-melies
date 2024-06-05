@@ -1029,7 +1029,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                             <Text>{item?.descricao || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{formatTimeStamp(item?.dt_baixa, false) || '-'}</Text>
+                                            <Text>{formatTimeStamp(item?.dt_baixa, true).split(",")[0] || '-'}  </Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box
