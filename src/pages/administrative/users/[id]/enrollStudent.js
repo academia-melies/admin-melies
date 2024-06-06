@@ -1675,9 +1675,10 @@ export const Payment = (props) => {
     const [formPaymentEntry, setFormPaymentEntry] = useState()
     const [dateForPaymentEntry, setDateForPaymentEntry] = useState()
 
-
+    
     const calculationDayPayment = async () => {
 
+        
         if (globalTypePaymentsSelected === 'Cartão') {
             const currentDate = new Date();
             const year = currentDate.getMonth() + 2 > 12 ? currentDate.getFullYear() + 1 : currentDate.getFullYear();
@@ -1708,8 +1709,11 @@ export const Payment = (props) => {
             const day = String(datePayment.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${nextMonthString}-${day}`;
             const formattedDateNow = `${year}-${month}-${day}`;
+            console.log('aqui 33',monthForPayment)
+          if(monthForPayment == null){
+              setMonthDayForPayment(formattedDate)
 
-            setMonthDayForPayment(formattedDate)
+          }
             setDateForPaymentEntry(formattedDateNow)
         }
     }
@@ -2444,6 +2448,7 @@ export const Payment = (props) => {
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             /> */}
                             <TextInput name='monthForPayment' onChange={(e) => {
+                                console.log('aqui 1',e.target.value)
                                 setMonthDayForPayment(e.target.value)
                                 let date = new Date(e.target.value)
                                 if (date?.getDate() >= 1 && date?.getDate() <= 31) {
@@ -2451,7 +2456,8 @@ export const Payment = (props) => {
                                 } else {
                                     return
                                 }
-                            }} value={(monthForPayment)?.split('T')[0] || ''} type="date" label='Dt cobrança' sx={{ flex: 1, }} />
+                            }} value={(monthForPayment)} type="date" label='Dt cobrança' sx={{ flex: 1, }} />
+                            {console.log('aqui 2',monthForPayment)}
                             <CheckBoxComponent
                                 padding={false}
                                 valueChecked={hasEntry}
