@@ -767,7 +767,7 @@ export default function Editaccount(props) {
                             <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00' type="coin"
                                 name={accountExtractData?.data?.credito ? 'credito' : 'debito'}
                                 onChange={handleChangeEditExtractAccount}
-                                value={accountExtractData?.data?.credito ? accountExtractData?.data?.credito : accountExtractData?.data?.debito}
+                                value={formatter.format(accountExtractData?.data?.credito ? accountExtractData?.data?.credito : accountExtractData?.data?.debito).replace("R$","")}
                                 label={`Valor do ${accountExtractData?.data?.credito ? 'Crédito' : 'Débito'}:`} sx={{ width: '100%', }} />
                         </Box>
 
