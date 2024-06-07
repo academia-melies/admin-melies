@@ -109,19 +109,19 @@ export default function EditStudentGrade(props) {
                         [field]: value,
                     };
                     if (updatedStudent.nt_avaliacao_sem !== null || updatedStudent.nt_avaliacao_sem !== "") {
-                        updatedStudent.nt_final = updatedStudent.nt_avaliacao_sem?.replace(",",".").toString();
+                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString().replace(",",".");
                     }
                     if (updatedStudent.nt_substitutiva !== null && updatedStudent.nt_substitutiva !== "") {
-                        updatedStudent.nt_final = updatedStudent.nt_substitutiva?.replace(",",".").toString();
+                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",",".");
                     }
                     if (updatedStudent?.nt_exame !== null && updatedStudent?.nt_exame !== "") {
-                        updatedStudent.nt_final = updatedStudent?.nt_exame?.replace(",",".").toString();
+                        updatedStudent.nt_final = updatedStudent?.nt_exame?.toString().replace(",",".");
                     }
                     if ((updatedStudent.nt_avaliacao_sem !== '' || updatedStudent.nt_avaliacao_sem !== null) && (parseFloat(updatedStudent.nt_avaliacao_sem) > parseFloat(updatedStudent?.nt_exame))) {
-                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.replace(",",".").toString();
+                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString().replace(",",".");
                     }
                     if ((updatedStudent.nt_substitutiva !== '' || updatedStudent.nt_substitutiva !== null) && (parseFloat(updatedStudent.nt_substitutiva) > parseFloat(updatedStudent?.nt_exame))) {
-                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.replace(",",".").toString();
+                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",",".");
                     }
                     return updatedStudent;
                 }
