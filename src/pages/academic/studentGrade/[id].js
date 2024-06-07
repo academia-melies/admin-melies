@@ -28,6 +28,8 @@ export default function EditStudentGrade(props) {
     const [moduleDiscipline, setModuleDiscipline] = useState()
     const [showStudents, setShowStudents] = useState(false)
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [moduleChange, setModuleChange] = useState(0)
+    const [disciplineChange, setDisciplinaChange] = useState(0)
 
 
     const fetchPermissions = async () => {
@@ -145,6 +147,16 @@ export default function EditStudentGrade(props) {
     }
 
     const handleEditStudentGrade = async () => {
+        studentData.map(async item =>{
+            if(item.modulo_nota == null){
+                item.modulo_nota = moduleChange
+            }
+            if(item.disciplina_id == null){
+                item.disciplina_id = disciplineChange
+            }
+
+        } )
+        
         setLoading(true)
         try {
             const response = await api.patch(`/studentGrade/update`, { studentData });
@@ -223,6 +235,7 @@ export default function EditStudentGrade(props) {
     }
 
     async function handleSelectModule(value) {
+        await setModuleChange(value)
         setStudentGradeData({ ...studentGradeData, modulo_nota: value })
         try {
             const response = await api.get(`/classSchedule/disciplines/${id}/${value}`)
@@ -266,8 +279,10 @@ export default function EditStudentGrade(props) {
 
 
     async function listStudents(value) {
+
         setLoading(true)
         try {
+            await setDisciplinaChange(value)
             if (value) {
                 setStudentGradeData({ ...studentGradeData, disciplina_id: value })
             }
