@@ -68,11 +68,12 @@ export default function EditStudentGrade(props) {
     }, [id])
 
     useEffect(() => {
-        setStudentGradeData({ ...studentGradeData, disciplina_id: null })
+        setStudentGradeData({ ...studentGradeData, disciplina_id: null })       
     }, [studentGradeData?.modulo_nota])
 
     useEffect(() => {
         if (studentGradeData?.disciplina_id != null) {
+          
             handleStudent(id)
         }
     }, [studentGradeData?.disciplina_id])
@@ -82,6 +83,7 @@ export default function EditStudentGrade(props) {
         setLoading(true)
         try {
             const response = await getClass()
+
             if (response) {
                 await getTeachingPlan()
                 await listModules()
@@ -94,7 +96,9 @@ export default function EditStudentGrade(props) {
     }
 
     const handleChange = (userId, field, value) => {
+       
 
+      
         setStudentData((prevValues) => {
             return prevValues.map((student) => {
                 if (student.usuario_id === userId) {
@@ -103,19 +107,19 @@ export default function EditStudentGrade(props) {
                         [field]: value,
                     };
                     if (updatedStudent.nt_avaliacao_sem !== null || updatedStudent.nt_avaliacao_sem !== "") {
-                        updatedStudent.nt_final = updatedStudent.nt_avaliacao_sem?.toString();
+                        updatedStudent.nt_final = updatedStudent.nt_avaliacao_sem?.replace(",",".").toString();
                     }
                     if (updatedStudent.nt_substitutiva !== null && updatedStudent.nt_substitutiva !== "") {
-                        updatedStudent.nt_final = updatedStudent.nt_substitutiva?.toString();
+                        updatedStudent.nt_final = updatedStudent.nt_substitutiva?.replace(",",".").toString();
                     }
                     if (updatedStudent?.nt_exame !== null && updatedStudent?.nt_exame !== "") {
-                        updatedStudent.nt_final = updatedStudent?.nt_exame?.toString();
+                        updatedStudent.nt_final = updatedStudent?.nt_exame?.replace(",",".").toString();
                     }
                     if ((updatedStudent.nt_avaliacao_sem !== '' || updatedStudent.nt_avaliacao_sem !== null) && (parseFloat(updatedStudent.nt_avaliacao_sem) > parseFloat(updatedStudent?.nt_exame))) {
-                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString();
+                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.replace(",",".").toString();
                     }
                     if ((updatedStudent.nt_substitutiva !== '' || updatedStudent.nt_substitutiva !== null) && (parseFloat(updatedStudent.nt_substitutiva) > parseFloat(updatedStudent?.nt_exame))) {
-                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString();
+                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.replace(",",".").toString();
                     }
                     return updatedStudent;
                 }
@@ -172,11 +176,14 @@ export default function EditStudentGrade(props) {
     }
 
     const handleStudent = async () => {
+       
         if (checkSearch(studentGradeData)) {
             setLoading(true)
             try {
+                
                 const response = await api.get(`/studentGrade/module/${studentGradeData?.modulo_nota}/${studentGradeData?.disciplina_id}/${id}`)
                 const { data } = response
+              
                 if (data.length > 0) {
                     const groupStudents = data.map(student => ({
                         ...student,
@@ -196,7 +203,7 @@ export default function EditStudentGrade(props) {
                     }));
 
                     groupStudents.sort((a, b) => a.nome.localeCompare(b.nome));
-
+                 
                     setStudentData(groupStudents)
                     setNewGrade(false)
                     setShowStudents(true);
@@ -283,8 +290,8 @@ export default function EditStudentGrade(props) {
             }));
 
             studentsFrequency.sort((a, b) => a.nome.localeCompare(b.nome));
-
-            setStudentData(studentsFrequency);
+            
+            await setStudentData(studentsFrequency);
         } catch (error) {
             return error;
         } finally {
@@ -366,19 +373,23 @@ export default function EditStudentGrade(props) {
                                         </thead>
                                         <tbody style={{ flex: 1 }}>
                                             {
-                                                studentData?.map((item, index) => {
 
+                                                studentData?.map((item, index) => {
+                                                    
                                                     const statusGrade = getStatusGrade(item)
                                                     const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
                                                     let avaliation = item?.nt_avaliacao_sem ? parseFloat(item.nt_avaliacao_sem) : null;
                                                     let substitutive = item?.nt_substitutiva ? parseFloat(item.nt_substitutiva) : null;
+                                                    
+                                                  
                                                     let ntFinally = parseFloat(item.nt_final) || 'Aguardando nota';
-
+                                                    
                                                     const isExam = (avaliation !== null && avaliation < 6)
-                                                        ||
-                                                        (item?.avaliacao_status === 0 && (substitutive !== null && substitutive < 6));
-
+                                                    ||
+                                                    (item?.avaliacao_status === 0 && (substitutive !== null && substitutive < 6));
+                                                    
                                                     const name = item?.nome_social || item?.nome;
+                                                    
                                                     return (
                                                         <tr key={`${item}-${index}`}>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
