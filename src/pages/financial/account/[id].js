@@ -44,6 +44,7 @@ export default function Editaccount(props) {
     const [costCenterList, setCostCenterList] = useState([])
     const [accountTypesList, setAccountTypesList] = useState([])
     const [accountList, setAccountList] = useState([])
+    const [valorFormatado, setValorFormatado] = useState('');
     const [filters, setFilters] = useState({
         search: '',
         startDate: '',
@@ -153,6 +154,7 @@ export default function Editaccount(props) {
             const totalDebit = parseFloat(totalValuesDebit) || 0;
             const saldo = (parseFloat(totalCredit) - parseFloat(totalDebit)) || 0;
             setSaldoAccount({ debit: totalDebit.toFixed(2), credit: totalCredit.toFixed(2), saldoAccount: saldo.toFixed(2) })
+
 
             setSextractAccount(statmentAccountList);
         } catch (error) {
@@ -284,42 +286,61 @@ export default function Editaccount(props) {
         }))
     }
 
+    const formatarParaReais = (valor) => {
+        if (valor === '') return '';
+        const valorNumerico = parseFloat(valor.toString().replace(/[^\d]/g, '')) / 100;
+        return valorNumerico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+    const formatarParaReaisLoad = (valor) => {
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+    const openModalPayment = async (item) => {
 
-    const handleChangeEditExtractAccount = async (event) => {
-        {/*formatter.format(accountExtractData?.data?.credito).replace("R$","") */ }
-        {/*formatter.format(accountExtractData?.data?.debito).replace("R$","") */ }
 
-        if (event.target.name === 'credito' || event.target.name === 'debito') {
+        if (item.credito != null) {
+            await setValorFormatado(formatarParaReaisLoad(item.credito).replace("R$", "").trim());
+            let credito = await formatarParaReaisLoad(item.credito)
+            item.creditoFormat = credito.replace("R$", "").trim()
 
+        }
+        if (item.debito != null) {
 
+            let debito = await formatarParaReaisLoad(item.debito)
+            item.debitoFormat = debito.replace("R$", "").trim()
+            await setValorFormatado(formatarParaReaisLoad(item.debito));
 
-
-            const rawValue = event.target.value.replace(/\./g, ""); // Remove todos os caracteres não numéricos
-
-            if (rawValue === '') {
-                event.target.value = '';
-            } else {
-                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
-                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
-
-                if (intValue === '0' && rawValue.length > 2) {
-                    intValue = '';
-                }
-
-                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares                
-                event.target.value = formattedValue;
-
-            }
         }
 
+
+    }
+
+    const handleChangeEditExtractAccount = async (event) => {
+
+
+        let debito = null;
+        let credito = null;
+        if (event.target.name = 'credito') {
+            credito = event.target.value.replace(/[^\d]/g, '');
+        }
+        if (event.target.name = 'debito') {
+
+            debito = event.target.value.replace(/[^\d]/g, '');
+        }
+        const valorNumerico  = event.target.value.replace(/[^\d]/g, '')
         setEditAccount((prevValues) => ({
             ...prevValues,
             data: {
                 ...prevValues.data,
                 [event.target.name]: event.target.value,
-                
+                creditoFormat: debito,
+                debitoFormat: credito
+
+
             }
         }));
+
+        setValorFormatado(formatarParaReais(valorNumerico));
+
     }
 
 
@@ -370,7 +391,8 @@ export default function Editaccount(props) {
     }
 
     const handleEdit = async () => {
-        
+
+
         if (checkRequiredFields()) {
             setLoading(true)
             try {
@@ -388,6 +410,7 @@ export default function Editaccount(props) {
             }
         }
     }
+
 
 
 
@@ -425,12 +448,35 @@ export default function Editaccount(props) {
     }
 
 
-    const handleEditAccountExtract = async () => {    
-       
+    const formatNumber = async (valor) => {
+        console.log('aqui 36', valor)
+        const rawValue = valor.toString().replace(/\./g, ""); // Remove todos os caracteres não numéricos
+        if (rawValue === '') {
+            return;
+        } else {
+            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+            if (intValue === '0' && rawValue.length > 2) {
+                intValue = '';
+            }
+            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares                
+            return formattedValue;
+        }
+
+    }
+    const handleEditAccountExtract = async () => {
+        if (accountExtractData?.data.creditoFormat != null) {
+            accountExtractData.data.credito = await formatNumber(accountExtractData.data.creditoFormat)
+        }
+        if (accountExtractData?.data.debitoFormat != null) {
+            accountExtractData.data.debito = await formatNumber(accountExtractData.data.debitoFormat)
+        }
+
+      
+
         setLoading(true)
         try {
-
-            
             const response = await api.patch(`/account/extract/update`, { accountExtractData: accountExtractData?.data });
             const { data } = response
 
@@ -725,7 +771,7 @@ export default function Editaccount(props) {
                             </Box>
                             {extractAccount?.length > 0 ?
                                 <TableExtract data={extractAccount} setEditAccount={setEditAccount}
-                                    handleDeleteAccountExtract={handleDeleteAccountExtract} setShowExclude={setShowExclude} />
+                                    handleDeleteAccountExtract={handleDeleteAccountExtract} setShowExclude={setShowExclude} openModalPayment={openModalPayment} />
                                 :
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
                                     <Text large light>Não foi possível encontrar movimentações na conta.</Text>
@@ -779,10 +825,10 @@ export default function Editaccount(props) {
                             {/*formatter.format(accountExtractData?.data?.credito).replace("R$","") */}
                             {/*formatter.format(accountExtractData?.data?.debito).replace("R$","")     item.debitFormat = formatter.format(item.debito)
                                item.creditFormat = formatter.format(item.credito) */}
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00' type="coin"
+                            <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
                                 name={accountExtractData?.data?.credito ? 'credito' : 'debito'}
                                 onChange={handleChangeEditExtractAccount}
-                                value={accountExtractData?.data?.credito ? accountExtractData?.data?.credito : accountExtractData?.data?.debito}
+                                value={valorFormatado}
                                 label={`Valor do ${accountExtractData?.data?.credito ? 'Crédito' : 'Débito'}:`} sx={{ width: '100%', }} />
                         </Box>
 
@@ -971,9 +1017,15 @@ export default function Editaccount(props) {
 }
 
 
-const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount,
-    handleDeleteAccountExtract, setShowExclude }) => {
+const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount, openModalPayment,
+    handleDeleteAccountExtract, setShowExclude, }) => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
+
+    const openPayment = async (item) => {
+
+        await openModalPayment(item)
+        await setEditAccount({ active: true, data: item })
+    }
 
     const columns = [
         { key: 'id_extrato', label: '#Id' },
@@ -1004,7 +1056,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
         style: 'currency',
         currency: 'BRL'
     });
-  
+
 
     return (
         <ContentContainer sx={{ display: 'flex', width: '100%', padding: 0, backgroundColor: colorPalette.primary, boxShadow: 'none', borderRadius: 2 }}>
@@ -1025,6 +1077,11 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                     <TableBody sx={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
                         {
                             data?.map((item, index) => {
+
+
+
+
+
                                 return (
                                     <TableRow key={`${item}-${index}`} sx={{
                                         backgroundColor: item?.transferido === 1 && colorPalette?.buttonColor + '44',
@@ -1104,7 +1161,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 2 }}>
-                                                <Button small text="Editar" style={{ height: 30, borderRadius: 2 }} onClick={() => setEditAccount({ active: true, data: item })} />
+                                                <Button small text="Editar" style={{ height: 30, borderRadius: 2 }} onClick={() => openPayment(item)} />
                                                 <Button small cancel text="Excluir" style={{ height: 30, borderRadius: 2, backgroundColor: 'red' }} onClick={(e) =>
                                                     setShowExclude({
                                                         active: true,
