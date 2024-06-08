@@ -100,7 +100,7 @@ export default function EditStudentGrade(props) {
     const handleChange = (userId, field, value) => {
        
 
-      
+       
         setStudentData((prevValues) => {
             return prevValues.map((student) => {
                 if (student.usuario_id === userId) {
@@ -108,21 +108,39 @@ export default function EditStudentGrade(props) {
                         ...student,
                         [field]: value,
                     };
+                    if (updatedStudent.avaliacao_status == 0) {
+                        if(parseFloat(updatedStudent.nt_avaliacao_sem) < 6){                           
+                            updatedStudent.nt_exame = null
+                        }
+                        updatedStudent.nt_avaliacao_sem = null;                        
+                    }
+                    if (updatedStudent.avaliacao_status == 1) {
+                        if(parseFloat(updatedStudent.nt_substitutiva) < 6){                           
+                            updatedStudent.nt_exame = null
+                        }
+                        updatedStudent.nt_substitutiva = null;                        
+                    }
+                    
                     if (updatedStudent.nt_avaliacao_sem !== null || updatedStudent.nt_avaliacao_sem !== "") {
                         updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString().replace(",",".");
                     }
+                      
                     if (updatedStudent.nt_substitutiva !== null && updatedStudent.nt_substitutiva !== "") {
                         updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",",".");
                     }
+
                     if (updatedStudent?.nt_exame !== null && updatedStudent?.nt_exame !== "") {
                         updatedStudent.nt_final = updatedStudent?.nt_exame?.toString().replace(",",".");
                     }
+
                     if ((updatedStudent.nt_avaliacao_sem !== '' || updatedStudent.nt_avaliacao_sem !== null) && (parseFloat(updatedStudent.nt_avaliacao_sem) > parseFloat(updatedStudent?.nt_exame))) {
                         updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString().replace(",",".");
                     }
+
                     if ((updatedStudent.nt_substitutiva !== '' || updatedStudent.nt_substitutiva !== null) && (parseFloat(updatedStudent.nt_substitutiva) > parseFloat(updatedStudent?.nt_exame))) {
                         updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",",".");
                     }
+
                     return updatedStudent;
                 }
                 return student;
