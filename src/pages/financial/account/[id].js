@@ -14,6 +14,7 @@ import { formatTimeStamp } from "../../../helpers"
 import { IconStatus } from "../../../organisms/Table/table"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
+
 export default function Editaccount(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList, theme } = useAppContext()
     let userId = user?.id;
@@ -285,9 +286,15 @@ export default function Editaccount(props) {
 
 
     const handleChangeEditExtractAccount = async (event) => {
+        {/*formatter.format(accountExtractData?.data?.credito).replace("R$","") */ }
+        {/*formatter.format(accountExtractData?.data?.debito).replace("R$","") */ }
 
         if (event.target.name === 'credito' || event.target.name === 'debito') {
-            const rawValue = event.target.value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+
+
+
+            const rawValue = event.target.value.replace(/\./g, ""); // Remove todos os caracteres não numéricos
 
             if (rawValue === '') {
                 event.target.value = '';
@@ -299,7 +306,7 @@ export default function Editaccount(props) {
                     intValue = '';
                 }
 
-                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares                
                 event.target.value = formattedValue;
 
             }
@@ -310,6 +317,7 @@ export default function Editaccount(props) {
             data: {
                 ...prevValues.data,
                 [event.target.name]: event.target.value,
+                
             }
         }));
     }
@@ -362,6 +370,7 @@ export default function Editaccount(props) {
     }
 
     const handleEdit = async () => {
+        
         if (checkRequiredFields()) {
             setLoading(true)
             try {
@@ -416,10 +425,12 @@ export default function Editaccount(props) {
     }
 
 
-    const handleEditAccountExtract = async () => {
+    const handleEditAccountExtract = async () => {    
+       
         setLoading(true)
         try {
 
+            
             const response = await api.patch(`/account/extract/update`, { accountExtractData: accountExtractData?.data });
             const { data } = response
 
@@ -558,7 +569,7 @@ export default function Editaccount(props) {
                 <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
                     <ContentContainer style={{
                         display: 'flex', flexDirection: 'column',
-                        justifyContent: 'space-between', gap: 1.8, padding: 5, width: '65%'
+                        justifyContent: 'space-between', gap: 1.8, padding: 5, width: '65%',
                     }}>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
@@ -583,9 +594,10 @@ export default function Editaccount(props) {
                     </ContentContainer>
                     <ContentContainer style={{
                         display: 'flex', flexDirection: 'column', gap: 1.8, padding: 5, width: '35%',
-                        position: 'relative'
+                        position: 'relative',
+                        overflow: 'auto'
                     }}>
-                        <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 2, }}>
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
                             <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Histórico de transferência</Text>
                         </Box>
@@ -764,10 +776,13 @@ export default function Editaccount(props) {
                                 backgroundImage: `url('/icons/${accountExtractData?.data?.credito ? 'arrow_up_green_icon' : 'arrow_down_red_icon'}.png')`,
                                 transition: '.3s',
                             }} />
+                            {/*formatter.format(accountExtractData?.data?.credito).replace("R$","") */}
+                            {/*formatter.format(accountExtractData?.data?.debito).replace("R$","")     item.debitFormat = formatter.format(item.debito)
+                               item.creditFormat = formatter.format(item.credito) */}
                             <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00' type="coin"
                                 name={accountExtractData?.data?.credito ? 'credito' : 'debito'}
                                 onChange={handleChangeEditExtractAccount}
-                                value={formatter.format(accountExtractData?.data?.credito ? accountExtractData?.data?.credito : accountExtractData?.data?.debito).replace("R$","")}
+                                value={accountExtractData?.data?.credito ? accountExtractData?.data?.credito : accountExtractData?.data?.debito}
                                 label={`Valor do ${accountExtractData?.data?.credito ? 'Crédito' : 'Débito'}:`} sx={{ width: '100%', }} />
                         </Box>
 
@@ -989,6 +1004,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
         style: 'currency',
         currency: 'BRL'
     });
+  
 
     return (
         <ContentContainer sx={{ display: 'flex', width: '100%', padding: 0, backgroundColor: colorPalette.primary, boxShadow: 'none', borderRadius: 2 }}>
@@ -1029,7 +1045,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                             <Text>{item?.descricao || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{formatTimeStamp(item?.dt_baixa.split("T")[0] , false) || '-'}  </Text>
+                                            <Text>{formatTimeStamp(item?.dt_baixa.split("T")[0], false) || '-'}  </Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box
@@ -1059,7 +1075,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                                         backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
                                                         transition: '.3s',
                                                     }} />
-                                                    <Text>{formatter.format(item?.credito) || '-'}</Text>
+                                                    <Text>{formatter.format(item.credito) || '-'}</Text>
                                                 </Box>
                                             </TableCell>
                                         </Tooltip>
@@ -1073,7 +1089,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                                     backgroundImage: `url('/icons/arrow_down_red_icon.png')`,
                                                     transition: '.3s',
                                                 }} />
-                                                <Text>{formatter.format(item?.debito) || '-'}</Text>
+                                                <Text>{formatter.format(item.debito) || '-'}</Text>
                                             </Box>
 
                                         </TableCell>

@@ -48,6 +48,7 @@ export default function EditUser() {
         cd_cliente: null,
         autista: null,
         superdotacao: null,
+        ra: null,
         cpf: null,
         naturalidade: null,
         nacionalidade: 'Brasileira Nata',
@@ -240,6 +241,7 @@ export default function EditUser() {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             console.log(data)
+           
             setUserData(data.response)
         } catch (error) {
             console.log(error)
@@ -2135,7 +2137,12 @@ export default function EditUser() {
                             </Box>
 
                             <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
-                                {userData?.perfil?.includes('aluno') && <TextInput disabled={!isPermissionEdit && true} placeholder='cd_cliente antigo' name='cd_cliente' onChange={handleChange} value={userData?.cd_cliente || ''} label='CD_CLIENTE *' sx={{ flex: 1, }} />}
+                                {userData?.perfil?.includes('aluno') && 
+                                <Box sx={{ ...styles.inputSection }}>
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='RA' name='ra' onChange={handleChange} value={userData?.cd_cliente || ''} label='CD_CLIENTE *' sx={{ flex: 1, }} />
+                                    <TextInput disabled={true} placeholder='RA' name='ra' onChange={handleChange} value={id} label='RA *' sx={{ flex: 1, }} />
+                                </Box>
+                                }
                                 <Box sx={{ ...styles.inputSection }}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Nome Completo' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome Completo *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Nome Social' name='nome_social' onChange={isPermissionEdit && handleChange} value={userData?.nome_social || ''} label='Nome Social' sx={{ flex: 1, }} />
