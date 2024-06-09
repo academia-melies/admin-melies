@@ -743,7 +743,7 @@ export default function Editaccount(props) {
                                 :
                                 <Text light>Não foi encontrado histórico de trasnferências</Text>}
                             <Box sx={{
-                                display: 'flex', width: '100%', position: 'absolute', bottom: 20,
+                                display: 'flex', width: '100%', position: 'absolute', bottom: '-92px',
                                 justifyContent: 'flex-end', right: 20,
                                 padding: '5px'
                             }}>
