@@ -296,6 +296,7 @@ export default function Editaccount(props) {
     };
     const openModalPayment = async (item) => {
 
+        console.log('aqui', item)
 
         if (item.credito != null) {
             await setValorFormatado(formatarParaReaisLoad(item.credito).replace("R$", "").trim());
@@ -319,21 +320,28 @@ export default function Editaccount(props) {
 
         let debito = null;
         let credito = null;
-        if (event.target.name = 'credito') {
+        if (event.target.name = 'credito' && accountExtractData.data.credito != null && accountExtractData.data.credito > 0) {
+            
             credito = event.target.value.replace(/[^\d]/g, '');
         }
-        if (event.target.name = 'debito') {
+
+        console.log('aqui 22',event.target.name, accountExtractData)
+
+        if (event.target.name = 'debito'  && accountExtractData.data.debito != null && accountExtractData.data.debito > 0 ) {
 
             debito = event.target.value.replace(/[^\d]/g, '');
         }
+        console.log('aqui 2',event.target.name, accountExtractData)
+  
+
         const valorNumerico  = event.target.value.replace(/[^\d]/g, '')
         setEditAccount((prevValues) => ({
             ...prevValues,
             data: {
                 ...prevValues.data,
                 [event.target.name]: event.target.value,
-                creditoFormat: debito,
-                debitoFormat: credito
+                creditoFormat: credito,
+                debitoFormat: debito
 
 
             }
@@ -473,7 +481,7 @@ export default function Editaccount(props) {
             accountExtractData.data.debito = await formatNumber(accountExtractData.data.debitoFormat)
         }
 
-      
+   
 
         setLoading(true)
         try {
@@ -825,11 +833,21 @@ export default function Editaccount(props) {
                             {/*formatter.format(accountExtractData?.data?.credito).replace("R$","") */}
                             {/*formatter.format(accountExtractData?.data?.debito).replace("R$","")     item.debitFormat = formatter.format(item.debito)
                                item.creditFormat = formatter.format(item.credito) */}
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
-                                name={accountExtractData?.data?.credito ? 'credito' : 'debito'}
+                               {
+                                accountExtractData?.data?.credito  ?
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
+                                name='credito'
                                 onChange={handleChangeEditExtractAccount}
                                 value={valorFormatado}
-                                label={`Valor do ${accountExtractData?.data?.credito ? 'Crédito' : 'Débito'}:`} sx={{ width: '100%', }} />
+                                label={`Valor do ${'Créditooo'}:`} sx={{ width: '100%', }} />
+                                :
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
+                                name='debito'
+                                onChange={handleChangeEditExtractAccount}
+                                value={valorFormatado}
+                                label={`Valor do ${'Débito'}:`} sx={{ width: '100%', }} />
+                               }
+                            
                         </Box>
 
                         <SelectList fullWidth disabled={!isPermissionEdit && true}
