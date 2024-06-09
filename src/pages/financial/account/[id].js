@@ -478,23 +478,10 @@ export default function Editaccount(props) {
     const handleEditAccountExtract = async () => {
         if (accountExtractData?.data.creditoFormat != null) {
             accountExtractData.data.credito = await formatNumber(accountExtractData.data.creditoFormat)
-            console.log("aqui 3",accountExtractData.data.credito)
-            console.log("aqui 4",accountExtractData.data.credito.replace(" ","."))
-            accountExtractData.data.credito =  accountExtractData.data.credito.replace(" ",".")
-         
-            if(accountExtractData.data.credito.trim() === ''){
-                accountExtractData.data.credito =  accountExtractData.data.credito.replace(" ",".")
-                console.log("aqui 3",accountExtractData.data.credito)
-                console.log("aqui 4",accountExtractData.data.credito.replace(" ","."))
-            }
         }
 
         if (accountExtractData?.data.debitoFormat != null) {
             accountExtractData.data.debito = await formatNumber(accountExtractData.data.debitoFormat)
-
-            if(accountExtractData.data.debito.trim() === ''){
-                accountExtractData.data.debito =  accountExtractData.data.debito.replace(" ",".")
-            }
         }
 
    
