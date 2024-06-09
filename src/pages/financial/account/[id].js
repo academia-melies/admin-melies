@@ -296,7 +296,7 @@ export default function Editaccount(props) {
     };
     const openModalPayment = async (item) => {
 
-        console.log('aqui', item)
+   
 
         if (item.credito != null) {
             await setValorFormatado(formatarParaReaisLoad(item.credito).replace("R$", "").trim());
@@ -325,13 +325,13 @@ export default function Editaccount(props) {
             credito = event.target.value.replace(/[^\d]/g, '');
         }
 
-        console.log('aqui 22',event.target.name, accountExtractData)
+    
 
         if (event.target.name = 'debito'  && accountExtractData.data.debito != null && accountExtractData.data.debito > 0 ) {
 
             debito = event.target.value.replace(/[^\d]/g, '');
         }
-        console.log('aqui 2',event.target.name, accountExtractData)
+      
   
 
         const valorNumerico  = event.target.value.replace(/[^\d]/g, '')
@@ -457,7 +457,7 @@ export default function Editaccount(props) {
 
 
     const formatNumber = async (valor) => {
-        console.log('aqui 36', valor)
+    
         const rawValue = valor.toString().replace(/\./g, ""); // Remove todos os caracteres não numéricos
         if (rawValue === '') {
             return;
