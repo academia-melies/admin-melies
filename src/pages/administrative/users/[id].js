@@ -1718,6 +1718,7 @@ export default function EditUser() {
         { label: 'PRAVALER', value: 'PRAVALER' },
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Cartão de Crédito', value: 'Cartão de Crédito' },
+        { label: 'Ex Aluno 5%', value: 'Ex Aluno' },
     ]
 
     const groupContact = [

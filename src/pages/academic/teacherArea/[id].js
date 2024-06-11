@@ -74,6 +74,7 @@ export default function StudentData(props) {
             const { data } = response;
             setEnrollment(data);
             let [enrollment] = data;
+
             if (turma_id) {
                 enrollment = data?.filter(item => item.turma_id === turma_id);
             }
@@ -85,12 +86,17 @@ export default function StudentData(props) {
             }
 
             if (turma_id && turma_id === showClass?.turma_id) {
+               
                 return data;
             }
 
-            setShowClass({
+           /*  setShowClass({
                 turma_id: enrollment?.turma_id,
                 nome_turma: enrollment?.nome_turma
+            }); */
+            setShowClass({
+                turma_id: data[data.length - 1]?.turma_id,
+                nome_turma: data[data.length - 1]?.nome_turma
             });
 
             return enrollment;
@@ -161,6 +167,7 @@ export default function StudentData(props) {
     useEffect(() => {
         const previousTurmaId = showClass?.turma_id;
         const previousModule = moduleStudent;
+        
 
         handleItems();
 
@@ -198,6 +205,7 @@ export default function StudentData(props) {
         setLoading(true)
         try {
             let enrollmentData = showClass?.turma_id;
+          
             await getStudent()
             await getPhoto()
             const enrollment = await getEnrollment(enrollmentData)
@@ -351,6 +359,7 @@ export default function StudentData(props) {
                                 return (
                                     <Box sx={{ display: 'flex', position: 'relative' }} key={index}>
                                         <Button small secondary={(item?.turma_id === showClass?.turma_id && item?.modulo === moduleStudent) ? false : true} text={titleButton} onClick={() => {
+                                            
                                             setShowClass({
                                                 turma_id: item?.turma_id,
                                                 nome_turma: item?.nome_turma,
@@ -358,6 +367,7 @@ export default function StudentData(props) {
                                             })
                                             setModuleStudent(item?.modulo)
                                         }} style={{ height: '30px', borderRadius: 0 }} />
+
                                         {isDpEnrolled && <Box sx={{
                                             backgroundColor: 'red',
                                             width: 16,
