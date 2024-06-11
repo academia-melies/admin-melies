@@ -3770,15 +3770,16 @@ export default function EditUser() {
                                 <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
                                     {
                                         arrayInterests?.map((interest, index) => {
+                                            console.log('aqui',arrayInterests)
                                             const requeriments = interest?.requeriments && interest?.requeriments?.some(item => item?.aprovado === 1);
-                                            const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula);
-                                            const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1);
-                                            const [isRequerimentoReproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 0);
+                                            const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula) || [];
+                                            const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1) || [];
+                                            const [isRequerimentoReproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 0) || [];
                                             const approvedRequeriment = requeriments ? true : false;
                                             const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
                                             const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}`;
                                             const subscription = interest?.inscricao;
-                                            const [respAnalisar] = interest?.requeriments?.map(req => req.analisado_por);
+                                            const [respAnalisar] = interest?.requeriments?.map(req => req.analisado_por) || [];
                                             console.log(respAnalisar)
                                             let linkRequeriment;
                                             if (isHaveRequeriment) {
