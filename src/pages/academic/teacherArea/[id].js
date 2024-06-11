@@ -90,14 +90,17 @@ export default function StudentData(props) {
                 return data;
             }
 
+      
            /*  setShowClass({
                 turma_id: enrollment?.turma_id,
                 nome_turma: enrollment?.nome_turma
-            }); */
-            setShowClass({
+            });  */
+            
+            await setModuleStudent(data[data.length - 1]?.modulo)
+             await setShowClass({
                 turma_id: data[data.length - 1]?.turma_id,
                 nome_turma: data[data.length - 1]?.nome_turma
-            });
+            }); 
 
             return enrollment;
         } catch (error) {
