@@ -2330,6 +2330,7 @@ export const Payment = (props) => {
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
         { label: 'Cartão', value: 'Cartão' },
+     
         // { label: 'Pix', value: 'Pix' },
     ]
 
