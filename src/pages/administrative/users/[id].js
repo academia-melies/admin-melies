@@ -2013,7 +2013,7 @@ export default function EditUser() {
         <>
             <SectionHeader
                 perfil={userData?.perfil}
-                title={userData?.nome || `Novo ${userData?.perfil === 'funcionario' && 'Funcionário' || userData?.perfil === 'aluno' && 'Aluno' || userData?.perfil === 'interessado' && 'Interessado' || 'Usuário'}`}
+                title={ userData.nome_social == null ? userData?.nome :  userData.nome_social || `Novo ${userData?.perfil === 'funcionario' && 'Funcionário' || userData?.perfil === 'aluno' && 'Aluno' || userData?.perfil === 'interessado' && 'Interessado' || 'Usuário'}`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser && isPermissionEdit && menuView === 'userData'}
@@ -3769,8 +3769,7 @@ export default function EditUser() {
                             <>
                                 <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
                                     {
-                                        arrayInterests?.map((interest, index) => {
-                                            console.log('aqui',arrayInterests)
+                                        arrayInterests?.map((interest, index) => {                                     
                                             const requeriments = interest?.requeriments && interest?.requeriments?.some(item => item?.aprovado === 1);
                                             const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula) || [];
                                             const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1) || [];
