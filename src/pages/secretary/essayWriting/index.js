@@ -21,18 +21,23 @@ export default function EssayWritingList(props) {
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         writingsVizualization: (item) => {
+           
             if (menuSelected === 'Pendente de Correção') {
-                const isData = item?.corrigido !== 1 && item?.dt_realizacao
+                console.log("aquii 3",item)
+                const isData = item?.corrigido == 0 && item?.dt_realizacao
                 return isData;
             }
             if (menuSelected === 'Em andamento') {
+                console.log("aquii 4",item)
                 const isData = !item?.dt_realizacao
-                return isData;
+                return isData && item?.corrigido != 1 && parseInt(item?.aprovado) != 1;
             }
             if (menuSelected === 'Classificados') {
+                console.log("aquii 2",item)
                 return item?.corrigido === 1 && parseInt(item?.aprovado) === 1
             }
             if (menuSelected === 'Desclassificados') {
+                console.log("aquii 5",item)
                 return item?.corrigido === 1 && parseInt(item?.aprovado) < 1
             } else {
                 return true
@@ -164,6 +169,7 @@ export default function EssayWritingList(props) {
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
                 <Text light style={{ marginRight: 10 }}>visualizar por:</Text>
                 {menusFilters?.map((item, index) => {
+                  
                     const menu = item?.value === menuSelected;
                     return (
                         <Box key={index} sx={{

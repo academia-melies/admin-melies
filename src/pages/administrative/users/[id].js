@@ -15,7 +15,17 @@ import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import Dropzone from "react-dropzone"
+
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Slide from '@mui/material/Slide';
+import { TransitionProps } from '@mui/material/transitions';
 require('dotenv').config();
+
 
 export default function EditUser() {
     const { setLoading, alert, colorPalette, user, matches, theme, setShowConfirmationDialog, menuItemsList, userPermissions } = useAppContext()
@@ -200,6 +210,16 @@ export default function EditUser() {
     const [menuView, setMenuView] = useState('userData');
     const [showEditWritingGrade, setShowEditWritingGrade] = useState({ active: false, writing: {} })
     const [essayWritingData, setEssayWritingData] = useState({})
+    const [open, setOpen] = useState(false);
+
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
     const fetchPermissions = async () => {
         try {
@@ -241,7 +261,7 @@ export default function EditUser() {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             console.log(data)
-           
+
             setUserData(data.response)
         } catch (error) {
             console.log(error)
@@ -1711,6 +1731,7 @@ export default function EditUser() {
         { label: 'Nota do Enem', value: 'Nota do Enem' },
         { label: 'Segunda Graduação', value: 'Segunda Graduação' },
         { label: 'Trânsferência', value: 'Trânsferência' },
+        { label: 'Curso de extensão', value: 'Curso de extensão' },
     ]
 
     const groupPayment = [
@@ -2008,12 +2029,41 @@ export default function EditUser() {
         },
     ]
 
+    const deleteMatricula = async (usuario_id, turma_id, matricula_id, modulo_id) => {
+        try {
+            await handleClose()
+            setLoading(true)
+            const result = await api.post(`/enrollment/delete`, {
+                data: {
+                    usuario_id: usuario_id,
+                    turma_id: turma_id,
+                    matricula_id: matricula_id,
+                    modulo_id: modulo_id,
+                }
+            })
+            if (result.status !== 201) {
+                alert.error('Houve um erro ao apagar matricular.')
+                return
+            } else {
+                alert.success('Matricula apagada com sucesso')
+                await handleItems()
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+
+
+
+    }
 
     return (
         <>
             <SectionHeader
                 perfil={userData?.perfil}
-                title={ userData.nome_social == null ? userData?.nome :  userData.nome_social || `Novo ${userData?.perfil === 'funcionario' && 'Funcionário' || userData?.perfil === 'aluno' && 'Aluno' || userData?.perfil === 'interessado' && 'Interessado' || 'Usuário'}`}
+                title={userData.nome_social == null ? userData?.nome : userData.nome_social || `Novo ${userData?.perfil === 'funcionario' && 'Funcionário' || userData?.perfil === 'aluno' && 'Aluno' || userData?.perfil === 'interessado' && 'Interessado' || 'Usuário'}`}
                 saveButton={isPermissionEdit}
                 saveButtonAction={newUser ? handleCreateUser : handleEditUser}
                 deleteButton={!newUser && isPermissionEdit && menuView === 'userData'}
@@ -2138,11 +2188,11 @@ export default function EditUser() {
                             </Box>
 
                             <Box sx={{ ...styles.inputSection, flexDirection: 'column', }}>
-                                {userData?.perfil?.includes('aluno') && 
-                                <Box sx={{ ...styles.inputSection }}>
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='RA' name='ra' onChange={handleChange} value={userData?.cd_cliente || ''} label='CD_CLIENTE *' sx={{ flex: 1, }} />
-                                    <TextInput disabled={true} placeholder='RA' name='ra' onChange={handleChange} value={id} label='RA *' sx={{ flex: 1, }} />
-                                </Box>
+                                {userData?.perfil?.includes('aluno') &&
+                                    <Box sx={{ ...styles.inputSection }}>
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='RA' name='ra' onChange={handleChange} value={userData?.cd_cliente || ''} label='CD_CLIENTE *' sx={{ flex: 1, }} />
+                                        <TextInput disabled={true} placeholder='RA' name='ra' onChange={handleChange} value={id} label='RA *' sx={{ flex: 1, }} />
+                                    </Box>
                                 }
                                 <Box sx={{ ...styles.inputSection }}>
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Nome Completo' name='nome' onChange={handleChange} value={userData?.nome || ''} label='Nome Completo *' onBlur={autoEmailMelies} sx={{ flex: 1, }} />
@@ -3040,7 +3090,7 @@ export default function EditUser() {
 
             {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'enrollments') &&
                 <>
-                   <ContentContainer style={{ ...styles.containerContract, padding: showEnrollmentAdd ? '40px' : '25px', border: `1px solid ${colorPalette.buttonColor}` }}>
+                    <ContentContainer style={{ ...styles.containerContract, padding: showEnrollmentAdd ? '40px' : '25px', border: `1px solid ${colorPalette.buttonColor}` }}>
                         <Box sx={{
                             display: 'flex', alignItems: 'center', padding: showEnrollmentAdd ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
                                 opacity: 0.8,
@@ -3059,7 +3109,7 @@ export default function EditUser() {
                                     cursor: 'pointer'
                                 }
                             }} />
-                        </Box> 
+                        </Box>
                         {showEnrollmentAdd &&
                             <>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -3397,7 +3447,7 @@ export default function EditUser() {
                             </>
                         }
 
-                    </ContentContainer > 
+                    </ContentContainer >
 
                     {(!newUser && menuView === 'enrollments') &&
                         <ContentContainer style={{ ...styles.containerContract, padding: showEnrollment ? '40px' : '25px' }}>
@@ -3425,6 +3475,7 @@ export default function EditUser() {
 
                                     {enrollmentData.length > 0 ?
                                         enrollmentData?.map((item, index) => {
+
                                             const isReenrollment = (item.status === "Concluído" || item.status === "Aprovado") &&
                                                 item.modulo === highestModule;
                                             const isDp = item.cursando_dp === 1;
@@ -3612,7 +3663,7 @@ export default function EditUser() {
                                                             />
                                                             <Divider padding={0} />
 
-                                                            
+
 
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                                 <Text bold>Usuário responsável:</Text>
@@ -3633,12 +3684,38 @@ export default function EditUser() {
                                                                 </Link>
                                                             </Box>
                                                             <Divider padding={0} />
+                                                           
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                                 <Text bold>Situação dos pagamentos:</Text>
                                                                 <Link href={`/administrative/users/${id}/statusPayment?enrollmentId=${enrollmentId}`} target="_blank">
                                                                     <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
                                                                 </Link>
                                                             </Box>
+                                                            <Divider padding={0} />
+                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                <Text bold>Excluir Matricula:</Text>
+                                                                <Button small text="Excluir" onClick={handleClickOpen} style={{ width: 105, height: 25, alignItems: 'center' }} />
+
+                                                            </Box>                                                          
+                                                            <Dialog
+                                                                open={open}
+                                                             
+                                                                keepMounted
+                                                                onClose={handleClose}
+                                                                aria-describedby="alert-dialog-slide-description"
+                                                            >
+                                                                <DialogTitle>{"ATENÇÃO!"}</DialogTitle>
+                                                                <DialogContent>
+                                                                    <DialogContentText id="alert-dialog-slide-description">
+                                                                            Deseja apagar essa matrícula permanentemente
+                                                                    </DialogContentText>
+                                                                </DialogContent>
+                                                                <DialogActions>
+                                                                    <Button onClick={handleClose} small text="Não" />
+                                                                    <Button onClick={() => deleteMatricula(id, item?.turma_id, enrollmentId, item?.modulo)} small text="Sim"/>
+                                                                </DialogActions>
+                                                            </Dialog>
+
                                                             <Divider padding={0} />
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                                 <Button disabled={!isPermissionEdit && true} secondary small text="editar matrícula" style={{ width: 140, height: 30, alignItems: 'center' }} onClick={() => {
@@ -3731,7 +3808,7 @@ export default function EditUser() {
                             horizontal={mobile ? false : true}
                             onSelect={(value) => setEnrollmentStudentEditData({ ...enrollmentStudentEditData, adimplente: parseInt(value) })} />
                         <Divider padding={0} />
-                        
+
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flex: 1, justifyContent: 'flex-start' }}>
                             <Button disabled={!isPermissionEdit && true} small text="salvar" onClick={() => handleEnrollStudentEdit()} />
                             <Button disabled={!isPermissionEdit && true} secondary small text="cancelar" style={{}} onClick={() => setShowSections({ ...showSections, editEnroll: false })} />
@@ -3769,7 +3846,7 @@ export default function EditUser() {
                             <>
                                 <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
                                     {
-                                        arrayInterests?.map((interest, index) => {                                     
+                                        arrayInterests?.map((interest, index) => {
                                             const requeriments = interest?.requeriments && interest?.requeriments?.some(item => item?.aprovado === 1);
                                             const [isHaveRequeriment] = interest?.requeriments && interest?.requeriments?.map(item => item?.id_req_matricula) || [];
                                             const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1) || [];
