@@ -425,7 +425,7 @@ export default function ListInvoices(props) {
                                             />
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                            {item?.pagante || '-'}
+                                            {item?.pagante == null ? item?.aluno :  item?.pagante  || '-'}
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             {item?.cpf}
