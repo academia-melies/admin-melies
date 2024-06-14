@@ -1,24 +1,30 @@
-import { Pagination } from "@mui/material"
-import { Box, Button, Text } from "../../atoms"
-import { SelectList } from "../select/SelectList"
-import { useAppContext } from "../../context/AppContext"
-import { icons } from "../layout/Colors"
+import { Pagination } from "@mui/material";
+import { Box, Button, Text } from "../../atoms";
+import { SelectList } from "../select/SelectList";
+import { useAppContext } from "../../context/AppContext";
 
 export const PaginationTable = (props) => {
     const {
         data = [], page, setPage, rowsPerPage, setRowsPerPage
-    } = props
-    const { colorPalette, theme } = useAppContext()
+    } = props;
+    const { colorPalette, theme } = useAppContext();
     const filteredAndSorted = data?.length;
-    const totalPages = Math.ceil((filteredAndSorted) / rowsPerPage);
-
+    const totalPages = Math.ceil(filteredAndSorted / rowsPerPage);
 
     const handlePrevPage = () => {
-        setPage(page - 1);
+        if (page > 0) {
+            setPage(page - 1);
+        }
     };
 
     const handleNextPage = () => {
-        setPage(page + 1);
+        if (page < totalPages - 1) {
+            setPage(page + 1);
+        }
+    };
+
+    const handlePageChange = (event, value) => {
+        setPage(value - 1);
     };
 
     const rows = [
@@ -29,7 +35,7 @@ export const PaginationTable = (props) => {
         { label: 25, value: 25 },
         { label: 50, value: 50 },
         { label: 100, value: 100 },
-    ]
+    ];
 
     return (
         <Box sx={{
@@ -37,11 +43,11 @@ export const PaginationTable = (props) => {
         }}>
             <Box sx={{
                 display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center',
-                opacity: (page + 1) === 1 ? .3 : 1,
+                opacity: page === 0 ? .3 : 1,
                 borderRadius: 2, padding: '8px 12px', border: `1px solid`,
                 "&:hover": {
-                    opacity: (page + 1) !== 1 && 0.8,
-                    cursor: (page + 1) !== 1 && 'pointer'
+                    opacity: page !== 0 && 0.8,
+                    cursor: page !== 0 && 'pointer'
                 }
             }} onClick={handlePrevPage}>
                 <Box sx={{
@@ -52,7 +58,7 @@ export const PaginationTable = (props) => {
                     filter: theme ? 'brightness(0) invert(0)' : 'brightness(0) invert(1)',
                     transform: 'rotate(180deg)',
                     transition: 'background-color 1s',
-                }}  />
+                }} />
                 <Text light bold>Anterior</Text>
             </Box>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -74,20 +80,19 @@ export const PaginationTable = (props) => {
                     variant="outlined"
                     count={totalPages}
                     page={page + 1}
-                    // onChange={handleChangePage}
-                    rowsPerPage={rowsPerPage}
+                    onChange={handlePageChange}
                     sx={{ color: colorPalette?.textColor }}
                 />
             </Box>
             <Box sx={{
                 display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center',
                 borderRadius: 2, padding: '8px 12px', border: `1px solid`,
-                opacity: (page + 1) === totalPages ? .3 : 1,
+                opacity: page === totalPages - 1 ? .3 : 1,
                 "&:hover": {
-                    opacity: (page + 1) !== totalPages && 0.8,
-                    cursor: (page + 1) !== totalPages && 'pointer'
+                    opacity: page !== totalPages - 1 && 0.8,
+                    cursor: page !== totalPages - 1 && 'pointer'
                 }
-            }} onClick={() => (page + 1) !== totalPages && handleNextPage()}>
+            }} onClick={handleNextPage}>
                 <Text light bold>Próximo</Text>
                 <Box sx={{
                     ...styles.menuIcon,
@@ -99,9 +104,8 @@ export const PaginationTable = (props) => {
                 }} />
             </Box>
         </Box>
-    )
-}
-
+    );
+};
 
 const styles = {
     menuIcon: {
@@ -110,6 +114,5 @@ const styles = {
         backgroundPosition: 'center',
         width: 20,
         height: 20,
-
     },
-}
+};
