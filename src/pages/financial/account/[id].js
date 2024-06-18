@@ -141,8 +141,6 @@ export default function Editaccount(props) {
         })();
     }, [id])
 
-    console.log(showExclude)
-
 
     const getExtract = async () => {
         try {
@@ -332,9 +330,6 @@ export default function Editaccount(props) {
 
             debito = event.target.value.replace(/[^\d]/g, '');
         }
-      
-  
-        console.log('aqui',[event.target.name],event.target.value,credito)
 
         const valorNumerico  = event.target.value.replace(/[^\d]/g, '')
         setEditAccount((prevValues) => ({
@@ -484,9 +479,6 @@ export default function Editaccount(props) {
             accountExtractData.data.debito = await formatNumber(accountExtractData.data.debitoFormat)
         }
 
-   
-
-        console.log('aqui 2',accountExtractData)
         setLoading(true)
         try {
             const response = await api.patch(`/account/extract/update`, { accountExtractData: accountExtractData?.data });

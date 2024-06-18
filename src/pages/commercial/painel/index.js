@@ -64,8 +64,6 @@ export default function CommercialPainel(props) {
                     y: groupedData[date]
                 }));
 
-                console.log(formattedData)
-
                 setClasses(groupClasses)
                 setGraphIndicator(formattedData)
             } else {
@@ -110,9 +108,6 @@ export default function CommercialPainel(props) {
         { label: 'Aguardando Assinatura', value: 'Pendente de assinatura do contrato' },
         { label: 'Aguardando Inicio', value: 'Aguardando início' },
     ]
-
-
-    console.log(filters)
 
 
     return (

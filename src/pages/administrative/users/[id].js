@@ -260,8 +260,6 @@ export default function EditUser() {
         try {
             const response = await api.get(`/user/${id}`)
             const { data } = response
-            console.log(data)
-
             setUserData(data.response)
         } catch (error) {
             console.log(error)
@@ -1027,8 +1025,6 @@ export default function EditUser() {
         return true
     }
 
-    console.log(arrayInterests)
-
 
     const handleCreateUser = async () => {
         if (checkRequiredFields()) {
@@ -1122,8 +1118,6 @@ export default function EditUser() {
                 if (arrayDependent?.length > 0) {
                     await api.patch(`/user/dependent/update`, { arrayDependent })
                 }
-
-                console.log(arrayInterests)
 
                 if (arrayInterests?.length > 0) {
                     for (let interest of arrayInterests) {
@@ -3856,7 +3850,6 @@ export default function EditUser() {
                                             const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}`;
                                             const subscription = interest?.inscricao;
                                             const [respAnalisar] = interest?.requeriments?.map(req => req.analisado_por) || [];
-                                            console.log(respAnalisar)
                                             let linkRequeriment;
                                             if (isHaveRequeriment) {
                                                 linkRequeriment = `/secretary/studentDetails/requeriments/student/${isHaveRequeriment}`

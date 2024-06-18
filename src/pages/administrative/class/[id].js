@@ -228,7 +228,6 @@ export default function EditClass(props) {
                  response = await api.get(`/class/students/${id}`)
             }
             const { data } = response
-            console.log('aqui',response)
            await setEnrolledStudents(data)
         } catch (error) {
             console.log(error)
