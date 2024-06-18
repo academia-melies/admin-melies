@@ -23,21 +23,17 @@ export default function EssayWritingList(props) {
         writingsVizualization: (item) => {
            
             if (menuSelected === 'Pendente de Correção') {
-                console.log("aquii 3",item)
                 const isData = item?.corrigido == 0 && item?.dt_realizacao
                 return isData;
             }
             if (menuSelected === 'Em andamento') {
-                console.log("aquii 4",item)
                 const isData = !item?.dt_realizacao
                 return isData && item?.corrigido != 1 && parseInt(item?.aprovado) != 1;
             }
             if (menuSelected === 'Classificados') {
-                console.log("aquii 2",item)
                 return item?.corrigido === 1 && parseInt(item?.aprovado) === 1
             }
             if (menuSelected === 'Desclassificados') {
-                console.log("aquii 5",item)
                 return item?.corrigido === 1 && parseInt(item?.aprovado) < 1
             } else {
                 return true

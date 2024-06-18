@@ -450,8 +450,6 @@ const Compensation = (props) => {
                 salary = (salary + formattValue);
             }
 
-            console.log(salary);
-
             return salary
         } catch (error) {
             console.log(error);

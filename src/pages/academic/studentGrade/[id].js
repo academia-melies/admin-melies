@@ -216,7 +216,6 @@ export default function EditStudentGrade(props) {
                 const { data } = response
 
                 if (data?.length > 0) {
-                    console.log('aqui entrou', data)
                     const groupStudents = data?.map(student => ({
                         ...student,
                         plano_avaliacao_id: student?.plano_avaliacao_id,
@@ -240,7 +239,6 @@ export default function EditStudentGrade(props) {
                     setNewGrade(false)
                     setShowStudents(true);
                 } else {
-                    console.log('se não entrou', data)
                     listStudents(value)
                     setNewGrade(true)
                     setShowStudents(true);
