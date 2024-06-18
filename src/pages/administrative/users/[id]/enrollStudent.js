@@ -97,7 +97,9 @@ export default function InterestEnroll() {
     const [currentModule, setCurrentModule] = useState(1)
     const [showScreenDp, setShowScreenDp] = useState(false)
     const [reenrollmentDp, setReenrollmentDp] = useState([])
-
+    const [subscriptionData, setSubscriptionData] = useState({})
+    const [forma_pagamento, setPagamento] = useState()
+    const [numParc, setNumParce] = useState(6)
 
     // useEffect(() => {
     //     let interval;
@@ -165,6 +167,7 @@ export default function InterestEnroll() {
         }
     }
 
+
     const handleInterest = async () => {
         setLoading(true)
         try {
@@ -195,6 +198,24 @@ export default function InterestEnroll() {
                 return highestModule + 1
             }
             return false
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleSubscription = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/subscription/interest/${interest}`)
+            const { data } = response
+            console.log(response)
+            await setSubscriptionData(data)
+            await setPagamento(data.forma_pagamento)
+            return await data
         } catch (error) {
             console.log(error)
             return error
@@ -319,7 +340,9 @@ export default function InterestEnroll() {
         try {
             const response = await api.get(`/coursePrices/course/historic/${courseId}?classId=${classId}`)
             const { data } = response
+
             setValuesCourse(data)
+            setNumParce(data?.n_parcelas)
             return data
         } catch (error) {
             console.log(error)
@@ -404,6 +427,7 @@ export default function InterestEnroll() {
                 classIdEnrollment = classId
                 courseIdEnrollment = courseId
             }
+            const subscription = await handleSubscription()
             await handleSelectModule(classIdEnrollment, moduleCurrent)
             await handleValuesCourse(courseIdEnrollment, classIdEnrollment)
             await handleCourseData(courseIdEnrollment)
@@ -1017,6 +1041,7 @@ export default function InterestEnroll() {
         (
             <>
                 <EnrollStudentDetails
+                    subscriptionData={subscriptionData}
                     setDisciplinesSelected={setDisciplinesSelected}
                     disciplinesSelected={disciplinesSelected}
                     disciplines={disciplines}
@@ -1075,6 +1100,7 @@ export default function InterestEnroll() {
                     handleCreateReEnrollStudentDp={handleCreateReEnrollStudentDp}
                     setFormData={setFormData}
                     reenrollmentDp={reenrollmentDp}
+                    forma_pagamento={subscriptionData?.forma_pagamento}
                 />
             </>
         ),
@@ -1124,6 +1150,8 @@ export default function InterestEnroll() {
                     disciplinesDpSelected={disciplinesDpSelected}
                     currentModule={currentModule}
                     classScheduleData={classScheduleData}
+                    forma_pagamento={subscriptionData?.forma_pagamento}
+                    numParc={numParc}
                 />
             </>
         ),
@@ -1633,7 +1661,9 @@ export const Payment = (props) => {
         classesDisciplinesDpSelected,
         isDp,
         disciplinesSelectedForCalculation,
-        disciplines
+        disciplines,
+        forma_pagamento,
+        numParc
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -1671,10 +1701,10 @@ export const Payment = (props) => {
     const [formPaymentEntry, setFormPaymentEntry] = useState()
     const [dateForPaymentEntry, setDateForPaymentEntry] = useState()
 
-    
+
     const calculationDayPayment = async () => {
 
-        
+
         if (globalTypePaymentsSelected === 'Cartão') {
             const currentDate = new Date();
             const year = currentDate.getMonth() + 2 > 12 ? currentDate.getFullYear() + 1 : currentDate.getFullYear();
@@ -1705,11 +1735,11 @@ export const Payment = (props) => {
             const day = String(datePayment.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${nextMonthString}-${day}`;
             const formattedDateNow = `${year}-${month}-${day}`;
-         
-          if(monthForPayment == null){
-              setMonthDayForPayment(formattedDate)
 
-          }
+            if (monthForPayment == null) {
+                setMonthDayForPayment(formattedDate)
+
+            }
             setDateForPaymentEntry(formattedDateNow)
         }
     }
@@ -1785,7 +1815,7 @@ export const Payment = (props) => {
 
 
     const handleCalculationValues = async () => {
-        // const totalValue = await handleCalculationDiscountAvista()
+        const totalValue = await handleCalculationDiscountAvista()
         let numberParcells = numberOfInstallments;
         let numberParcellsTwo;
         let paymentTwo;
@@ -1969,6 +1999,27 @@ export const Payment = (props) => {
         });
 
     }
+
+    const handleCalculationDiscountAvista = async () => {
+        if (forma_pagamento === 'Ex Aluno') {
+            data.valor_total_curso = data?.valor_total_curso - (5 / 100 * data?.valor_total_curso)
+        }
+        if (numberOfInstallments === 1) {
+            const totalValue = parseFloat(totalValueFinnaly);
+            let discountPercentage = 5; // Desconto a vista
+            const discountValue = (totalValue * (discountPercentage / 100)).toFixed(2);
+            const updatedTotal = (totalValue - parseFloat(discountValue)).toFixed(2);
+            setTotalValueComDiscount(updatedTotal)
+            setAditionalDiscount({ desconto_adicional: 5, desconto_formatado: discountValue })
+            return updatedTotal
+        } else {
+            setTotalValueComDiscount(0)
+            setAditionalDiscount({ desconto_adicional: 0, desconto_formatado: 0 })
+            return 0
+        }
+    }
+
+
 
     useEffect(() => {
         handleCalculationValues()
@@ -2161,10 +2212,10 @@ export const Payment = (props) => {
         const divergencyPayment = ((parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) > 0.05 ||
             (parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) < -0.05) ? true : false;
 
-       /* if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly) || divergencyPayment) {
-            alert.info('Existe divergência no saldo devedor. Verifique os valores das parcelas e entradas, antes de prosseguir.')
-            return
-        }*/
+        /* if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly) || divergencyPayment) {
+             alert.info('Existe divergência no saldo devedor. Verifique os valores das parcelas e entradas, antes de prosseguir.')
+             return
+         }*/
 
         if (!globalTypePaymentsSelected || (twoCards && !globalTypePaymentsSelectedTwo)) {
             alert.info('Insira uma forma de pagamento válida.')
@@ -2435,6 +2486,14 @@ export const Payment = (props) => {
                                     || '0'}</Text>
                             </Box>
                             <Divider distance={0} />
+                            {forma_pagamento === "Ex Aluno" &&
+                                <>
+                                    <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
+                                        <Text bold>Desconto 5% Ex aluno:</Text>
+                                        <Text>{'5.00%'}</Text>
+                                    </Box>
+                                    <Divider distance={0} />
+                                </>}
                             <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Valor Total com desconto:</Text>
                                 <Text>{formatter.format(totalValueFinnaly)}</Text>
@@ -2445,7 +2504,7 @@ export const Payment = (props) => {
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             /> */}
                             <TextInput name='monthForPayment' onChange={(e) => {
-                            
+
                                 setMonthDayForPayment(e.target.value)
                                 let date = new Date(e.target.value)
                                 if (date?.getDate() >= 1 && date?.getDate() <= 31) {
@@ -2454,7 +2513,7 @@ export const Payment = (props) => {
                                     return
                                 }
                             }} value={(monthForPayment)} type="date" label='Dt cobrança' sx={{ flex: 1, }} />
-                          
+
                             <CheckBoxComponent
                                 padding={false}
                                 valueChecked={hasEntry}
@@ -2694,6 +2753,25 @@ export const Payment = (props) => {
                                         alert.info('Adicione um responsável pagante para dividir em 2 pagamentos.')
                                     }
                                 }} style={{ height: '30px', borderRadius: 0 }} />
+                            </Box>
+
+                            <Box sx={{ display: 'flex' }}>
+                                {
+                                    forma_pagamento === "Ex Aluno" &&
+
+                                    <Box sx={{ display: 'flex', padding: '8px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor }}>
+                                        <Text bold xsmall style={{ color: '#fff' }}>5% Desconto Ex Aluno!</Text>
+                                    </Box>
+                                }
+                                {
+                                    numberOfInstallments === 1 &&
+
+                                    <Box sx={{ display: 'flex', marginLeft: "10px" }}>
+                                        <Box sx={{ display: 'flex', padding: '8px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor }}>
+                                            <Text bold xsmall style={{ color: '#fff' }}>5% Desconto á Vista!</Text>
+                                        </Box>
+                                    </Box>
+                                }
                             </Box>
 
                             {(twoCards) &&
@@ -3058,7 +3136,8 @@ export const ContractStudent = (props) => {
         isDp,
         reenrollmentDp,
         classesDisciplinesDpSelected,
-        handleCreateReEnrollStudentDp
+        handleCreateReEnrollStudentDp,
+        forma_pagamento
     } = props
 
 
@@ -3092,28 +3171,28 @@ export const ContractStudent = (props) => {
     useEffect(() => {
 
         const updatedPaymentForm = paymentForm.map((payment) =>
-          
-            payment?.map((items) => ({  
+
+            payment?.map((items) => ({
                 ...items,
                 pagamento: items?.pagamento || items?.tipo,
                 valor_parcela: items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
             }))
         );
         const valueContract = paymentForm.map((payment) =>
-            payment?.map((items) => ({                 
-              valor_parcela: +items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
+            payment?.map((items) => ({
+                valor_parcela: +items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
             }))
-          );
-          
-          // Somar todas as parcelas
-          const totalValueContract = paymentForm.flat().reduce((acc, payment) => {
+        );
+
+        // Somar todas as parcelas
+        const totalValueContract = paymentForm.flat().reduce((acc, payment) => {
             const valor = parseFloat(payment?.valor_parcela);
             return acc + (isNaN(valor) ? 0 : valor);
-          }, 0).toFixed(2);
-          setValueContract(totalValueContract)
+        }, 0).toFixed(2);
+        setValueContract(totalValueContract)
 
-         
-         
+
+
         setPaymentData(updatedPaymentForm)
     }, [])
 
@@ -3330,8 +3409,8 @@ export const ContractStudent = (props) => {
                                 body: [
                                     userData?.nome ? ['Aluno:', userData?.nome] : [],
                                     ['Resp. pagante:', responsiblePayerData?.nome_resp || userData?.nome],
-                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['Valor total do semestre:', formatter.format(formatter.format(valueContractPravaler))]  :  isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
-                                   
+                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['Valor total do semestre:', formatter.format(formatter.format(valueContractPravaler))] : isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
+
 
                                     ['Disciplinas dispensadas:', valuesContract?.qntDispensadas],
                                     classesDisciplinesDpSelected?.length > 0 && ['Disciplinas DP:', classesDisciplinesDpSelected?.length],
@@ -3343,8 +3422,8 @@ export const ContractStudent = (props) => {
                                     (valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0) && ['DESCONTO TOTAL:', formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))],
                                     paymentsInfoData?.valueEntry > 0 && ['VALOR DE ENTRADA:', formatter.format(paymentsInfoData?.valueEntry)],
 
-                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['VALOR A PAGAR:', formatter.format(valueContractPravaler)]  : ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],                                    
-                                    
+                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['VALOR A PAGAR:', formatter.format(valueContractPravaler)] : ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],
+
                                 ].filter(row => row.length > 0),
                                 layout: {
                                     hLineWidth: function (i, node) {
@@ -3557,18 +3636,18 @@ export const ContractStudent = (props) => {
                                 <Box sx={styles.containerValues}>
                                     <Text small style={styles.textDataPayments} bold>Valor total do semestre:</Text>
                                     <Text small style={styles.textDataPayments}>
-                                    {
+                                        {
                                             paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ?
 
-                                            formatter.format(valueContractPravaler) 
+                                                formatter.format(valueContractPravaler)
 
-                                            :  
-                                            
-                                            isDp ? formatter?.format(valuesContract?.valorFinal) : formatter.format(valuesContract?.valorSemestre)
-                                    }
+                                                :
 
-                                      
-                                        
+                                                isDp ? formatter?.format(valuesContract?.valorFinal) : formatter.format(valuesContract?.valorSemestre)
+                                        }
+
+
+
                                     </Text>
                                 </Box>
                                 {isDp && <Box sx={styles.containerValues}>
@@ -3591,7 +3670,7 @@ export const ContractStudent = (props) => {
                                         <Text small style={styles.textDataPayments}>{valuesContract?.descontoPorcentagemDisp}</Text>
                                     </Box>
                                 }
-                                {valuesContract?.descontoAdicional &&
+                                {/* {valuesContract?.descontoAdicional &&
                                     <Box sx={styles.containerValues}>
                                         <Text small style={styles.textDataPayments} bold>DESCONTO (adicional):</Text>
 
@@ -3599,6 +3678,27 @@ export const ContractStudent = (props) => {
                                             || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
                                             || '0'}</Text>
                                     </Box>
+                                } */}
+                                {valuesContract?.descontoAdicional &&
+
+                                    forma_pagamento == 'Ex Aluno' &&
+                                    <>
+                                        <Box sx={styles.containerValues}>
+                                            <Text small style={styles.textDataPayments} bold>DESCONTO (adicional) Ex Aluno:</Text>
+
+                                            <Text small style={styles.textDataPayments}>{(typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
+                                                || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
+                                                || '0'}</Text>
+                                        </Box>
+
+                                        <Box sx={styles.containerValues}>
+                                            <Text small style={styles.textDataPayments} bold>DESCONTO (adicional) Pagamento à Vista:</Text>
+
+                                            <Text small style={styles.textDataPayments}>{(typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
+                                                || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
+                                                || '0'}</Text>
+                                        </Box>
+                                    </>
                                 }
                                 {valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0 &&
                                     <Box sx={styles.containerValues}>
@@ -3616,12 +3716,12 @@ export const ContractStudent = (props) => {
                                     <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
                                         <Text small style={styles.textDataPayments} bold>VALOR A PAGAR:</Text>
                                         <Text small style={styles.textDataPayments}>
-                                        {
-                                            paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ?
-                                            formatter.format(valueContractPravaler) :  formatter.format(valuesContract?.valorFinal)
-                                        }
-                                        
-                                            
+                                            {
+                                                paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ?
+                                                    formatter.format(valueContractPravaler) : formatter.format(valuesContract?.valorFinal)
+                                            }
+
+
                                         </Text>
                                     </Box>
                                 }
