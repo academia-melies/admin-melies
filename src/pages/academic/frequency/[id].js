@@ -483,8 +483,6 @@ export default function EditFrequency(props) {
                             const yesterday = new Date(today);
                             const todayClass = classDay.getTime() === yesterday.getTime();
 
-                            console.log(classData)
-
                             return (
                                 <Box key={`${item}-${index}`} sx={{ position: 'relative' }}>
                                     {todayClass && <Box sx={{

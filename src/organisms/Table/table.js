@@ -73,10 +73,7 @@ export const Table_V1 = (props) => {
         style: 'currency',
         currency: 'BRL'
     });
-    const pageNumber = () =>{
-        console.log('aqui ',page)
-        setPage(page + 1)
-    }
+
 
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
