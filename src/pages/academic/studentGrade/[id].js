@@ -70,16 +70,14 @@ export default function EditStudentGrade(props) {
     }, [id])
 
     useEffect(() => {
-        setStudentGradeData({ ...studentGradeData, disciplina_id: null })       
+        setStudentGradeData({ ...studentGradeData, disciplina_id: null })
     }, [studentGradeData?.modulo_nota])
 
-    useEffect(() => {
-        if (studentGradeData?.disciplina_id != null) {
-          
-            handleStudent(id)
-        }
-    }, [studentGradeData?.disciplina_id])
-
+    // useEffect(() => {
+    //     if (studentGradeData?.disciplina_id != null) {
+    //         handleStudent(id)
+    //     }
+    // }, [studentGradeData?.disciplina_id])
 
     const handleItems = async () => {
         setLoading(true)
@@ -98,9 +96,9 @@ export default function EditStudentGrade(props) {
     }
 
     const handleChange = (userId, field, value) => {
-       
 
-       
+
+
         setStudentData((prevValues) => {
             return prevValues.map((student) => {
                 if (student.usuario_id === userId) {
@@ -109,36 +107,36 @@ export default function EditStudentGrade(props) {
                         [field]: value,
                     };
                     if (updatedStudent.avaliacao_status == 0) {
-                        if(parseFloat(updatedStudent.nt_avaliacao_sem) < 6){                           
+                        if (parseFloat(updatedStudent.nt_avaliacao_sem) < 6) {
                             updatedStudent.nt_exame = null
                         }
-                        updatedStudent.nt_avaliacao_sem = null;                        
+                        updatedStudent.nt_avaliacao_sem = null;
                     }
                     if (updatedStudent.avaliacao_status == 1) {
-                        if(parseFloat(updatedStudent.nt_substitutiva) < 6){                           
+                        if (parseFloat(updatedStudent.nt_substitutiva) < 6) {
                             updatedStudent.nt_exame = null
                         }
-                        updatedStudent.nt_substitutiva = null;                        
+                        updatedStudent.nt_substitutiva = null;
                     }
-                    
+
                     if (updatedStudent.nt_avaliacao_sem !== null || updatedStudent.nt_avaliacao_sem !== "") {
-                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString().replace(",",".");
+                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString().replace(",", ".");
                     }
-                      
+
                     if (updatedStudent.nt_substitutiva !== null && updatedStudent.nt_substitutiva !== "") {
-                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",",".");
+                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",", ".");
                     }
 
                     if (updatedStudent?.nt_exame !== null && updatedStudent?.nt_exame !== "") {
-                        updatedStudent.nt_final = updatedStudent?.nt_exame?.toString().replace(",",".");
+                        updatedStudent.nt_final = updatedStudent?.nt_exame?.toString().replace(",", ".");
                     }
 
                     if ((updatedStudent.nt_avaliacao_sem !== '' || updatedStudent.nt_avaliacao_sem !== null) && (parseFloat(updatedStudent.nt_avaliacao_sem) > parseFloat(updatedStudent?.nt_exame))) {
-                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString().replace(",",".");
+                        updatedStudent.nt_final = updatedStudent?.nt_avaliacao_sem?.toString().replace(",", ".");
                     }
 
                     if ((updatedStudent.nt_substitutiva !== '' || updatedStudent.nt_substitutiva !== null) && (parseFloat(updatedStudent.nt_substitutiva) > parseFloat(updatedStudent?.nt_exame))) {
-                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",",".");
+                        updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",", ".");
                     }
 
                     return updatedStudent;
@@ -147,7 +145,6 @@ export default function EditStudentGrade(props) {
             });
         });
     };
-
 
     const handleCreateStudentGrade = async () => {
         setLoading(true)
@@ -165,16 +162,16 @@ export default function EditStudentGrade(props) {
     }
 
     const handleEditStudentGrade = async () => {
-        studentData.map(async item =>{
-            if(item.modulo_nota == null){
+        studentData.map(async item => {
+            if (item.modulo_nota == null) {
                 item.modulo_nota = moduleChange
             }
-            if(item.disciplina_id == null){
+            if (item.disciplina_id == null) {
                 item.disciplina_id = disciplineChange
             }
 
-        } )
-        
+        })
+
         setLoading(true)
         try {
             const response = await api.patch(`/studentGrade/update`, { studentData });
@@ -205,17 +202,22 @@ export default function EditStudentGrade(props) {
         return true;
     }
 
-    const handleStudent = async () => {
-       
-        if (checkSearch(studentGradeData)) {
+    const handleStudent = async (value) => {
+
+        if (checkSearch({ ...studentGradeData, disciplina_id: value })) {
             setLoading(true)
             try {
-                
-                const response = await api.get(`/studentGrade/module/${studentGradeData?.modulo_nota}/${studentGradeData?.disciplina_id}/${id}`)
+
+                if (value) {
+                    setDisciplinaChange(value)
+                    setStudentGradeData({ ...studentGradeData, disciplina_id: value })
+                }
+                const response = await api.get(`/studentGrade/module/${studentGradeData?.modulo_nota}/${value}/${id}`)
                 const { data } = response
-              
-                if (data.length > 0) {
-                    const groupStudents = data.map(student => ({
+
+                if (data?.length > 0) {
+                    console.log('aqui entrou', data)
+                    const groupStudents = data?.map(student => ({
                         ...student,
                         plano_avaliacao_id: student?.plano_avaliacao_id,
                         usuario_id: student?.usuario_id,
@@ -233,12 +235,13 @@ export default function EditStudentGrade(props) {
                     }));
 
                     groupStudents.sort((a, b) => a.nome.localeCompare(b.nome));
-                 
+
                     setStudentData(groupStudents)
                     setNewGrade(false)
                     setShowStudents(true);
                 } else {
-                    listStudents(studentGradeData?.disciplina_id)
+                    console.log('se não entrou', data)
+                    listStudents(value)
                     setNewGrade(true)
                     setShowStudents(true);
                 }
@@ -300,10 +303,6 @@ export default function EditStudentGrade(props) {
 
         setLoading(true)
         try {
-            await setDisciplinaChange(value)
-            if (value) {
-                setStudentGradeData({ ...studentGradeData, disciplina_id: value })
-            }
             const response = await api.get(`/class/students/${id}/${value}/?moduleStudent=${studentGradeData?.modulo_nota}`)
             const { data } = response
             const studentsFrequency = data.map(student => ({
@@ -312,8 +311,8 @@ export default function EditStudentGrade(props) {
                 disciplina_id: studentGradeData?.disciplina_id || null,
                 turma_id: parseInt(id),
                 modulo_nota: studentGradeData?.modulo_nota || null,
-                nome: student.nome,
-                nome_social: student.nome_social,
+                nome: student?.nome,
+                nome_social: student?.nome_social,
                 avaliacao_status: 0,
                 nt_avaliacao_sem: null,
                 nt_substitutiva: null,
@@ -323,7 +322,7 @@ export default function EditStudentGrade(props) {
             }));
 
             studentsFrequency.sort((a, b) => a.nome.localeCompare(b.nome));
-            
+
             await setStudentData(studentsFrequency);
         } catch (error) {
             return error;
@@ -373,7 +372,7 @@ export default function EditStudentGrade(props) {
                     title="Modulo/Semestre" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
-                <SelectList fullWidth data={disciplines} valueSelection={studentGradeData?.disciplina_id} onSelect={(value) => listStudents(value)}
+                <SelectList fullWidth data={disciplines} valueSelection={studentGradeData?.disciplina_id} onSelect={(value) => handleStudent(value)}
                     title="Disciplina" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                 />
@@ -408,21 +407,21 @@ export default function EditStudentGrade(props) {
                                             {
 
                                                 studentData?.map((item, index) => {
-                                                    
+
                                                     const statusGrade = getStatusGrade(item)
                                                     const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
                                                     let avaliation = item?.nt_avaliacao_sem ? parseFloat(item.nt_avaliacao_sem) : null;
                                                     let substitutive = item?.nt_substitutiva ? parseFloat(item.nt_substitutiva) : null;
-                                                    
-                                                  
+
+
                                                     let ntFinally = parseFloat(item.nt_final) || 'Aguardando nota';
-                                                    
+
                                                     const isExam = (avaliation !== null && avaliation < 6)
-                                                    ||
-                                                    (item?.avaliacao_status === 0 && (substitutive !== null && substitutive < 6));
-                                                    
+                                                        ||
+                                                        (item?.avaliacao_status === 0 && (substitutive !== null && substitutive < 6));
+
                                                     const name = item?.nome_social || item?.nome;
-                                                    
+
                                                     return (
                                                         <tr key={`${item}-${index}`}>
                                                             <td style={{ fontSize: '14px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
