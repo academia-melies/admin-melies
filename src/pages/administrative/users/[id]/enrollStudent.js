@@ -97,7 +97,9 @@ export default function InterestEnroll() {
     const [currentModule, setCurrentModule] = useState(1)
     const [showScreenDp, setShowScreenDp] = useState(false)
     const [reenrollmentDp, setReenrollmentDp] = useState([])
-
+    const [subscriptionData, setSubscriptionData] = useState({})
+    const [forma_pagamento, setPagamento] = useState()
+    const [numParc, setNumParce] = useState(6)
 
     // useEffect(() => {
     //     let interval;
@@ -165,6 +167,7 @@ export default function InterestEnroll() {
         }
     }
 
+
     const handleInterest = async () => {
         setLoading(true)
         try {
@@ -195,6 +198,24 @@ export default function InterestEnroll() {
                 return highestModule + 1
             }
             return false
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleSubscription = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/subscription/interest/${interest}`)
+            const { data } = response
+            console.log(response)
+            await setSubscriptionData(data)
+            await setPagamento(data.forma_pagamento)
+            return await data
         } catch (error) {
             console.log(error)
             return error
@@ -319,7 +340,15 @@ export default function InterestEnroll() {
         try {
             const response = await api.get(`/coursePrices/course/historic/${courseId}?classId=${classId}`)
             const { data } = response
+            if (data?.valor_total_avista == null) {
+                data.valor_total_avista = data?.valor_total_curso
+            }
+            if (data?.valor_avista_curso == null) {
+                data.valor_avista_curso = data.valor_total_curso
+            }
+
             setValuesCourse(data)
+            setNumParce(data?.n_parcelas)
             return data
         } catch (error) {
             console.log(error)
@@ -404,6 +433,7 @@ export default function InterestEnroll() {
                 classIdEnrollment = classId
                 courseIdEnrollment = courseId
             }
+            const subscription = await handleSubscription()
             await handleSelectModule(classIdEnrollment, moduleCurrent)
             await handleValuesCourse(courseIdEnrollment, classIdEnrollment)
             await handleCourseData(courseIdEnrollment)
@@ -1017,6 +1047,7 @@ export default function InterestEnroll() {
         (
             <>
                 <EnrollStudentDetails
+                    subscriptionData={subscriptionData}
                     setDisciplinesSelected={setDisciplinesSelected}
                     disciplinesSelected={disciplinesSelected}
                     disciplines={disciplines}
@@ -1075,6 +1106,7 @@ export default function InterestEnroll() {
                     handleCreateReEnrollStudentDp={handleCreateReEnrollStudentDp}
                     setFormData={setFormData}
                     reenrollmentDp={reenrollmentDp}
+                    forma_pagamento={subscriptionData?.forma_pagamento}
                 />
             </>
         ),
@@ -1124,6 +1156,8 @@ export default function InterestEnroll() {
                     disciplinesDpSelected={disciplinesDpSelected}
                     currentModule={currentModule}
                     classScheduleData={classScheduleData}
+                    forma_pagamento={subscriptionData?.forma_pagamento}
+                    numParc={numParc}
                 />
             </>
         ),
@@ -1152,6 +1186,7 @@ export default function InterestEnroll() {
                     classScheduleData={classScheduleData}
                     classesDisciplinesDpSelected={classesDisciplinesDpSelected}
                     handleCreateReEnrollStudentDp={handleCreateReEnrollStudentDp}
+                    forma_pagamento={subscriptionData?.forma_pagamento}
                 />
             </>
         )
@@ -1633,10 +1668,13 @@ export const Payment = (props) => {
         classesDisciplinesDpSelected,
         isDp,
         disciplinesSelectedForCalculation,
-        disciplines
+        disciplines,
+        forma_pagamento,
+        numParc
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
+    const [totalValueComDiscount, setTotalValueComDiscount] = useState()
     const [totalValueAVista, setTotalValueAVista] = useState()
     const [creditCardSelected, setCreditCardSelected] = useState(null)
     const [disciplineDispensedPorcent, setDisciplineDispensedPorcent] = useState()
@@ -1656,7 +1694,7 @@ export const Payment = (props) => {
     const [typePaymentsSelectedTwo, setTypePaymentsSelectedTwo] = useState(initialTypePaymentsSelectedTwo);
     const [globalTypePaymentsSelected, setGlobalTypePaymentsSelected] = useState('');
     const [globalTypePaymentsSelectedTwo, setGlobalTypePaymentsSelectedTwo] = useState('');
-    const [aditionalDiscount, setAditionalDiscount] = useState({ desconto_adicional: '', desconto_formatado: '' })
+    const [aditionalDiscount, setAditionalDiscount] = useState({ desconto_adicional: '', desconto_formatado: '', desconto_ex_aluno: 0, desconto_avista: 0 })
     const { colorPalette, alert, theme } = useAppContext()
     const [focusedCreditCard, setFocusedCreditCard] = useState('');
     const [twoCards, setTwoCards] = useState(false)
@@ -1671,10 +1709,10 @@ export const Payment = (props) => {
     const [formPaymentEntry, setFormPaymentEntry] = useState()
     const [dateForPaymentEntry, setDateForPaymentEntry] = useState()
 
-    
+
     const calculationDayPayment = async () => {
 
-        
+
         if (globalTypePaymentsSelected === 'Cartão') {
             const currentDate = new Date();
             const year = currentDate.getMonth() + 2 > 12 ? currentDate.getFullYear() + 1 : currentDate.getFullYear();
@@ -1705,11 +1743,11 @@ export const Payment = (props) => {
             const day = String(datePayment.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${nextMonthString}-${day}`;
             const formattedDateNow = `${year}-${month}-${day}`;
-         
-          if(monthForPayment == null){
-              setMonthDayForPayment(formattedDate)
 
-          }
+            if (monthForPayment == null) {
+                setMonthDayForPayment(formattedDate)
+
+            }
             setDateForPaymentEntry(formattedDateNow)
         }
     }
@@ -1785,15 +1823,15 @@ export const Payment = (props) => {
 
 
     const handleCalculationValues = async () => {
-        // const totalValue = await handleCalculationDiscountAvista()
+        let totalValue = await handleCalculationDiscounts();
         let numberParcells = numberOfInstallments;
         let numberParcellsTwo;
         let paymentTwo;
         let totalValuePaymentFirst = totalValueFinnaly;
 
-        // if (numberParcells === 1 && totalValue > 0) {
-        //     totalValuePaymentFirst = totalValue
-        // }
+        if ((numberParcells === 1 || forma_pagamento === 'Ex Aluno') && totalValue > 0) {
+            totalValuePaymentFirst = totalValue
+        }
 
         if (twoCards && purchaseValues?.firstCard) {
             totalValuePaymentFirst = handleCalculationEntry(purchaseValues?.firstCard)
@@ -1970,9 +2008,37 @@ export const Payment = (props) => {
 
     }
 
+    const handleCalculationDiscounts = async () => {
+        let valorFinal = totalValueFinnaly;
+        let discountAvista = 0;
+        let discountExAluno = 0;
+
+        if (forma_pagamento === 'Ex Aluno') {
+            const totalValue = parseFloat(totalValueFinnaly);
+            let discountPercentage = 5; // Desconto a ex aluno
+            discountExAluno = (totalValue * (discountPercentage / 100)).toFixed(2);
+            valorFinal = (totalValue - parseFloat(discountExAluno)).toFixed(2);
+        }
+        if (numberOfInstallments === 1) {
+            const totalValue = parseFloat(valorFinal);
+            let discountPercentage = 5; // Desconto a vista
+            discountAvista = (totalValue * (discountPercentage / 100)).toFixed(2);
+            valorFinal = (totalValue - parseFloat(discountAvista)).toFixed(2);
+        } else {
+            setTotalValueComDiscount(0)
+            setAditionalDiscount({ ...aditionalDiscount, desconto_avista: 0 })
+        }
+
+        setTotalValueComDiscount(valorFinal)
+        setAditionalDiscount({ ...aditionalDiscount, desconto_avista: discountAvista, desconto_ex_aluno: discountExAluno })
+
+        return valorFinal
+    }
+
+
     useEffect(() => {
         handleCalculationValues()
-    }, [purchaseValues, paymentEntry, numberOfInstallments, twoCards, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, globalTypePaymentsSelectedTwo, dayForPayment])
+    }, [purchaseValues, totalValueComDiscount, paymentEntry, numberOfInstallments, twoCards, numberOfInstallmentSecondCard, totalValueFinnaly, globalTypePaymentsSelected, globalTypePaymentsSelectedTwo, dayForPayment])
 
 
     const handlePaymentProfile = (index, value) => {
@@ -2099,8 +2165,6 @@ export const Payment = (props) => {
     //     }
     // }
 
-    console.log(typePaymentsSelected)
-
     const handleChangeResponsibleData = (event) => {
 
         if (event.target.name == 'cpf_resp') {
@@ -2161,10 +2225,10 @@ export const Payment = (props) => {
         const divergencyPayment = ((parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) > 0.05 ||
             (parseFloat(totalValueFinnaly) - typePaymentsSelected?.map(item => parseFloat(item.valor_parcela))?.reduce((acc, curr) => acc += curr, 0)) < -0.05) ? true : false;
 
-       /* if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly) || divergencyPayment) {
-            alert.info('Existe divergência no saldo devedor. Verifique os valores das parcelas e entradas, antes de prosseguir.')
-            return
-        }*/
+        /* if ((totalValue + 0.05) < parseFloat(totalValueFinnaly) || (totalValue - 0.05) > parseFloat(totalValueFinnaly) || divergencyPayment) {
+             alert.info('Existe divergência no saldo devedor. Verifique os valores das parcelas e entradas, antes de prosseguir.')
+             return
+         }*/
 
         if (!globalTypePaymentsSelected || (twoCards && !globalTypePaymentsSelectedTwo)) {
             alert.info('Insira uma forma de pagamento válida.')
@@ -2248,8 +2312,10 @@ export const Payment = (props) => {
             descontoDispensadas: discountDispensed,
             descontoPorcentagemDisp: disciplineDispensedPorcent,
             descontoAdicional: aditionalDiscount?.desconto_adicional,
+            desconto_avista: aditionalDiscount?.desconto_avista,
+            desconto_ex_aluno: aditionalDiscount?.desconto_ex_aluno,
             valorDescontoAdicional: aditionalDiscount?.desconto_formatado,
-            valorFinal: totalValueFinnaly
+            valorFinal: totalValueComDiscount > 0 ? totalValueComDiscount : totalValueFinnaly
         });
 
         setPaymentsInfoData({
@@ -2261,7 +2327,7 @@ export const Payment = (props) => {
         })
 
         setPaymentForm([typePaymentsSelected, typePaymentsSelectedTwo]);
-    }, [updatedScreen, typePaymentEntry, typePaymentsSelected, typePaymentsSelectedTwo, numberOfInstallments, totalValueFinnaly, dispensedDisciplines, discountDispensed, disciplineDispensedPorcent, aditionalDiscount, valuesCourse, setValuesContract, setPaymentForm]);
+    }, [updatedScreen, typePaymentEntry, typePaymentsSelected, typePaymentsSelectedTwo, totalValueComDiscount, numberOfInstallments, totalValueFinnaly, dispensedDisciplines, discountDispensed, disciplineDispensedPorcent, aditionalDiscount, valuesCourse, setValuesContract, setPaymentForm]);
 
 
     const handleChangePaymentEntry = async (event) => {
@@ -2435,9 +2501,18 @@ export const Payment = (props) => {
                                     || '0'}</Text>
                             </Box>
                             <Divider distance={0} />
+                            {forma_pagamento === "Ex Aluno" &&
+                                <>
+                                    <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
+                                        <Text bold>Desconto 5% Ex aluno:</Text>
+                                        <Text>{'5.00%'}</Text>
+                                    </Box>
+                                    <Divider distance={0} />
+                                </>}
                             <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
                                 <Text bold>Valor Total com desconto:</Text>
-                                <Text>{formatter.format(totalValueFinnaly)}</Text>
+                                <Text large>{formatter.format(totalValueComDiscount > 0 ? totalValueComDiscount : totalValueFinnaly)}</Text>
+
                             </Box>
                             <Divider distance={0} />
                             {/* <SelectList fullWidth data={groupDaysForPay} valueSelection={dayForPayment || ''} onSelect={(value) => setDayForPayment(value)}
@@ -2445,7 +2520,7 @@ export const Payment = (props) => {
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                             /> */}
                             <TextInput name='monthForPayment' onChange={(e) => {
-                            
+
                                 setMonthDayForPayment(e.target.value)
                                 let date = new Date(e.target.value)
                                 if (date?.getDate() >= 1 && date?.getDate() <= 31) {
@@ -2454,7 +2529,7 @@ export const Payment = (props) => {
                                     return
                                 }
                             }} value={(monthForPayment)} type="date" label='Dt cobrança' sx={{ flex: 1, }} />
-                          
+
                             <CheckBoxComponent
                                 padding={false}
                                 valueChecked={hasEntry}
@@ -2694,6 +2769,25 @@ export const Payment = (props) => {
                                         alert.info('Adicione um responsável pagante para dividir em 2 pagamentos.')
                                     }
                                 }} style={{ height: '30px', borderRadius: 0 }} />
+                            </Box>
+
+                            <Box sx={{ display: 'flex' }}>
+                                {
+                                    forma_pagamento === "Ex Aluno" &&
+
+                                    <Box sx={{ display: 'flex', padding: '8px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor }}>
+                                        <Text bold xsmall style={{ color: '#fff' }}>5% Desconto Ex Aluno!</Text>
+                                    </Box>
+                                }
+                                {
+                                    numberOfInstallments === 1 &&
+
+                                    <Box sx={{ display: 'flex', marginLeft: "10px" }}>
+                                        <Box sx={{ display: 'flex', padding: '8px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor }}>
+                                            <Text bold xsmall style={{ color: '#fff' }}>5% Desconto á Vista!</Text>
+                                        </Box>
+                                    </Box>
+                                }
                             </Box>
 
                             {(twoCards) &&
@@ -3058,7 +3152,8 @@ export const ContractStudent = (props) => {
         isDp,
         reenrollmentDp,
         classesDisciplinesDpSelected,
-        handleCreateReEnrollStudentDp
+        handleCreateReEnrollStudentDp,
+        forma_pagamento
     } = props
 
 
@@ -3069,6 +3164,8 @@ export const ContractStudent = (props) => {
     const [valueContractPravaler, setValueContract] = useState(0)
     const contractService = useRef()
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+
 
 
     const handleUserData = async () => {
@@ -3092,28 +3189,28 @@ export const ContractStudent = (props) => {
     useEffect(() => {
 
         const updatedPaymentForm = paymentForm.map((payment) =>
-          
-            payment?.map((items) => ({  
+
+            payment?.map((items) => ({
                 ...items,
                 pagamento: items?.pagamento || items?.tipo,
                 valor_parcela: items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
             }))
         );
         const valueContract = paymentForm.map((payment) =>
-            payment?.map((items) => ({                 
-              valor_parcela: +items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
+            payment?.map((items) => ({
+                valor_parcela: +items?.valor_parcela ? parseFloat(items?.valor_parcela).toFixed(2) : null
             }))
-          );
-          
-          // Somar todas as parcelas
-          const totalValueContract = paymentForm.flat().reduce((acc, payment) => {
+        );
+
+        // Somar todas as parcelas
+        const totalValueContract = paymentForm.flat().reduce((acc, payment) => {
             const valor = parseFloat(payment?.valor_parcela);
             return acc + (isNaN(valor) ? 0 : valor);
-          }, 0).toFixed(2);
-          setValueContract(totalValueContract)
+        }, 0).toFixed(2);
+        setValueContract(totalValueContract)
 
-         
-         
+
+
         setPaymentData(updatedPaymentForm)
     }, [])
 
@@ -3159,6 +3256,8 @@ export const ContractStudent = (props) => {
             if (courseName) nameContract += `${courseName}_EAD`;
         }
     }
+
+    console.log(valuesContract)
 
     const base64toBlob = (base64, contentType) => {
         const byteCharacters = atob(base64);
@@ -3330,8 +3429,8 @@ export const ContractStudent = (props) => {
                                 body: [
                                     userData?.nome ? ['Aluno:', userData?.nome] : [],
                                     ['Resp. pagante:', responsiblePayerData?.nome_resp || userData?.nome],
-                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['Valor total do semestre:', formatter.format(formatter.format(valueContractPravaler))]  :  isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
-                                   
+                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['Valor total do semestre:', formatter.format(formatter.format(valueContractPravaler))] : isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
+
 
                                     ['Disciplinas dispensadas:', valuesContract?.qntDispensadas],
                                     classesDisciplinesDpSelected?.length > 0 && ['Disciplinas DP:', classesDisciplinesDpSelected?.length],
@@ -3340,11 +3439,18 @@ export const ContractStudent = (props) => {
                                     valuesContract?.descontoAdicional && ['DESCONTO (adicional):', (typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
                                         || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
                                         || '0'],
+
+                                    (forma_pagamento == 'Ex Aluno' && valuesContract?.desconto_ex_aluno > 0) && ['DESCONTO Ex aluno (5%):', formatter.format(parseFloat(valuesContract?.desconto_ex_aluno))],
+                                    (valuesContract?.desconto_avista > 0) && ['DESCONTO á vista (5%):', formatter.format(parseFloat(valuesContract?.desconto_avista))],
+
+
                                     (valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0) && ['DESCONTO TOTAL:', formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))],
+
+
                                     paymentsInfoData?.valueEntry > 0 && ['VALOR DE ENTRADA:', formatter.format(paymentsInfoData?.valueEntry)],
 
-                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['VALOR A PAGAR:', formatter.format(valueContractPravaler)]  : ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],                                    
-                                    
+                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['VALOR A PAGAR:', formatter.format(valueContractPravaler)] : ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],
+
                                 ].filter(row => row.length > 0),
                                 layout: {
                                     hLineWidth: function (i, node) {
@@ -3557,18 +3663,18 @@ export const ContractStudent = (props) => {
                                 <Box sx={styles.containerValues}>
                                     <Text small style={styles.textDataPayments} bold>Valor total do semestre:</Text>
                                     <Text small style={styles.textDataPayments}>
-                                    {
+                                        {
                                             paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ?
 
-                                            formatter.format(valueContractPravaler) 
+                                                formatter.format(valueContractPravaler)
 
-                                            :  
-                                            
-                                            isDp ? formatter?.format(valuesContract?.valorFinal) : formatter.format(valuesContract?.valorSemestre)
-                                    }
+                                                :
 
-                                      
-                                        
+                                                isDp ? formatter?.format(valuesContract?.valorFinal) : formatter.format(valuesContract?.valorSemestre)
+                                        }
+
+
+
                                     </Text>
                                 </Box>
                                 {isDp && <Box sx={styles.containerValues}>
@@ -3591,6 +3697,15 @@ export const ContractStudent = (props) => {
                                         <Text small style={styles.textDataPayments}>{valuesContract?.descontoPorcentagemDisp}</Text>
                                     </Box>
                                 }
+                                {/* {valuesContract?.descontoAdicional &&
+                                    <Box sx={styles.containerValues}>
+                                        <Text small style={styles.textDataPayments} bold>DESCONTO (adicional):</Text>
+
+                                        <Text small style={styles.textDataPayments}>{(typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
+                                            || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
+                                            || '0'}</Text>
+                                    </Box>
+                                } */}
                                 {valuesContract?.descontoAdicional &&
                                     <Box sx={styles.containerValues}>
                                         <Text small style={styles.textDataPayments} bold>DESCONTO (adicional):</Text>
@@ -3600,6 +3715,21 @@ export const ContractStudent = (props) => {
                                             || '0'}</Text>
                                     </Box>
                                 }
+
+                                {(forma_pagamento == 'Ex Aluno' && valuesContract?.desconto_ex_aluno > 0) &&
+                                    <Box sx={styles.containerValues}>
+                                        <Text small style={styles.textDataPayments} bold>DESCONTO Ex Aluno (5%):</Text>
+                                        <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.desconto_ex_aluno))}</Text>
+                                    </Box>
+                                }
+
+                                {(valuesContract?.desconto_avista > 0) &&
+                                    <Box sx={styles.containerValues}>
+                                        <Text small style={styles.textDataPayments} bold>DESCONTO valor á vista (5%):</Text>
+                                        <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.desconto_avista))}</Text>
+                                    </Box>
+                                }
+
                                 {valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0 &&
                                     <Box sx={styles.containerValues}>
                                         <Text small style={styles.textDataPayments} bold>DESCONTO TOTAL:</Text>
@@ -3616,12 +3746,12 @@ export const ContractStudent = (props) => {
                                     <Box sx={{ ...styles.containerValues, borderRadius: '0px 0px 8px 8px' }}>
                                         <Text small style={styles.textDataPayments} bold>VALOR A PAGAR:</Text>
                                         <Text small style={styles.textDataPayments}>
-                                        {
-                                            paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ?
-                                            formatter.format(valueContractPravaler) :  formatter.format(valuesContract?.valorFinal)
-                                        }
-                                        
-                                            
+                                            {
+                                                paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ?
+                                                    formatter.format(valueContractPravaler) : formatter.format(valuesContract?.valorFinal)
+                                            }
+
+
                                         </Text>
                                     </Box>
                                 }

@@ -97,7 +97,7 @@ export default function EditStudentGrade(props) {
 
     const handleChange = (userId, field, value) => {
 
-
+        console.log(userId, field, value)
 
         setStudentData((prevValues) => {
             return prevValues.map((student) => {
@@ -139,8 +139,12 @@ export default function EditStudentGrade(props) {
                         updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",", ".");
                     }
 
+                    console.log(updatedStudent)
+
+
                     return updatedStudent;
                 }
+
                 return student;
             });
         });
@@ -177,7 +181,10 @@ export default function EditStudentGrade(props) {
             const response = await api.patch(`/studentGrade/update`, { studentData });
             if (response?.status === 201) {
                 alert.success('Chamada atualizada com sucesso.');
-                handleItems()
+                await handleItems()
+                if (studentGradeData?.disciplina_id) {
+                    handleStudent(studentGradeData?.disciplina_id)
+                }
                 return
             }
             alert.error('Tivemos um problema ao atualizar Chamada.');
@@ -225,10 +232,10 @@ export default function EditStudentGrade(props) {
                         modulo_nota: student?.modulo_nota,
                         nome: student?.nome,
                         nome_social: student?.nome_social,
-                        nt_avaliacao_sem: student?.nt_avaliacao_sem,
-                        nt_substitutiva: student?.nt_substitutiva,
-                        nt_exame: student?.nt_exame,
-                        nt_final: student?.nt_final,
+                        nt_avaliacao_sem: student?.nt_avaliacao_sem ? student?.nt_avaliacao_sem?.toFixed(1) : null,
+                        nt_substitutiva: student?.nt_substitutiva ? student?.nt_substitutiva.toFixed(1) : null,
+                        nt_exame: student?.nt_exame ? student?.nt_exame.toFixed(1) : null,
+                        nt_final: student?.nt_final ? student?.nt_final.toFixed(1) : null,
                         obs_nt: student?.obs_nt,
                         avaliacao_status: student?.avaliacao_status
                     }));
