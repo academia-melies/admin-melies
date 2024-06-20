@@ -1,4 +1,4 @@
-import { Navigation, Pagination, Scrollbar, A11y, Autoplay  } from 'swiper/modules';
+import { Navigation, Pagination, Scrollbar, A11y, Autoplay } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -13,17 +13,17 @@ export const Carousel = (props) => {
 
     return (
         <Swiper
-            modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay ]}
+            modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay]}
             loop
             slidesPerView={1}
-            // navigation
+            navigation
             pagination={{ clickable: true }}
             autoplay={{ delay: 8000, disableOnInteraction: false }}
         >
             {data?.map((item, index) => (
-                <SwiperSlide key={`${item}-${index}`} style={{ ...style}}>
+                <SwiperSlide key={`${item}-${index}`} style={{ ...style }}>
                     <Box sx={{
-                        backgroundSize: {xs: 'cover', xm: 'cover', md: 'cover', lg: 'cover'},
+                        backgroundSize: { xs: 'cover', xm: 'cover', md: 'cover', lg: 'cover' },
                         backgroundRepeat: 'no-repeat',
                         backgroundPosition: 'center',
                         backgroundImage: `url('${item?.location}')`,

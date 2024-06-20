@@ -370,17 +370,21 @@ function Home() {
             <meta charset="utf-8" />
             <link rel="icon" href="https://adm-melies.s3.amazonaws.com/logo_vermelho_linhas_brancas.svg" />
          </Head>
-         <Box sx={{ display: 'flex', marginTop: '50px', width: '100%' }}>
-            <Carousel
-               data={imagesList || backgroundHome}
-               style={{
-                  backgroundColor: colorPalette.secondary,
-                  borderRadius: '8px',
-                  boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-               }}
-               heigth={{ xs: 200, xm: 480, md: 200, lg: 300, xl: 400 }}
-               width={'auto'}
-            />
+         <Box sx={{ display: 'flex', marginTop: '50px', overflow: 'hidden', display: 'flex' }}>
+            <Box sx={{width: { xs: '100%', xm: '100%', md: '96.5%', lg: '95.5%', xl: '96.5%' }}}>
+               <Carousel
+                  data={imagesList || backgroundHome}
+                  style={{
+                     backgroundColor: colorPalette.secondary,
+                     borderRadius: '8px',
+                     boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                  }}
+                  heigth={{ xs: 200, xm: 480, md: 200, lg: 300, xl: 400 }}
+               />
+            </Box>
+            <Box sx={{ width: 50, display: { xs: 'none', xm: 'none', md: 'flex', lg: 'flex', xl: 'flex' }, height: { xs: 200, xm: 480, md: 200, lg: 300, xl: 400 } }}>
+               <p></p>
+            </Box>
          </Box>
          <Box sx={{ display: 'flex', gap: 1, flexDirection: 'row' }}>
             <Box sx={{
@@ -515,7 +519,7 @@ function Home() {
                      }}>
 
                         <Box sx={{ width: '100%' }}>
-                           <MenuHomeList/>
+                           <MenuHomeList />
                         </Box>
 
                         <Box sx={{
