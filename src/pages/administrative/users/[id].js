@@ -15,8 +15,7 @@ import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import Dropzone from "react-dropzone"
-
-
+import Cards from 'react-credit-cards'
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -133,6 +132,8 @@ export default function EditUser() {
     const [classesInterest, setClassesInterest] = useState([])
     const [groupPermissions, setGroupPermissions] = useState([])
     const [permissionPerfil, setPermissionPerfil] = useState()
+    const [responsiblePayerData, setResponsiblePayerData] = useState({})
+    const [creditCards, setCreditCards] = useState([])
     const [permissionPerfilBefore, setPermissionPerfilBefore] = useState()
     const [foreigner, setForeigner] = useState(false)
     const [showContract, setShowContract] = useState(true)
@@ -416,6 +417,49 @@ export default function EditUser() {
         }
     }
 
+    const handleResponsible = async () => {
+        try {
+            const response = await api.get(`/responsible/${id}`)
+            const { data } = response
+            if (data) {
+                setResponsiblePayerData(data)
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
+
+
+    const handlePaymentsProfile = async () => {
+        try {
+            const response = await api.get(`/order/paymentProfile/list/${id}`)
+            const { success } = response?.data
+            if (success) {
+                const { crediCards } = response?.data
+                const groupPaymentsPerfil = crediCards?.map(item => ({
+                    numero_cartao: `${item?.primeiros_numeros} XXXX XXXX ${item?.ultimos_numeros}`,
+                    nome_cartao: item?.nome_cartao,
+                    dt_expiracao: item?.dt_expiracao,
+                }))
+
+                const removeDuplicateCards = (cards) => {
+                    const seen = new Set();
+                    return cards.filter(card => {
+                        const duplicate = seen.has(card.numero_cartao);
+                        seen.add(card.numero_cartao);
+                        return !duplicate;
+                    });
+                };
+
+                const uniqueCreditCards = removeDuplicateCards(groupPaymentsPerfil);
+                setCreditCards(uniqueCreditCards);
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
 
     useEffect(() => {
@@ -620,18 +664,20 @@ export default function EditUser() {
         try {
             await getUserData()
             await getEnrollment()
-            getContract()
-            getInterest()
-            getHistoric()
-            getPhoto()
-            getFileUser()
-            getContractStudent()
-            getOfficeHours()
-            getPermissionUser()
-            getDependent()
-            getDisciplineProfessor()
+            await getContract()
+            await getInterest()
+            await getHistoric()
+            await getPhoto()
+            await getFileUser()
+            await getContractStudent()
+            await getOfficeHours()
+            await getPermissionUser()
+            await getDependent()
+            await getDisciplineProfessor()
             await listClass()
             await handleEnrollments()
+            await handleResponsible()
+            await handlePaymentsProfile()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -1956,6 +2002,7 @@ export default function EditUser() {
         { id: '03', icon: '/icons/matricula_icon.png', text: 'Matrículas', queryId: true, screen: 'enrollments', perfil: ['aluno', 'interessado'] },
         { id: '04', icon: '/icons/cursos_icon_home.png', text: 'Inscrições e Interesses', queryId: true, screen: 'interests', perfil: ['aluno', 'interessado'] },
         { id: '05', icon: '/icons/contract_icon.png', text: 'Contrato do Funcionário', queryId: true, screen: 'contractEmployee', perfil: ['funcionario'] },
+        { id: '06', icon: '/icons/holerite.png', text: 'Preferência de Pagamento', queryId: true, screen: 'paymentPerfil', perfil: ['aluno'] },
     ]
 
 
@@ -3678,7 +3725,7 @@ export default function EditUser() {
                                                                 </Link>
                                                             </Box>
                                                             <Divider padding={0} />
-                                                           
+
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                                 <Text bold>Situação dos pagamentos:</Text>
                                                                 <Link href={`/administrative/users/${id}/statusPayment?enrollmentId=${enrollmentId}`} target="_blank">
@@ -3690,10 +3737,10 @@ export default function EditUser() {
                                                                 <Text bold>Excluir Matricula:</Text>
                                                                 <Button small text="Excluir" onClick={handleClickOpen} style={{ width: 105, height: 25, alignItems: 'center' }} />
 
-                                                            </Box>                                                          
+                                                            </Box>
                                                             <Dialog
                                                                 open={open}
-                                                             
+
                                                                 keepMounted
                                                                 onClose={handleClose}
                                                                 aria-describedby="alert-dialog-slide-description"
@@ -3701,12 +3748,12 @@ export default function EditUser() {
                                                                 <DialogTitle>{"ATENÇÃO!"}</DialogTitle>
                                                                 <DialogContent>
                                                                     <DialogContentText id="alert-dialog-slide-description">
-                                                                            Deseja apagar essa matrícula permanentemente
+                                                                        Deseja apagar essa matrícula permanentemente
                                                                     </DialogContentText>
                                                                 </DialogContent>
                                                                 <DialogActions>
                                                                     <Button onClick={handleClose} small text="Não" />
-                                                                    <Button onClick={() => deleteMatricula(id, item?.turma_id, enrollmentId, item?.modulo)} small text="Sim"/>
+                                                                    <Button onClick={() => deleteMatricula(id, item?.turma_id, enrollmentId, item?.modulo)} small text="Sim" />
                                                                 </DialogActions>
                                                             </Dialog>
 
@@ -4715,6 +4762,140 @@ export default function EditUser() {
                 })
                 }
             </Box>
+
+
+            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'paymentPerfil') &&
+                <>
+                    <ContentContainer style={{ ...styles.containerContract, padding: '40px' }}>
+                        <Box sx={{
+                            display: 'flex', alignItems: 'center', padding: '0px 0px 20px 0px', gap: 1,
+                            justifyContent: 'space-between'
+                        }}>
+                            <Text title bold style={{ color: colorPalette?.buttonColor }}>Responsável Financeiro</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                transition: '.3s'
+                            }} />
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', }}>
+                            <Box sx={{
+                                display: 'flex', gap: 3, flexDirection: 'column', padding: '20px', backgroundColor: colorPalette?.primary + '77',
+                                border: `1px solid ${colorPalette?.primary}`, borderRadius: 2
+                            }}>
+                                <Text bold large>Dados do Responsável:</Text>
+                                <Box sx={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>Nome/Razão Social:</Text>
+                                        <Text>{responsiblePayerData?.nome_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>Telefone:</Text>
+                                        <Text>{responsiblePayerData?.telefone_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>E-mail:</Text>
+                                        <Text>{responsiblePayerData?.email_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>CPF/CNPJ:</Text>
+                                        <Text>{responsiblePayerData?.cpf_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>RG:</Text>
+                                        <Text>{responsiblePayerData?.rg_resp}</Text>
+                                    </Box>
+                                </Box>
+                            </Box>
+
+                            <Box sx={{
+                                display: 'flex', gap: 3, flexDirection: 'column', padding: '20px', backgroundColor: colorPalette?.primary + '77',
+                                border: `1px solid ${colorPalette?.primary}`, borderRadius: 2
+                            }}>
+                                <Text bold large>Dados do Endereço:</Text>
+                                <Box sx={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>CEP:</Text>
+                                        <Text>{responsiblePayerData?.cep_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>Endereço:</Text>
+                                        <Text>{responsiblePayerData?.end_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>Nº:</Text>
+                                        <Text>{responsiblePayerData?.numero_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>Cidade:</Text>
+                                        <Text>{responsiblePayerData?.cidade_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>Estado:</Text>
+                                        <Text>{responsiblePayerData?.estado_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>UF:</Text>
+                                        <Text>{responsiblePayerData?.uf_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>Bairro:</Text>
+                                        <Text>{responsiblePayerData?.bairro_resp}</Text>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', width: '1px', backgroundColor: 'lightgray', margin: '0px 5px', height: '100%' }} />
+                                    <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column' }}>
+                                        <Text bold>Complemento:</Text>
+                                        <Text>{responsiblePayerData?.compl_resp}</Text>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </ContentContainer>
+
+                    {creditCards?.length > 0 &&
+                        <ContentContainer style={{ ...styles.containerContract, padding: '40px' }}>
+                            <Box sx={{
+                                display: 'flex', alignItems: 'center', padding: '0px 0px 20px 0px', gap: 1,
+                                justifyContent: 'space-between'
+                            }}>
+                                <Text title bold style={{ color: colorPalette?.buttonColor }}>Métodos de Pagamento Cadastrados</Text>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(${icons.gray_arrow_down})`,
+                                    transition: '.3s'
+                                }} />
+                            </Box>
+
+                            <Box sx={{
+                                display: 'flex', gap: 3, padding: '20px', justifyContent: 'flex-start'
+                            }}>
+                                {creditCards?.map((item, index) => (
+                                    <Box key={index}>
+                                        <Cards
+                                            cvc={''}
+                                            expiry={item?.dt_expiracao || ''}
+                                            name={item?.nome_cartao || ''}
+                                            number={item?.numero_cartao || ''}
+                                        />
+                                    </Box>
+                                ))}
+                            </Box>
+                        </ContentContainer>}
+                </>
+            }
         </>
     )
 }

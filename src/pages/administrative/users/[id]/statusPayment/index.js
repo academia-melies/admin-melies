@@ -268,10 +268,6 @@ export default function StuatusPayment() {
             alert.info(`O valor da Parcela deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
             return false
         }
-        if (newInstallment?.c_custo === '' || newInstallment?.c_custo === null) {
-            alert.info(`O centro de custo deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
-            return false
-        }
         if (newInstallment?.n_parcela === '' || newInstallment?.n_parcela === null) {
             alert.info(`O número da parcela deve ser preenchido. Por favor, preencha o campo antes de prosseguir.`)
             return false
@@ -324,7 +320,7 @@ export default function StuatusPayment() {
                     vencimento: newInstallment?.vencimento,
                     valor_parcela: newInstallment?.valor_parcela,
                     n_parcela: newInstallment?.n_parcela,
-                    c_custo: newInstallment?.c_custo,
+                    c_custo: 178,
                     forma_pagamento: newInstallment?.forma_pagamento,
                     conta: newInstallment?.conta,
                     obs_pagamento: 'Nova parcela lançada.',
@@ -389,7 +385,11 @@ export default function StuatusPayment() {
 
     const listPayment = [
         { label: 'Boleto', value: 'Boleto' },
-    ]
+        { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
+        // { label: 'Cartão', value: 'Cartão' },
+        { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },]
+
+    const contractValue = installmentsData?.length > 0 ? installmentsData?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) : 0;
 
     return (
         <>
@@ -609,7 +609,7 @@ export default function StuatusPayment() {
                             <Divider />
                             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'end' }}>
                                 <Text bold>Valor do contrato: </Text>
-                                <Text large>{formatter.format(enrollmentData?.valor_matricula)}</Text>
+                                <Text large>{formatter.format(contractValue)}</Text>
                             </Box>
                             <Divider />
                             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start' }}>
@@ -703,7 +703,7 @@ export default function StuatusPayment() {
                             <TextInput placeholder='Nº Parcela' name='n_parcela' type="number" onChange={handleChange} value={newInstallment?.n_parcela || ''}
                                 label='Nº Parcela' sx={{ flex: 1, }} />
                         </Box>
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        {responsiblePayerData && <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                             {newInstallment?.responsavel_financeiro !== 0 ?
                                 <Box onClick={() => setNewInstallment({ ...newInstallment, responsavel_financeiro: 0 })} sx={{
                                     "&:hover": {
@@ -733,11 +733,11 @@ export default function StuatusPayment() {
 
                             <Text bold={newInstallment?.responsavel_financeiro !== 0}
                                 light style={{ color: newInstallment?.responsavel_financeiro !== 0 ? 'green' : colorPalette?.textColor, }}>Responsável Financeiro</Text>
-                        </Box>
-                        <SelectList fullWidth data={costCenterList} valueSelection={newInstallment?.c_custo} onSelect={(value) => setNewInstallment({ ...newInstallment, c_custo: value })}
+                        </Box>}
+                        {/* <SelectList fullWidth data={costCenterList} valueSelection={newInstallment?.c_custo} onSelect={(value) => setNewInstallment({ ...newInstallment, c_custo: value })}
                             title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                        />
+                        /> */}
                         <SelectList fullWidth data={listPayment} valueSelection={newInstallment?.forma_pagamento || ''} onSelect={(value) => setNewInstallment({ ...newInstallment, forma_pagamento: value })}
                             filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                             title="Selecione a forma de pagamento *"
