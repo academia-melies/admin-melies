@@ -212,7 +212,6 @@ export default function InterestEnroll() {
         try {
             const response = await api.get(`/subscription/interest/${interest}`)
             const { data } = response
-            console.log(response)
             await setSubscriptionData(data)
             await setPagamento(data.forma_pagamento)
             return await data
@@ -3256,8 +3255,6 @@ export const ContractStudent = (props) => {
             if (courseName) nameContract += `${courseName}_EAD`;
         }
     }
-
-    console.log(valuesContract)
 
     const base64toBlob = (base64, contentType) => {
         const byteCharacters = atob(base64);
