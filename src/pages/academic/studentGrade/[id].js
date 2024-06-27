@@ -97,8 +97,6 @@ export default function EditStudentGrade(props) {
 
     const handleChange = (userId, field, value) => {
 
-        console.log(userId, field, value)
-
         setStudentData((prevValues) => {
             return prevValues.map((student) => {
                 if (student.usuario_id === userId) {
@@ -138,9 +136,6 @@ export default function EditStudentGrade(props) {
                     if ((updatedStudent.nt_substitutiva !== '' || updatedStudent.nt_substitutiva !== null) && (parseFloat(updatedStudent.nt_substitutiva) > parseFloat(updatedStudent?.nt_exame))) {
                         updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",", ".");
                     }
-
-                    console.log(updatedStudent)
-
 
                     return updatedStudent;
                 }
@@ -232,10 +227,10 @@ export default function EditStudentGrade(props) {
                         modulo_nota: student?.modulo_nota,
                         nome: student?.nome,
                         nome_social: student?.nome_social,
-                        nt_avaliacao_sem: student?.nt_avaliacao_sem ? student?.nt_avaliacao_sem?.toFixed(1) : null,
-                        nt_substitutiva: student?.nt_substitutiva ? student?.nt_substitutiva.toFixed(1) : null,
-                        nt_exame: student?.nt_exame ? student?.nt_exame.toFixed(1) : null,
-                        nt_final: student?.nt_final ? student?.nt_final.toFixed(1) : null,
+                        nt_avaliacao_sem: student?.nt_avaliacao_sem?.toString() ? student?.nt_avaliacao_sem?.toFixed(1) : null,
+                        nt_substitutiva: student?.nt_substitutiva?.toString() ? student?.nt_substitutiva.toFixed(1) : null,
+                        nt_exame: student?.nt_exame?.toString() ? student?.nt_exame.toFixed(1) : null,
+                        nt_final: student?.nt_final?.toString() ? student?.nt_final.toFixed(1) : null,
                         obs_nt: student?.obs_nt,
                         avaliacao_status: student?.avaliacao_status
                     }));
@@ -417,9 +412,7 @@ export default function EditStudentGrade(props) {
                                                     const colorStatus = (statusGrade === 'Aprovado' && 'green') || (statusGrade === 'Reprovado' && 'red') || (statusGrade === 'Pendente' && 'gray');
                                                     let avaliation = item?.nt_avaliacao_sem ? parseFloat(item.nt_avaliacao_sem) : null;
                                                     let substitutive = item?.nt_substitutiva ? parseFloat(item.nt_substitutiva) : null;
-
-
-                                                    let ntFinally = parseFloat(item.nt_final) || 'Aguardando nota';
+                                                    let ntFinally = item?.nt_final?.toString() ? parseFloat(item?.nt_final) : 'Aguardando nota';
 
                                                     const isExam = (avaliation !== null && avaliation < 6)
                                                         ||
