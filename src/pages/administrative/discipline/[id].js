@@ -29,7 +29,8 @@ export default function EditDiscipline(props) {
         recurso_apoio: null,
         bibl_basica: null,
         bibl_compl: null,
-        descricao: null
+        descricao: null,
+        optativa: 0
     })
     const [disciplines, setDisciplines] = useState([])
     const [softwares, setSoftwares] = useState([])
@@ -395,6 +396,7 @@ export default function EditDiscipline(props) {
                     rows={3}
                     sx={{}} />
                 <RadioItem disabled={!isPermissionEdit && true} valueRadio={disciplineData?.disciplina_cobrada} group={groupValue} title="Disciplina Cobrada:" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, disciplina_cobrada: parseInt(value) })} />
+                <RadioItem disabled={!isPermissionEdit && true} valueRadio={disciplineData?.optativa} group={groupValue} title="Disciplina Optativa:" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, optativa: parseInt(value) })} />
                 <RadioItem disabled={!isPermissionEdit && true} valueRadio={disciplineData?.ativo} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setDisciplineData({ ...disciplineData, ativo: parseInt(value) })} />
             </ContentContainer>
             <ContentContainer>
