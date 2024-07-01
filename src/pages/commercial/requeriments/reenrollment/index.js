@@ -1,13 +1,13 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text, TextInput } from "../../../../../atoms"
-import { SectionHeader } from "../../../../../organisms"
-import { api } from "../../../../../api/api"
-import { useAppContext } from "../../../../../context/AppContext"
-import { formatTimeStamp } from "../../../../../helpers"
+import { Box, Text, TextInput } from "../../../../atoms"
+import { SectionHeader } from "../../../../organisms"
+import { api } from "../../../../api/api"
+import { useAppContext } from "../../../../context/AppContext"
+import { formatTimeStamp } from "../../../../helpers"
 
 
-export default function RequerimentList(props) {
+export default function RequerimentReenrollmentList(props) {
     const [requeriments, setRequeriments] = useState([])
     const [filterData, setFilterData] = useState('')
     const [menuSelected, setMenuSelected] = useState('Em andamento')
@@ -60,7 +60,7 @@ export default function RequerimentList(props) {
     const getRequeriments = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/requeriments/enrollment`)
+            const response = await api.get(`/requeriments/reenrollment`)
             const { data } = response;
             setRequeriments(data)
         } catch (error) {
@@ -97,7 +97,7 @@ export default function RequerimentList(props) {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, justifyContent: 'flex-start' }}>
             <SectionHeader
-                title={`Requerimentos de Matrícula (${requeriments?.filter(filter)?.length})`}
+                title={`Requerimentos de Re-Matrícula (${requeriments?.filter(filter)?.length})`}
             />
 
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
