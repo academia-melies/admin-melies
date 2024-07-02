@@ -137,6 +137,13 @@ export default function EditStudentGrade(props) {
                         updatedStudent.nt_final = updatedStudent?.nt_substitutiva?.toString().replace(",", ".");
                     }
 
+                    if (updatedStudent.avaliacao_status == 0 &&
+                        !updatedStudent.nt_avaliacao_sem &&
+                        !updatedStudent.nt_substitutiva &&
+                        !updatedStudent?.nt_exame) {
+                        updatedStudent.nt_final = 0
+                    }
+
                     return updatedStudent;
                 }
 
