@@ -38,7 +38,7 @@ export default function CommercialPainel(props) {
 
     const getEnrollments = async () => {
         try {
-            const response = await api.get(`/reports/commercial/enrollments?year=${filters?.year}&semestre=${filters?.semestre}`)
+            const response = await api.get(`/reports/commercial/enrollments?year=${filters?.year}&semester=${filters?.semestre}`)
             if (response?.data) {
                 setReportIndicators(response?.data)
                 const { enrollmentsToClassId, enrollmentsData } = response?.data

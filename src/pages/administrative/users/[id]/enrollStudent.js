@@ -1756,39 +1756,58 @@ export const Payment = (props) => {
 
         let calculationDisciplinesModule = disciplines?.filter(item => item?.disciplina_cobrada === 1)?.length;
         let calculationDisciplinesSelected = disciplinesSelectedForCalculation?.filter(item => item?.disciplina_cobrada === 1)?.length;
-        let disciplinesDispensed = calculationDisciplinesModule - calculationDisciplinesSelected;
-        let porcentDisciplineDispensed = `${((disciplinesDispensed / calculationDisciplinesModule) * 100).toFixed(2)}%`;
 
-        let valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
-        let costDiscipline = (valueModuleCourse / calculationDisciplinesModule).toFixed(2);
-        let calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
-        let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
-        let valuesDisciplineDpTotal = (costDiscipline * (classesDisciplinesDpSelected?.length)).toFixed(2)
+        if (calculationDisciplinesModule > 0 || calculationDisciplinesSelected > 0) {
+            let disciplinesDispensed = calculationDisciplinesModule - calculationDisciplinesSelected;
+            let calculationPorcentage = (disciplinesDispensed / calculationDisciplinesModule) * 100;
+            let porcentDisciplineDispensed = `${(calculationPorcentage).toFixed(2)}%`;
+
+            let valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
+            let costDiscipline = (valueModuleCourse / calculationDisciplinesModule).toFixed(2);
+            let calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
+            let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
+            let valuesDisciplineDpTotal = (costDiscipline * (classesDisciplinesDpSelected?.length)).toFixed(2)
 
 
-        if (isReenrollment) {
-            if (isDp) {
-                disciplinesDispensed = 0;
-                porcentDisciplineDispensed = '0.00%';
-                valueModuleCourse = valuesDisciplineDpTotal;
-                calculationDiscount = 0;
-                valueFinally = parseFloat(valuesDisciplineDpTotal)
+            if (isReenrollment) {
+                if (isDp) {
+                    disciplinesDispensed = 0;
+                    porcentDisciplineDispensed = '0.00%';
+                    valueModuleCourse = valuesDisciplineDpTotal;
+                    calculationDiscount = 0;
+                    valueFinally = parseFloat(valuesDisciplineDpTotal)
+                }
             }
+            setTotalValueFinnaly(valueFinally)
+            setDisciplineDispensedPorcent(porcentDisciplineDispensed)
+            setDispensedDisciplines(disciplinesDispensed)
+            setDiscountDispensed(calculationDiscount)
+            setValuesDisciplinesDp(valuesDisciplineDpTotal)
+            setValuesContract({
+                valorSemestre: valuesCourse?.valor_total_curso,
+                qntDispensadas: disciplinesDispensed,
+                descontoDispensadas: calculationDiscount,
+                descontoPorcentagemDisp: porcentDisciplineDispensed,
+                descontoAdicional: aditionalDiscount?.desconto_adicional,
+                valorDescontoAdicional: aditionalDiscount?.desconto_formatado,
+                valorFinal: valueFinally
+            })
+        } else {
+            setTotalValueFinnaly((valuesCourse?.valor_total_curso).toFixed(2))
+            setDisciplineDispensedPorcent(0)
+            setDispensedDisciplines(0)
+            setDiscountDispensed(0)
+            setValuesDisciplinesDp(valuesCourse?.valor_total_curso.toFixed(2))
+            setValuesContract({
+                valorSemestre: valuesCourse?.valor_total_curso,
+                qntDispensadas: 0,
+                descontoDispensadas: 0,
+                descontoPorcentagemDisp: 0,
+                descontoAdicional: aditionalDiscount?.desconto_adicional,
+                valorDescontoAdicional: aditionalDiscount?.desconto_formatado,
+                valorFinal: valuesCourse?.valor_total_curso
+            })
         }
-        setTotalValueFinnaly(valueFinally)
-        setDisciplineDispensedPorcent(porcentDisciplineDispensed)
-        setDispensedDisciplines(disciplinesDispensed)
-        setDiscountDispensed(calculationDiscount)
-        setValuesDisciplinesDp(valuesDisciplineDpTotal)
-        setValuesContract({
-            valorSemestre: valuesCourse?.valor_total_curso,
-            qntDispensadas: disciplinesDispensed,
-            descontoDispensadas: calculationDiscount,
-            descontoPorcentagemDisp: porcentDisciplineDispensed,
-            descontoAdicional: aditionalDiscount?.desconto_adicional,
-            valorDescontoAdicional: aditionalDiscount?.desconto_formatado,
-            valorFinal: valueFinally
-        })
 
 
         calculationDayPayment()
