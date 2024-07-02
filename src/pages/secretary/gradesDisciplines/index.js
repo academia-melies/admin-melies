@@ -118,6 +118,7 @@ export default function ClassDay(props) {
                 const response = await api.get(`/student/grades/disciplines/${moduleSelected}/${classId}`)
                 const { data = [] } = response;
                 setIsFind(true)
+                console.log(data)
                 setListGradesByDisciplines(data)
             } catch (error) {
                 console.log(error)
