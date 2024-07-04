@@ -51,6 +51,7 @@ export default function ListUsers(props) {
             Object.values(userFilterFunctions).every(userFilterFunction => userFilterFunction(item)) &&
             (
                 normalizeString(item?.nome)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
+                normalizeString(item?.nome_social)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
                 // normalizeString(item?.cpf)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) ||
                 normalizedUserId?.includes(filterData.toString())
 
@@ -140,6 +141,7 @@ export default function ListUsers(props) {
     const column = [
         { key: 'id', label: 'ID' },
         { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'location', matricula: true },
+        { key: 'nome_social', label: 'Nome Social' },
         { key: 'email', label: 'E-mail' },
         { key: 'email_melies', label: 'E-mail Méliès' },
     ];

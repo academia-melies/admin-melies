@@ -16,6 +16,7 @@ export default function CommercialPainel(props) {
     const [filters, setFilters] = useState({
         year: 2024,
         semestre: '2º Semestre',
+        buscar_por: 'Matrícula',
         classId: 'todos',
         status: 'todos'
     })
@@ -38,7 +39,7 @@ export default function CommercialPainel(props) {
 
     const getEnrollments = async () => {
         try {
-            const response = await api.get(`/reports/commercial/enrollments?year=${filters?.year}&semester=${filters?.semestre}`)
+            const response = await api.get(`/reports/commercial/enrollments?year=${filters?.year}&semester=${filters?.semestre}&buscar_por=${filters?.buscar_por}`)
             if (response?.data) {
                 setReportIndicators(response?.data)
                 const { enrollmentsToClassId, enrollmentsData } = response?.data
@@ -77,7 +78,7 @@ export default function CommercialPainel(props) {
 
 
     const handleFiltered = async () => {
-        if (filters?.year && filters?.semestre) {
+        if (filters?.year && filters?.semestre && filters?.buscar_por) {
             try {
                 setLoading(true)
                 await getEnrollments()
@@ -94,13 +95,18 @@ export default function CommercialPainel(props) {
                 setStartSearch(true)
             }
         } else {
-            alert.info('Preencha o Ano e Semestre, antes de buscar.')
+            alert.info('Preencha o Ano e Semestre e tipo de busque, antes de buscar.')
         }
     }
 
     const groupMonths = [
         { label: '1º Semestre', value: '1º Semestre' },
         { label: '2º Semestre', value: '2º Semestre' },
+    ]
+
+    const groupReenrollment = [
+        { label: 'Matrícula', value: 'Matrícula' },
+        { label: 'Rematrícula', value: 'Rematrícula' },
     ]
 
     const groupStatus = [
@@ -138,6 +144,15 @@ export default function CommercialPainel(props) {
                             }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
+                        <SelectList clean={false} data={groupReenrollment} valueSelection={filters?.buscar_por} onSelect={(value) => setFilters({ ...filters, buscar_por: value })}
+                            title="Tipo de busca:" filterOpition="value"
+                            sx={{
+                                backgroundColor: colorPalette?.secondary,
+                                boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                                color: colorPalette.textColor, maxWidth: 280
+                            }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
 
                         <Button text="Buscar" style={{ borderRadius: 2, width: 130 }} onClick={() => handleFiltered()} />
                     </Box>
@@ -151,7 +166,7 @@ export default function CommercialPainel(props) {
 
                             <Box sx={{ ...styles.indicator, backgroundColor: colorPalette?.secondary }}>
                                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-around', width: '100%' }}>
-                                    <Text large bold>Em Processo de Matrícula</Text>
+                                    <Text large bold>Em Processo de {filters?.buscar_por}</Text>
                                     <Box sx={{
                                         ...styles.menuIcon,
                                         backgroundImage: `url('/icons/andamento_icon.png')`,
@@ -216,7 +231,7 @@ export default function CommercialPainel(props) {
                                 flexDirection: 'column', alignItems: 'start'
                             }}>
                                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-around', width: '100%' }}>
-                                    <Text large bold>Resumo das Matrículas por Aluno</Text>
+                                    <Text large bold>Resumo das {filters?.buscar_por}s por Aluno</Text>
                                 </Box>
 
                                 <Box sx={{ display: 'flex', width: '100%', gap: 2, justifyContent: 'center' }}>
@@ -237,7 +252,7 @@ export default function CommercialPainel(props) {
                                     flexDirection: 'column', alignItems: 'start'
                                 }}>
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'start', justifyContent: 'center', width: '100%', }}>
-                                        <Text large bold>Matrículas por dia</Text>
+                                        <Text large bold>{filters?.buscar_por}s por dia</Text>
                                     </Box>
                                     <div style={{ width: '100%' }}>
                                         <GraphChart
@@ -255,7 +270,7 @@ export default function CommercialPainel(props) {
                                             }}
                                             type="bar"
                                             series={[{
-                                                name: 'Matrículas no Dia',
+                                                name: `${filters?.buscar_por}s no Dia`,
                                                 data: graphIndicator
                                             }]}
                                             height={300}
@@ -267,7 +282,7 @@ export default function CommercialPainel(props) {
                                     flexDirection: 'column', alignItems: 'center'
                                 }}>
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center', width: '100%', }}>
-                                        <Text large bold>Matrículas Realizadas</Text>
+                                        <Text large bold>{filters?.buscar_por}s Realizadas</Text>
                                     </Box>
                                     <TableIndicatorClasses reportIndicators={reportIndicators} data={reportIndicators?.enrollmentsToClassId} title={`NOVAS TURMAS DE GRADUAÇÃO E PÓS-GRADUAÇÃO ${filters?.year}.${filters?.semestre}`} />
                                 </Box>
