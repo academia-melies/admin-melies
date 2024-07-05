@@ -61,20 +61,22 @@ export default function RequerimentEnrollmentStudent(props) {
         try {
             const response = await api.get(`/requeriment/disciplines/${id}`)
             const { data } = response
-            const groupDisciplines = data.map(disciplines => ({
+            const groupDisciplines = data?.map(disciplines => ({
                 label: disciplines.nome_disciplina,
                 value: disciplines?.disciplina_id.toString(),
                 id_disc_req_mat: disciplines?.id_disc_req_mat,
-                dispensado: disciplines?.dispensado,
+                dispensado: disciplines?.optativa === 1 ? disciplines?.dispensado ? disciplines?.dispensado : 1 : disciplines?.dispensado,
                 descricao_dp: disciplines?.descricao,
                 softwares: disciplines?.softwares,
                 aprovado: disciplines?.aprovado,
                 motivo_reprovado: disciplines?.motivo_reprovado,
                 nt_final_disc: disciplines?.nt_final_disc,
                 justificativa_pedido_disp: disciplines?.justificativa_pedido_disp,
-                files: disciplines?.files
+                files: disciplines?.files,
+                optativa: disciplines?.optativa
             }));
 
+            console.log(groupDisciplines)
 
             const disciplinesSelect = groupDisciplines.map((discipline) => discipline.value);
             const disciplineSelected = groupDisciplines.filter((discipline) => discipline.dispensado === 0)?.map(item => item.value);
@@ -680,7 +682,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                     {requerimentData?.dispensou_disciplina === 1 && <Text style={{ color: 'red' }}>Selecione as disciplinas que serão cursadas. Disciplinas que não forem selecionadas, serão consideradas para análise de dispensa.</Text>}
                                     <Box>
                                         <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                                            {disciplines.map((item, index) => {
+                                            {disciplines?.filter(item => item?.optativa != 1)?.map((item, index) => {
                                                 // const selected = disciplinesSelected?.includes(item?.value)
                                                 const selected = parseInt(item?.dispensado) === 0 ? true : false;
                                                 const softwares = item?.softwares
@@ -754,6 +756,174 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                             })
                                                                         }
                                                                     </Box> */}
+                                                            {!selected &&
+
+                                                                <>
+                                                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                                                                        {item?.files?.filter(file => file?.disciplina_id === item?.value)?.map((file, index) => {
+                                                                            const nameFile = file?.name_file || file?.name;
+                                                                            const fileUrl = file?.location || file?.preview
+                                                                            return (
+                                                                                <Box key={index} sx={{
+                                                                                    display: 'flex', gap: 1, padding: '0px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between',
+                                                                                }}>
+                                                                                    <Text small style={{
+                                                                                        textDecoration: 'underline', color: 'blue', flexWrap: 'nowrap',
+                                                                                        "&:hover": {
+                                                                                            opacity: 0.8,
+                                                                                            cursor: 'pointer',
+                                                                                        }
+                                                                                    }} onClick={() => {
+                                                                                        if (file?.location) {
+                                                                                            window.open(file?.location, '_blank');
+                                                                                        } else {
+                                                                                            setShowDropFileDiscipline({ active: true, fileUrl: fileUrl, title: nameFile })
+                                                                                        }
+                                                                                    }
+                                                                                    }
+                                                                                    >{decodeURI(nameFile)}</Text>
+                                                                                </Box>
+                                                                            )
+                                                                        })}
+                                                                    </Box>
+
+                                                                    <Box sx={{
+                                                                        display: 'flex', gap: 1, marginTop: 1, flexDirection: 'column',
+                                                                        padding: '10px 12px', backgroundColor: colorPalette?.primary, borderRadius: 2
+                                                                    }}>
+                                                                        <Text bold>Justificativa de solicitação de dispensa:</Text>
+                                                                        <Text small light>{item?.justificativa_pedido_disp || 'Não quis justificar.'}</Text>
+                                                                    </Box>
+
+                                                                    <Box sx={{ display: 'flex', gap: 2, minWidth: 400, justifyContent: 'flex-start', flexDirection: 'column' }}>
+                                                                        <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'flex-start' }}>
+                                                                            <Box sx={{
+                                                                                display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid green',
+                                                                                backgroundColor: parseInt(item?.aprovado) === 1 ? 'green' : 'transparent',
+                                                                                borderRadius: 2,
+                                                                                transition: '.3s',
+                                                                                "&:hover": {
+                                                                                    opacity: 0.8,
+                                                                                    cursor: 'pointer',
+                                                                                    transform: 'scale(1.1, 1.1)'
+                                                                                },
+                                                                            }} onClick={() => handleChangeStatusDiscipline(item?.id_disc_req_mat, 1)}>
+                                                                                {parseInt(item?.aprovado) !== 1 && <CheckCircleIcon style={{ color: 'green', fontSize: 12 }} />}
+                                                                                <Text small style={{ color: parseInt(item?.aprovado) === 1 ? '#fff' : 'green' }}>
+                                                                                    {parseInt(item?.aprovado) === 1 ? 'Aprovado' : 'Aprovar'}
+                                                                                </Text>
+
+                                                                            </Box>
+                                                                            <Box sx={{
+                                                                                display: 'flex', gap: 2, padding: '5px 8px', alignItems: 'center', border: '1px solid red',
+                                                                                backgroundColor: parseInt(item?.aprovado) === 0 ? 'red' : 'transparent',
+                                                                                transition: '.3s',
+                                                                                borderRadius: 2, "&:hover": {
+                                                                                    opacity: 0.8,
+                                                                                    cursor: 'pointer',
+                                                                                    transform: 'scale(1.1, 1.1)'
+                                                                                },
+                                                                            }} onClick={() => handleChangeStatusDiscipline(item?.id_disc_req_mat, '0')}>
+
+                                                                                {parseInt(item?.aprovado) !== 0 && <CancelIcon style={{ color: 'red', fontSize: 12 }} />}
+                                                                                <Text small style={{ color: parseInt(item?.aprovado) === 0 ? '#fff' : 'red' }}>
+                                                                                    {parseInt(item?.aprovado) === 0 ? 'Reprovado' : 'Reprovar'}
+                                                                                </Text>
+                                                                            </Box>
+                                                                        </Box>
+                                                                        {(parseInt(item?.aprovado) === 0) &&
+                                                                            <Box sx={{ display: 'flex', gap: 1, marginTop: 1, zIndex: 9999, width: 400 }}>
+                                                                                <TextInput
+                                                                                    placeholder='Reprovado por falta de aderência das disciplinas cursadas anteriormente...'
+                                                                                    name='motivo_reprovado' onChange={(e) => handleChangeReasonStatusDiscipline(item?.id_disc_req_mat, e.target.value)}
+                                                                                    value={item?.motivo_reprovado || ''}
+                                                                                    label='Motivo:'
+                                                                                    multiline
+                                                                                    maxRows={4}
+                                                                                    rows={2}
+                                                                                    sx={{ width: 400 }} />
+                                                                            </Box>
+                                                                        }
+                                                                        {(parseInt(item?.aprovado) === 1) &&
+                                                                            <Box sx={{ display: 'flex', gap: 1, marginTop: 1, zIndex: 9999, width: 400 }}>
+                                                                                <TextInput
+                                                                                    label='Nota Disciplina:'
+                                                                                    name='nt_final_disc'
+                                                                                    value={item?.nt_final_disc || ''}
+                                                                                    onChange={(e) => handleChangeGradeDiscipline(item?.id_disc_req_mat, e.target.value)}
+                                                                                />
+                                                                            </Box>
+                                                                        }
+                                                                    </Box>
+                                                                </>
+                                                            }
+                                                        </Box>
+                                                        <Divider distance={0} />
+                                                    </Box>
+                                                );
+                                            })}
+                                        </Box>
+                                    </Box>
+                                </ContentContainer>
+                            </ContentContainer>
+
+
+                            <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
+                                <ContentContainer fullWidth gap={4}>
+                                    <Box sx={{ display: 'flex', gap: 5, }}>
+                                        <Text bold title>Disciplinas Optativas</Text>
+                                    </Box>
+                                    <Text style={{ color: 'red' }}>Disciplinas optativas escolhidas pelo aluno.</Text>
+                                    <Box>
+                                        <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                            {disciplines?.filter(item => item?.optativa === 1)?.map((item, index) => {
+                                                const selected = parseInt(item?.dispensado) === 0 ? true : false;
+                                                const softwares = item?.softwares
+
+                                                const boxBackgroundColor = (item?.aprovado === 1 && item?.dispensado === 1)
+                                                    ? 'green'
+                                                    : (item?.aprovado === 0 && item?.dispensado === 1)
+                                                        ? 'red'
+                                                        : 'none';
+
+                                                const titleTooltip = (item?.aprovado === 1 && item?.dispensado === 1)
+                                                    ? 'Solicitação de Dispensa aprovada'
+                                                    : (parseInt(item?.aprovado) === 0 && item?.dispensado === 1)
+                                                        ? 'Solicitação de Dispensa reprovada'
+                                                        : ''
+
+                                                return (
+                                                    <Box key={index} sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+                                                        <Box sx={{
+                                                            display: 'flex', gap: 2, flexDirection: 'column', borderRadius: 2,
+                                                            border: `1px solid ${boxBackgroundColor}`, padding: '15px 20px'
+                                                        }}>
+                                                            <Text bold style={{ color: boxBackgroundColor }}>{titleTooltip}</Text>
+                                                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
+                                                                <Box
+                                                                    sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        width: 16,
+                                                                        height: 16,
+                                                                        borderRadius: 16,
+                                                                        transition: '.5s',
+                                                                        border: !selected ? `1px solid ${colorPalette.textColor}` : '',
+                                                                        '&:hover': {
+                                                                            opacity: selected ? 0.8 : 0.6,
+                                                                            boxShadow: selected ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                        }
+                                                                    }}>
+                                                                    {selected && (
+                                                                        <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
+                                                                    )}
+                                                                </Box>
+                                                                <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                                                    <Text bold>{item?.label}</Text>
+                                                                    <Text light small>{item?.descricao_dp}</Text>
+                                                                </Box>
+                                                            </Box>
                                                             {!selected &&
 
                                                                 <>
