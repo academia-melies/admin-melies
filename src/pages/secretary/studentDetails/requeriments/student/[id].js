@@ -264,20 +264,23 @@ export default function RequerimentEnrollmentStudent(props) {
 
                 if (disciplines?.length > 0) {
                     for (let discipline of disciplines) {
-                        let disciplineId = discipline?.id_disc_req_mat
-                        let statusDiscipline = (discipline?.aprovado !== null && discipline?.aprovado !== '' && discipline?.dispensado === 1) ?
-                            (parseInt(discipline?.aprovado) === 1 ? 'Dispensa aprovada' : 'Dispensa reprovada') : 'Aprovada'
+                        if (discipline?.optativa != 1) {
 
-                        let statusDisciplineNoDispensed = parseInt(discipline?.dispensado) === 0 ? 1 : parseInt(discipline?.aprovado);
-                        let disciplineData = {
-                            justificativa_pedido_disp: discipline?.justificativa_pedido_disp,
-                            status: statusDiscipline,
-                            dispensado: discipline?.dispensado,
-                            aprovado: statusDisciplineNoDispensed,
-                            motivo_reprovado: discipline?.motivo_reprovado,
-                            nt_final_disc: discipline?.nt_final_disc
+                            let disciplineId = discipline?.id_disc_req_mat
+                            let statusDiscipline = (discipline?.aprovado !== null && discipline?.aprovado !== '' && discipline?.dispensado === 1) ?
+                                (parseInt(discipline?.aprovado) === 1 ? 'Dispensa aprovada' : 'Dispensa reprovada') : 'Aprovada'
+
+                            let statusDisciplineNoDispensed = parseInt(discipline?.dispensado) === 0 ? 1 : parseInt(discipline?.aprovado);
+                            let disciplineData = {
+                                justificativa_pedido_disp: discipline?.justificativa_pedido_disp,
+                                status: statusDiscipline,
+                                dispensado: discipline?.dispensado,
+                                aprovado: statusDisciplineNoDispensed,
+                                motivo_reprovado: discipline?.motivo_reprovado,
+                                nt_final_disc: discipline?.nt_final_disc
+                            }
+                            await api.patch(`/requeriment/discipline/update/${disciplineId}`, { disciplineData })
                         }
-                        await api.patch(`/requeriment/discipline/update/${disciplineId}`, { disciplineData })
                     }
                 }
                 alert.success('Requerimento atualizado com sucesso.')
@@ -868,7 +871,7 @@ export default function RequerimentEnrollmentStudent(props) {
                             </ContentContainer>
 
 
-                            <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
+                            {disciplines?.filter(item => item?.optativa != 1)?.length > 0 && <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
                                 <ContentContainer fullWidth gap={4}>
                                     <Box sx={{ display: 'flex', gap: 5, }}>
                                         <Text bold title>Disciplinas Optativas</Text>
@@ -1033,7 +1036,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                         </Box>
                                     </Box>
                                 </ContentContainer>
-                            </ContentContainer>
+                            </ContentContainer>}
 
                             <CheckBoxComponent
                                 boxGroup={[
