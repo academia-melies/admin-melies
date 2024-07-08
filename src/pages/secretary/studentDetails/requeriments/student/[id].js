@@ -871,7 +871,7 @@ export default function RequerimentEnrollmentStudent(props) {
                             </ContentContainer>
 
 
-                            {disciplines?.filter(item => item?.optativa != 1)?.length > 0 && <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
+                            {disciplines?.filter(item => item?.optativa == 1)?.length > 0 && <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px' }} gap={3}>
                                 <ContentContainer fullWidth gap={4}>
                                     <Box sx={{ display: 'flex', gap: 5, }}>
                                         <Text bold title>Disciplinas Optativas</Text>
@@ -883,25 +883,11 @@ export default function RequerimentEnrollmentStudent(props) {
                                                 const selected = parseInt(item?.dispensado) === 0 ? true : false;
                                                 const softwares = item?.softwares
 
-                                                const boxBackgroundColor = (item?.aprovado === 1 && item?.dispensado === 1)
-                                                    ? 'green'
-                                                    : (item?.aprovado === 0 && item?.dispensado === 1)
-                                                        ? 'red'
-                                                        : 'none';
-
-                                                const titleTooltip = (item?.aprovado === 1 && item?.dispensado === 1)
-                                                    ? 'Solicitação de Dispensa aprovada'
-                                                    : (parseInt(item?.aprovado) === 0 && item?.dispensado === 1)
-                                                        ? 'Solicitação de Dispensa reprovada'
-                                                        : ''
-
                                                 return (
                                                     <Box key={index} sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
                                                         <Box sx={{
-                                                            display: 'flex', gap: 2, flexDirection: 'column', borderRadius: 2,
-                                                            border: `1px solid ${boxBackgroundColor}`, padding: '15px 20px'
+                                                            display: 'flex', gap: 2, flexDirection: 'column', borderRadius: 2,padding: '15px 20px'
                                                         }}>
-                                                            <Text bold style={{ color: boxBackgroundColor }}>{titleTooltip}</Text>
                                                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
                                                                 <Box
                                                                     sx={{
@@ -927,7 +913,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                     <Text light small>{item?.descricao_dp}</Text>
                                                                 </Box>
                                                             </Box>
-                                                            {!selected &&
+                                                            {/* {!selected &&
 
                                                                 <>
                                                                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1027,7 +1013,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                         }
                                                                     </Box>
                                                                 </>
-                                                            }
+                                                            } */}
                                                         </Box>
                                                         <Divider distance={0} />
                                                     </Box>

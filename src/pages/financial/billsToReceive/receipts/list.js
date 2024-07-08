@@ -61,11 +61,12 @@ export default function ListReceipts(props) {
         typePayment: (item) => filters.typePayment === 'todos' || item?.forma_pagamento === filters.typePayment,
         date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
         search: (item) => {
-            const searchTerm = filters?.search;
-            if (typeof searchTerm === 'string') {
-                const normalizedSearchTerm = removeAccents(searchTerm?.toLowerCase());
-                const normalizedItemName = removeAccents(item?.aluno?.toLowerCase());
-                return normalizedItemName && normalizedItemName.includes(normalizedSearchTerm);
+            const searchTerm = filters.search;
+            if (typeof searchTerm === 'string' && searchTerm.trim() !== '') {
+                const normalizedSearchTerm = removeAccents(searchTerm.toLowerCase());
+                const normalizedItemName = item?.aluno ? removeAccents(item.aluno.toLowerCase()) : '';
+                const normalizedOrderReference = item?.referenceId ? removeAccents(item?.referenceId.toLowerCase()) : '';
+                return normalizedItemName.includes(normalizedSearchTerm) || normalizedOrderReference.includes(normalizedSearchTerm);
             }
             return true;
         },
@@ -170,7 +171,7 @@ export default function ListReceipts(props) {
 
             const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
             setAllSelected(groupIds)
-
+            console.log(data)
             setInstallmentsList(data)
         } catch (error) {
             console.log(error)
@@ -714,7 +715,7 @@ export default function ListReceipts(props) {
                         <tbody style={{ flex: 1, }}>
                             {sortedInstallments?.filter(filter)?.slice(startIndex, endIndex).map((item, index) => {
                                 const isSelected = installmentsSelected?.includes(item?.id_parcela_matr) || null;
-                                const responsiblePay = item?.responsavel_pagante ? item?.responsavel_pagante : item?.aluno; 
+                                const responsiblePay = item?.responsavel_pagante ? item?.responsavel_pagante : item?.aluno;
                                 return (
                                     <tr key={index} style={{
                                         backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary,
