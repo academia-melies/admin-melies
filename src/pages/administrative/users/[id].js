@@ -1919,6 +1919,7 @@ export default function EditUser() {
         { label: 'Pendente de assinatura do contrato', value: 'Pendente de assinatura do contrato' },
         { label: 'Em andamento', value: 'Em andamento' },
         { label: 'Concluído', value: 'Concluído' },
+        { label: 'Curso Finalizado', value: 'Curso Finalizado' },
         { label: 'Turma cancelada', value: 'Turma cancelada' },
         { label: 'Aprovado', value: 'Aprovado' },
         { label: 'Reprovado', value: 'Reprovado' },
