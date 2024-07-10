@@ -787,14 +787,17 @@ export default function InterestEnroll() {
 
     const handleCreateEnrollStudent = async (enrollment, valuesContract, paymentsInfoData, pdfBlob, contractData) => {
 
+        let startDateEnrollment = `2024-08-05`;
+        let endDateEnrollment = `2024-12-20`;
+
         let enrollmentData = {
             usuario_id: id,
             pendencia_aluno: null,
             // dt_inicio: new Date(classScheduleData?.dt_inicio_cronograma) || new Date(classData?.inicio),
-            dt_inicio: new Date(classData?.inicio),
-            dt_final: new Date(classData?.fim),
+            dt_inicio: isReenrollment ? new Date(startDateEnrollment) : new Date(classData?.inicio),
+            dt_final: isReenrollment ? new Date(endDateEnrollment) : new Date(classData?.fim),
             // dt_final: new Date(classScheduleData?.dt_fim_cronograma) || new Date(classData?.fim),
-            status: 'Pendente de assinatura do contrato',
+            status: isReenrollment ? 'Aguardando início' : 'Pendente de assinatura do contrato',
             turma_id: classData?.id_turma,
             motivo_desistencia: null,
             dt_desistencia: null,
