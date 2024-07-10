@@ -494,7 +494,7 @@ export default function StuatusPayment() {
                                         </tr>
                                     </thead>
                                     <tbody style={{ flex: 1, }}>
-                                        {installmentsData?.map((item, index) => {
+                                        {installmentsData?.sort((a, b) => a.n_parcela - b.n_parcela)?.map((item, index) => {
                                             const responsiblePay = item?.responsavel_pagante ? item?.responsavel_pagante : item?.aluno;
                                             return (
                                                 <tr key={index} style={{ backgroundColor: colorPalette?.secondary }}>
