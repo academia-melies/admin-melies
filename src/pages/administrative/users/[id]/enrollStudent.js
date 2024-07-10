@@ -627,7 +627,7 @@ export default function InterestEnroll() {
 
     const handleConfirmEnrollmentSend = async () => {
         try {
-            const sendConfirmationEnrollment = await api.post(`/student/enrrolments/confirmationEnrollment`, { userData });
+            const sendConfirmationEnrollment = await api.post(`/student/enrrolments/confirmationEnrollment`, { userData, isReenrollment });
             if (sendConfirmationEnrollment?.status === 201) {
                 return true
             } else {
