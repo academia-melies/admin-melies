@@ -1471,6 +1471,27 @@ export default function EditUser() {
         }
     }
 
+    const handleReenrollmentPos = async ({ classId, moduleCourse }) => {
+        try {
+            setLoading(true)
+            const response = await api.post(`/enrollment/create/pos-graduacao/reenrollment`, {
+                classId, moduleCourse,
+                userId: userData?.id
+            })
+            if (response?.data?.success) {
+                alert.success('Rematrícula realizada com sucesso!')
+                await getEnrollment()
+            } else {
+                alert.error('Ocorreu um erro ao realizar sua Rematrícula. Entre em contato com o atendimento, ou tente novamente mais tarde.')
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally{
+            setLoading(false)
+        }
+    }
+
 
     const handleEnrollStudentEdit = async () => {
         setLoading(true)
@@ -3520,10 +3541,12 @@ export default function EditUser() {
 
                                             const isReenrollment = (item.status === "Concluído" || item.status === "Aprovado") &&
                                                 item.modulo === highestModule;
+                                            const isPosGratuation = item?.nivel_curso === 'Pós-Graduação';
                                             const isDp = item.cursando_dp === 1;
                                             const className = item?.nome_turma;
                                             const courseName = item?.nome_curso;
                                             const period = item?.periodo;
+                                            console.log(enrollmentData)
                                             let datePeriod = new Date(item?.dt_inicio)
                                             // let datePeriod = new Date(item?.dt_inicio_cronograma || item?.dt_inicio)
                                             let year = datePeriod.getFullYear()
@@ -3765,14 +3788,33 @@ export default function EditUser() {
                                                                     handleEnrollStudentById(item?.id_matricula)
                                                                     setShowSections({ ...showSections, editEnroll: true })
                                                                 }} />
-                                                                {isReenrollment &&
-                                                                    <Link href={`/administrative/users/${id}/enrollStudent?classId=${item?.turma_id}&courseId=${item?.curso_id}&reenrollment=true`} target="_blank">
-                                                                        <Button disabled={!isPermissionEdit && true} small text="rematrícula" style={{ width: 140, height: 30, alignItems: 'center' }} />
-                                                                    </Link>
-                                                                }
+                                                                {isReenrollment ? (
+                                                                    isPosGratuation ? (
+                                                                        <Button
+                                                                            disabled={!isPermissionEdit}
+                                                                            small
+                                                                            text="rematrícular pós"
+                                                                            style={{ width: 140, height: 30, alignItems: 'center' }}
+                                                                            onClick={() => handleReenrollmentPos({ classId: item?.turma_id, moduleCourse: item?.modulo + 1 })} />
+                                                                    ) : (
+                                                                        <Link
+                                                                            href={`/administrative/users/${id}/enrollStudent?classId=${item?.turma_id}&courseId=${item?.curso_id}&reenrollment=true`}
+                                                                            target="_blank"
+                                                                        >
+                                                                            <Button
+                                                                                disabled={!isPermissionEdit}
+                                                                                small
+                                                                                text="rematrícula"
+                                                                                style={{ width: 140, height: 30, alignItems: 'center' }}
+                                                                            />
+                                                                        </Link>
+                                                                    )
+                                                                ) : null}
+
                                                             </Box>
                                                         </Box>
-                                                    )}
+                                                    )
+                                                    }
                                                 </ContentContainer>
 
                                             )
@@ -3862,7 +3904,8 @@ export default function EditUser() {
 
 
 
-            {(userData.perfil && (userData.perfil.includes('aluno') || userData.perfil.includes('interessado')) && menuView === 'interests') &&
+            {
+                (userData.perfil && (userData.perfil.includes('aluno') || userData.perfil.includes('interessado')) && menuView === 'interests') &&
                 <>
                     <ContentContainer style={{ ...styles.containerContract, padding: showSelectiveProcess ? '40px' : '25px' }}>
                         <Box sx={{
@@ -4765,7 +4808,8 @@ export default function EditUser() {
             </Box>
 
 
-            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'paymentPerfil') &&
+            {
+                (userData.perfil && userData.perfil.includes('aluno') && menuView === 'paymentPerfil') &&
                 <>
                     <ContentContainer style={{ ...styles.containerContract, padding: '40px' }}>
                         <Box sx={{
