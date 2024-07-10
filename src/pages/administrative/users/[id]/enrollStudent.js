@@ -867,18 +867,19 @@ export default function InterestEnroll() {
 
                 const createInstallments = await handleCreateInstallments({ enrollmentId: data, paymentInstallmentsEnrollment, creditCard: paymentsProfile })
                 if (createInstallments) {
-                    const fileId = await handleUploadContract(pdfBlob, contractData, data)
-                    console.log('criou o contrato na aws', fileId)
 
-                    const sendDoc = await handleSendContractSigners({ signerId: id, fileId, contractData, enrollmentId: data, responsiblePayerData })
-                    console.log('enviou o contrato para assinatura', sendDoc)
-
-                    if (sendDoc === 200) {
-                        alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
+                    if (isReenrollment) {
+                        alert.success('Matrícula efetivada com sucesso!')
                     } else {
-                        alert.error('Houve um erro ao enviar contrato para assinatura.')
+                        const fileId = await handleUploadContract(pdfBlob, contractData, data)
+                        const sendDoc = await handleSendContractSigners({ signerId: id, fileId, contractData, enrollmentId: data, responsiblePayerData })
+                        if (sendDoc === 200) {
+                            alert.success('Matrícula efetivada e contrato enviado por e-mail para assinatura.')
+                        } else {
+                            alert.error('Houve um erro ao enviar contrato para assinatura.')
+                        }
+                        alert.success('Matrícula efetivada. Seu contrato será enviado por e-mail..')
                     }
-                    alert.success('Matrícula efetivada. Seu contrato será enviado por e-mail..')
                 } else {
                     alert.error('Houve um erro ao enviar contrato para assinatura.')
                 }
@@ -1042,6 +1043,7 @@ export default function InterestEnroll() {
             setLoadingEnrollment(false)
         }
     }
+
     const telas = [
         (
             <>
@@ -1685,7 +1687,7 @@ export const Payment = (props) => {
     const [discountDispensed, setDiscountDispensed] = useState()
     const [numberOfInstallments, setNumberOfInstallments] = useState(6)
     const [numberOfInstallmentSecondCard, setNumberOfInstallmentSecondCard] = useState(6)
-    const [dayForPayment, setDayForPayment] = useState(1)
+    const [dayForPayment, setDayForPayment] = useState()
     const [monthForPayment, setMonthDayForPayment] = useState()
     const initialTypePaymentsSelected = Array.from({ length: numberOfInstallments }, () => ({ tipo: '', valor_parcela: '', n_parcela: null, data_pagamento: '' }));
     const initialTypePaymentsSelectedTwo = Array.from({ length: numberOfInstallmentSecondCard }, () => ({ tipo: '', valor_parcela: '', n_parcela: null, data_pagamento: '' }));
@@ -1719,7 +1721,7 @@ export const Payment = (props) => {
             const nextMonthString = String(nextMonth).padStart(2, '0');
             const day = String(currentDate.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${nextMonthString}-${day}`;
-            setDayForPayment(day)
+            setDayForPayment(currentDate.getDate() + 1)
             setMonthDayForPayment(formattedDate)
         } else {
 
@@ -1731,7 +1733,7 @@ export const Payment = (props) => {
             if (mesAtual > 5) {
                 datePayment = new Date();
             } else {
-                datePayment = `${anoAtual}-07-01`
+                datePayment = `${anoAtual}-07-${dataAtual.getDate()}`
                 datePayment = new Date(datePayment)
             }
 
@@ -1744,8 +1746,11 @@ export const Payment = (props) => {
             const formattedDateNow = `${year}-${month}-${day}`;
 
             if (monthForPayment == null) {
-                setMonthDayForPayment(formattedDate)
+                setMonthDayForPayment(`${anoAtual}-07-${dataAtual.getDate()}`)
 
+            }
+            if (!dayForPayment) {
+                setDayForPayment(dataAtual.getDate())
             }
             setDateForPaymentEntry(formattedDateNow)
         }
@@ -3298,7 +3303,12 @@ export const ContractStudent = (props) => {
 
     const handleSubmitEnrollment = async () => {
         try {
-            const pdfBlob = await handleGeneratePdf();
+            let pdfBlob;
+            if (isReenrollment) {
+                pdfBlob = null
+            } else {
+                pdfBlob = await handleGeneratePdf();
+            }
             // const pdfBase64 = await convertBlobToBase64(pdfBlob);
             // const blob = base64toBlob(pdfBase64, 'application/pdf');
             // const blobUrl = URL.createObjectURL(blob);
