@@ -561,7 +561,7 @@ export default function InterestEnroll() {
                 const response = await api.post(`/responsible/create`, { responsiblePayerData: { ...responsiblePayerData, usuario_id: id }, userId })
                 if (response?.status === 201) {
                     alert.success('Resposável adicionado.')
-                    handleResponsible()
+                    await handleResponsible()
                 }
             } catch (error) {
                 console.log(error)
@@ -2162,6 +2162,22 @@ export const Payment = (props) => {
         });
     };
 
+
+
+    const handleChangePaymentDateInstallment = async (value, index) => {
+        console.log(value)
+        const formattedDate = new Date(value)
+        value = formattedDate.toLocaleDateString('pt-BR');
+        setTypePaymentsSelected((prevTypePaymentsDateSelected) => {
+            const updatedTypePaymentsDateSelected = [...prevTypePaymentsDateSelected];
+            updatedTypePaymentsDateSelected[index] = {
+                ...updatedTypePaymentsDateSelected[index],
+                data_pagamento: value,
+            };
+            return updatedTypePaymentsDateSelected;
+        });
+    };
+
     // const handleBlurCalculationInstallments = (value, index) => {
     //     console.log(value, index)
 
@@ -2943,7 +2959,6 @@ export const Payment = (props) => {
                                             </thead>
                                             <tbody style={{ flex: 1 }}>
                                                 {Array.from({ length: numberOfInstallments }, (_, index) => {
-
                                                     const installmentNumber = index + 1;
                                                     let date = monthForPayment ? new Date(monthForPayment) : new Date()
                                                     const paymentDate = date;
@@ -2985,6 +3000,11 @@ export const Payment = (props) => {
                                                     }
 
                                                     const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
+                                                    const formatDatePay = typePaymentsSelected[index]?.data_pagamento?.split('/')
+                                                    const yearParts = formatDatePay[2]
+                                                    const monthParts = formatDatePay[1]
+                                                    const dayParts = parseInt(formatDatePay[0])
+                                                    const formattedDay = `${yearParts}-${monthParts}-${dayParts}`
 
                                                     return (
                                                         <tr key={installmentNumber}>
@@ -3014,7 +3034,14 @@ export const Payment = (props) => {
                                                                     <Text>{formatter.format(typePaymentsSelected[index]?.valor_parcela)}</Text>}
                                                             </td>
                                                             <td style={{ padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                {formattedPaymentDate}
+                                                                {installmentNumber !== 1 ?
+                                                                    formattedPaymentDate :
+                                                                    <TextInput
+                                                                        name='data_pagamento'
+                                                                        type="date"
+                                                                        onChange={(e) => handleChangePaymentDateInstallment(e.target.value, index)}
+                                                                        value={formattedDay || ''}
+                                                                    />}
                                                             </td>
                                                         </tr>
                                                     );
@@ -3316,7 +3343,6 @@ export const ContractStudent = (props) => {
             // const blob = base64toBlob(pdfBase64, 'application/pdf');
             // const blobUrl = URL.createObjectURL(blob);
             // window.open(blobUrl, '_blank');
-
 
             let contractData = {
                 name_file: nameContract,
