@@ -20,13 +20,14 @@ import { icons } from "../../../../organisms/layout/Colors";
 
 export default function InterestEnroll() {
     const router = useRouter();
-    const { setLoading, user, alert } = useAppContext()
+    const { setLoading, user, alert, colorPalette } = useAppContext()
     const userId = user?.id;
     const { id, interest, reenrollment, classId, courseId } = router.query;
     let isReenrollment = reenrollment ? true : false
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [interestData, setInterestData] = useState({})
+    const [statusStudentData, setStatusStudentData] = useState({})
     const [enrollmentsList, setEnrollmentsList] = useState([])
     const [responsiblePayerData, setResponsiblePayerData] = useState({
         nome_resp: '',
@@ -100,6 +101,11 @@ export default function InterestEnroll() {
     const [subscriptionData, setSubscriptionData] = useState({})
     const [forma_pagamento, setPagamento] = useState()
     const [numParc, setNumParce] = useState(6)
+    const [enrollmentDataSelected, setEnrollmentDataSelected] = useState({ turma_id: null })
+    const [openSelectClassReprovved, setOpenSelectClassReprovved] = useState(false)
+    const [isReprovved, setIsReprovved] = useState(false)
+    const [listClasses, setListClasses] = useState([])
+
 
     // useEffect(() => {
     //     let interval;
@@ -184,20 +190,43 @@ export default function InterestEnroll() {
     }
 
 
+    const handleVerifyUser = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/student/reenrollment/verify-student/${id}`)
+            const { data } = response
+            console.log(data)
+            setStatusStudentData(data)
+            return data
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
     const handleEnrollments = async () => {
         setLoading(true)
         try {
             const response = await api.get(`/enrollments/user/reenrollment/${id}`)
             const { data } = response
             if (data.length > 0) {
-                const lastModule = data?.map(item => item.modulo)
-                lastModule.sort((a, b) => a - b)
-                const highestModule = Math.max(...lastModule);
-                setCurrentModule(highestModule + 1)
                 setEnrollmentsList(data)
-                return highestModule + 1
             }
-            return false
+
+            const verifyStudent = await api.get(`/student/reenrollment/verify-student/${id}`)
+            const studentDataEnrollment = verifyStudent?.data
+
+            if (studentDataEnrollment?.modulo_cursando) {
+                setCurrentModule(studentDataEnrollment?.modulo_cursando)
+                return studentDataEnrollment?.modulo_cursando
+            } else {
+                setCurrentModule(1)
+                return 1
+            }
+
         } catch (error) {
             console.log(error)
             return error
@@ -256,6 +285,7 @@ export default function InterestEnroll() {
 
     async function handleSelectModule(turma_id, currentModule) {
         setLoading(true)
+
         try {
             const classScheduleResponse = await api.get(`/classSchedule/disciplines/${turma_id}/${currentModule}`);
             const classScheduleData = classScheduleResponse?.data;
@@ -414,22 +444,49 @@ export default function InterestEnroll() {
         handleItems()
     }, [])
 
+    const handleVerifyReprovvedUser = async () => {
+        if (isReenrollment) {
+            const statusStudent = await handleVerifyUser()
+            if (statusStudent?.reprovado) {
+                await handleSearchClasses(statusStudent?.modulo_cursando)
+                setIsReprovved(true)
+                setOpenSelectClassReprovved(true)
+            }
+        }
+    }
 
-    // useEffect(() => {
-    //     test()
-    // }, [classesDisciplinesDpSelected])
+    const handleSearchClasses = async (moduleCourse) => {
+        try {
+            const response = await api.get(`/classes/course/grid/reprovved-reenrollment/${courseId}/${moduleCourse}`)
+            const { data } = response
+            console.log(data)
+            setListClasses(data)
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
-    const handleItems = async () => {
+
+    useEffect(() => {
+        handleVerifyReprovvedUser()
+    }, [])
+
+    const handleItems = async (classIdSelected) => {
         try {
             let moduleCurrent = currentModule;
             const userDatails = await handleUserData()
             const interests = await handleInterest()
-            let classIdEnrollment = interests?.turma_id
+            let classIdEnrollment = classIdSelected ? classIdSelected : interests?.turma_id
             let courseIdEnrollment = interests?.curso_id
             if (isReenrollment) {
                 moduleCurrent = await handleEnrollments()
                 await handleDisciplinesDP()
-                classIdEnrollment = classId
+                if (enrollmentDataSelected?.turma_id) {
+                    classIdEnrollment = enrollmentDataSelected?.turma_id
+                } else {
+                    classIdEnrollment = classIdSelected ? classIdSelected : classId
+                }
                 courseIdEnrollment = courseId
             }
             const subscription = await handleSubscription()
@@ -1051,6 +1108,7 @@ export default function InterestEnroll() {
         (
             <>
                 <EnrollStudentDetails
+                    isReprovved={isReprovved}
                     subscriptionData={subscriptionData}
                     setDisciplinesSelected={setDisciplinesSelected}
                     disciplinesSelected={disciplinesSelected}
@@ -1118,6 +1176,7 @@ export default function InterestEnroll() {
             <>
                 <Payment
                     disciplines={disciplines}
+                    courseData={courseData}
                     disciplinesSelectedForCalculation={disciplinesSelectedForCalculation}
                     setCheckValidateScreen={setCheckValidateScreen}
                     isReenrollment={isReenrollment}
@@ -1219,6 +1278,68 @@ export default function InterestEnroll() {
                     <Text bold style={{ color: '#fff' }}>{messageEnrollment}</Text>
                 </Box>
             </Backdrop>
+
+            <Backdrop sx={{ zIndex: 99999999 }} open={openSelectClassReprovved}>
+                <ContentContainer>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexDirection: 'column' }}>
+                        <Text bold title>Aluno Reprovado</Text>
+                        <Text>Selecione uma turma disponível para cursar novamente o módulo reprovado</Text>
+                    </Box>
+                    <Text light large>Turmas Disponíveis:</Text>
+
+                    <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                        {listClasses?.map((item, index) => {
+                            const title = `${item.nome_turma}_${item?.periodo}`;
+                            const selected = enrollmentDataSelected?.turma_id === item?.turma_id
+                            return (
+                                <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: 16,
+                                            height: 16,
+                                            borderRadius: 16,
+                                            cursor: 'pointer',
+                                            transition: '.5s',
+                                            border: !selected ? `1px solid ${colorPalette.textColor}` : '',
+                                            '&:hover': {
+                                                opacity: selected ? 0.8 : 0.6,
+                                                boxShadow: selected ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                            }
+                                        }}
+                                        onClick={async () => {
+                                            setEnrollmentDataSelected({ turma_id: item?.turma_id })
+                                            handleItems(item?.turma_id)
+                                            setOpenSelectClassReprovved(false)
+                                        }}
+                                    >
+                                        {selected ? (
+                                            <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
+                                        ) : (
+                                            <Box
+                                                sx={{
+                                                    width: 11,
+                                                    height: 11,
+                                                    borderRadius: 11,
+                                                    cursor: 'pointer',
+                                                    '&:hover': {
+                                                        opacity: selected ? 0.8 : 0.6,
+                                                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                    },
+                                                }}
+                                            />
+                                        )}
+                                    </Box>
+                                    <Text small>{title}</Text>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+
+                </ContentContainer>
+            </Backdrop >
         </>
         // :
         // <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
@@ -1285,7 +1406,8 @@ export const EnrollStudentDetails = (props) => {
         setEmailDigitalSignature,
         handleCreateEnrollStudent,
         reenrollmentDp,
-        handleCreateReEnrollStudentDp
+        handleCreateReEnrollStudentDp,
+        isReprovved
     } = props
 
     const { colorPalette, theme, alert } = useAppContext()
@@ -1361,6 +1483,7 @@ export const EnrollStudentDetails = (props) => {
             <>
                 <Payment
                     disciplines={disciplines}
+                    courseData={courseData}
                     setCheckValidateScreen={setCheckValidateScreen}
                     isReenrollment={isReenrollment}
                     quantityDisciplinesSelected={quantityDisciplinesSelected}
@@ -1476,7 +1599,7 @@ export const EnrollStudentDetails = (props) => {
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
                                 <Text bold>Observação: </Text>
-                                <Text>Reematricula - {currentModule}º Semestre/Módulo</Text>
+                                <Text>Rematricula - {currentModule}º Semestre/Módulo</Text>
                             </Box>
                         </Box>
                     }
@@ -1514,7 +1637,7 @@ export const EnrollStudentDetails = (props) => {
                 </ContentContainer>
             </ContentContainer>
 
-            {(isReenrollment && disciplinesDp.length > 0) &&
+            {(isReenrollment && disciplinesDp.length > 0 && !isReprovved) &&
                 <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px', border: `1px solid ${colorPalette.buttonColor}` }} gap={3}>
                     <ContentContainer fullWidth gap={3}>
                         <Text bold title >Disciplinas em Pendência</Text>
@@ -1674,7 +1797,8 @@ export const Payment = (props) => {
         disciplinesSelectedForCalculation,
         disciplines,
         forma_pagamento,
-        numParc
+        numParc,
+        courseData
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -1698,7 +1822,7 @@ export const Payment = (props) => {
     const [typePaymentsSelectedTwo, setTypePaymentsSelectedTwo] = useState(initialTypePaymentsSelectedTwo);
     const [globalTypePaymentsSelected, setGlobalTypePaymentsSelected] = useState('');
     const [globalTypePaymentsSelectedTwo, setGlobalTypePaymentsSelectedTwo] = useState('');
-    const [aditionalDiscount, setAditionalDiscount] = useState({ desconto_adicional: '', desconto_formatado: '', desconto_ex_aluno: 0, desconto_avista: 0 })
+    const [aditionalDiscount, setAditionalDiscount] = useState({ desconto_adicional: '', desconto_formatado: '', jurosPagamentoEstendido: 0, desconto_ex_aluno: 0, desconto_avista: 0 })
     const { colorPalette, alert, theme } = useAppContext()
     const [focusedCreditCard, setFocusedCreditCard] = useState('');
     const [twoCards, setTwoCards] = useState(false)
@@ -2038,6 +2162,7 @@ export const Payment = (props) => {
         let valorFinal = totalValueFinnaly;
         let discountAvista = 0;
         let discountExAluno = 0;
+        let jurosPagamentoEstendido = 0
 
         if (forma_pagamento === 'Ex Aluno') {
             const totalValue = parseFloat(totalValueFinnaly);
@@ -2050,13 +2175,21 @@ export const Payment = (props) => {
             let discountPercentage = 5; // Desconto a vista
             discountAvista = (totalValue * (discountPercentage / 100)).toFixed(2);
             valorFinal = (totalValue - parseFloat(discountAvista)).toFixed(2);
-        } else {
+        } else if (numberOfInstallments > 6 && globalTypePaymentsSelected !== 'Boleto(PRAVALER)' &&
+            courseData?.nivel_curso !== 'Pós-Graduação'
+        ) {
+            const totalValue = parseFloat(valorFinal);
+            let jurosPercentage = 10; // Desconto a vista
+            jurosPagamentoEstendido = (totalValue * (jurosPercentage / 100)).toFixed(2);
+            valorFinal = (totalValue + parseFloat(jurosPagamentoEstendido)).toFixed(2);
+        }
+        else {
             setTotalValueComDiscount(0)
-            setAditionalDiscount({ ...aditionalDiscount, desconto_avista: 0 })
+            setAditionalDiscount({ ...aditionalDiscount, desconto_avista: 0, jurosPagamentoEstendido: 0 })
         }
 
         setTotalValueComDiscount(valorFinal)
-        setAditionalDiscount({ ...aditionalDiscount, desconto_avista: discountAvista, desconto_ex_aluno: discountExAluno })
+        setAditionalDiscount({ ...aditionalDiscount, desconto_avista: discountAvista, desconto_ex_aluno: discountExAluno, jurosPagamentoEstendido })
 
         return valorFinal
     }
@@ -2374,6 +2507,7 @@ export const Payment = (props) => {
             descontoPorcentagemDisp: disciplineDispensedPorcent,
             descontoAdicional: aditionalDiscount?.desconto_adicional,
             desconto_avista: aditionalDiscount?.desconto_avista,
+            jurosPagamentoEstendido: aditionalDiscount?.jurosPagamentoEstendido,
             desconto_ex_aluno: aditionalDiscount?.desconto_ex_aluno,
             valorDescontoAdicional: aditionalDiscount?.desconto_formatado,
             valorFinal: totalValueComDiscount > 0 ? totalValueComDiscount : totalValueFinnaly
@@ -2562,6 +2696,15 @@ export const Payment = (props) => {
                                     || '0'}</Text>
                             </Box>
                             <Divider distance={0} />
+                            {(numberOfInstallments > 6 && globalTypePaymentsSelected !== 'Boleto(PRAVALER)' &&
+                                courseData?.nivel_curso !== 'Pós-Graduação') &&
+                                <>
+                                    <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
+                                        <Text bold>Juros 10% pagamento estendido:</Text>
+                                        <Text>{formatter.format(aditionalDiscount?.jurosPagamentoEstendido)}</Text>
+                                    </Box>
+                                    <Divider distance={0} />
+                                </>}
                             {forma_pagamento === "Ex Aluno" &&
                                 <>
                                     <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center', flexDirection: 'row', gap: 1.75 }}>
@@ -2846,6 +2989,17 @@ export const Payment = (props) => {
                                     <Box sx={{ display: 'flex', marginLeft: "10px" }}>
                                         <Box sx={{ display: 'flex', padding: '8px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor }}>
                                             <Text bold xsmall style={{ color: '#fff' }}>5% Desconto á Vista!</Text>
+                                        </Box>
+                                    </Box>
+                                }
+
+                                {
+                                    (numberOfInstallments > 6 && globalTypePaymentsSelected !== 'Boleto(PRAVALER)' &&
+                                        courseData?.nivel_curso !== 'Pós-Graduação') &&
+
+                                    <Box sx={{ display: 'flex', marginLeft: "10px" }}>
+                                        <Box sx={{ display: 'flex', padding: '8px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor }}>
+                                            <Text bold xsmall style={{ color: '#fff' }}>10% Juros pagamento estendido!</Text>
                                         </Box>
                                     </Box>
                                 }
@@ -3513,6 +3667,7 @@ export const ContractStudent = (props) => {
 
                                     (forma_pagamento == 'Ex Aluno' && valuesContract?.desconto_ex_aluno > 0) && ['DESCONTO Ex aluno (5%):', formatter.format(parseFloat(valuesContract?.desconto_ex_aluno))],
                                     (valuesContract?.desconto_avista > 0) && ['DESCONTO á vista (5%):', formatter.format(parseFloat(valuesContract?.desconto_avista))],
+                                    (valuesContract?.jurosPagamentoEstendido > 0) && ['Juros Pagamento Estendido (10%):', formatter.format(parseFloat(valuesContract?.jurosPagamentoEstendido))],
 
 
                                     (valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0) && ['DESCONTO TOTAL:', formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))],
@@ -3800,6 +3955,14 @@ export const ContractStudent = (props) => {
                                         <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.desconto_avista))}</Text>
                                     </Box>
                                 }
+
+                                {(valuesContract?.jurosPagamentoEstendido > 0) &&
+                                    <Box sx={styles.containerValues}>
+                                        <Text small style={styles.textDataPayments} bold>Juros pagamento estendido (10%):</Text>
+                                        <Text small style={styles.textDataPayments}>{formatter.format(parseFloat(valuesContract?.jurosPagamentoEstendido))}</Text>
+                                    </Box>
+                                }
+
 
                                 {valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0 &&
                                     <Box sx={styles.containerValues}>
