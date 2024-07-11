@@ -2163,16 +2163,35 @@ export const Payment = (props) => {
     };
 
 
+    const formatDateString = (value) => {
+        // Remove qualquer caractere que não seja número
+        const cleanedValue = value.replace(/\D/g, '');
+
+        // Formatar a string adicionando barras conforme necessário
+        let formattedValue = '';
+        if (cleanedValue.length > 0) {
+            formattedValue += cleanedValue.substring(0, 2);
+        }
+        if (cleanedValue.length >= 3) {
+            formattedValue += '/' + cleanedValue.substring(2, 4);
+        }
+        if (cleanedValue.length >= 5) {
+            formattedValue += '/' + cleanedValue.substring(4, 8);
+        }
+
+        return formattedValue;
+    };
+
 
     const handleChangePaymentDateInstallment = async (value, index) => {
-        console.log(value)
-        const formattedDate = new Date(value)
-        value = formattedDate.toLocaleDateString('pt-BR');
+        const formattedValue = formatDateString(value);
+        console.log(formattedValue)
+
         setTypePaymentsSelected((prevTypePaymentsDateSelected) => {
             const updatedTypePaymentsDateSelected = [...prevTypePaymentsDateSelected];
             updatedTypePaymentsDateSelected[index] = {
                 ...updatedTypePaymentsDateSelected[index],
-                data_pagamento: value,
+                data_pagamento: formattedValue,
             };
             return updatedTypePaymentsDateSelected;
         });
@@ -3000,11 +3019,8 @@ export const Payment = (props) => {
                                                     }
 
                                                     const formattedPaymentDate = paymentDate.toLocaleDateString('pt-BR');
-                                                    const formatDatePay = typePaymentsSelected[index]?.data_pagamento?.split('/')
-                                                    const yearParts = formatDatePay[2]
-                                                    const monthParts = formatDatePay[1]
-                                                    const dayParts = parseInt(formatDatePay[0])
-                                                    const formattedDay = `${yearParts}-${monthParts}-${dayParts}`
+                                                    const formattedPayChange = formattedStringInDate(formattedPaymentDate)
+                                                    console.log(formattedPayChange)
 
                                                     return (
                                                         <tr key={installmentNumber}>
@@ -3038,9 +3054,9 @@ export const Payment = (props) => {
                                                                     formattedPaymentDate :
                                                                     <TextInput
                                                                         name='data_pagamento'
-                                                                        type="date"
+                                                                        // type="date"
                                                                         onChange={(e) => handleChangePaymentDateInstallment(e.target.value, index)}
-                                                                        value={formattedDay || ''}
+                                                                        value={typePaymentsSelected[index]?.data_pagamento || ''}
                                                                     />}
                                                             </td>
                                                         </tr>
