@@ -1979,7 +1979,7 @@ export const Payment = (props) => {
         let paymentTwo;
         let totalValuePaymentFirst = totalValueFinnaly;
 
-        if ((numberParcells === 1 || forma_pagamento === 'Ex Aluno') && totalValue > 0) {
+        if ((numberParcells === 1 || forma_pagamento === 'Ex Aluno' || numberParcells > 6) && totalValue > 0) {
             totalValuePaymentFirst = totalValue
         }
 
