@@ -14,6 +14,7 @@ import { icons } from "../../../../organisms/layout/Colors"
 
 export default function ListPayroll(props) {
     const [expensesData, setExpensesData] = useState([])
+    const [compensations, setCompensations] = useState([])
     const [totalValue, setTotalValue] = useState(0)
     const [personalExpenses, setPersonalExpenses] = useState([])
     const [filters, setFilters] = useState({
@@ -34,6 +35,11 @@ export default function ListPayroll(props) {
     const [accountList, setAccountList] = useState([])
     const [filterData, setFilterData] = useState('')
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [showRecurrencyPayroll, setShowRecurrencyPayroll] = useState(false)
+    const [payrollRecurrencySelected, setPayrollRecurrencySelected] = useState([]);
+    const [allSelectedRecurrency, setAllSelectedRecurrency] = useState()
+    const [monthReleaseSelected, setMonthReleaseSelected] = useState()
+    const [showMonths, setShowMonths] = useState(false)
 
     const fetchPermissions = async () => {
         try {
@@ -110,6 +116,34 @@ export default function ListPayroll(props) {
         } catch (error) {
             console.log(error)
         } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const getPayrollCompensation = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/compensation/employees`)
+            const { data } = response;
+
+            console.log(data)
+            if (data?.length > 0) {
+                setCompensations(data.sort((a, b) => a.funcionario.localeCompare(b.funcionario))?.map(item => {
+                    const remuneration = parseFloat(item.salario);
+                    return {
+                        ...item,
+                        salario: isNaN(remuneration) ? item.salario : remuneration.toFixed(2)
+                    };
+                }));
+            } else {
+                setCompensations([])
+            }
+
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setShowRecurrencyPayroll(true)
             setLoading(false)
         }
     }
@@ -228,11 +262,35 @@ export default function ListPayroll(props) {
         { key: 'status', label: 'Status', status: true },
     ];
 
+    const groupMonths = [
+        { label: 'Janeiro', value: '0' },
+        { label: 'Fevereiro', value: '1' },
+        { label: 'Março', value: '2' },
+        { label: 'Abril', value: '3' },
+        { label: 'Maio', value: '4' },
+        { label: 'Junho', value: '5' },
+        { label: 'Julho', value: '6' },
+        { label: 'Agosto', value: '7' },
+        { label: 'Setembro', value: '8' },
+        { label: 'Outubro', value: '9' },
+        { label: 'Novembro', value: '10' },
+        { label: 'Dezembro', value: '11' }
+    ]
+
     const groupSelect = (id) => [
         {
             value: id?.toString()
         },
     ]
+
+    const selectedMonths = (value) => {
+        const alreadySelected = monthReleaseSelected === value;
+        if (alreadySelected) {
+            setMonthReleaseSelected(null);
+        } else {
+            setMonthReleaseSelected(value);
+        }
+    };
 
     const groupStatus = [
         { label: 'Todos', value: 'todos' },
@@ -332,17 +390,28 @@ export default function ListPayroll(props) {
 
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', paddingTop: '20px', paddingRight: '20px' }}>
-                <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new`)} />
-                <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
-                    active: true,
-                    event,
-                    acceptAction: handleDelete,
-                    title: `Excluir Pagamento selecionado?`,
-                    message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
-                })} />
-                <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
-                    onClick={() => setShowBaixa(true)} />
+            <Box sx={{
+                display: 'flex', gap: 1, width: '100%',
+                justifyContent: 'justify-between',
+            }}>
+                <Box sx={{ display: 'flex', width: '100%' }}>
+                    <Button disabled={!isPermissionEdit && true} small text="Salários Recorrênte" style={{ height: '30px', borderRadius: '6px' }} onClick={
+                        async () => {
+                            await getPayrollCompensation()
+                        }} />
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end' }}>
+                    <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/payroll/new`)} />
+                    <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
+                        active: true,
+                        event,
+                        acceptAction: handleDelete,
+                        title: `Excluir Pagamento selecionado?`,
+                        message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
+                    })} />
+                    <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                        onClick={() => setShowBaixa(true)} />
+                </Box>
             </Box>
 
             <Box sx={{
@@ -567,7 +636,303 @@ export default function ListPayroll(props) {
                     </Box>
                 </ContentContainer>
             </Backdrop>
+
+
+
+            <Backdrop open={showRecurrencyPayroll} sx={{ zIndex: 999, paddingTop: 5 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Despesas Recorrentes</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setShowRecurrencyPayroll(false)
+                            setPayrollRecurrencySelected([])
+                            setAllSelectedRecurrency(false)
+                            setShowMonths(false)
+                            setMonthReleaseSelected(null)
+                        }} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{
+                        display: 'flex', gap: 1.75, alignItems: 'start',
+                        maxHeight: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '580px' },
+                        overflow: 'auto',
+                    }}>
+                        {compensations?.length > 0 ?
+                            <TableRecurrencyPayroll
+                                data={compensations}
+                                // handleDeleteRecurrencyExpense={handleDeleteRecurrencyExpense}
+                                // setShowExclude={setShowExclude}
+                                payrollRecurrencySelected={payrollRecurrencySelected}
+                                setPayrollRecurrencySelected={setPayrollRecurrencySelected}
+                                allSelectedRecurrency={allSelectedRecurrency}
+                                setAllSelectedRecurrency={setAllSelectedRecurrency}
+                            />
+                            :
+                            <Text light>Não existem salários cadastrados.</Text>}
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                        {payrollRecurrencySelected?.length > 0 &&
+                            <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text>Selecione o mês de lancamento:</Text>
+                                <Button secondary disabled={!isPermissionEdit && true} text="Selecionar" style={{ height: '30px', borderRadius: '6px' }}
+                                    onClick={() => setShowMonths(true)} />
+                            </Box>}
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            {(monthReleaseSelected?.length > 0 && payrollRecurrencySelected?.length > 0) ?
+                                <Button disabled={!isPermissionEdit && true} text="Lançar"
+                                    style={{ height: '30px', borderRadius: '6px' }} onClick={() => handleCreateRecurrencyExpense()} />
+                                :
+                                <Button disabled={!isPermissionEdit && true} text="Cadastrar" style={{ height: '30px', borderRadius: '6px' }}
+                                    onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/new`)} />}
+                        </Box>
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+
+            <Backdrop open={showMonths} sx={{ zIndex: 999, paddingTop: 5 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Selecione o Mês de lançamento</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setShowMonths(false)
+                        }} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{
+                        display: 'flex', gap: 1.75, alignItems: 'start',
+                        flexWrap: 'wrap',
+                        maxHeight: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '580px' },
+                        maxWidth: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '580px' },
+                    }}>
+                        {groupMonths?.map((item, index) => {
+                            const selected = item?.value === monthReleaseSelected;
+                            return (
+                                <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Box sx={{
+                                            display: 'flex', gap: 1, width: 15, height: 15, border: '1px solid', borderRadius: '15px',
+                                            backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => selectedMonths(item?.value)}>
+                                            {selected &&
+                                                <Box sx={{
+                                                    ...styles.menuIcon,
+                                                    width: 17, height: 17,
+                                                    backgroundImage: `url('/icons/check_around_icon.png')`,
+                                                    transition: '.3s',
+                                                }} />
+                                            }
+                                        </Box>
+                                    </Box>
+                                    <Text>{item?.label}</Text>
+                                </Box>
+                            )
+                        })}
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'flex-end' }}>
+                        <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => setShowMonths(false)} />
+
+                        <Button cancel disabled={!isPermissionEdit && true} text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => {
+                                setShowMonths(false)
+                                setMonthReleaseSelected(null)
+                            }} />
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
         </>
+    )
+}
+
+
+
+const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setShowExclude,
+    payrollRecurrencySelected, setPayrollRecurrencySelected, allSelectedRecurrency, setAllSelectedRecurrency }) => {
+
+    const { setLoading, theme, colorPalette } = useAppContext()
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const router = useRouter()
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+    const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+
+
+    const toggleSelectAll = () => {
+        if (allSelectedRecurrency) {
+            setPayrollRecurrencySelected([]);
+        } else {
+            const allRecurrencies = data?.reduce((acc, item) => {
+                if (!payrollRecurrencySelected.some(recurrency => recurrency.recurrencyId === item.id_remuneracao)) {
+                    acc.push({ recurrencyId: item.id_remuneracao });
+                }
+                return acc;
+            }, [...payrollRecurrencySelected]);
+
+            setPayrollRecurrencySelected(allRecurrencies);
+        }
+        setAllSelectedRecurrency(!allSelectedRecurrency);
+    };
+
+    const selectedRecurrency = (value) => {
+
+        console.log()
+        const alreadySelected = payrollRecurrencySelected.some(recurrency => recurrency.recurrencyId === value);
+
+        const updatedRecurrencySelected = alreadySelected ? payrollRecurrencySelected.filter(recurrency => recurrency.recurrencyId !== value)
+            : [...payrollRecurrencySelected, { recurrencyId: value }];
+
+        setPayrollRecurrencySelected(updatedRecurrencySelected);
+        if (updatedRecurrencySelected?.length === data?.length) {
+            setAllSelectedRecurrency(true);
+        } else if (alreadySelected) {
+            setAllSelectedRecurrency(false);
+        }
+    };
+
+
+    return (
+        <div style={{
+            borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap',
+            backgroundColor: colorPalette?.secondary,
+            border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+        }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
+                <thead>
+                    <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
+                        <th style={{ padding: '8px 5px', minWidth: '50px' }}>
+                            <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column', alignItems: 'center' }}>
+                                <Text xsmall>Selecionar tudo</Text>
+                                <Box sx={{
+                                    display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                    backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => toggleSelectAll()}>
+                                    {allSelectedRecurrency &&
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 20, height: 20,
+                                            backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                            transition: '.3s',
+                                        }} />
+                                    }
+                                </Box>
+                            </Box>
+                        </th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Funcionário</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dia de Vencimento</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold></Text></th>
+                    </tr>
+                </thead>
+                <tbody style={{ flex: 1, }}>
+                    {data?.slice(startIndex, endIndex).map((item, index) => {
+                        const recurrencyId = item?.id_remuneracao;
+                        const selected = payrollRecurrencySelected?.some(recurrency => recurrency?.recurrencyId === recurrencyId);
+                        return (
+                            <tr key={index} style={{
+                                backgroundColor: colorPalette?.secondary
+                            }}>
+                                <td style={{ textAlign: 'center', padding: '5px 5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                        <Box sx={{
+                                            display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                            backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => selectedRecurrency(recurrencyId)}>
+                                            {selected &&
+                                                <Box sx={{
+                                                    ...styles.menuIcon,
+                                                    width: 20, height: 20,
+                                                    backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                                    transition: '.3s',
+                                                }} />
+                                            }
+                                        </Box>
+                                    </Box>
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light>
+                                        {item?.funcionario}
+                                    </Text>
+                                </td>
+
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light >
+                                        {item?.dia_vencimento}
+                                    </Text>
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light >{formatter.format(item?.salario)}</Text>
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        gap: 1,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }} >
+                                        <Button small style={{ borderRadius: 2 }} text="Editar" onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/${item?.id_desp_recorrente}`)} />
+                                        <Button cancel small style={{ borderRadius: 2 }} text="Excluir"
+                                            onClick={(e) =>
+                                                setShowExclude({
+                                                    active: true,
+                                                    data: item?.id_remuneracao,
+                                                    title: 'Excluir Conta',
+                                                    description: 'Tem certeza que deseja excluir a conta? Uma vez excluído, não será possível recupera-la, e não aparecerá no relatório final.',
+                                                    event: handleDeleteRecurrencyExpense
+                                                })
+                                            } />
+                                    </Box>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+
+            </table>
+
+            <PaginationTable data={data}
+                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+            />
+
+        </div >
     )
 }
 

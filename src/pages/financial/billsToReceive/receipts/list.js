@@ -9,6 +9,7 @@ import { formatTimeStamp } from "../../../../helpers"
 import { Backdrop, TablePagination } from "@mui/material"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 import { icons } from "../../../../organisms/layout/Colors"
+import Link from "next/link"
 
 export default function ListReceipts(props) {
     const [installmentsList, setInstallmentsList] = useState([])
@@ -709,7 +710,7 @@ export default function ListReceipts(props) {
                                 {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Status BemPaggo</Text></th> */}
                                 <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Status</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>ID BemP</Text></th>
-                                <th style={{ padding: '8px 0px', minWidth: '180px' }}><Text bold>Protestada</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '80px' }}><Text bold></Text></th>
                             </tr>
                         </thead>
                         <tbody style={{ flex: 1, }}>
@@ -720,18 +721,18 @@ export default function ListReceipts(props) {
                                     <tr key={index} style={{
                                         backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary,
                                         opacity: 1,
-                                        transition: 'opacity 0.3s, background-color 0.3s',
-                                        cursor: 'pointer',
+                                        // transition: 'opacity 0.3s, background-color 0.3s',
+                                        // cursor: 'pointer',
                                     }}
-                                        onMouseOver={(e) => {
-                                            e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.primary + '77';
-                                            e.currentTarget.style.opacity = '0.5';
-                                        }}
-                                        onMouseOut={(e) => {
-                                            e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary;
-                                            e.currentTarget.style.opacity = '1';
-                                        }}
-                                        onClick={() => router.push(`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`)}
+                                    // onMouseOver={(e) => {
+                                    //     e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.primary + '77';
+                                    //     e.currentTarget.style.opacity = '0.5';
+                                    // }}
+                                    // onMouseOut={(e) => {
+                                    //     e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary;
+                                    //     e.currentTarget.style.opacity = '1';
+                                    // }}
+                                    // onClick={() => router.push(`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`)}
                                     >
 
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
@@ -818,8 +819,14 @@ export default function ListReceipts(props) {
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>{item?.referenceId || '-'}</Text>
                                         </td>
-                                        <td style={{ fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                            <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.parc_protestada} group={groupProstated} horizontal={true} onSelect={(value) => handleChangeInstallmentDate(item?.id_parcela_matr, 'parc_protestada', parseInt(value))} />
+                                        <td style={{
+                                            fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`,
+                                            padding: '5px 12px'
+                                        }}>
+                                            <Link href={`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`} target="_blank">
+                                                <Button text="Ver" small style={{ borderRadius: 2 }} />
+                                            </Link>
+                                            {/* <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.parc_protestada} group={groupProstated} horizontal={true} onSelect={(value) => handleChangeInstallmentDate(item?.id_parcela_matr, 'parc_protestada', parseInt(value))} /> */}
                                         </td>
                                     </tr>
                                 );

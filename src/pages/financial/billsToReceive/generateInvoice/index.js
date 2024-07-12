@@ -171,6 +171,7 @@ export default function ListInvoices(props) {
         { label: 'Pendente', value: 'Pendente' },
         { label: 'Inativa', value: 'Inativa' },
         { label: 'Paga', value: 'Paga' },
+        { label: 'Aprovado/Liquidado', value: 'Aprovado' },
         { label: 'Cancelada', value: 'Cancelada' },
         { label: 'Pagamento reprovado', value: 'Pagamento reprovado' },
         { label: 'Erro com o pagamento', value: 'Erro com o pagamento' },
@@ -362,11 +363,11 @@ export default function ListInvoices(props) {
 
             {invoicesList.length > 0 ?
                 <div style={{
-                    borderRadius: '8px', overflowY: 'auto', marginTop: '10px', flexWrap: 'nowrap',
+                    borderRadius: '8px', overflowX: 'auto', marginTop: '10px', flexWrap: 'nowrap',
                     backgroundColor: colorPalette?.secondary,
                     border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
                 }}>
-                    <table style={{ borderCollapse: 'collapse', width: '100%', overflowY: 'auto', }}>
+                    <table style={{ borderCollapse: 'collapse', width: '100%', overflowX: 'auto', }}>
                         <thead>
                             <tr style={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
                                 <th style={{ padding: '4px 0px', display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
@@ -393,6 +394,7 @@ export default function ListInvoices(props) {
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>CPF</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Pagamento</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '55px' }}><Text bold>Nº parc.</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>C. Custo</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Parcela Paga</Text></th>
@@ -425,7 +427,7 @@ export default function ListInvoices(props) {
                                             />
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                            {item?.pagante == null ? item?.aluno :  item?.pagante  || '-'}
+                                            {item?.pagante == null ? item?.aluno : item?.pagante || '-'}
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             {item?.cpf}
@@ -435,6 +437,9 @@ export default function ListInvoices(props) {
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             <TextInput disabled={!isPermissionEdit && true} fullWidth name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ flex: 1 }} />
+                                        </td>
+                                        <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                            <Text small light>{item?.dt_pagamento ? formatTimeStamp(item?.dt_pagamento) : '-'}</Text>
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             {item?.n_parcela || '-'}

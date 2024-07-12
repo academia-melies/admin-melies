@@ -390,7 +390,9 @@ export default function StuatusPayment() {
         // { label: 'Cartão', value: 'Cartão' },
         { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },]
 
-    const contractValue = installmentsData?.length > 0 ? installmentsData?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) : 0;
+    const contractValue = installmentsData?.length > 0 ? installmentsData?.filter(item => item?.status_parcela === 'Aprovado' ||
+        item?.status_parcela === 'Pago' ||
+        item?.status_parcela === 'Pendente' )?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) : 0;
 
     return (
         <>
