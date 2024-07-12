@@ -1,7 +1,7 @@
 import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { formatDate, formatTimeStamp } from "../../helpers";
+import { formatTimeStamp } from "../../helpers";
 import { Box, Button, Text } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
 import { icons } from "../layout/Colors";
@@ -136,7 +136,7 @@ export const Table_V1 = (props) => {
                                     },
                                 }}>
                                     {columns.map((column) => (
-                                        <Tooltip key={`${column}-${row}`} title={tolltip ? '' : column.date ? formatDate(row[column?.key]) : row[column?.key || '-']} arrow>
+                                        <Tooltip key={`${column}-${row}`} title={tolltip ? '' : column.date ? formatTimeStamp(row[column?.key]) : row[column?.key || '-']} arrow>
                                             <TableCell
                                                 key={`${row.id}-${column.key}`}
                                                 sx={{
@@ -183,7 +183,7 @@ export const Table_V1 = (props) => {
                                                                     <Text small bold>{row[column.key]}</Text>
                                                                 </Box>
                                                             ) : (
-                                                                column.price ? formatter.format(row[column?.key]) : column.date ? formatDate(row[column?.key]) :
+                                                                column.price ? formatter.format(row[column?.key]) : column.date ? formatTimeStamp(row[column?.key]) :
                                                                     <Text style={{
                                                                         maxWidth: column.matricula && '180px', textOverflow: 'ellipsis',
                                                                         whiteSpace: 'nowrap',

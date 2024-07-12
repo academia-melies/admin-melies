@@ -98,11 +98,22 @@ export default function ListClasses(props) {
         return sortedClasses;
     }
 
+    const setToNoon = (dateString) => {
+        const date = new Date(dateString);
+        date.setHours(12, 0, 0, 0); // Define a hora para 12:00 local
+        return date.toISOString();
+    };
+
     const getClasses = async () => {
         setLoading(true)
         try {
             const response = await api.get('/classes')
-            const { data = [] } = response;
+            let { data = [] } = response;
+            data = data?.map((item) => ({
+                ...item,
+                inicio: setToNoon(item.inicio),
+                fim: setToNoon(item.fim),
+            }))
             setClasses(data)
         } catch (error) {
             console.log(error)
@@ -198,16 +209,16 @@ export default function ListClasses(props) {
                     <Divider padding={0} />
                     <Box sx={{ display: 'flex', flex: 1, justifyContent: 'flex-start', alignItems: 'start', flexDirection: 'column', position: 'relative', }}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, alignItems: 'start', flexDirection: 'column' }}>
-                        <SelectList
-                            data={listAtivo}
-                            valueSelection={filterAtive}
-                            onSelect={(value) => setFilterAtive(value)}
-                            title="status"
-                            filterOpition="value"
-                            sx={{ flex: 1 }}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                            clean={false}
-                        />
+                            <SelectList
+                                data={listAtivo}
+                                valueSelection={filterAtive}
+                                onSelect={(value) => setFilterAtive(value)}
+                                title="status"
+                                filterOpition="value"
+                                sx={{ flex: 1 }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                                clean={false}
+                            />
                         </Box>
                         <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
                             <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
