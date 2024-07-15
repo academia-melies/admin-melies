@@ -40,6 +40,7 @@ export default function ListPayroll(props) {
     const [allSelectedRecurrency, setAllSelectedRecurrency] = useState()
     const [monthReleaseSelected, setMonthReleaseSelected] = useState()
     const [showMonths, setShowMonths] = useState(false)
+    const [editRecurrency, setEditRecurrency] = useState(false)
 
     const fetchPermissions = async () => {
         try {
@@ -131,9 +132,11 @@ export default function ListPayroll(props) {
             if (data?.length > 0) {
                 setCompensations(data.sort((a, b) => a.funcionario.localeCompare(b.funcionario))?.map(item => {
                     const remuneration = parseFloat(item.salario);
+                    const liquidRemunaration = parseFloat(item.salario_liq);
                     return {
                         ...item,
-                        salario: isNaN(remuneration) ? item.salario : remuneration.toFixed(2)
+                        salario: isNaN(remuneration) ? item.salario : remuneration.toFixed(2),
+                        salario_liq: isNaN(liquidRemunaration) ? item.salario_liq : liquidRemunaration.toFixed(2),
                     };
                 }));
             } else {
@@ -143,7 +146,6 @@ export default function ListPayroll(props) {
         } catch (error) {
             console.log(error)
         } finally {
-            setShowRecurrencyPayroll(true)
             setLoading(false)
         }
     }
@@ -233,6 +235,75 @@ export default function ListPayroll(props) {
             console.log(error)
             return error
 
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleUpdate = async () => {
+        try {
+            setLoading(true)
+
+            let success = true
+            for (let compensation of compensations) {
+                if (compensation?.salario_liq) {
+                    const updateCompensations = await api.patch(`/compensation/employee/update/remunaration-liquid/${compensation?.id_remuneracao}`,
+                        { salario_liq: compensation?.salario_liq })
+                    if (updateCompensations?.status !== 200) {
+                        success = false
+                    }
+                }
+            }
+
+            if (success) {
+                alert.success(`Salários atualizados.`)
+                setEditRecurrency(false)
+                await getPayrollCompensation()
+            } else {
+                alert.success(`Ocorreu um erro ao atualizar salários.`)
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleCreateRecurrencyPayroll = async () => {
+        try {
+            setLoading(true)
+            let successStatus = true;
+            for (let recurrency of payrollRecurrencySelected) {
+                let recurrencyFiltered = compensations?.filter(item => item?.id_remuneracao === recurrency?.recurrencyId)
+                const recurrencyData = recurrencyFiltered[0]
+                console.log('recurrency', recurrency)
+                console.log('entrou aqui', recurrencyData)
+                if (recurrencyData?.salario_liq) {
+                    const response = await api.post(`/expense/personal/recurrency/padronizado/create`,
+                        { recurrencyData, monthSelected: monthReleaseSelected, userResp: user?.id })
+                    console.log('response', response)
+
+                    const { success } = response.data
+                    if (!success) { successStatus = false }
+                }
+            }
+
+            if (successStatus) {
+                alert.success('Salários líquidos lançados.');
+                setShowRecurrencyPayroll(false)
+                setPayrollRecurrencySelected([])
+                setAllSelectedRecurrency(false)
+                setShowMonths(false)
+                setMonthReleaseSelected(null)
+                await getPayrollCompensation()
+            } else {
+                alert.error('Erro ao lançar salários líquidos.');
+            }
+        } catch (error) {
+            console.log(error)
+            return error
         } finally {
             setLoading(false)
         }
@@ -397,6 +468,7 @@ export default function ListPayroll(props) {
                 <Box sx={{ display: 'flex', width: '100%' }}>
                     <Button disabled={!isPermissionEdit && true} small text="Salários Recorrênte" style={{ height: '30px', borderRadius: '6px' }} onClick={
                         async () => {
+                            setShowRecurrencyPayroll(true)
                             await getPayrollCompensation()
                         }} />
                 </Box>
@@ -642,7 +714,7 @@ export default function ListPayroll(props) {
             <Backdrop open={showRecurrencyPayroll} sx={{ zIndex: 999, paddingTop: 5 }}>
                 <ContentContainer sx={{ zIndex: 9999 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
-                        <Text bold large>Despesas Recorrentes</Text>
+                        <Text bold large>Folha de Pagamento</Text>
                         <Box sx={{
                             ...styles.menuIcon,
                             backgroundImage: `url(${icons.gray_close})`,
@@ -669,8 +741,10 @@ export default function ListPayroll(props) {
                         {compensations?.length > 0 ?
                             <TableRecurrencyPayroll
                                 data={compensations}
+                                setData={setCompensations}
                                 // handleDeleteRecurrencyExpense={handleDeleteRecurrencyExpense}
                                 // setShowExclude={setShowExclude}
+                                editRecurrency={editRecurrency}
                                 payrollRecurrencySelected={payrollRecurrencySelected}
                                 setPayrollRecurrencySelected={setPayrollRecurrencySelected}
                                 allSelectedRecurrency={allSelectedRecurrency}
@@ -687,14 +761,20 @@ export default function ListPayroll(props) {
                                 <Button secondary disabled={!isPermissionEdit && true} text="Selecionar" style={{ height: '30px', borderRadius: '6px' }}
                                     onClick={() => setShowMonths(true)} />
                             </Box>}
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                            {(monthReleaseSelected?.length > 0 && payrollRecurrencySelected?.length > 0) ?
-                                <Button disabled={!isPermissionEdit && true} text="Lançar"
-                                    style={{ height: '30px', borderRadius: '6px' }} onClick={() => handleCreateRecurrencyExpense()} />
+                        {(monthReleaseSelected?.length > 0 && payrollRecurrencySelected?.length > 0) &&
+                            <Button disabled={!isPermissionEdit && true} text="Lançar"
+                                style={{ height: '30px', borderRadius: '6px' }} onClick={() => handleCreateRecurrencyPayroll()} />
+                        }
+                        {payrollRecurrencySelected?.length < 1 && <Box sx={{ display: 'flex', gap: 1 }}>
+                            {(!editRecurrency) ? <Button disabled={!isPermissionEdit && true} secondary text="Editar Salários" style={{ height: '30px', borderRadius: '6px' }}
+                                onClick={() => setEditRecurrency(true)} />
                                 :
-                                <Button disabled={!isPermissionEdit && true} text="Cadastrar" style={{ height: '30px', borderRadius: '6px' }}
-                                    onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/new`)} />}
-                        </Box>
+                                <Button disabled={!isPermissionEdit && true} cancel text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                                    onClick={() => setEditRecurrency(false)} />
+                            }
+                            {editRecurrency && <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }}
+                                onClick={() => handleUpdate()} />}
+                        </Box>}
                     </Box>
                 </ContentContainer>
             </Backdrop>
@@ -771,8 +851,9 @@ export default function ListPayroll(props) {
 
 
 
-const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setShowExclude,
-    payrollRecurrencySelected, setPayrollRecurrencySelected, allSelectedRecurrency, setAllSelectedRecurrency }) => {
+const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setShowExclude, setData,
+    payrollRecurrencySelected, setPayrollRecurrencySelected, allSelectedRecurrency, setAllSelectedRecurrency,
+    editRecurrency }) => {
 
     const { setLoading, theme, colorPalette } = useAppContext()
     const [page, setPage] = useState(0);
@@ -805,7 +886,6 @@ const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setS
 
     const selectedRecurrency = (value) => {
 
-        console.log()
         const alreadySelected = payrollRecurrencySelected.some(recurrency => recurrency.recurrencyId === value);
 
         const updatedRecurrencySelected = alreadySelected ? payrollRecurrencySelected.filter(recurrency => recurrency.recurrencyId !== value)
@@ -820,6 +900,43 @@ const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setS
     };
 
 
+    const handleChangeEditSalLiq = (remunerationId, value) => {
+
+        const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+        if (rawValue === '') {
+            value = '';
+        } else {
+            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+            if (intValue === '0' && rawValue.length > 2) {
+                intValue = '';
+            }
+
+            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+            value = formattedValue;
+
+        }
+
+        setData((prevValues) => {
+
+            const updatedValues = prevValues.map((compensation) => {
+                if (compensation?.id_remuneracao === remunerationId) {
+                    return {
+                        ...compensation,
+                        salario_liq: value
+                    }
+                }
+
+                return compensation
+            })
+            return updatedValues
+        })
+
+    }
+
+
     return (
         <div style={{
             borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap',
@@ -830,7 +947,7 @@ const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setS
                 <thead>
                     <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
                         <th style={{ padding: '8px 5px', minWidth: '50px' }}>
-                            <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column', alignItems: 'center' }}>
+                            {editRecurrency ? <></> : <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column', alignItems: 'center' }}>
                                 <Text xsmall>Selecionar tudo</Text>
                                 <Box sx={{
                                     display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
@@ -849,12 +966,12 @@ const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setS
                                         }} />
                                     }
                                 </Box>
-                            </Box>
+                            </Box>}
                         </th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Funcionário</Text></th>
-                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dia de Vencimento</Text></th>
-                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
-                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold></Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dia de Pagamento</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor Bruto</Text></th>
+                        <th style={{ padding: '8px 0px', maxWidth: '80px' }}><Text bold>Valor Líq</Text></th>
                     </tr>
                 </thead>
                 <tbody style={{ flex: 1, }}>
@@ -866,7 +983,7 @@ const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setS
                                 backgroundColor: colorPalette?.secondary
                             }}>
                                 <td style={{ textAlign: 'center', padding: '5px 5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {editRecurrency ? <> </> : <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 
                                         <Box sx={{
                                             display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
@@ -885,7 +1002,7 @@ const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setS
                                                 }} />
                                             }
                                         </Box>
-                                    </Box>
+                                    </Box>}
                                 </td>
                                 <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                     <Text light>
@@ -894,32 +1011,24 @@ const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setS
                                 </td>
 
                                 <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                    <Text light >
-                                        {item?.dia_vencimento}
+                                    <Text light>
+                                        {item?.dia_pagamento}
                                     </Text>
                                 </td>
                                 <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                     <Text light >{formatter.format(item?.salario)}</Text>
                                 </td>
                                 <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        gap: 1,
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                    }} >
-                                        <Button small style={{ borderRadius: 2 }} text="Editar" onClick={() => router.push(`/financial/billsToPay/expenses/recurrency/${item?.id_desp_recorrente}`)} />
-                                        <Button cancel small style={{ borderRadius: 2 }} text="Excluir"
-                                            onClick={(e) =>
-                                                setShowExclude({
-                                                    active: true,
-                                                    data: item?.id_remuneracao,
-                                                    title: 'Excluir Conta',
-                                                    description: 'Tem certeza que deseja excluir a conta? Uma vez excluído, não será possível recupera-la, e não aparecerá no relatório final.',
-                                                    event: handleDeleteRecurrencyExpense
-                                                })
-                                            } />
-                                    </Box>
+                                    {editRecurrency ?
+                                        <TextInput
+                                            placeholder='R$ 5,00'
+                                            name='salario_liq'
+                                            onChange={(e) => handleChangeEditSalLiq(item?.id_remuneracao, e.target.value)}
+                                            value={item?.salario_liq}
+                                            sx={{ width: '120px', }} />
+                                        :
+                                        <Text light >{formatter.format(item?.salario_liq || 0)}</Text>
+                                    }
                                 </td>
                             </tr>
                         );

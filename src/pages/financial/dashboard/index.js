@@ -44,7 +44,9 @@ export default function ListBillsToPay(props) {
     const [averageTicket, setAverageTicket] = useState(0)
     const [showFilterMobile, setShowFilterMobile] = useState(false)
     const [totalSales, setTotalSales] = useState(0)
+    const [totalFutureSales, setTotalFutureSales] = useState(0)
     const [totalPays, setTotalPays] = useState(0)
+    const [totalFuturePays, setTotalFuturePays] = useState(0)
     const [qntSales, setQntSales] = useState(0)
     const [filters, setFilters] = useState({
         payment: 'Todos',
@@ -116,22 +118,39 @@ export default function ListBillsToPay(props) {
 
 
     const handleCalculationGraph = async (billstReceive, billstPay) => {
+        const currentDate = new Date()
+
         let billsExpenses = billstPay?.expenses?.filter(filter);
         let billsPersonal = billstPay?.personal?.filter(filter);
 
-        let fixed = billsExpenses?.map(item => parseFloat(item.valor_desp))?.reduce((acc, curr) => acc + curr, 0)
-        let personal = billsPersonal?.map(item => parseFloat(item.vl_pagamento))?.reduce((acc, curr) => acc + curr, 0)
-        setTotalPays(fixed + personal)
+        let fixed = billsExpenses?.length > 0 ? billsExpenses?.map(item => item.valor_desp) : []
+        let personal = billsPersonal?.length > 0 ? billsPersonal?.map(item => item.vl_pagamento) : []
+
+        const filteredFixed = fixed?.length > 0 ? fixed?.reduce((acc, curr) => acc + curr, 0) : 0
+        const filteredPersonal = personal?.length > 0 ? personal?.reduce((acc, curr) => acc + curr, 0) : 0
+
+        let totalPaysFut = [...billsExpenses, ...billsPersonal]
+
+        setTotalPays(filteredFixed + filteredPersonal)
+
+
+        totalPaysFut = totalPaysFut?.filter(item => new Date(item?.vencimento) > currentDate)
+
+        setTotalFuturePays(totalPaysFut)
 
         let data = billstReceive?.filter(filter);
         let qntSalesValue = data?.length;
-        let totalSalesValue = data?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
+        let totalSalesValue = data?.filter(item => new Date(item?.dt_pagamento) <= currentDate)?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
+        let totalSalesFutureValue = data?.filter(item => new Date(item?.vencimento) > currentDate)?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
         let averageTicketValue = totalSalesValue ? (totalSalesValue / qntSalesValue).toFixed(2) : 0
+
+
 
         setQntSales(qntSalesValue);
         setTotalSales(totalSalesValue)
         setAverageTicket(averageTicketValue);
-
+        setTotalFutureSales(totalSalesFutureValue)
+        setTotalFuturePays
 
         const { series, labels } = processChartData(data);
         setFormPaymentGraph({ series, labels });
@@ -393,7 +412,7 @@ export default function ListBillsToPay(props) {
             </Backdrop>
 
 
-            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', gap: 5, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' } }}>
+            {/* <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', gap: 5, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' } }}>
                 <Box sx={{
                     display: 'flex', justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'center', xl: 'center' },
                     flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' }
@@ -417,11 +436,121 @@ export default function ListBillsToPay(props) {
                         )
                     })}
                 </Box>
-            </Box>
+            </Box> */}
 
 
             <Box sx={{ display: 'flex', gap: 2, flex: 1, flexDirection: 'column' }}>
+
                 <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' }, flex: 1 }}>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(totalSales)}</Text>
+                            </Box>
+                            <Text large light>Total Recebido</Text>
+                        </Box>
+                    </ContentContainer>
+
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(totalFutureSales)}</Text>
+                            </Box>
+                            <Text large light>Total á Receber</Text>
+                        </Box>
+                    </ContentContainer>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold>{qntSales || 0}</Text>
+                            </Box>
+                            <Text large light>Venda Realizadas</Text>
+                        </Box>
+                    </ContentContainer>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(averageTicket)}</Text>
+                            </Box>
+                            <Text large light>Ticket médio</Text>
+                        </Box>
+                    </ContentContainer>
+
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title style={{ color: 'red' }}>{formatter.format(totalPays)}</Text>
+                            </Box>
+                            <Text large light>Saídas</Text>
+                        </Box>
+                    </ContentContainer>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title style={{ color: 'red' }}>{formatter.format(totalFuturePays)}</Text>
+                            </Box>
+                            <Text large light>Saídas futuras</Text>
+                        </Box>
+                    </ContentContainer>
+
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' }, flex: 1 }}>
+                    <ContentContainer fullWidth>
+
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 25,
+                                height: 25,
+                                aspectRatio: '1/1',
+                                backgroundColor: '#fff',
+                                backgroundImage: `url('/icons/graph_icon.png')`,
+                                transition: '.3s',
+                            }} />
+                            <Text bold large>Valores a receber</Text>
+                        </Box>
+
+                        <GraphChart
+                            options={{
+                                fill: {
+                                    type: 'gradient / solid / pattern / image'
+                                },
+                                xaxis: {
+                                    categories: barChartLabels,
+                                },
+                                tooltip: {
+                                    y: {
+                                        formatter: function (value) {
+                                            return getFormattedValue(value);
+                                        }
+                                    }
+                                }
+                            }}
+
+                            type="line"
+                            series={[{
+                                data: billstToReceiveGraph,
+                            }]}
+                            height={300}
+                        />
+                    </ContentContainer>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2, flex: 1, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' }, }}>
+
                     <ContentContainer fullWidth>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', }}>
                             <Box sx={{
@@ -447,140 +576,8 @@ export default function ListBillsToPay(props) {
                             />
                         </div>
                     </ContentContainer>
-                    <ContentContainer>
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 25,
-                                height: 25,
-                                aspectRatio: '1/1',
-                                backgroundColor: '#fff',
-                                backgroundImage: `url('/icons/sale_icon.png')`,
-                                transition: '.3s',
-                            }} />
-                            <Text bold large>Balanço Financeiro</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 2, }}>
 
-                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', padding: '0px 40px' }}>
 
-                                <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold style={{ color: 'green' }}>{formatter.format(totalSales)}</Text>
-                                    </Box>
-                                    <Text light>Receita</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold style={{ color: 'red' }}>{formatter.format(totalPays)}</Text>
-                                    </Box>
-                                    <Text light>Despesa</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{
-                                    display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                    gap: .5, flex: 1
-                                }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Box sx={{
-                                            ...styles.menuIcon,
-                                            width: 18,
-                                            height: 18,
-                                            aspectRatio: '1/1',
-                                            backgroundImage: totalSales < totalPays ? `url('/icons/arrow_down_red_icon.png')` : `url('/icons/arrow_up_green_icon.png')`,
-                                            transition: '.3s',
-                                        }} />
-                                        <Text title bold style={{ color: totalSales < totalPays ? 'red' : 'green' }}>{formatter.format(totalSales - totalPays)}</Text>
-                                    </Box>
-                                    <Text light>Diferença líquida</Text>
-                                </Box>
-                            </Box>
-                        </Box>
-                    </ContentContainer>
-
-                    <ContentContainer>
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 25,
-                                height: 25,
-                                aspectRatio: '1/1',
-                                backgroundColor: '#fff',
-                                backgroundImage: `url('/icons/sale_icon.png')`,
-                                transition: '.3s',
-                            }} />
-                            <Text bold large>Vendas</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 2, }}>
-
-                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', padding: '0px 40px' }}>
-
-                                <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold>{qntSales || 0}</Text>
-                                    </Box>
-                                    <Text light>Quantidade de vendas</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold>{formatter.format(averageTicket)}</Text>
-                                    </Box>
-                                    <Text light>Ticket médio</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{
-                                    display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                    gap: .5, flex: 1
-                                }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text bold title>{formatter.format(totalSales)}</Text>
-                                    </Box>
-                                    <Text light>Total em vendas</Text>
-                                </Box>
-                            </Box>
-                        </Box>
-                    </ContentContainer>
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 2, flex: 1, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' }, }}>
-                    <ContentContainer fullWidth>
-
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 25,
-                                height: 25,
-                                aspectRatio: '1/1',
-                                backgroundColor: '#fff',
-                                backgroundImage: `url('/icons/graph_icon.png')`,
-                                transition: '.3s',
-                            }} />
-                            <Text bold large>Valores a receber</Text>
-                        </Box>
-
-                        <GraphChart
-                            options={{
-
-                                xaxis: {
-                                    categories: barChartLabels,
-                                },
-                                tooltip: {
-                                    y: {
-                                        formatter: function (value) {
-                                            return getFormattedValue(value);
-                                        }
-                                    }
-                                }
-                            }}
-                            type="bar"
-                            series={[{
-                                data: billstToReceiveGraph,
-                            }]}
-                            height={600}
-                        />
-                    </ContentContainer>
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', flex: 1 }}>
                         <ContentContainer fullWidth sx={{
                             flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' }

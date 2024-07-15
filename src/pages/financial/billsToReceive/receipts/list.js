@@ -403,6 +403,9 @@ export default function ListReceipts(props) {
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
         { label: 'Cartão', value: 'Cartão' },
+        { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
+        
+
     ]
 
     const groupSelect = (id) => [
@@ -428,13 +431,13 @@ export default function ListReceipts(props) {
         return dateA - dateB;
     });
 
-    const totalValueToReceive = (status) => installmentsList
+    const totalValueToReceive = (status) => installmentsList?.filter(filter)
         ?.filter(item => item?.status_parcela === status)
         ?.map(item => item?.valor_parcela)
         ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0);
 
 
-    const totalValueCanceled = installmentsList
+    const totalValueCanceled = installmentsList?.filter(filter)
         ?.filter(item => (item?.status_parcela === 'Cancelado') || (item?.status_parcela === 'Inativa') || (item?.status_parcela === 'Estornado'))
         ?.map(item => item?.valor_parcela)
         ?.reduce((acc, currentValue) => acc + (currentValue || 0), 0);
