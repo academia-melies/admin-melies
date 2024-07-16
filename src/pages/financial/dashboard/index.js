@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { Box, Button, ContentContainer, Divider, Text } from "../../../atoms";
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms";
 import { SectionHeader, SelectList } from "../../../organisms";
 import { api } from "../../../api/api";
 import { useAppContext } from "../../../context/AppContext";
 import dynamic from "next/dynamic";
 import { Backdrop } from "@mui/material";
 import { icons } from "../../../organisms/layout/Colors";
+import { formatTimeStamp } from "../../../helpers";
 const GraphChart = dynamic(() => import('../../../organisms/graph/graph'), { ssr: false });
 
 
@@ -43,23 +44,38 @@ export default function ListBillsToPay(props) {
     const [barChartLabels, setBarChartLabels] = useState([])
     const [averageTicket, setAverageTicket] = useState(0)
     const [showFilterMobile, setShowFilterMobile] = useState(false)
+    const [showFilters, setShowFilters] = useState(false)
     const [totalSales, setTotalSales] = useState(0)
+    const [totalFutureSales, setTotalFutureSales] = useState(0)
     const [totalPays, setTotalPays] = useState(0)
+    const [totalFuturePays, setTotalFuturePays] = useState(0)
     const [qntSales, setQntSales] = useState(0)
+    const [filterOn, setFilterOn] = useState(false)
     const [filters, setFilters] = useState({
         payment: 'Todos',
         month: 'Todos',
-        year: 'Todos'
+        year: 'Todos',
+        startDate: '',
+        endDate: ''
     })
     const filterFunctions = {
         payment: (item) => filters.payment !== 'Todos' ? (item?.forma_pagamento === filters?.payment) : item,
         month: (item) => filters.month !== 'Todos' ? (new Date(item?.vencimento)?.getMonth() === Number(filters.month)) : item,
         year: (item) => filters.year !== 'Todos' ? (new Date(item?.vencimento)?.getFullYear() === filters.year) : item,
+        date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
     };
 
     const filter = (item) => {
         return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
     };
+
+    const rangeDate = (dateString, startDate, endDate) => {
+        const date = new Date(dateString);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        return date >= start && date <= end;
+    }
 
     const getBillsReceive = async () => {
         setLoading(true)
@@ -94,6 +110,10 @@ export default function ListBillsToPay(props) {
         }
     }
 
+    useEffect(() => {
+        setShowFilters(false)
+    }, [filterOn])
+
     const fetchData = async () => {
         const billstReceive = await getBillsReceive();
         const billstPay = await getBillsPay();
@@ -112,26 +132,52 @@ export default function ListBillsToPay(props) {
 
     useEffect(() => {
         fetchData();
+        const currentDate = new Date()
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentYear = currentDate.getFullYear();
+        setFilters({
+            ...filters,
+            startDate: `${currentYear}-${currentMonth}-01`,
+            endDate: `${currentYear}-${currentMonth}-30`
+        })
     }, []);
 
 
     const handleCalculationGraph = async (billstReceive, billstPay) => {
+        const currentDate = new Date()
+
         let billsExpenses = billstPay?.expenses?.filter(filter);
         let billsPersonal = billstPay?.personal?.filter(filter);
 
-        let fixed = billsExpenses?.map(item => parseFloat(item.valor_desp))?.reduce((acc, curr) => acc + curr, 0)
-        let personal = billsPersonal?.map(item => parseFloat(item.vl_pagamento))?.reduce((acc, curr) => acc + curr, 0)
-        setTotalPays(fixed + personal)
+        let fixed = billsExpenses?.length > 0 ? billsExpenses?.filter(item => new Date(item?.vencimento) <= currentDate)?.map(item => item.valor_desp) : []
+        let personal = billsPersonal?.length > 0 ? billsPersonal?.filter(item => new Date(item?.vencimento) <= currentDate)?.map(item => item.vl_pagamento) : []
+        const filteredFixed = fixed?.length > 0 ? fixed?.reduce((acc, curr) => acc + curr, 0) : 0
+        const filteredPersonal = personal?.length > 0 ? personal?.reduce((acc, curr) => acc + curr, 0) : 0
 
+        let fixedFuture = billsExpenses?.length > 0 ? billsExpenses?.filter(item => new Date(item?.vencimento) > currentDate)?.map(item => item.valor_desp) : []
+        let personalFuture = billsPersonal?.length > 0 ? billsPersonal?.filter(item => new Date(item?.vencimento) > currentDate)?.map(item => item.vl_pagamento) : []
+        const filteredFixedFuture = fixedFuture?.length > 0 ? fixed?.reduce((acc, curr) => acc + curr, 0) : 0
+        const filteredPersonalFuture = personalFuture?.length > 0 ? personal?.reduce((acc, curr) => acc + curr, 0) : 0
+
+        setTotalPays(filteredFixed + filteredPersonal)
+        setTotalFuturePays(filteredFixedFuture + filteredPersonalFuture)
+
+        
         let data = billstReceive?.filter(filter);
         let qntSalesValue = data?.length;
-        let totalSalesValue = data?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
-        let averageTicketValue = totalSalesValue ? (totalSalesValue / qntSalesValue).toFixed(2) : 0
+        let totalSalesValue = data?.filter(item => item?.dt_pagamento !== null &&
+            item?.dt_pagamento !== ''
+            && new Date(item?.dt_pagamento) <= currentDate)?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
+        let totalSalesFutureValue = data?.filter(item => new Date(item?.vencimento) > currentDate)?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
+        let averageTicketValue = (totalSalesValue && totalSalesFutureValue) ? ((totalSalesValue + totalSalesFutureValue) / qntSalesValue).toFixed(2) :
+            totalSalesValue ? (totalSalesValue / qntSalesValue).toFixed(2) : 0
+
 
         setQntSales(qntSalesValue);
         setTotalSales(totalSalesValue)
         setAverageTicket(averageTicketValue);
-
+        setTotalFutureSales(totalSalesFutureValue)
+        setTotalFuturePays
 
         const { series, labels } = processChartData(data);
         setFormPaymentGraph({ series, labels });
@@ -296,41 +342,126 @@ export default function ListBillsToPay(props) {
                 title="Resumo Financeiro"
             />
 
-            <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
 
-                        <SelectList
-                            data={listPaymentType}
-                            valueSelection={filters?.payment || ''}
-                            onSelect={(value) => setFilters({ ...filters, payment: value })}
-                            filterOpition="value"
-                            sx={{ color: colorPalette.textColor, maxWidth: 300 }}
-                            title="Pagamento"
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            clean={false}
-                        />
-                        <SelectList
-                            data={years}
-                            title="Ano"
-                            valueSelection={filters?.year}
-                            onSelect={(value) => setFilters({ ...filters, year: value })}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            filterOpition="value"
-                            sx={{ color: colorPalette.textColor, maxWidth: 300 }}
-                            clean={false}
-                        />
+            <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', position: 'relative' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Box sx={{
+                        display: 'flex', gap: 1
+                    }}>
+                        <Box sx={{
+                            display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilters(!showFilters)}>
+                            <Text bold>Filtros</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 20,
+                                height: 20,
+                                aspectRatio: '1/1',
+                                backgroundColor: '#fff',
+                                backgroundImage: `url('/icons/${!showFilters ? 'add_icon' : 'gray_arrow_down'}.png')`,
+                                // transition: '.3s',
+                            }} />
+
+                        </Box>
+
+                        <Box sx={{
+                            display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilters(!showFilters)}>
+                            {(filters?.endDate && filters?.startDate) && <Box sx={{
+                                display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1
+                            }}>
+                                <Text small>{formatTimeStamp(filters?.startDate)}</Text>
+                                <Text small bold>até:</Text>
+                                <Text small>{formatTimeStamp(filters?.endDate)}</Text>
+                            </Box>}
+
+
+                            {(filters?.payment && filters?.payment.toLocaleLowerCase() !== 'todos') && <Box sx={{
+                                display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1
+                            }}>
+                                <Text small bold>Pagamento:</Text>
+                                <Text small>{filters?.payment}</Text>
+                            </Box>}
+
+                            {(filters?.year && filters?.payment.toLocaleLowerCase() !== 'todos') && <Box sx={{
+                                display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1
+                            }}>
+                                <Text bold small>Ano:</Text>
+                                <Text small>{filters?.year}</Text>
+                            </Box>}
+                        </Box>
                     </Box>
-                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
-                        <Button secondary text="Limpar filtros" small style={{ width: 120, height: 30 }} onClick={() => setFilters({
-                            payment: 'Todos',
-                            month: 'Todos',
-                            year: 'Todos'
-                        })} />
+
+
+                    <Box sx={{ display: 'flex' }}>
+                        <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
+                            const currentDate = new Date()
+                            const currentMonth = currentDate.getMonth() + 1;
+                            const currentYear = currentDate.getFullYear();
+
+                            setFilters({
+                                payment: 'Todos',
+                                month: 'Todos',
+                                year: 'Todos',
+                                startDate: `${currentYear}-${currentMonth}-01`,
+                                endDate: `${currentYear}-${currentMonth}-30`
+                            })
+                        }} />
                     </Box>
                 </Box>
-            </ContentContainer>
+                {showFilters &&
+                    <ContentContainer sx={{
+                        display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' },
+                        position: 'absolute', top: 45
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
 
+                                <SelectList
+                                    data={listPaymentType}
+                                    valueSelection={filters?.payment || ''}
+                                    onSelect={(value) => {
+                                        setFilters({ ...filters, payment: value })
+                                    }}
+                                    filterOpition="value"
+                                    sx={{ color: colorPalette.textColor, maxWidth: 300 }}
+                                    title="Pagamento"
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    clean={false}
+                                />
+                                <SelectList
+                                    data={years}
+                                    title="Ano"
+                                    valueSelection={filters?.year}
+                                    onSelect={(value) => {
+                                        setFilters({ ...filters, year: value })
+                                    }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    filterOpition="value"
+                                    sx={{ color: colorPalette.textColor, maxWidth: 300 }}
+                                    clean={false}
+                                />
+
+                                <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
+                                <TextInput label="Até:" name='endDate' onChange={(e) => {
+                                    setFilters({ ...filters, endDate: e.target.value })
+                                }} type="date" value={(filters?.endDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
+
+                                <Box sx={{ display: 'flex' }}>
+                                    <Button text="Filtrar" style={{ width: '120px', borderRadius: 2 }} onClick={() => setFilterOn(!filterOn)} />
+                                </Box>
+                            </Box>
+                        </Box>
+                    </ContentContainer>}
+            </Box>
 
             <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
                 <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
@@ -381,48 +512,147 @@ export default function ListBillsToPay(props) {
                                 clean={false}
                             />
                         </Box>
-                        <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
-                            <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => setFilters({
-                                payment: 'Todos',
-                                month: 'Todos',
-                                year: 'Todos'
-                            })} />
-                        </Box>
                     </Box>
                 </ContentContainer>
             </Backdrop>
 
 
-            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', gap: 5, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' } }}>
-                <Box sx={{
-                    display: 'flex', justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'center', xl: 'center' },
-                    flexWrap: { xs: 'wrap', sm: 'nowrap', md: 'nowrap', lg: 'nowrap', xl: 'nowrap' }
-                }}>
-                    {monthFilter?.map((item, index) => {
-                        const monthSelected = item?.value === filters?.month;
-                        return (
-                            <Box key={index} sx={{
-                                display: 'flex',
-                                padding: { xs: '7px 17px', sm: '7px 17px', md: '7px 17px', lg: '7px 17px', xl: '7px 28px' },
-                                backgroundColor: monthSelected ? colorPalette.buttonColor : colorPalette.secondary,
-                                border: `1px solid ${colorPalette.primary}`,
-                                "&:hover": {
-                                    opacity: 0.8,
-                                    cursor: 'pointer'
-                                },
-                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                            }} onClick={() => setFilters({ ...filters, month: item?.value })}>
-                                <Text large style={{ color: monthSelected ? '#fff' : colorPalette.textColor }}>{item?.month}</Text>
-                            </Box>
-                        )
-                    })}
-                </Box>
-            </Box>
-
-
             <Box sx={{ display: 'flex', gap: 2, flex: 1, flexDirection: 'column' }}>
+
                 <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' }, flex: 1 }}>
-                    <ContentContainer fullWidth>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(totalSales)}</Text>
+                            </Box>
+                            <Text large light>Total Recebido</Text>
+                        </Box>
+                    </ContentContainer>
+
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(totalFutureSales)}</Text>
+                            </Box>
+                            <Text large light>Total á Receber</Text>
+                        </Box>
+                    </ContentContainer>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold>{qntSales || 0}</Text>
+                            </Box>
+                            <Text large light>Venda Realizadas</Text>
+                        </Box>
+                    </ContentContainer>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(averageTicket)}</Text>
+                            </Box>
+                            <Text large light>Ticket médio</Text>
+                        </Box>
+                    </ContentContainer>
+
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title style={{ color: 'red' }}>{formatter.format(totalPays)}</Text>
+                            </Box>
+                            <Text large light>Saídas</Text>
+                        </Box>
+                    </ContentContainer>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title style={{ color: 'red' }}>{formatter.format(totalFuturePays)}</Text>
+                            </Box>
+                            <Text large light>Saídas futuras</Text>
+                        </Box>
+                    </ContentContainer>
+
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'row', xl: 'row' }, flex: 1 }}>
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 25,
+                                height: 25,
+                                aspectRatio: '1/1',
+                                backgroundColor: '#fff',
+                                backgroundImage: `url('/icons/graph_icon.png')`,
+                                transition: '.3s',
+                            }} />
+                            <Text bold large>Valores recebidos e á receber</Text>
+                        </Box>
+
+                        <GraphChart
+                            options={{
+                                fill: {
+                                    type: 'gradient / solid / pattern / image'
+                                },
+                                xaxis: {
+                                    categories: barChartLabels,
+                                },
+                                tooltip: {
+                                    y: {
+                                        formatter: function (value) {
+                                            return getFormattedValue(value);
+                                        }
+                                    }
+                                }
+                            }}
+
+                            type="line"
+                            series={[{
+                                data: billstToReceiveGraph,
+                            }]}
+                            height={300}
+                        />
+                    </ContentContainer>
+                    {/* 
+                    <ContentContainer style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
+
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(totalSales)}</Text>
+                            </Box>
+                            <Text large light>Total Recebido</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(totalSales)}</Text>
+                            </Box>
+                            <Text large light>Total Recebido</Text>
+                        </Box>
+                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
+                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Text title bold style={{ color: 'green' }}>{formatter.format(totalSales)}</Text>
+                            </Box>
+                            <Text large light>Total Recebido</Text>
+                        </Box>
+                    </ContentContainer> */}
+
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2, flex: 1, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' }, }}>
+
+                    <ContentContainer fullWidth style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', }}>
                             <Box sx={{
                                 ...styles.menuIcon,
@@ -447,143 +677,11 @@ export default function ListBillsToPay(props) {
                             />
                         </div>
                     </ContentContainer>
-                    <ContentContainer>
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 25,
-                                height: 25,
-                                aspectRatio: '1/1',
-                                backgroundColor: '#fff',
-                                backgroundImage: `url('/icons/sale_icon.png')`,
-                                transition: '.3s',
-                            }} />
-                            <Text bold large>Balanço Financeiro</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 2, }}>
 
-                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', padding: '0px 40px' }}>
 
-                                <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold style={{ color: 'green' }}>{formatter.format(totalSales)}</Text>
-                                    </Box>
-                                    <Text light>Receita</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold style={{ color: 'red' }}>{formatter.format(totalPays)}</Text>
-                                    </Box>
-                                    <Text light>Despesa</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{
-                                    display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                    gap: .5, flex: 1
-                                }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Box sx={{
-                                            ...styles.menuIcon,
-                                            width: 18,
-                                            height: 18,
-                                            aspectRatio: '1/1',
-                                            backgroundImage: totalSales < totalPays ? `url('/icons/arrow_down_red_icon.png')` : `url('/icons/arrow_up_green_icon.png')`,
-                                            transition: '.3s',
-                                        }} />
-                                        <Text title bold style={{ color: totalSales < totalPays ? 'red' : 'green' }}>{formatter.format(totalSales - totalPays)}</Text>
-                                    </Box>
-                                    <Text light>Diferença líquida</Text>
-                                </Box>
-                            </Box>
-                        </Box>
-                    </ContentContainer>
-
-                    <ContentContainer>
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 25,
-                                height: 25,
-                                aspectRatio: '1/1',
-                                backgroundColor: '#fff',
-                                backgroundImage: `url('/icons/sale_icon.png')`,
-                                transition: '.3s',
-                            }} />
-                            <Text bold large>Vendas</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 2, }}>
-
-                            <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', padding: '0px 40px' }}>
-
-                                <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold>{qntSales || 0}</Text>
-                                    </Box>
-                                    <Text light>Quantidade de vendas</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text large bold>{formatter.format(averageTicket)}</Text>
-                                    </Box>
-                                    <Text light>Ticket médio</Text>
-                                </Box>
-                                <Divider distance={0} />
-                                <Box sx={{
-                                    display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                    gap: .5, flex: 1
-                                }}>
-                                    <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                        <Text bold title>{formatter.format(totalSales)}</Text>
-                                    </Box>
-                                    <Text light>Total em vendas</Text>
-                                </Box>
-                            </Box>
-                        </Box>
-                    </ContentContainer>
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 2, flex: 1, flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' }, }}>
-                    <ContentContainer fullWidth>
-
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginBottom: 3 }}>
-                            <Box sx={{
-                                ...styles.menuIcon,
-                                width: 25,
-                                height: 25,
-                                aspectRatio: '1/1',
-                                backgroundColor: '#fff',
-                                backgroundImage: `url('/icons/graph_icon.png')`,
-                                transition: '.3s',
-                            }} />
-                            <Text bold large>Valores a receber</Text>
-                        </Box>
-
-                        <GraphChart
-                            options={{
-
-                                xaxis: {
-                                    categories: barChartLabels,
-                                },
-                                tooltip: {
-                                    y: {
-                                        formatter: function (value) {
-                                            return getFormattedValue(value);
-                                        }
-                                    }
-                                }
-                            }}
-                            type="bar"
-                            series={[{
-                                data: billstToReceiveGraph,
-                            }]}
-                            height={600}
-                        />
-                    </ContentContainer>
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', flex: 1 }}>
                         <ContentContainer fullWidth sx={{
-                            flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' }
+                            flexDirection: { xs: 'column', sm: 'column', md: 'column', lg: 'column', xl: 'row' }, borderRadius: 2, border: `solid 1px lightgray`
                         }}>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', }}>
                                 <Box sx={{
@@ -609,7 +707,7 @@ export default function ListBillsToPay(props) {
                             </div>
                         </ContentContainer>
 
-                        <ContentContainer>
+                        <ContentContainer style={{ borderRadius: 2, border: `solid 1px lightgray` }}>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', }}>
                                 <Box sx={{
                                     ...styles.menuIcon,

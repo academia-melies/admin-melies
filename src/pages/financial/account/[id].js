@@ -285,66 +285,38 @@ export default function Editaccount(props) {
         }))
     }
 
-    const formatarParaReais = (valor) => {
-        if (valor === '') return '';
-        const valorNumerico = parseFloat(valor.toString().replace(/[^\d]/g, '')) / 100;
-        return valorNumerico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
-    const formatarParaReaisLoad = (valor) => {
-        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
-    const openModalPayment = async (item) => {
-
-   
-
-        if (item.credito != null) {
-            await setValorFormatado(formatarParaReaisLoad(item.credito).replace("R$", "").trim());
-            let credito = await formatarParaReaisLoad(item.credito)
-            item.creditoFormat = credito.replace("R$", "").trim()
-
-        }
-        if (item.debito != null) {
-
-            let debito = await formatarParaReaisLoad(item.debito)
-            item.debitoFormat = debito.replace("R$", "").trim()
-            await setValorFormatado(formatarParaReaisLoad(item.debito));
-
-        }
-
-
-    }
-
     const handleChangeEditExtractAccount = async (event) => {
+        const { name, value } = event.target
 
+        let formattedValue = value;
 
-        let debito = null;
-        let credito = null;
-        if (event.target.name = 'credito' && accountExtractData.data.credito != null && accountExtractData.data.credito > 0) {
-            
-            credito = event.target.value.replace(/[^\d]/g, '');
+        if (name === 'credito' || name === 'debito') {
+
+            const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                formattedValue = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const valueFormatted = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                formattedValue = valueFormatted;
+
+            }
         }
 
-    
-
-        if (event.target.name = 'debito'  && accountExtractData.data.debito != null && accountExtractData.data.debito > 0 ) {
-
-            debito = event.target.value.replace(/[^\d]/g, '');
-        }
-
-        const valorNumerico  = event.target.value.replace(/[^\d]/g, '')
         setEditAccount((prevValues) => ({
             ...prevValues,
             data: {
                 ...prevValues.data,
-                [event.target.name]: event.target.value,
-                creditoFormat: credito,
-                debitoFormat: debito
-
-
+                [name]: formattedValue
             }
         }));
-
-        setValorFormatado(formatarParaReais(valorNumerico));
 
     }
 
@@ -454,7 +426,7 @@ export default function Editaccount(props) {
 
 
     const formatNumber = async (valor) => {
-    
+
         const rawValue = valor.toString().replace(/\./g, ""); // Remove todos os caracteres não numéricos
         if (rawValue === '') {
             return;
@@ -775,7 +747,7 @@ export default function Editaccount(props) {
                             </Box>
                             {extractAccount?.length > 0 ?
                                 <TableExtract data={extractAccount} setEditAccount={setEditAccount}
-                                    handleDeleteAccountExtract={handleDeleteAccountExtract} setShowExclude={setShowExclude} openModalPayment={openModalPayment} />
+                                    handleDeleteAccountExtract={handleDeleteAccountExtract} setShowExclude={setShowExclude} />
                                 :
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
                                     <Text large light>Não foi possível encontrar movimentações na conta.</Text>
@@ -829,21 +801,21 @@ export default function Editaccount(props) {
                             {/*formatter.format(accountExtractData?.data?.credito).replace("R$","") */}
                             {/*formatter.format(accountExtractData?.data?.debito).replace("R$","")     item.debitFormat = formatter.format(item.debito)
                                item.creditFormat = formatter.format(item.credito) */}
-                               {
-                                accountExtractData?.data?.credito  ?
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
-                                name='credito'
-                                onChange={handleChangeEditExtractAccount}
-                                value={valorFormatado}
-                                label={`Valor do ${'Créditooo'}:`} sx={{ width: '100%', }} />
-                                :
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
-                                name='debito'
-                                onChange={handleChangeEditExtractAccount}
-                                value={valorFormatado}
-                                label={`Valor do ${'Débito'}:`} sx={{ width: '100%', }} />
-                               }
-                            
+                            {
+                                accountExtractData?.data?.credito ?
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
+                                        name='credito'
+                                        onChange={handleChangeEditExtractAccount}
+                                        value={accountExtractData?.data?.credito}
+                                        label={`Valor do ${'Crédito'}:`} sx={{ width: '100%', }} />
+                                    :
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
+                                        name='debito'
+                                        onChange={handleChangeEditExtractAccount}
+                                        value={accountExtractData?.data?.debito}
+                                        label={`Valor do ${'Débito'}:`} sx={{ width: '100%', }} />
+                            }
+
                         </Box>
 
                         <SelectList fullWidth disabled={!isPermissionEdit && true}
@@ -1031,14 +1003,46 @@ export default function Editaccount(props) {
 }
 
 
-const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount, openModalPayment,
+const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount,
     handleDeleteAccountExtract, setShowExclude, }) => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
 
-    const openPayment = async (item) => {
+    const formatterReal = async (value) => {
+        let formattedValue = value.toString()
+        const rawValue = formattedValue.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
-        await openModalPayment(item)
-        await setEditAccount({ active: true, data: item })
+        if (rawValue === '') {
+            formattedValue = '';
+        } else {
+            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+            if (intValue === '0' && rawValue.length > 2) {
+                intValue = '';
+            }
+
+            const valueFormatted = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+            formattedValue = valueFormatted;
+
+        }
+
+        return formattedValue
+    }
+
+    const openPayment = async (item) => {
+        const formattedValueData = item;
+
+        // console.log(item)
+
+        // if(item?.credito){
+        //     formattedValueData.credito = await formatterReal(formattedValueData?.credito)
+        // }
+
+        // if(item?.debito){
+        //     formattedValueData.debito = await formatterReal(formattedValueData?.debito)
+        // }
+
+        await setEditAccount({ active: true, data: formattedValueData })
     }
 
     const columns = [
