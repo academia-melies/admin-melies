@@ -325,7 +325,7 @@ export default function InterestEnroll() {
     }
 
 
-    async function handleDisciplinesDP() {
+    async function handleDisciplinesDP(moduleCurrent) {
         setLoading(true);
         try {
             const response = await api.get(`/enrollment/disciplines/dp/${id}`);
@@ -345,10 +345,12 @@ export default function InterestEnroll() {
 
 
                 const classesList = await Promise.all(data.map(async (item) => {
-                    const handleClassesToDiscipline = await api.get(`/class/next/discipline/dp/${item?.disciplina_id}`);
-                    const { data: classesData } = handleClassesToDiscipline;
+                    const handleClassesToDiscipline = await api.get(`/class/next/discipline/dp/${item?.disciplina_id}/${moduleCurrent}`);
+
+                    console.log('handleClassesToDiscipline: ', handleClassesToDiscipline?.data)
+                    const { data } = handleClassesToDiscipline;
                     classData.id_disc_matricula = item?.id_disc_matricula
-                    return classesData;
+                    return data;
                 }));
 
                 classesList.forEach((classes, index) => {
@@ -356,7 +358,7 @@ export default function InterestEnroll() {
                 });
             }
         } catch (error) {
-            console.log(error);
+            console.log(error?.response?.data);
             return error;
         } finally {
             setLoading(false);
@@ -481,7 +483,7 @@ export default function InterestEnroll() {
             let courseIdEnrollment = interests?.curso_id
             if (isReenrollment) {
                 moduleCurrent = await handleEnrollments()
-                await handleDisciplinesDP()
+                await handleDisciplinesDP(moduleCurrent)
                 if (enrollmentDataSelected?.turma_id) {
                     classIdEnrollment = enrollmentDataSelected?.turma_id
                 } else {
