@@ -162,6 +162,7 @@ export default function ListBillsToPay(props) {
         setTotalPays(filteredFixed + filteredPersonal)
         setTotalFuturePays(filteredFixedFuture + filteredPersonalFuture)
 
+        
         let data = billstReceive?.filter(filter);
         let qntSalesValue = data?.length;
         let totalSalesValue = data?.filter(item => item?.dt_pagamento !== null &&
