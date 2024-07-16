@@ -54,14 +54,14 @@ export default function ListBillsToPay(props) {
     const [filters, setFilters] = useState({
         payment: 'Todos',
         month: 'Todos',
-        year: 'Todos',
+        // year: 'Todos',
         startDate: '',
         endDate: ''
     })
     const filterFunctions = {
         payment: (item) => filters.payment !== 'Todos' ? (item?.forma_pagamento === filters?.payment) : item,
         month: (item) => filters.month !== 'Todos' ? (new Date(item?.vencimento)?.getMonth() === Number(filters.month)) : item,
-        year: (item) => filters.year !== 'Todos' ? (new Date(item?.vencimento)?.getFullYear() === filters.year) : item,
+        // year: (item) => filters.year !== 'Todos' ? (new Date(item?.vencimento)?.getFullYear() === filters.year) : item,
         date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
     };
 
@@ -410,7 +410,7 @@ export default function ListBillsToPay(props) {
                             setFilters({
                                 payment: 'Todos',
                                 month: 'Todos',
-                                year: 'Todos',
+                                // year: 'Todos',
                                 startDate: `${currentYear}-${currentMonth}-01`,
                                 endDate: `${currentYear}-${currentMonth}-30`
                             })
@@ -437,7 +437,7 @@ export default function ListBillsToPay(props) {
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     clean={false}
                                 />
-                                <SelectList
+                                {/* <SelectList
                                     data={years}
                                     title="Ano"
                                     valueSelection={filters?.year}
@@ -448,7 +448,7 @@ export default function ListBillsToPay(props) {
                                     filterOpition="value"
                                     sx={{ color: colorPalette.textColor, maxWidth: 300 }}
                                     clean={false}
-                                />
+                                /> */}
 
                                 <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
                                 <TextInput label="Até:" name='endDate' onChange={(e) => {
@@ -500,7 +500,7 @@ export default function ListBillsToPay(props) {
                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 clean={false}
                             />
-                            <SelectList
+                            {/* <SelectList
                                 fullWidth
                                 data={years}
                                 title="Ano"
@@ -510,7 +510,7 @@ export default function ListBillsToPay(props) {
                                 filterOpition="value"
                                 sx={{ color: colorPalette.textColor, maxWidth: 300 }}
                                 clean={false}
-                            />
+                            /> */}
                         </Box>
                     </Box>
                 </ContentContainer>
