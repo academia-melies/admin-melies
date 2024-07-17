@@ -170,7 +170,7 @@ export default function ListInvoices(props) {
         { label: 'Todos', value: 'todos' },
         { label: 'Pendente', value: 'Pendente' },
         { label: 'Inativa', value: 'Inativa' },
-        { label: 'Paga', value: 'Paga' },
+        { label: 'Pago', value: 'Pago' },
         { label: 'Aprovado/Liquidado', value: 'Aprovado' },
         { label: 'Cancelada', value: 'Cancelada' },
         { label: 'Pagamento reprovado', value: 'Pagamento reprovado' },

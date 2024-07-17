@@ -1096,10 +1096,6 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                         {
                             data?.map((item, index) => {
 
-
-
-
-
                                 return (
                                     <TableRow key={`${item}-${index}`} sx={{
                                         backgroundColor: item?.transferido === 1 && colorPalette?.buttonColor + '44',
@@ -1112,10 +1108,8 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                         </TableCell>
                                         <TableCell sx={{
                                             padding: '8px 10px', textAlign: 'center',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            maxWidth: '160px',
+                                            whiteSpace: 'wrap',
+                                            maxWidth: '180px',
                                         }}>
                                             <Text>{item?.descricao || '-'}</Text>
                                         </TableCell>
