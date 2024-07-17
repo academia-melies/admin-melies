@@ -404,7 +404,7 @@ export default function ListReceipts(props) {
         { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
         { label: 'Cartão', value: 'Cartão' },
         { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
-        
+
 
     ]
 
@@ -704,7 +704,9 @@ export default function ListReceipts(props) {
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Aluno</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Pagamento</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dt Baixa</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
+                                <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor Líq</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '55px' }}><Text bold>Parc.</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>C. Custo</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Forma</Text></th>
@@ -777,7 +779,15 @@ export default function ListReceipts(props) {
                                             {/* <TextInput disabled={!isPermissionEdit && true} name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>
+                                                {item?.dt_baixa ? formatTimeStamp(item?.dt_baixa) : '-'}</Text>
+                                            {/* <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
+                                        </td>
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>{formatter.format(item?.valor_parcela)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatter.format(item?.valor_liquido || 0)}</Text>
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>{item?.n_parcela || '-'}</Text>
