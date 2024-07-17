@@ -122,7 +122,7 @@ export default function ListInvoices(props) {
                 if (response?.status === 201) {
                     alert.success('Notas enviadas para processamento.')
                     await getInstallments()
-                    setInvoicesSelected('')
+                    setInvoicesSelected(null)
                 } else {
                     alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
                     return
