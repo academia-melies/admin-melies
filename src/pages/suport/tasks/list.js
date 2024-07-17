@@ -147,13 +147,13 @@ export default function ListTasks(props) {
         setLoading(true)
         try {
             let query;
-            if (user?.area === "TI - Suporte") {
-                query = '/tasks';
-                setFilters({ ...filters, status: 'Em aberto, Em análise' })
-            } else {
-                query = `/task/user/${user?.id}`;
-                setFilters({ ...filters, status: 'Em aberto, Em análise' })
-            }
+            // if (user?.area === "TI - Suporte") {
+            //     query = '/tasks';
+            //     setFilters({ ...filters, status: 'Em aberto, Em análise' })
+            // } else {
+            query = `/task/user/${user?.id}`;
+            setFilters({ ...filters, status: 'Em aberto, Em análise' })
+            // }
             const response = await api.get(query)
             const { data } = response;
             setTasksList(data)
