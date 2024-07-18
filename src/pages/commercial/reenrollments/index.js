@@ -17,12 +17,21 @@ import Link from "next/link"
 
 export default function ReenrollmentsStudent(props) {
     const [students, setStudents] = useState([])
+    const [classes, setClasses] = useState([])
     const { setLoading, colorPalette, userPermissions, menuItemsList, alert, theme } = useAppContext()
     const [filterData, setFilterData] = useState('')
+    const [filters, setFilters] = useState({
+        classId: 'todos'
+    })
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const router = useRouter()
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
+    const [filterOn, setFilterOn] = useState(false)
+    const [showFilters, setShowFilters] = useState(false)
+    const filterFunctions = {
+        classId: (item) => filters.classId === 'todos' || item.turma_id === filters.classId,
+    };
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -41,13 +50,38 @@ export default function ReenrollmentsStudent(props) {
         const normalizedFilterData = normalizeString(filterData);
         const normalizedAluno = normalizeString(item?.nome);
 
-        return normalizedAluno?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
+        return (Object.values(filterFunctions).every(filterFunction => filterFunction(item)) &&
+            normalizedAluno?.toLowerCase().includes(normalizedFilterData?.toLowerCase()))
     };
 
     useEffect(() => {
         fetchPermissions()
         getStudents();
+        listClasses()
     }, []);
+
+    useEffect(() => {
+        setShowFilters(false)
+    }, [filterOn])
+
+    async function listClasses() {
+        try {
+            const response = await api.get(`/classes`)
+            const { data } = response
+            let groupClasses = data.filter(item => item.ativo === 1)?.map(course => ({
+                label: course?.nome_turma,
+                value: course?.id_turma,
+            }));
+
+            groupClasses = await groupClasses?.sort((a, b) => a.label.localeCompare(b.label))
+
+            groupClasses.unshift({ label: 'Todos', value: 'todos' });
+
+
+            setClasses(groupClasses);
+        } catch (error) {
+        }
+    }
 
 
     const handleChangePage = (event, newPage) => {
@@ -109,13 +143,93 @@ export default function ReenrollmentsStudent(props) {
             />
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'start', justifyContent: 'flex-start', flexDirection: 'column' }}>
-                <TextInput InputProps={{
-                    style: {
-                        backgroundColor: colorPalette?.secondary,
-                        width: '800px'
+
+                <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', position: 'relative', width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '88%' }}>
+                        <Box sx={{
+                            display: 'flex', gap: 1
+                        }}>
+                            <Box sx={{
+                                display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1,
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} onClick={() => setShowFilters(!showFilters)}>
+                                <Text bold>Filtros</Text>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    width: 20,
+                                    height: 20,
+                                    aspectRatio: '1/1',
+                                    backgroundColor: '#fff',
+                                    backgroundImage: `url('/icons/${!showFilters ? 'add_icon' : 'gray_arrow_down'}.png')`,
+                                    // transition: '.3s',
+                                }} />
+
+                            </Box>
+
+                            <Box sx={{
+                                display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} onClick={() => setShowFilters(!showFilters)}>
+                                {filterData !== '' && <Box sx={{
+                                    display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1
+                                }}>
+                                    <Text small bold>Pesquisando:</Text>
+                                    <Text small>{filterData}</Text>
+                                </Box>}
+
+
+                                {(filters?.classId !== 'todos') && <Box sx={{
+                                    display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1
+                                }}>
+                                    <Text small bold>Turma:</Text>
+                                    <Text small>{classes?.filter(item => item?.value === filters?.classId)?.map(item => item?.label)}</Text>
+                                </Box>}
+                            </Box>
+                        </Box>
+
+
+                        <Box sx={{ display: 'flex' }}>
+                            <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
+                                setFilterData('')
+                                setFilters({
+                                    classId: 'todos'
+                                })
+                            }} />
+                        </Box>
+                    </Box>
+                    {showFilters &&
+                        <ContentContainer row sx={{
+                            display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' },
+                            position: 'absolute', top: 45
+                        }}>
+
+                            <TextInput InputProps={{
+                                style: {
+                                    backgroundColor: colorPalette?.secondary,
+                                    width: '800px'
+                                }
+                            }}
+                                placeholder="Buscar pela turma" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} />
+
+                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={filters?.classId} onSelect={(value) => setFilters({ ...filters, classId: value })}
+                                title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                inputProps={{ style: { backgroundColor: colorPalette?.secondary } }}
+                                onFilter filterValue="label"
+                            />
+
+                            <Box sx={{ display: 'flex' }}>
+                                <Button text="Filtrar" style={{ width: '120px', borderRadius: 2 }} onClick={() => setFilterOn(!filterOn)} />
+                            </Box>
+                        </ContentContainer>
                     }
-                }}
-                    placeholder="Buscar pelo nome" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                </Box>
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'start', justifyContent: 'flex-start' }}>
                     {students?.filter(filter)?.length > 0 ?

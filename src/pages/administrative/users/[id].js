@@ -147,7 +147,9 @@ export default function EditUser() {
     })
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
-    const [interests, setInterests] = useState({});
+    const [interests, setInterests] = useState({
+        modulo_curso: 1
+    });
     const [arrayInterests, setArrayInterests] = useState([])
     const [showSections, setShowSections] = useState({
         registration: false,
@@ -548,17 +550,36 @@ export default function EditUser() {
         }
     }
 
+    const handleModules = (module) => {
+        if (module) {
+
+            const moduleArray = [];
+            for (let i = 1; i <= module; i++) {
+                moduleArray.push({
+                    label: `${i}º Módulo`,
+                    value: i,
+                });
+            }
+            return moduleArray;
+        } else {
+            return []
+        }
+    }
 
 
     async function listClassesInterest(id_course) {
 
         try {
             const response = await api.get(`/class/course/${id_course}`)
+
             const { data = [] } = response
             const groupClass = data.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma.nome_turma,
-                value: turma?.id_turma
+                value: turma?.id_turma,
+                modules: handleModules(turma?.duracao)
             }));
+
+            console.log(groupClass)
 
             const groupPeriod = data.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma?.periodo,
@@ -821,6 +842,9 @@ export default function EditUser() {
                 turma_id: value,
                 nome_turma: className
             })
+
+            const duration = classesInterest?.filter(item => item.value === value)?.map(item => item.modules)
+            console.log(duration)
             return
         }
 
@@ -1487,7 +1511,7 @@ export default function EditUser() {
         } catch (error) {
             console.log(error)
             return error
-        } finally{
+        } finally {
             setLoading(false)
         }
     }
@@ -1549,13 +1573,13 @@ export default function EditUser() {
     }
 
 
-    const handleSendRequeriment = async ({ classId, courseId, entryForm = null }) => {
+    const handleSendRequeriment = async ({ classId, courseId, entryForm = null, moduleCourse = 1 }) => {
         setLoading(true)
         try {
-            const response = await api.post(`/requeriment/subscription/create`, { classId, courseId, entryForm, userData, moduleEnrollment: 1, userResp: user?.id })
+            const response = await api.post(`/requeriment/subscription/create`, { classId, courseId, entryForm, userData, moduleEnrollment: moduleCourse, userResp: user?.id })
             if (response?.status === 201) {
                 alert.success('Requerimento enviado com sucesso.')
-                handleEditUser()
+                await handleEditUser()
             } else {
                 alert.error('Ocorreu um erro interno ao enviar o requerimento. Tente novamente ou consulte o Suporte.')
             }
@@ -3938,7 +3962,7 @@ export default function EditUser() {
                                             const [isRequerimentoReproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 0) || [];
                                             const approvedRequeriment = requeriments ? true : false;
                                             const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
-                                            const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}`;
+                                            const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}_${interest?.modulo_curso}º módulo`;
                                             const subscription = interest?.inscricao;
                                             const [respAnalisar] = interest?.requeriments?.map(req => req.analisado_por) || [];
                                             let linkRequeriment;
@@ -4196,7 +4220,7 @@ export default function EditUser() {
                                                                                                 if (isHaveRequeriment) {
                                                                                                     window.open(linkRequeriment, '_blank')
                                                                                                 } else {
-                                                                                                    handleSendRequeriment({ classId: interest?.turma_id, courseId: interest?.curso_id, entryForm: subscription?.forma_ingresso })
+                                                                                                    handleSendRequeriment({ classId: interest?.turma_id, courseId: interest?.curso_id, entryForm: subscription?.forma_ingresso, moduleCourse: interest?.modulo_curso })
                                                                                                 }
                                                                                             } else {
                                                                                                 alert.info('Preencha primeiro a forma de ingresso do candidato.')
@@ -4277,6 +4301,7 @@ export default function EditUser() {
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Curso</th>
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Turma</th>
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Periodo</th>
+                                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Módulo</th>
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Observação</th>
                                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}>Ações</th>
                                         </tr>
@@ -4307,6 +4332,9 @@ export default function EditUser() {
                                                         </td>
                                                         <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
                                                             {interest?.periodo_interesse || '-'}
+                                                        </td>
+                                                        <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
+                                                            {`${interest?.modulo_curso}º módulo` || '-'}
                                                         </td>
                                                         <td style={{ fontSize: '13px', width: '100%', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '.5px solid #eaeaea' }}>
                                                             {interest?.observacao_int || '-'}
@@ -4378,7 +4406,7 @@ export default function EditUser() {
                                                                                                     if (isHaveRequeriment) {
                                                                                                         window.open(linkRequeriment, '_blank')
                                                                                                     } else {
-                                                                                                        handleSendRequeriment({ classId: interest?.turma_id, courseId: interest?.curso_id, entryForm: subscription?.forma_ingresso })
+                                                                                                        handleSendRequeriment({ classId: interest?.turma_id, courseId: interest?.curso_id, entryForm: subscription?.forma_ingresso, moduleCourse: interest?.modulo_curso })
                                                                                                     }
                                                                                                 } else {
                                                                                                     alert.info('Preencha primeiro a forma de ingresso do candidato.')
@@ -4455,6 +4483,11 @@ export default function EditUser() {
                                         />
                                         <SelectList disabled={!isPermissionEdit && true} fullWidth data={interests?.turma_id ? period?.filter(item => item.idClass === interests?.turma_id) : []} valueSelection={interests?.periodo_interesse} onSelect={(value) => setInterests({ ...interests, periodo_interesse: value })}
                                             title="Periodo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                        />
+                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={
+                                            interests?.turma_id ? classesInterest?.filter(item => item.value === interests?.turma_id)?.map(item => item.modules)[0] : []} valueSelection={interests?.modulo_curso} onSelect={(value) => setInterests({ ...interests, modulo_curso: value })}
+                                            title="Módulo" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                         />
 

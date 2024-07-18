@@ -38,6 +38,7 @@ export const SelectList = (props) => {
                         getOptionLabel={(option) => option[filterValue]}
                         value={data.find(item => item[filterOpition] === valueSelection) || null}
                         onChange={(event, newValue) => onSelect(newValue ? newValue[filterOpition] : "")}
+                        disableClearable
                         sx={{ height: '45px' }} 
                         renderInput={(params) => (
                             <TextField
