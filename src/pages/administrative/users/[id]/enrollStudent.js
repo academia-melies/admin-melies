@@ -343,9 +343,7 @@ export default function InterestEnroll() {
 
 
                 const classesList = await Promise.all(data.map(async (item) => {
-                    const handleClassesToDiscipline = await api.get(`/class/next/discipline/dp/${item?.disciplina_id}/${moduleCurrent}`);
-
-                    console.log('handleClassesToDiscipline: ', handleClassesToDiscipline?.data)
+                    const handleClassesToDiscipline = await api.get(`/class/next/discipline/dp/${item?.disciplina_id}/${classId}`);
                     const { data } = handleClassesToDiscipline;
                     classData.id_disc_matricula = item?.id_disc_matricula
                     classData.id_disciplina = item?.disciplina_id

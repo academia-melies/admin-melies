@@ -146,11 +146,17 @@ export default function ListTasks(props) {
     const getTasks = async () => {
         setLoading(true)
         try {
-            setFilters({ ...filters, status: 'Em aberto, Em análise' })
-            const response = await api.get('/tasks')
+            let query;
+            if (user?.area === "TI - Suporte") {
+                query = '/tasks';
+                setFilters({ ...filters, status: 'Em aberto, Em análise' })
+            } else {
+                query = `/task/user/${user?.id}`;
+                setFilters({ ...filters, status: 'Em aberto, Em análise' })
+            }
+            const response = await api.get(query)
             const { data } = response;
-            const dataFiltered = data?.filter(item => item?.area === user?.area)
-            setTasksList(dataFiltered)
+            setTasksList(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -541,8 +547,6 @@ const TableReport = ({ data = [], filters = [], onPress = () => { } }) => {
 
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-
-    console.log(data)
 
     const columns = [
         { key: 'id_chamado', label: '#Ticket' },
