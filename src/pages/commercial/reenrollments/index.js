@@ -68,7 +68,7 @@ export default function ReenrollmentsStudent(props) {
         try {
             const response = await api.get(`/classes`)
             const { data } = response
-            let groupClasses = data.filter(item => item.ativo === 1)?.map(course => ({
+            let groupClasses = data?.map(course => ({
                 label: course?.nome_turma,
                 value: course?.id_turma,
             }));

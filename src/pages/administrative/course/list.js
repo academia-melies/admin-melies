@@ -125,6 +125,7 @@ export default function ListCourse(props) {
         { key: 'sigla', label: 'Sigla' },
         { key: 'nome_curso', label: 'Nome' },
         { key: 'modalidade_curso', label: 'Modalidade' },
+        { key: 'duracao', label: 'Módulos' },
         { key: 'nivel_curso', label: 'Nível Curso' },
         // { key: 'dt_criacao', label: 'Criado em', date: true },
     ];
