@@ -22,7 +22,7 @@ export const formatTimeStamp = (timestamp, time) => {
       
       if (timestamp) {
          const date = new Date(timestamp);
-         date.setHours(date.getHours() + 3);
+         date.setHours(date.getHours());
          
          if (timestamp && time) {
             const options = {
