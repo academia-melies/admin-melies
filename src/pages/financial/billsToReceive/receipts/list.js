@@ -5,7 +5,7 @@ import { CheckBoxComponent, PaginationTable, RadioItem, SearchBar, SectionHeader
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
-import { formatTimeStamp } from "../../../../helpers"
+import { formatTimeStamp, formatTimeStampTimezone } from "../../../../helpers"
 import { Backdrop, TablePagination } from "@mui/material"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 import { icons } from "../../../../organisms/layout/Colors"
@@ -771,16 +771,16 @@ export default function ListReceipts(props) {
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>
-                                                {formatTimeStamp(item?.vencimento)}</Text>
+                                                {formatTimeStampTimezone(item?.vencimento)}</Text>
                                             {/* <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                            <Text light small>{item?.dt_pagamento ? formatTimeStamp(item?.dt_pagamento) : '-'}</Text>
+                                            <Text light small>{item?.dt_pagamento ? formatTimeStampTimezone(item?.dt_pagamento) : '-'}</Text>
                                             {/* <TextInput disabled={!isPermissionEdit && true} name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>
-                                                {item?.dt_baixa ? formatTimeStamp(item?.dt_baixa) : '-'}</Text>
+                                                {item?.dt_baixa ? formatTimeStampTimezone(item?.dt_baixa) : '-'}</Text>
                                             {/* <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>

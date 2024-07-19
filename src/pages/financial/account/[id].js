@@ -10,7 +10,7 @@ import { SelectList } from "../../../organisms/select/SelectList"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
 import { icons } from "../../../organisms/layout/Colors"
-import { formatTimeStamp } from "../../../helpers"
+import { formatTimeStampTimezone } from "../../../helpers"
 import { IconStatus } from "../../../organisms/Table/table"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Irish_Grover } from "next/font/google"
@@ -1114,7 +1114,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                             <Text>{item?.descricao || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{formatTimeStamp(item?.dt_baixa.split("T")[0], false) || '-'}  </Text>
+                                            <Text>{formatTimeStampTimezone(item?.dt_baixa.split("T")[0], false) || '-'}  </Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box

@@ -5,7 +5,7 @@ import { CheckBoxComponent, PaginationTable, RadioItem, SearchBar, SectionHeader
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
-import { formatTimeStamp } from "../../../../helpers"
+import { formatTimeStamp, formatTimeStampTimezone } from "../../../../helpers"
 import { Backdrop, TablePagination } from "@mui/material"
 import Link from "next/link"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
@@ -439,7 +439,7 @@ export default function ListInvoices(props) {
                                             <TextInput disabled={!isPermissionEdit && true} fullWidth name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ flex: 1 }} />
                                         </td>
                                         <td style={{ fontSize: '13px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                            <Text small light>{item?.dt_pagamento ? formatTimeStamp(item?.dt_pagamento) : '-'}</Text>
+                                            <Text small light>{item?.dt_pagamento ? formatTimeStampTimezone(item?.dt_pagamento) : '-'}</Text>
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             {item?.n_parcela || '-'}

@@ -5,7 +5,7 @@ import { CheckBoxComponent, ConfirmModal, PaginationTable, RadioItem, SearchBar,
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
-import { formatDate, formatTimeStamp } from "../../../../helpers"
+import { formatDate, formatTimeStamp, formatTimeStampTimezone } from "../../../../helpers"
 import { Avatar, Backdrop, TablePagination } from "@mui/material"
 import Link from "next/link"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
@@ -594,7 +594,7 @@ export default function ListBillsToPay(props) {
                                                             {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={item[column?.avatarUrl || '']} />}
 
                                                             {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
-                                                                formatTimeStamp(item[column?.key || '-'])
+                                                                formatTimeStampTimezone(item[column?.key || '-'])
                                                             ) : (
                                                                 column.status ? (
                                                                     <Box
