@@ -835,7 +835,7 @@ export default function Editaccount(props) {
                                 name='credito'
                                 onChange={handleChangeEditExtractAccount}
                                 value={valorFormatado}
-                                label={`Valor do ${'Créditooo'}:`} sx={{ width: '100%', }} />
+                                label={`Valor do ${'Crédito'}:`} sx={{ width: '100%', }} />
                                 :
                                 <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
                                 name='debito'

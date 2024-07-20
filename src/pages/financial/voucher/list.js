@@ -352,25 +352,25 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
                                                     backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
                                                     transition: '.3s',
                                                 }} />
-                                                <Text>{formatter.format(item?.valor) || '-'}</Text>
+                                                <Text>{!item?.porcetagem ? formatter.format(item?.valor) : item?.valor + ' %'  || '-'}</Text>
                                             </Box>
                                         </TableCell>                                        
                                         
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                                                <Text>{item?.porcetagem || '-'}</Text>
+                                                <Text>{item?.porcetagem ? 'Sim' : 'Não'}</Text>
                                             </Box>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.status || '-'}</Text>
+                                            <Text>{item?.status ? 'Ativo' : 'Inativo'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                                                <Text>{item?.created_at || '-'}</Text>
+                                                <Text>{item?.created_at.split("T")[0] || '-'}</Text>
                                             </Box>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.updated_at || '-'}</Text>
+                                            <Text>{item?.updated_at.split("T")[0] || '-'}</Text>
                                         </TableCell>
                                     </TableRow>
                                 );

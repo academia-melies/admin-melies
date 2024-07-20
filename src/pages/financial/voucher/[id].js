@@ -181,52 +181,79 @@ export default function VoucherEdit(props) {
             [event.target.name]: event.target.value,
         }))
     }
+    const formatCurrency = (value) => {
+        if (!value) return '';
+        // Remove tudo que não for dígito
+        const cleanValue = value.replace(/\D/g, '');
+        // Converte para número
+        const numberValue = Number(cleanValue) / 100;
+        // Formata para moeda
+        return numberValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      };
+    const parseCurrency = (value) => {
+        if (!value) return 0;
 
-    const formatarParaReais = (valor) => {
-        if (valor === '') return '';
-        const valorNumerico = parseFloat(valor.toString().replace(/[^\d]/g, '')) / 100;
-        return valorNumerico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
-    const formatarParaReaisLoad = (valor) => {
-        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
-
-
-
-
-
-
-
-
-
-
-    const formatNumber = async (valor) => {
-
-        const rawValue = valor.toString().replace(/\./g, ""); // Remove todos os caracteres não numéricos
-        if (rawValue === '') {
-            return;
-        } else {
-            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
-            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
-
-            if (intValue === '0' && rawValue.length > 2) {
-                intValue = '';
-            }
-            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares                
-            return formattedValue;
+        // Garantir que o valor é uma string
+        const stringValue = String(value).trim();
+      
+        // Remover 'R$' se presente
+        let cleanValue = stringValue;
+      
+        if (cleanValue.includes('R$')) {
+          cleanValue = cleanValue.replace('R$', '').trim();
         }
-
-    }
+      
+        if (cleanValue.includes(',')) {
+          cleanValue = cleanValue.replace(',', '.');
+        }
+      
+        return parseFloat(cleanValue);
+      }
+    
+    const handleChangeValue = (e) => {
+        const rawValue = e.target.value;
+        setCoupomData((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: formatCurrency(rawValue),
+        }))
+        
+      };
     const handleCreate = async () => {
+        try{
         setLoading(true)
-        coupom.porcetagem = false;
-        try {
+        if(typeof coupom.porcetagem == undefined ||typeof coupom.porcetagem == 'undefined'){
+            alert.error('Campo porcetagem, inválido.');
+            setLoading(false)
+            return
+        }
+        if(typeof coupom.nome_cupom == undefined || coupom.nome_cupom  == ""){
+            alert.error('Campo nome, inválido.');
+            setLoading(false)
+            return
+        }
+        if(typeof coupom.valor == undefined || coupom.valor  == ""){
+            alert.error('Campo valor, inválido.');
+            setLoading(false)
+            return
+        }
+        if(typeof coupom.status == undefined){
+            alert.error('Campo status, inválido.');
+            setLoading(false)
+            return
+        }
+        
+        if(!coupom.porcetagem){
+            const valor = coupom.valor; // Exemplo: 'R$ 1.234,56' ou '1234.56'
+            const valorFloat = parseCurrency(valor);
+            coupom.valor = valorFloat
+        }
+      
             const response = await api.post(`/cupom/create`, { coupom });
             const { data } = response
 
             if (response?.status === 201) {
                 alert.success('Cupom cadastrado com sucesso.');
-                router.push(`/financial/voucher/new`)
+                router.push(`/financial/voucher/list`)
             }
         } catch (error) {
             alert.error('Tivemos um problema ao cadastrar o Cupom.');
@@ -238,10 +265,33 @@ export default function VoucherEdit(props) {
 
     }
     const handleEdit = async () => {
-        setLoading(true)
-        coupom.porcetagem = false;
-        coupom.valor = parseFloat(coupom.valor);
-        try {
+        try{
+        setLoading(true)    
+        
+        if(typeof coupom.porcetagem == undefined ||typeof coupom.porcetagem == 'undefined'){
+            setLoading(false)
+            return
+        }
+        if(typeof coupom.nome_cupom == undefined || coupom.nome_cupom  == ""){
+            alert.error('Campo nome, inválido.');
+            setLoading(false)
+            return
+        }
+        if(typeof coupom.valor == undefined || coupom.valor  == ""){
+            alert.error('Campo valor, inválido.');
+            setLoading(false)
+            return
+        }
+        if(typeof coupom.status == undefined){
+            alert.error('Campo status, inválido.');
+            setLoading(false)
+            return
+        }
+        if(!coupom.porcetagem){
+            coupom.valor = parseFloat(coupom.valor.replace(',','.').replace('R$','').trim())
+        }
+     
+       
             const response = await api.post(`/cupom/update/${id}`, { coupom });
             const { data } = response          
             if (response?.status === 201) {
@@ -347,17 +397,7 @@ export default function VoucherEdit(props) {
                 title={newCupom ? `Novo Cupom` : `Editar Cupom`}
                 saveButton={newCupom && isPermissionEdit}
             >
-                {/*     <Box sx={{ display: 'flex', gap: 2 }}>
-                    {(!newCupom && isPermissionEdit) && <Button text="Salvar aqui" style={{ borderRadius: 2 }} onClick={() => { if (newCupom) { handleCreate() } else { handleEdit() } }} />}
-                    {(!newCupom && isPermissionEdit) && <Button cancel text="Excluir Conta" style={{ borderRadius: 2 }} onClick={
-                        (event) => setShowConfirmationDialog({
-                            active: true,
-                            event,
-                            acceptAction: handleDelete,
-                            title: 'Deseja excluír a Conta?',
-                            message: 'A Conta será excluída do sistema, sem chance de recuperação.'
-                        })} />}
-                </Box> */}
+                
             </SectionHeader>
 
             <Box sx={{ display: 'flex', gap: 3, width: '100%', flexDirection: 'column' }}>
@@ -376,8 +416,9 @@ export default function VoucherEdit(props) {
                         <Box sx={{ ...styles.inputSection, flexDirection: 'column', justifyContent: 'flex-start' }}>
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Nome do cupom' name='nome_cupom' onChange={handleChange} value={coupom?.nome_cupom || ''} label='Nome do cupom:' sx={{ width: '100%', }} />
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição' name='descricao' onChange={handleChange} value={coupom?.descricao || ''} label='Descricao:' sx={{ width: '100%', }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Valor/Porcetagem' name='valor' onChange={handleChange} value={coupom?.valor || ''} label='Valor/Porcetagem:' sx={{ width: '100%', }} />
+                            <TextInput disabled={!isPermissionEdit && true} placeholder={coupom?.porcetagem ? `Porcetagem` : `Valor`} name='valor' onChange={coupom?.porcetagem ? handleChange : handleChangeValue} value={coupom?.valor || ''} label={coupom?.porcetagem ? `Porcetagem` : `Valor`} n sx={{ width: '100%', }} />
                         </Box>
+                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={coupom?.porcetagem} group={groupStatus} title="Porcetagem" horizontal={mobile ? false : true} onSelect={(value) => setCoupomData({ ...coupom, porcetagem: parseInt(value),valor: 0 })} />
                         <RadioItem disabled={!isPermissionEdit && true} valueRadio={coupom?.status} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCoupomData({ ...coupom, status: parseInt(value) })} />
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button text="Salvar " style={{ borderRadius: 2 }} onClick={() => { if (newCupom) { handleCreate() } else { handleEdit() } }} />
@@ -520,6 +561,7 @@ export default function VoucherEdit(props) {
                     <TableAccount data={sortUsers()?.filter(filter)}  />
                 </Box>
                     :
+                    !newCupom &&  
                     <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                         <Text bold>Não foi encontrado usuarios {perfil}</Text>
                     </Box>
