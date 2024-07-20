@@ -39,7 +39,7 @@ export default function ListAccounts(props) {
         return (
             Object.values(filterFunctions).every(filterFunction => filterFunction(item)) &&
             (
-                normalizeString(item?.nome_conta)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
+                normalizeString(item?.nome_cupom)?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
             )
         );
     };
@@ -63,31 +63,30 @@ export default function ListAccounts(props) {
 
     useEffect(() => {
         fetchPermissions()
-        // getFees();
+        getCupom();
     }, []);
 
-    // const getFees = async () => {
-    //     setLoading(true)
-    //     try {
-    //         const response = await api.get('/accounts')
-    //         const { data = [] } = response;
-    //         if (data?.length > 0) {
-    //             setAccountList(data)
-    //         }
-    //     } catch (error) {
-    //         console.log(error)
-    //     } finally {
-    //         setLoading(false)
-    //     }
-    // }
+    const getCupom = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get('/cupom')
+            const { data = [] } = response;
+            console.log('aqui', data)
+            if (data?.length > 0) {
+                setAccountList(data)
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const handleGeneratePdf = useReactToPrint({
         content: () => componentPDF.current,
         documentTitle: 'Contas - Extrato',
         onAfterPrint: () => alert.info('Tabela exportada em PDF.')
     })
-
-
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -97,20 +96,17 @@ export default function ListAccounts(props) {
         setPage(0);
     };
 
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-
 
     const column = [
-        { key: 'id_conta', label: 'ID' },
-        { key: 'nome_conta', label: 'Nome da Conta' },
-        { key: 'saldo', label: 'Saldo Atual', price: true },
-        { key: 'credito', label: 'Crédito', price: true },
-        { key: 'debito', label: 'Débito', price: true },
-        { key: 'agencia', label: 'Agência' },
-        { key: 'conta', label: 'Conta' }
+        { key: 'id', label: 'ID' },
+        { key: 'nome_cupom', label: 'Nome do Cupom' },
+        { key: 'descricao', label: 'Descrição do Cupom' },
+        { key: 'valor', label: 'Valor', price: true },
+        { key: 'porcetagem', label: 'Porcetagem', price: true },
+        { key: 'status', label: 'Status', price: true },
+        { key: 'created_at', label: 'Criado em' },
+        { key: 'updated_at', label: 'Atualizando em' }
     ];
-
     const listAtivo = [
         { label: 'Todos', value: 'todos' },
         { label: 'Ativo', value: 1 },
@@ -224,7 +220,170 @@ export default function ListAccounts(props) {
                     </Box>
                 </ContentContainer>
             </Backdrop>
+            
+            {accountList?.length > 0 ?
+           
+                <div >
+                    {/* <Table_V1 data={accountList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_conta'} columnActive={true} /> */}
+                    <TableAccount data={accountList?.filter(filter)} />
+                </div>
+                :
+                <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
+                    <Text bold>Não conseguimos encontrar Contas cadastradas</Text>
+                </Box>
+            }
         </>
+    )
+}
+const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
+    console.log("aqui 2",data)
+    const { setLoading, colorPalette, theme, user } = useAppContext()
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+  
+
+
+    const columns = [
+        { key: 'id', label: 'ID' },
+        { key: 'nome_cupom', label: 'Nome do Cupom' },
+        { key: 'descricao', label: 'Descrição do Cupom' },
+        { key: 'valor', label: 'Valor', price: true },
+        { key: 'porcetagem', label: 'Porcetagem', price: true },
+        { key: 'status', label: 'Status', price: true },
+        { key: 'created_at', label: 'Criado em' },
+        { key: 'updated_at', label: 'Atualizando em' }
+    ];
+
+   
+    const router = useRouter();
+    const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
+    const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
+
+    const handleRowClick = (id) => {
+        window.open(`/financial/voucher/${id}`, '_blank');
+        return;
+    };
+
+    const valuesColor = (data) => ((data > 0 ? 'green' : 'red'));
+
+    const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+
+    return (
+        <ContentContainer sx={{
+            display: 'flex', width: '100%', padding: 0, boxShadow: 'none', borderRadius: 2,
+            border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+        }}>
+
+            <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
+                <Table sx={{ borderCollapse: 'collapse', width: '100%' }}>
+                    <TableHead>
+                        <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
+                            {columns.map((column, index) => (
+                                <TableCell key={index} sx={{ padding: '16px', }}>
+                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                        <Text bold style={{ textAlign: 'center' }}>{column.label}</Text>
+                                        {/* <Box sx={{
+                                            ...styles.menuIcon,
+                                            backgroundImage: `url(${icons.gray_arrow_down})`,
+                                            transform: filters?.filterName === column.key ? filters?.filterOrder === 'asc' ? 'rotate(-0deg)' : 'rotate(-180deg)' : 'rotate(-0deg)',
+                                            transition: '.3s',
+                                            width: 17,
+                                            height: 17,
+
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            },
+                                        }}
+                                            onClick={() => onPress({
+                                                filterName: column.key,
+                                                filterOrder: filters?.filterOrder === 'asc' ? 'desc' : 'asc'
+                                            })} /> */}
+                                    </Box>
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    </TableHead>
+                    <TableBody sx={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
+                        {
+                            data?.slice(startIndex, endIndex)?.map((item, index) => {
+                                return (
+                                    <TableRow key={`${item}-${index}`} onClick={() => handleRowClick(item?.id)} sx={{
+                                        "&:hover": {
+                                            cursor: 'pointer',
+                                            backgroundColor: colorPalette.primary + '88'
+                                        },
+                                    }}>
+                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
+                                            <Text>{item?.id || '-'}</Text>
+                                        </TableCell>
+                                        <TableCell sx={{
+                                            padding: '8px 10px', textAlign: 'center',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            maxWidth: '160px',
+                                        }}>
+                                            <Text>{item?.nome_cupom || '-'}</Text>
+                                        </TableCell>
+                                        <TableCell sx={{
+                                            padding: '8px 10px', textAlign: 'center',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            maxWidth: '160px',
+                                        }}>
+                                            <Text>{item?.descricao || '-'}</Text>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                                <Box sx={{
+                                                    ...styles.menuIcon,
+                                                    width: 14,
+                                                    height: 14,
+                                                    aspectRatio: '1/1',
+                                                    backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
+                                                    transition: '.3s',
+                                                }} />
+                                                <Text>{formatter.format(item?.valor) || '-'}</Text>
+                                            </Box>
+                                        </TableCell>                                        
+                                        
+                                        <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                                                <Text>{item?.porcetagem || '-'}</Text>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
+                                            <Text>{item?.status || '-'}</Text>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                                                <Text>{item?.created_at || '-'}</Text>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
+                                            <Text>{item?.updated_at || '-'}</Text>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
+
+                        }
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <PaginationTable data={data}
+                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+            />
+        </ContentContainer >
     )
 }
 
