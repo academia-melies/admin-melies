@@ -312,16 +312,8 @@ export default function EditUser() {
             const { data } = response
             if (data?.length > 0) {
 
-                const sortedEnrollments = data?.filter(item => item?.status === 'Em andamento' ||
-                    item?.status === 'Concluído' ||
-                    item?.status === 'Reprovado' ||
-                    item?.status === 'Aprovado' ||
-                    item?.status === 'Aguardando início' ||
-                    item?.status === 'Pendente de assinatura do contrato'
-                )?.sort((a, b) => b.modulo - a.modulo);
+                const sortedEnrollments = data?.filter(item => item?.status !== 'Transferido')?.sort((a, b) => b.modulo - a.modulo);
                 const highestModule = sortedEnrollments[0]?.modulo
-
-                console.log(highestModule)
 
                 // data.sort((a, b) => a.modulo - b.modulo);
                 // const highestModule = data[data.length - 1].modulo;
