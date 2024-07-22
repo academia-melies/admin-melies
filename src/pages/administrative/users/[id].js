@@ -227,11 +227,12 @@ export default function EditUser() {
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            if (parseInt(id) === parseInt(user?.id)) {
-                setIsPermissionEdit(true)
-            } else {
-                setIsPermissionEdit(actions)
-            }
+            setIsPermissionEdit(actions)
+            // if (parseInt(id) === parseInt(user?.id)) {
+            //     setIsPermissionEdit(true)
+            // } else {
+            //     setIsPermissionEdit(actions)
+            // }
         } catch (error) {
             console.log(error)
             return error
