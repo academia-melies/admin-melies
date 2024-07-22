@@ -329,16 +329,21 @@ export default function InterestEnroll() {
             const response = await api.get(`/enrollment/disciplines/dp/${id}`);
             const { data } = response;
             if (data.length > 0) {
-                const groupDisciplines = data.map(disciplines => ({
+                let groupDisciplines = data.map(disciplines => ({
                     label: disciplines.nome_disciplina,
                     value: disciplines?.disciplina_id.toString(),
-                    id_disc_matricula: disciplines?.id_disc_matricula
+                    id_disc_matricula: disciplines?.id_disc_matricula,
+                    modulo: disciplines?.modulo
                 }));
 
                 const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
                 const flattenedDisciplinesSelected = disciplinesSelect.join(', ');
                 setQuantityDisciplinesDp(groupDisciplines?.length)
                 setDisciplinesDpSelected(flattenedDisciplinesSelected)
+
+                if(isReprovved){
+                    groupDisciplines = groupDisciplines?.filter(item => item.modulo !== moduleCurrent)
+                }
                 setDisciplinesDp(groupDisciplines);
 
 
@@ -1665,7 +1670,7 @@ export const EnrollStudentDetails = (props) => {
                 </ContentContainer>
             </ContentContainer>
 
-            {(isReenrollment && disciplinesDp.length > 0 && !isReprovved) &&
+            {(isReenrollment && disciplinesDp.length > 0) &&
                 <ContentContainer row style={{ boxShadow: 'none', backgroundColor: 'none', padding: '0px', border: `1px solid ${colorPalette.buttonColor}` }} gap={3}>
                     <ContentContainer fullWidth gap={3}>
                         <Text bold title >Disciplinas em Pendência</Text>
