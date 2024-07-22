@@ -1193,6 +1193,7 @@ export default function InterestEnroll() {
                 <Payment
                     disciplines={disciplines}
                     courseData={courseData}
+                    disciplinesSelected={disciplinesSelected}
                     disciplinesSelectedForCalculation={disciplinesSelectedForCalculation}
                     setCheckValidateScreen={setCheckValidateScreen}
                     isReenrollment={isReenrollment}
@@ -1784,7 +1785,7 @@ export const EnrollStudentDetails = (props) => {
 export const Payment = (props) => {
     const {
         isReenrollment,
-        quantityDisciplinesSelected,
+        disciplinesSelected,
         quantityDisciplinesModule,
         valuesCourse,
         setValuesContract,
@@ -1825,7 +1826,7 @@ export const Payment = (props) => {
         disciplines,
         forma_pagamento,
         numParc,
-        courseData
+        courseData,
     } = props
 
     const [totalValueFinnaly, setTotalValueFinnaly] = useState()
@@ -1914,8 +1915,10 @@ export const Payment = (props) => {
     useEffect(() => {
 
         let calculationDisciplinesModule = disciplines?.filter(item => item?.disciplina_cobrada === 1)?.length;
-        let calculationDisciplinesSelected = disciplinesSelectedForCalculation?.filter(item => item?.disciplina_cobrada === 1)?.length;
+        let calculationDisciplinesSelected = disciplinesSelectedForCalculation?.filter(item => item?.disciplina_cobrada === 1 &&
+            disciplinesSelected.includes(item?.value))?.length;
         let calculationDisciplinesDpSelected = classesDisciplinesDpSelected?.filter(item => item?.disciplina_cobrada === 1);
+
 
         if (calculationDisciplinesModule > 0 || calculationDisciplinesSelected > 0) {
             let disciplinesDispensed = calculationDisciplinesModule - calculationDisciplinesSelected;
@@ -1929,15 +1932,15 @@ export const Payment = (props) => {
             let valuesDisciplineDpTotal = (costDiscipline * (calculationDisciplinesDpSelected?.length)).toFixed(2)
 
 
-            if (isReenrollment) {
-                if (isDp) {
-                    disciplinesDispensed = 0;
-                    porcentDisciplineDispensed = '0.00%';
-                    valueModuleCourse = valuesDisciplineDpTotal;
-                    calculationDiscount = 0;
-                    valueFinally = parseFloat(valuesDisciplineDpTotal)
-                }
-            }
+            // if (isReenrollment) {
+            //     if (isDp) {
+            //         // disciplinesDispensed = 0;
+            //         // porcentDisciplineDispensed = '0.00%';
+            //         // valueModuleCourse = valuesDisciplineDpTotal;
+            //         // calculationDiscount = 0;
+            //         valueFinally = parseFloat(valuesDisciplineDpTotal)
+            //     }
+            // }
             setTotalValueFinnaly(valueFinally)
             setDisciplineDispensedPorcent(porcentDisciplineDispensed)
             setDispensedDisciplines(disciplinesDispensed)

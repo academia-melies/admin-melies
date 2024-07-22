@@ -73,7 +73,9 @@ export default function EditClassSchedule(props) {
                 value: course?.id_turma,
             }));
 
-            setClasses(groupClasses);
+            const sortedClasses = groupClasses.sort((a, b) => a.label.localeCompare(b.label))
+
+            setClasses(sortedClasses);
         } catch (error) {
         }
     }
@@ -405,6 +407,7 @@ export default function EditClassSchedule(props) {
                 <Box sx={styles.inputSection}>
                     <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={classScheduleData?.turma_id} onSelect={(value) => handleClassData(value)}
                         title="Turma" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                        onFilter filterValue="label"
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                     < Box sx={{ ...styles.inputSection }}>
