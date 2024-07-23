@@ -324,7 +324,7 @@ export default function StuatusPayment() {
                     c_custo: 178,
                     forma_pagamento: newInstallment?.forma_pagamento,
                     conta: newInstallment?.conta,
-                    obs_pagamento: 'Nova parcela lançada.',
+                    obs_pagamento: newInstallment?.obs_pagamento || 'Nova parcela lançada.',
                     status_parcela: 'Pendente',
                     usuario_resp: user?.id
                 }
