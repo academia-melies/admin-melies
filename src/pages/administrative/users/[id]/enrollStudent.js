@@ -341,7 +341,7 @@ export default function InterestEnroll() {
                 setQuantityDisciplinesDp(groupDisciplines?.length)
                 setDisciplinesDpSelected(flattenedDisciplinesSelected)
 
-                if(isReprovved){
+                if (isReprovved) {
                     groupDisciplines = groupDisciplines?.filter(item => item.modulo !== moduleCurrent)
                 }
                 setDisciplinesDp(groupDisciplines);
@@ -1924,7 +1924,6 @@ export const Payment = (props) => {
             disciplinesSelected.includes(item?.value))?.length;
         let calculationDisciplinesDpSelected = classesDisciplinesDpSelected?.filter(item => item?.disciplina_cobrada === 1);
 
-
         if (calculationDisciplinesModule > 0 || calculationDisciplinesSelected > 0) {
             let disciplinesDispensed = calculationDisciplinesModule - calculationDisciplinesSelected;
             let calculationPorcentage = (disciplinesDispensed / calculationDisciplinesModule) * 100;
@@ -1936,7 +1935,6 @@ export const Payment = (props) => {
             let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
             let valuesDisciplineDpTotal = (costDiscipline * (calculationDisciplinesDpSelected?.length)).toFixed(2)
 
-
             // if (isReenrollment) {
             //     if (isDp) {
             //         // disciplinesDispensed = 0;
@@ -1946,6 +1944,13 @@ export const Payment = (props) => {
             //         valueFinally = parseFloat(valuesDisciplineDpTotal)
             //     }
             // }
+            if (isDp) {
+                disciplinesDispensed = 0;
+                porcentDisciplineDispensed = '0.00%';
+                valueModuleCourse = valuesDisciplineDpTotal;
+                calculationDiscount = 0;
+                valueFinally = parseFloat(valuesDisciplineDpTotal)
+            }
             setTotalValueFinnaly(valueFinally)
             setDisciplineDispensedPorcent(porcentDisciplineDispensed)
             setDispensedDisciplines(disciplinesDispensed)
