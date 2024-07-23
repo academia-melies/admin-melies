@@ -1555,14 +1555,18 @@ export default function EditUser() {
         }
     }
 
-    const handleEnrollment = async (interest) => {
+    const handleEnrollment = async (interest, subscription) => {
         if (verifyDataToGetway()) {
             if (verifyEnrollment(interest)) {
                 setLoading(true)
                 try {
                     const result = await handleValidateGetway()
                     if (result?.status === 201 || result?.status === 200) {
-                        router.push(`/administrative/users/${id}/enrollStudent?interest=${interest?.id_interesse}`)
+                        if(subscription?.forma_ingresso !== 'Trânsferência'){
+                            router.push(`/administrative/users/${id}/enrollStudent?interest=${interest?.id_interesse}`)
+                        }else{
+                            router.push(`/administrative/users/${id}/enrollStudent?classId=${interest?.turma_id}&courseId=${interest?.curso_id}&reenrollment=true`)
+                        }
                         return
                     } else {
                         alert.error('Ocorreu um erro. Valide os seus dados (Verifique se seu CPF está correto) e tente novamente.')
@@ -4246,7 +4250,7 @@ export default function EditUser() {
                                                                                     opacity: 0.8,
                                                                                     cursor: 'pointer'
                                                                                 }
-                                                                            }} onClick={() => handleEnrollment(interest)} />
+                                                                            }} onClick={() => handleEnrollment(interest, subscription)} />
                                                                         </div>
                                                                     </Tooltip>
                                                                 </Box>
