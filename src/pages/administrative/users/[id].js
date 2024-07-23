@@ -3966,9 +3966,9 @@ export default function EditUser() {
                                             const [isRequerimentoAproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 1) || [];
                                             const [isRequerimentoReproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 0) || [];
                                             const approvedRequeriment = requeriments ? true : false;
-                                            const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit) ? false : true;
-                                            const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}_${interest?.modulo_curso}º módulo`;
                                             const subscription = interest?.inscricao;
+                                            const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit && subscription?.forma_ingresso !== 'Trânsferência') ? false : true;
+                                            const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}_${interest?.modulo_curso}º módulo`;
                                             const [respAnalisar] = interest?.requeriments?.map(req => req.analisado_por) || [];
                                             let linkRequeriment;
                                             if (isHaveRequeriment) {
@@ -4168,10 +4168,11 @@ export default function EditUser() {
                                                             </Box>
 
                                                             <Divider padding={0} />
-                                                            {!newUser && <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
-                                                                <Text bold>Requerimento de Matrícula/Cadastro:</Text>
+                                                            {(!newUser) && <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
+                                                                <Text bold>{subscription?.forma_ingresso !== 'Trânsferência' ?
+                                                                    'Requerimento de Matrícula/Cadastro:' : 'Matrícula:'}</Text>
                                                                 <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                                    <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isRequerimentoReproved ? 'Requerimento reprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
+                                                                    {subscription?.forma_ingresso !== 'Trânsferência' && <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isRequerimentoReproved ? 'Requerimento reprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
                                                                         <div>
                                                                             {isRequerimentoAproved ?
                                                                                 <Box sx={{
@@ -4234,10 +4235,10 @@ export default function EditUser() {
                                                                                     />
                                                                             }
                                                                         </div>
-                                                                    </Tooltip>
-                                                                    <Tooltip title={disable ? 'Necessário primeiro requerimento' : ''}>
+                                                                    </Tooltip>}
+                                                                    <Tooltip title={subscription?.forma_ingresso === 'Trânsferência' ? false : disable ? 'Necessário primeiro requerimento' : ''}>
                                                                         <div>
-                                                                            <Button disabled={disable} small text="Matricular" sx={{
+                                                                            <Button disabled={subscription?.forma_ingresso === 'Trânsferência' ? false : disable} small text="Matricular" sx={{
                                                                                 // width: 25,
                                                                                 transition: '.3s',
                                                                                 zIndex: 999999999,
