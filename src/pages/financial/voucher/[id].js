@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { Backdrop, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
 import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../../atoms"
-import { RadioItem, SectionHeader,Table_V1,PaginationTable } from "../../../organisms"
+import { RadioItem, SectionHeader, Table_V1, PaginationTable } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { createClass, deleteClass, editClass } from "../../../validators/api-requests"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -14,7 +14,8 @@ import { formatTimeStamp } from "../../../helpers"
 import { IconStatus } from "../../../organisms/Table/table"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Irish_Grover } from "next/font/google"
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import DeleteIcon from '@mui/icons-material/Delete';
+
 
 export default function VoucherEdit(props) {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList, theme } = useAppContext()
@@ -23,10 +24,10 @@ export default function VoucherEdit(props) {
     const { id } = router.query;
     const newCupom = id === 'new';
     const [firstRender, setFirstRender] = useState(true)
-    const containerRef = useRef(null);
     const [usersList, setUsers] = useState([])
     const [filterData, setFilterData] = useState('')
     const [perfil, setPerfil] = useState('todos')
+    const [alunoSelected, setalunoSelected] = useState([])  
     const [coupom, setCoupomData] = useState({
         nome_cupom: "",
         descricao: '',
@@ -46,21 +47,17 @@ export default function VoucherEdit(props) {
         status: 1,
         userPerfil: 'todos',
     })
+    const [showAlunos, setShowSearchAlunos] = useState(false)
     const [accountHistoricList, setAccountHistoricList] = useState([])
+    const [enrollment, setEnrollment] = useState({ open: false, class: [], })
+    const [alunoCupom, setAlunoCupom] = useState([])
+    const [selectedAlunoId, setSelectedAlunoId] = useState(null);
     const userFilterFunctions = {
         ativo: (item) => filtersField?.status === 'todos' || item.ativo === filtersField?.status,
         enrollmentSituation: (item) => filtersField?.enrollmentSituation === 'todos' || item?.total_matriculas_em_andamento === filtersField?.enrollmentSituation,
-        perfilUser: (item) => filtersField?.userPerfil === 'todos' || item?.perfil?.includes(filtersField?.userPerfil),
-    };
-    const filterFunctions = {
-        date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
-        search: (item) => {
-            const normalizedSearchTerm = removeAccents(filters?.search.toLowerCase());
-            const normalizedItemName = item?.pagante ? removeAccents(item?.pagante?.toLowerCase()) : removeAccents(item?.aluno?.toLowerCase());
-            return normalizedItemName && normalizedItemName?.includes(normalizedSearchTerm)
-        },
-    };
+        perfilUser: (item) => item?.perfil?.includes('aluno'),
 
+    };
     const fetchPermissions = async () => {
         try {
             const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
@@ -90,14 +87,6 @@ export default function VoucherEdit(props) {
         );
     };
 
-    const rangeDate = (dateString, startDate, endDate) => {
-        const date = new Date(dateString);
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-
-        return date >= start && date <= end;
-    }
-
     useEffect(() => {
         fetchPermissions()
         if (window.localStorage.getItem('list-users-filters')) {
@@ -123,9 +112,32 @@ export default function VoucherEdit(props) {
     const getUsers = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/users`)
-            const { data = [] } = response;          
+            const response = await api.get(`/users/perfil?perfil=aluno`)
+            const { data = [] } = response;
             setUsers(data)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+    const getEnrollment = async (id_user) => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/enrollment/${id_user}`)
+            const { data = [] } = response;
+            //const [enrollment, setEntollment] = useState({open: false, class: null, module: [1,2,3,4]}) 
+            const classe = data.map((item) => ({
+                label: item.nome_turma + '_' + item.modulo,
+                value: item.turma_id + ',' + item.modulo
+            }));
+            setEnrollment((prevEnrollment) => ({
+                ...prevEnrollment,
+                open: true,
+                class: classe
+            }));
+            setShowSearchAlunos(false)
+
         } catch (error) {
             console.log(error)
         } finally {
@@ -135,7 +147,7 @@ export default function VoucherEdit(props) {
     const getCupom = async () => {
         try {
             const response = await api.get(`/cupom/${id}`)
-            const { data } = response    
+            const { data } = response
             setCoupomData(data)
             await getUsers()
         } catch (error) {
@@ -166,14 +178,6 @@ export default function VoucherEdit(props) {
             setLoading(false)
         }
     }
-
-
-
-
-
-
-
-
     const handleChange = (event) => {
 
         setCoupomData((prevValues) => ({
@@ -189,65 +193,65 @@ export default function VoucherEdit(props) {
         const numberValue = Number(cleanValue) / 100;
         // Formata para moeda
         return numberValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      };
+    };
     const parseCurrency = (value) => {
         if (!value) return 0;
 
         // Garantir que o valor é uma string
         const stringValue = String(value).trim();
-      
+
         // Remover 'R$' se presente
         let cleanValue = stringValue;
-      
+
         if (cleanValue.includes('R$')) {
-          cleanValue = cleanValue.replace('R$', '').trim();
+            cleanValue = cleanValue.replace('R$', '').trim();
         }
-      
+
         if (cleanValue.includes(',')) {
-          cleanValue = cleanValue.replace(',', '.');
+            cleanValue = cleanValue.replace(',', '.');
         }
-      
+
         return parseFloat(cleanValue);
-      }
-    
+    }
+
     const handleChangeValue = (e) => {
         const rawValue = e.target.value;
         setCoupomData((prevValues) => ({
             ...prevValues,
             [event.target.name]: formatCurrency(rawValue),
         }))
-        
-      };
+
+    };
     const handleCreate = async () => {
-        try{
-        setLoading(true)
-        if(typeof coupom.porcetagem == undefined ||typeof coupom.porcetagem == 'undefined'){
-            alert.error('Campo porcetagem, inválido.');
-            setLoading(false)
-            return
-        }
-        if(typeof coupom.nome_cupom == undefined || coupom.nome_cupom  == ""){
-            alert.error('Campo nome, inválido.');
-            setLoading(false)
-            return
-        }
-        if(typeof coupom.valor == undefined || coupom.valor  == ""){
-            alert.error('Campo valor, inválido.');
-            setLoading(false)
-            return
-        }
-        if(typeof coupom.status == undefined){
-            alert.error('Campo status, inválido.');
-            setLoading(false)
-            return
-        }
-        
-        if(!coupom.porcetagem){
-            const valor = coupom.valor; // Exemplo: 'R$ 1.234,56' ou '1234.56'
-            const valorFloat = parseCurrency(valor);
-            coupom.valor = valorFloat
-        }
-      
+        try {
+            setLoading(true)
+            if (typeof coupom.porcetagem == undefined || typeof coupom.porcetagem == 'undefined') {
+                alert.error('Campo porcetagem, inválido.');
+                setLoading(false)
+                return
+            }
+            if (typeof coupom.nome_cupom == undefined || coupom.nome_cupom == "") {
+                alert.error('Campo nome, inválido.');
+                setLoading(false)
+                return
+            }
+            if (typeof coupom.valor == undefined || coupom.valor == "") {
+                alert.error('Campo valor, inválido.');
+                setLoading(false)
+                return
+            }
+            if (typeof coupom.status == undefined) {
+                alert.error('Campo status, inválido.');
+                setLoading(false)
+                return
+            }
+
+            if (!coupom.porcetagem) {
+                const valor = coupom.valor; // Exemplo: 'R$ 1.234,56' ou '1234.56'
+                const valorFloat = parseCurrency(valor);
+                coupom.valor = valorFloat
+            }
+
             const response = await api.post(`/cupom/create`, { coupom });
             const { data } = response
 
@@ -265,35 +269,35 @@ export default function VoucherEdit(props) {
 
     }
     const handleEdit = async () => {
-        try{
-        setLoading(true)    
-        
-        if(typeof coupom.porcetagem == undefined ||typeof coupom.porcetagem == 'undefined'){
-            setLoading(false)
-            return
-        }
-        if(typeof coupom.nome_cupom == undefined || coupom.nome_cupom  == ""){
-            alert.error('Campo nome, inválido.');
-            setLoading(false)
-            return
-        }
-        if(typeof coupom.valor == undefined || coupom.valor  == ""){
-            alert.error('Campo valor, inválido.');
-            setLoading(false)
-            return
-        }
-        if(typeof coupom.status == undefined){
-            alert.error('Campo status, inválido.');
-            setLoading(false)
-            return
-        }
-        if(!coupom.porcetagem){
-            coupom.valor = parseFloat(coupom.valor.replace(',','.').replace('R$','').trim())
-        }
-     
-       
+        try {
+            setLoading(true)
+
+            if (typeof coupom.porcetagem == undefined || typeof coupom.porcetagem == 'undefined') {
+                setLoading(false)
+                return
+            }
+            if (typeof coupom.nome_cupom == undefined || coupom.nome_cupom == "") {
+                alert.error('Campo nome, inválido.');
+                setLoading(false)
+                return
+            }
+            if (typeof coupom.valor == undefined || coupom.valor == "") {
+                alert.error('Campo valor, inválido.');
+                setLoading(false)
+                return
+            }
+            if (typeof coupom.status == undefined) {
+                alert.error('Campo status, inválido.');
+                setLoading(false)
+                return
+            }
+            if (!coupom.porcetagem) {
+                coupom.valor = parseFloat(coupom.valor.replace(',', '.').replace('R$', '').trim())
+            }
+
+
             const response = await api.post(`/cupom/update/${id}`, { coupom });
-            const { data } = response          
+            const { data } = response
             if (response?.status === 201) {
                 alert.success('Cupom editado com sucesso.');
                 // router.push(`/financial/voucher/list`)
@@ -307,31 +311,15 @@ export default function VoucherEdit(props) {
         }
 
     }
-    const removerAlunoCupom = async (dataCupom) =>{        
+   
+    const handleDelete = async () => {
         try {
-            const response = await api.post(`/cupom/removeCupomAluno`, { dataCupom });
-            const { data } = response           
-            if (response?.status === 201) {
-                await handleItems()
-                alert.success('Aluno removido do cupom.');                
-            }
-        } catch (error) {
-            alert.error('Tivemos um problema ao editar o Cupom.');
-            console.log(error)
 
-        } finally {
-            setLoading(false)
-        }
-
-    }
-    const handleDelete = async () =>{
-        try {
-            
             const response = await api.delete(`/cupom/delete/${id}`);
-            const { data } = response           
-            if (response?.status === 201) {               
-                alert.success('Cupom Apagado com sucesso');    
-                router.push(`/financial/voucher/list`)            
+            const { data } = response
+            if (response?.status === 201) {
+                alert.success('Cupom Apagado com sucesso');
+                router.push(`/financial/voucher/list`)
             }
         } catch (error) {
             const { data } = error.response
@@ -359,56 +347,137 @@ export default function VoucherEdit(props) {
 
         return sortedUsers;
     }
+    const handleSelectedAluno = async (material) => {
+        let searchMaterialSelected = alunoSelected?.filter(item => item.id === material?.id);
+        if (searchMaterialSelected.length > 0) {
+            alert.info('Aluno já adicionado ao cupom');
+        } else {
+            setalunoSelected((prevValues) => [
+                ...prevValues,
+                {
+                    id_material: material?.id,
+                    titulo: material?.nome,
+                }
+            ]);
 
-
+            await getEnrollment(material?.id);
+            setAlunoCupom((prevAlunoCupom) => [
+                ...prevAlunoCupom,
+                { id_cupom: id, id_aluno: material.id }
+            ]);
+            setSelectedAlunoId(material.id);
+            alert.success('Aluno adicionado ao cupom');
+        }
+    };
 
     const groupStatus = [
         { label: 'ativo', value: 1 },
         { label: 'inativo', value: 0 },
     ]
-
-    const formatter = new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
     const listUser = [
-        { label: 'Todos', value: 'todos' },
         { label: 'Aluno', value: 'aluno' },
-        { label: 'Funcionário', value: 'funcionario' },
-        { label: 'Interessado', value: 'interessado' },
     ]
-    const listAtivo = [
-        { label: 'Todos', value: 'todos' },
-        { label: 'Ativo', value: 1 },
-        { label: 'Inativo', value: 0 },
-    ]
-    const listEnrollStatus = [
-        { label: 'Todos', value: 'todos' },
-        // { label: 'Pendente de nota', value: 'Pendente de nota' },
-        // { label: 'Reprovado', value: 'Reprovado' },
-        // { label: 'Aprovado - Pendente de pré-matrícula', value: 'Aprovado - Pendente de pré-matrícula' },
-        // { label: 'Aprovado - Em análise', value: 'Aprovado - Em análise' },
-        { label: 'Matriculado', value: 1 },
-    ]
-   
+
+
+    const handleDeleteAluno = async (id) => {
+       
+        let newArray = await alunoSelected?.filter(item => item.id_material !== id)
+        const updatedAlunoCupom = alunoCupom.filter(aluno => aluno.id_aluno !== id);
+        setAlunoCupom(updatedAlunoCupom)
+        setalunoSelected(newArray)
+        alert.success('Aluno retirado da lista de Cupom.')
+        return
+    }
+
+    const handleRowClick = async () => {
+        if(alunoCupom.length == 0){
+            alert.error("Selecione ao menos um aluno");
+            return
+        }
+        // Filtrar alunos que possuem id_turma indefinido
+        const alunosCompletos = alunoCupom.filter(aluno => typeof aluno.id_turma !== 'undefined');    
+        // Usar um Set para armazenar IDs únicos
+        const seenIds = new Set();
+        const alunosUnicos = alunosCompletos.filter((item) => {
+            if (seenIds.has(item.id_aluno)) {
+                return false; 
+            } else {
+                seenIds.add(item.id_aluno);
+                return true; 
+            }
+        });
+        const alunosComModulo = alunosUnicos.map((item) => {
+            let turmaModule = item.id_turma?.split(",");
+            return {
+                ...item,
+                id_turma: parseInt(turmaModule[0]),
+                modulo: parseInt(turmaModule[1]),
+                id_usuario: parseInt(item.id_aluno)
+            };
+        });
+        setAlunoCupom(alunosComModulo);
+    
+        console.log('aqui 33', alunosComModulo, alunoCupom);
+    
+        setLoading(true);
+        try {
+            const response = await api.post(`/cupom/insertDesconto`, { alunoCupom: alunosComModulo });
+            const { data } = response;
+    
+            if (response?.status === 200) {
+                setAlunoCupom([]);
+                setalunoSelected([]);
+                alert.success('Cupom de desconto aplicado ao aluno');
+                setTimeout(() => {
+                    location.reload();
+                }, 5000);
+            }
+        } catch (error) {
+            const { data } = error.response;
+    
+            setAlunoCupom([]);
+            setalunoSelected([]);
+            console.log(error);
+            alert.error(`${data.msg}`);
+            setTimeout(() => {
+                location.reload();
+            }, 5000);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+
+    const updateAlunoCupom = (id_aluno, newInfo) => {
+        setAlunoCupom((prevAlunoCupom) => {
+            return prevAlunoCupom.map(aluno => {
+                if (aluno.id_aluno === id_aluno) {
+                    return { ...aluno, ...newInfo };
+                }
+                return aluno;
+            });
+        });
+        setEnrollment({open: false});
+    }
+
     return (
         <>
             <SectionHeader
                 title={newCupom ? `Novo Cupom` : `Editar Cupom`}
                 saveButton={newCupom && isPermissionEdit}
             >
-                
+
             </SectionHeader>
 
             <Box sx={{ display: 'flex', gap: 3, width: '100%', flexDirection: 'column' }}>
                 <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
                     <ContentContainer style={{
                         display: 'flex', flexDirection: 'column',
-                        justifyContent: 'space-between', gap: 1.8, padding: 5, width: '65%',
+                        justifyContent: 'space-between', gap: 1.8, padding: 5, width: '100%',
                     }}>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
                             <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
-                            <Text title bold >Dados do Cupom aqui </Text>
+                            <Text title bold >Dados do Cupom  </Text>
                             <IconStatus
                                 style={{ backgroundColor: coupom.status >= 1 ? 'green' : 'red', boxShadow: coupom.status >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
                             />
@@ -418,83 +487,129 @@ export default function VoucherEdit(props) {
                             <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição' name='descricao' onChange={handleChange} value={coupom?.descricao || ''} label='Descricao:' sx={{ width: '100%', }} />
                             <TextInput disabled={!isPermissionEdit && true} placeholder={coupom?.porcetagem ? `Porcetagem` : `Valor`} name='valor' onChange={coupom?.porcetagem ? handleChange : handleChangeValue} value={coupom?.valor || ''} label={coupom?.porcetagem ? `Porcetagem` : `Valor`} n sx={{ width: '100%', }} />
                         </Box>
-                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={coupom?.porcetagem} group={groupStatus} title="Porcetagem" horizontal={mobile ? false : true} onSelect={(value) => setCoupomData({ ...coupom, porcetagem: parseInt(value),valor: 0 })} />
+                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={coupom?.porcetagem} group={groupStatus} title="Porcetagem" horizontal={mobile ? false : true} onSelect={(value) => setCoupomData({ ...coupom, porcetagem: parseInt(value), valor: 0 })} />
                         <RadioItem disabled={!isPermissionEdit && true} valueRadio={coupom?.status} group={groupStatus} title="Status" horizontal={mobile ? false : true} onSelect={(value) => setCoupomData({ ...coupom, status: parseInt(value) })} />
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button text="Salvar " style={{ borderRadius: 2 }} onClick={() => { if (newCupom) { handleCreate() } else { handleEdit() } }} />
-                            {!newCupom &&  
-                            <Button cancel text="Excluir Conta" style={{ borderRadius: 2 }} onClick={
-                                (event) => setShowConfirmationDialog({
-                                    active: true,
-                                    event,
-                                    acceptAction: handleDelete,
-                                    title: 'Deseja excluír O Cupom?',
-                                    message: 'O Cupom será excluída do sistema, sem chance de recuperação.'
-                                })} />
+                            {!newCupom &&
+                                <Button cancel text="Excluir Conta" style={{ borderRadius: 2 }} onClick={
+                                    (event) => setShowConfirmationDialog({
+                                        active: true,
+                                        event,
+                                        acceptAction: handleDelete,
+                                        title: 'Deseja excluír O Cupom?',
+                                        message: 'O Cupom será excluída do sistema, sem chance de recuperação.'
+                                    })} />
                             }
                         </Box>
                     </ContentContainer>
-                    <ContentContainer style={{
-                        display: 'flex', flexDirection: 'column', gap: 1.8, padding: 5, width: '35%',
-                        position: 'relative',
-                        overflow: 'auto'
-                    }}>
-                        <Box sx={{ display: 'flex', gap: 2, }}>
-                            <Box sx={{ height: '30px', width: 6, backgroundColor: colorPalette.buttonColor }} />
-                            <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Alunos com cupom</Text>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxHeight: 280, minHeight: 280 }}>
-                            {accountHistoricList?.length > 0 ?
-                                accountHistoricList?.map((item, index) => {
-                                    return (
-                                        <Box key={index} sx={{ display: 'flex',  alignItems: 'start', }}>                                                                                        
-                                                                                             
-                                                    {
-
-                                                        <Box sx={{
-                                                            display: 'flex', gap: 2, top: 95, backgroundColor: colorPalette?.primary, zIndex: 999,
-                                                            padding: '8px 12px', borderRadius: 2, position: 'relative' 
-                                                        }}>
-                                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', flexDirection: 'column' }}>
-                                                                <Text xsmall bold>Nome:</Text>
-                                                                <Text xsmall>{item?.nome}</Text>
-                                                                <HighlightOffIcon onClick={() => removerAlunoCupom(item)} sx={{ top: 1,position: 'absolute', right: 0, width: 18, height:18, cursor: 'pointer'}}/>
-                                                            </Box>                                                          
-                                                        </Box>
-                                                    }
-                                                  
-                                        </Box>
-                                    )
-                                })
-                                :
-                                <Text light>Não foi encontrado histórico de trasnferências</Text>}
-                            <Box sx={{
-                                display: 'flex', width: '100%', position: 'absolute', bottom: '-92px',
-                                justifyContent: 'flex-end', right: 20,
-                                padding: '5px'
-                            }}>
-                                <Button style={{ borderRadius: 2 }} text="Nova Transferência" onClick={() => setShowTransfer(true)} />
-                            </Box>
-                        </Box>
-                    </ContentContainer>
-
+                  
                 </Box>
             </Box>
-            { !newCupom &&  
-            <ContentContainer sx={{ display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' } }}>
-                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between' }}>
-                    <Text bold large>Filtros</Text>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{usersList.filter(filter)?.length || '0'}</Text>
-                        <Text style={{ color: '#d6d6d6' }} light>de</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{usersList?.length || 0}</Text>
-                        <Text style={{ color: '#d6d6d6' }} light>usuários</Text>
-                    </Box>
+           {!newCupom &&  
+            <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
+                <Box>
+                    <Text title bold style={{ padding: '0px 0px 20px 0px' }}>Adicionar Aluno</Text>
                 </Box>
-                <TextInput placeholder="Buscar pelo nome ou pelo ID.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
-                <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
+                <Divider distance={0} />
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Text bold>Selecionar Aluno: </Text>
+                    <Button disabled={!isPermissionEdit && true} small text="pesquisar" style={{ height: 22, }} onClick={() => setShowSearchAlunos(true)} />
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: .5 }}>
+                    <Text small>Selecionados:</Text>
+                    {alunoSelected?.map((item, index) => {
+                        return (
+                            <Box key={index} sx={{ display: 'flex', gap: 1, maxWidth: 300, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
+                                <Text small>{item?.titulo}</Text>
+                                {isPermissionEdit && <Box sx={{
+                                    ...styles.menuIcon,
+                                    width: 12,
+                                    height: 12,
+                                    aspectRatio: '1:1',
+                                    backgroundImage: `url(${icons.gray_close})`,
+                                    transition: '.3s',
+                                    zIndex: 999,
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => handleDeleteAluno(item?.id_material)} />}
+
+                            </Box>
+
+                        )
+                    })}
+                  
+                </Box>
+                <Divider distance={0} />
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button disabled={!isPermissionEdit && true} small text="Adicionar" style={{ height: 30 }} onClick={() => handleRowClick()} />
+                    <Button disabled={!isPermissionEdit && true} small secondary text="limpar" style={{ height: 30 }} onClick={() => {
+                        setalunoSelected([])
+                        setAlunoCupom([])
+                        alert.success('Lista de alunos límpa.')
+                    }} />
+                </Box>
+
+            </ContentContainer>
+            }
+            <Backdrop open={enrollment.open} sx={{ zIndex: 999 }}>
+                <ContentContainer>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                    <Text bold large>Selecione a turma e o modulo</Text>
+                    <Box sx={{
+                        ...styles.menuIcon,
+                        backgroundImage: `url(${icons.gray_close})`,
+                        transition: '.3s',
+                        zIndex: 99999,
+                        "&:hover": {
+                            opacity: 0.8,
+                            cursor: 'pointer'
+                        }
+                    }} onClick={() => setEnrollment({ ...enrollment, open: false })} />
+                </Box>
+
+                    {enrollment.class?.length > 0 ?
+
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', marginTop: 2, alignItems: 'center', justifyContent: 'center', height: 100, width: 300, overflow: 'auto', }}>
+                            <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+                                <SelectList
+                                    data={enrollment.class}
+                                    valueSelection={alunoCupom.find(aluno => aluno.id_aluno === selectedAlunoId)?.id_turma || ''}
+                                    onSelect={(value) => updateAlunoCupom(selectedAlunoId, { id_turma: value })}
+                                    title="Turma"
+                                    filterOpition="value"
+                                    sx={{ flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
+                                    clean={false}
+                                />                               
+                            </Box>
+
+                        </Box>
+                        : <Text ligth style={{ textAlign: 'center' }}>Sem resultado</Text>}
+                </ContentContainer>
+            </Backdrop>
+            <Backdrop open={showAlunos} sx={{ zIndex: 999 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Selecione o Aluno</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowSearchAlunos(false)} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center' }}>
+
+                        <TextInput placeholder="Buscar pelo nome ou pelo ID.." name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                         <SelectList
                             data={listUser}
                             valueSelection={filtersField?.userPerfil}
@@ -505,63 +620,47 @@ export default function VoucherEdit(props) {
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
                             clean={false}
                         />
-
-                        <SelectList
-                            data={listAtivo}
-                            valueSelection={filtersField?.status}
-                            onSelect={(value) => setFiltersField({ ...filtersField, status: value })}
-                            title="status"
-                            filterOpition="value"
-                            sx={{ flex: 1 }}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                            clean={false}
-                        />
-                        <SelectList
-
-                            data={listEnrollStatus}
-                            valueSelection={filtersField?.enrollmentSituation}
-                            onSelect={(value) => setFiltersField({ ...filtersField, enrollmentSituation: value })}
-                            title="situação/matrícula"
-                            filterOpition="value"
-                            sx={{ flex: 1 }}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
-                            clean={false}
-                        />
                     </Box>
-                    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'end' }}>
-                        <Button secondary text="Limpar filtros" small style={{ width: 120, height: '30px' }} onClick={() => {
-                            setPerfil('todos')
-                            setFilterAtive('todos')
-                            setFilterEnrollStatus('todos')
-                            setFiltersField({
-                                enrollmentSituation: 'todos',
-                                status: 'todos',
-                                userPerfil: 'todos'
-                            })
-                            setFilterData('')
-                        }} />
-                    </Box>
-                    {/* <TablePagination
-                        component="div"
-                        count={sortUsers()?.filter(filter)?.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        style={{ color: colorPalette.textColor }} // Define a cor do texto
-                        backIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de voltar
-                        nextIconButtonProps={{ style: { color: colorPalette.textColor } }} // Define a cor do ícone de avançar
-                    /> */}
-                </Box>
-            </ContentContainer>
-            }
-            {
-                usersList?.filter(filter)?.length > 0 ?
+                    {usersList?.filter(filter).length > 0 ?
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', marginTop: 2, alignItems: 'center', justifyContent: 'center', maxHeight: 500, maxWidth: 1024, overflow: 'auto' }}>
+                            {usersList?.filter(filter)?.map((item, index) => {
+                                const selected = alunoSelected?.filter(mat => mat.id === item?.id)
+                                return (
+                                    <Box key={index} sx={{
+                                        display: 'flex',
+                                        backgroundColor: colorPalette.primary,
+                                        padding: '8px 5px',
+                                        alignItems: 'center',
+                                        width: '100%',
+                                        justifyContent: 'center',
+                                        gap: 2,
+                                        cursor: 'pointer',
+                                        transition: '.5s',
+                                        "&:hover": {
+                                            // opacity: 0.7,
+                                            cursor: 'pointer',
+                                            backgroundColor: colorPalette.primary + '22'
+                                        }
+                                    }} onClick={() =>
+                                        handleSelectedAluno(item)
+                                    }>
+                                        {selected?.length > 0 && <CheckCircleIcon style={{ color: 'green', fontSize: 15 }} />}
+                                        <Text bold small>{item?.nome}</Text>
+                                    </Box>
+                                )
+                            })}
+                        </Box>
+                        : <Text ligth style={{ textAlign: 'center' }}>Sem resultado</Text>}
+                </ContentContainer>
+            </Backdrop>
+              {!newCupom &&  
+              
+                accountHistoricList?.length > 0 ?
                 <Box>
-                    <TableAccount data={sortUsers()?.filter(filter)}  />
+                    <TableAccount data={accountHistoricList} handleItems={handleItems}  />
                 </Box>
                     :
-                    !newCupom &&  
+                  
                     <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
                         <Text bold>Não foi encontrado usuarios {perfil}</Text>
                     </Box>
@@ -570,17 +669,17 @@ export default function VoucherEdit(props) {
         </>
     )
 }
-const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
-    
+const TableAccount = ({ data = [], filters = [], onPress = () => { },handleItems }) => {
+
     const router = useRouter()
-    const { setLoading, colorPalette, theme, user,alert } = useAppContext()
+    const { setLoading, colorPalette, theme, user, alert } = useAppContext()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const { id } = router.query;
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-  
+
 
 
     const columns = [
@@ -588,10 +687,10 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
         { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'location', matricula: true },
         { key: 'nome_social', label: 'Nome Social' },
         { key: 'email', label: 'E-mail' },
-        { key: 'email_melies', label: 'E-mail Méliès' },
+        { key: 'remover cupom', label: 'remover cupom' },
     ];
-   
-   
+
+
     const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
     const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
@@ -605,10 +704,10 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
             const response = await api.post(`/cupom/insertDesconto`, { dataCupom });
             const { data } = response
 
-            if (response?.status === 201) {               
+            if (response?.status === 201) {
                 alert.success('Cupom de desconto aplicado ao aluno');
                 location.reload()
-               
+
             }
         } catch (error) {
             const { data } = error.response
@@ -619,14 +718,24 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
             setLoading(false)
         }
     };
- 
-   
-    const valuesColor = (data) => ((data > 0 ? 'green' : 'red'));
 
-    const formatter = new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
+    const removerAlunoCupom = async (dataCupom) => {
+        try {
+            const response = await api.post(`/cupom/removeCupomAluno`, { dataCupom });
+            const { data } = response
+            if (response?.status === 201) {
+                await handleItems()
+                alert.success('Aluno removido do cupom.');
+            }
+        } catch (error) {
+            alert.error('Tivemos um problema ao remover o Cupom.');
+            console.log(error)
+
+        } finally {
+            setLoading(false)
+        }
+
+    }
 
     return (
         <ContentContainer sx={{
@@ -668,7 +777,7 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
                         {
                             data?.slice(startIndex, endIndex)?.map((item, index) => {
                                 return (
-                                    <TableRow key={`${item}-${index}`} onClick={() => handleRowClick(item?.id)} sx={{
+                                    <TableRow key={`${item}-${index}`} onClick={() => removerAlunoCupom(item)} sx={{
                                         "&:hover": {
                                             cursor: 'pointer',
                                             backgroundColor: colorPalette.primary + '88'
@@ -685,7 +794,7 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
                                             maxWidth: '160px',
                                         }}>
                                             <Text>{item?.nome || '-'}</Text>
-                                        </TableCell>                                     
+                                        </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
                                                 <Box sx={{
@@ -698,16 +807,16 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
                                                 }} />
                                                 <Text>{item?.nome_social || '-'}</Text>
                                             </Box>
-                                        </TableCell>                                        
-                                        
+                                        </TableCell>
+
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
                                                 <Text>{item?.email || '-'}</Text>
                                             </Box>
                                         </TableCell>
-                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.email_melies || '-'}</Text>
-                                        </TableCell>                                    
+                                        <TableCell sx={{padding: '15px 10px', textAlign: 'center' }}>
+                                             <DeleteIcon onClick={() => removerAlunoCupom(item)}  /> 
+                                        </TableCell>
                                     </TableRow>
                                 );
                             })

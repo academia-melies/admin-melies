@@ -14,7 +14,7 @@ import { format } from "date-fns"
 
 
 export default function ListAccounts(props) {
-    const [accountList, setAccountList] = useState([])
+    const [cupomList, setCupomList] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette, alert, userPermissions, menuItemsList } = useAppContext()
     const router = useRouter()
@@ -54,13 +54,6 @@ export default function ListAccounts(props) {
         }
     }
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-    const componentPDF = useRef()
-
-    // const filterRegex = (name) => {
-    //     let filterRegex = name.match(/\b[\wáéíóúâêîôûãõç]+\b/gi)
-    //     return filterRegex
-    // }
-
     useEffect(() => {
         fetchPermissions()
         getCupom();
@@ -73,7 +66,7 @@ export default function ListAccounts(props) {
             const { data = [] } = response;
             console.log('aqui', data)
             if (data?.length > 0) {
-                setAccountList(data)
+                setCupomList(data)
             }
         } catch (error) {
             console.log(error)
@@ -81,12 +74,6 @@ export default function ListAccounts(props) {
             setLoading(false)
         }
     }
-
-    const handleGeneratePdf = useReactToPrint({
-        content: () => componentPDF.current,
-        documentTitle: 'Contas - Extrato',
-        onAfterPrint: () => alert.info('Tabela exportada em PDF.')
-    })
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -95,18 +82,6 @@ export default function ListAccounts(props) {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
-
-
-    const column = [
-        { key: 'id', label: 'ID' },
-        { key: 'nome_cupom', label: 'Nome do Cupom' },
-        { key: 'descricao', label: 'Descrição do Cupom' },
-        { key: 'valor', label: 'Valor', price: true },
-        { key: 'porcetagem', label: 'Porcetagem', price: true },
-        { key: 'status', label: 'Status', price: true },
-        { key: 'created_at', label: 'Criado em' },
-        { key: 'updated_at', label: 'Atualizando em' }
-    ];
     const listAtivo = [
         { label: 'Todos', value: 'todos' },
         { label: 'Ativo', value: 1 },
@@ -116,7 +91,7 @@ export default function ListAccounts(props) {
     return (
         <>
             <SectionHeader
-                title={`Cupons de Desconto (${accountList?.filter(filter)?.length || '0'})`}
+                title={`Cupons de Desconto (${cupomList?.filter(filter)?.length || '0'})`}
                 newButton={isPermissionEdit}
                 newButtonAction={() => router.push(`/financial/${pathname}/new`)}
             />
@@ -125,13 +100,13 @@ export default function ListAccounts(props) {
                     <Text bold large>Filtros</Text>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                         <Text style={{ color: '#d6d6d6' }} light>Mostrando</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{accountList?.filter(filter)?.length || '0'}</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{cupomList?.filter(filter)?.length || '0'}</Text>
                         <Text style={{ color: '#d6d6d6' }} light>de</Text>
-                        <Text bold style={{ color: '#d6d6d6' }} light>{accountList?.length || 0}</Text>
+                        <Text bold style={{ color: '#d6d6d6' }} light>{cupomList?.length || 0}</Text>
                         <Text style={{ color: '#d6d6d6' }} light>Cupons</Text>
                     </Box>
                 </Box>
-                <TextInput placeholder="Buscar pelo cupon" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <TextInput placeholder="Buscar pelo cupom" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                 <Box sx={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flexDirection: 'row' }}>
                         <SelectList
@@ -163,7 +138,7 @@ export default function ListAccounts(props) {
                 <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
                     <TablePagination
                         component="div"
-                        count={accountList?.filter(filter)?.length}
+                        count={cupomList?.filter(filter)?.length}
                         page={page}
                         onPageChange={handleChangePage}
                         rowsPerPage={rowsPerPage}
@@ -221,11 +196,11 @@ export default function ListAccounts(props) {
                 </ContentContainer>
             </Backdrop>
             
-            {accountList?.length > 0 ?
+            {cupomList?.length > 0 ?
            
                 <div >
-                    {/* <Table_V1 data={accountList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_conta'} columnActive={true} /> */}
-                    <TableAccount data={accountList?.filter(filter)} />
+                    {/* <Table_V1 data={cupomList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_conta'} columnActive={true} /> */}
+                    <TableAccount data={cupomList?.filter(filter)} />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
@@ -258,17 +233,13 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
         { key: 'updated_at', label: 'Atualizando em' }
     ];
 
-   
-    const router = useRouter();
-    const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
-    const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
     const handleRowClick = (id) => {
         window.open(`/financial/voucher/${id}`, '_blank');
         return;
     };
 
-    const valuesColor = (data) => ((data > 0 ? 'green' : 'red'));
+
 
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
