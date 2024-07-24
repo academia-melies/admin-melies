@@ -461,7 +461,7 @@ export default function InterestEnroll() {
 
     const handleSearchClasses = async (moduleCourse) => {
         try {
-            const response = await api.get(`/classes/course/grid/reprovved-reenrollment/${courseId}/${moduleCourse}`)
+            const response = await api.get(`/classes/course/grid/reprovved-reenrollment/${courseId}/${moduleCourse}/${classId}`)
             const { data } = response
             setListClasses(data)
         } catch (error) {
