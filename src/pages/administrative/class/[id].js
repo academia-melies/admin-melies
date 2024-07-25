@@ -195,7 +195,7 @@ export default function EditClass(props) {
 
     const handleInterestByClass = async () => {
         try {
-           
+
             const response = await api.get(`/interest/classes/${id}`)
             const { numero_de_interesses } = response.data
             setNumberRegistrations(numero_de_interesses)
@@ -209,26 +209,29 @@ export default function EditClass(props) {
         try {
             let response = await api.get(`/class/students/${id}`)
             const { data } = response
-            setEnrolledStudents(data)
+
+            const sortedStudents = data?.sort((a, b) => b.nome.localeCompare(a.nome))
+            console.log(sortedStudents)
+            setEnrolledStudents(sortedStudents)
         } catch (error) {
             console.log(error)
             return error
         }
     }
 
-    const student = async (value = 0 ) =>{
+    const student = async (value = 0) => {
         setClassData({ ...classData, studentsOff: parseInt(value) })
 
         try {
             let response = null
-            if(value == 0){
-                 response = await api.get(`/class/studentsoff/${id}`)
-                
-            }else{
-                 response = await api.get(`/class/students/${id}`)
+            if (value == 0) {
+                response = await api.get(`/class/studentsoff/${id}`)
+
+            } else {
+                response = await api.get(`/class/students/${id}`)
             }
             const { data } = response
-           await setEnrolledStudents(data)
+            await setEnrolledStudents(data)
         } catch (error) {
             console.log(error)
             return error
@@ -270,7 +273,7 @@ export default function EditClass(props) {
             />
 
             <ContentContainer style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
-                <Box sx={{display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px'}}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', padding: '0px 0px 20px 0px' }}>
                     <Text title bold>Dados da Turma</Text>
                     <IconStatus
                         style={{ backgroundColor: classData.ativo >= 1 ? 'green' : 'red', boxShadow: classData.ativo >= 1 ? `#2e8b57 0px 6px 24px` : `#900020 0px 6px 24px`, }}
@@ -334,12 +337,32 @@ export default function EditClass(props) {
                                             const userDatas = `/administrative/users/${item?.usuario_id}`
                                             return (
                                                 <tr key={`${item}-${index}`}>
-                                                    <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                        {item?.nome}
+                                                    <td style={{ display: 'flex', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                                        <Box sx={{display: 'flex', position: 'relative'}}>
+                                                            {parseInt(item?.cursando_dp) > 0 &&
+                                                                <Box sx={{
+                                                                    backgroundColor: 'red',
+                                                                    width: 16,
+                                                                    height: 16,
+                                                                    borderRadius: 16,
+                                                                    padding: '1px',
+                                                                    display: 'flex',
+                                                                    position: 'absolute',
+                                                                    top: -5,
+                                                                    right: -15,
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
+                                                                    <Text bold xsmall style={{ color: '#fff', textAlign: 'center', fontSize: 8 }}>DP</Text>
+                                                                </Box>}
+                                                            <Text light>
+                                                                {item?.nome}
+                                                            </Text>
+                                                        </Box>
                                                     </td>
                                                     <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                                         <Link href={studentAcademic} target="_blank" style={{ color: theme ? 'blue' : 'red', }}>
-                                                        Histórico Acadêmico
+                                                            Histórico Acadêmico
                                                         </Link>
                                                     </td>
                                                     <td style={{ padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
