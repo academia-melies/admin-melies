@@ -399,13 +399,13 @@ export default function ListReceipts(props) {
 
     const listPayment = [
         { label: 'Todos', value: 'todos' },
-        { label: 'Cartão de crédito', value: 'Cartão' },
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
         { label: 'Cartão', value: 'Cartão' },
         { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
-
-
+        { label: 'Pix', value: 'Pix' },
+        { label: 'Transferência bancária', value: 'Transferência bancária' },
+        { label: 'Dinheiro', value: 'Dinheiro' }
     ]
 
     const groupSelect = (id) => [
