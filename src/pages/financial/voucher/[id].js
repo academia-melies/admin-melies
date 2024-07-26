@@ -48,7 +48,7 @@ export default function VoucherEdit(props) {
         userPerfil: 'todos',
     })
     const [showAlunos, setShowSearchAlunos] = useState(false)
-    const [accountHistoricList, setAccountHistoricList] = useState([])
+    const [cupomList, setCupomList] = useState([])
     const [enrollment, setEnrollment] = useState({ open: false, class: [], })
     const [alunoCupom, setAlunoCupom] = useState([])
     const [selectedAlunoId, setSelectedAlunoId] = useState(null);
@@ -159,7 +159,7 @@ export default function VoucherEdit(props) {
         try {
             const response = await api.get(`/cupom/cupomAluno/${id}`)
             const { data } = response
-            setAccountHistoricList(data)
+            setCupomList(data)
         } catch (error) {
             console.log(error)
             return error
@@ -173,7 +173,7 @@ export default function VoucherEdit(props) {
             await getCupom()
             await getCupomAluno()
         } catch (error) {
-            alert.error('Ocorreu um arro ao carregar o Conta')
+            alert.error('Ocorreu um arro ao carregar o Cupom')
         } finally {
             setLoading(false)
         }
@@ -417,7 +417,7 @@ export default function VoucherEdit(props) {
         });
         setAlunoCupom(alunosComModulo);
     
-        console.log('aqui 33', alunosComModulo, alunoCupom);
+       
     
         setLoading(true);
         try {
@@ -449,6 +449,7 @@ export default function VoucherEdit(props) {
     
 
     const updateAlunoCupom = (id_aluno, newInfo) => {
+       
         setAlunoCupom((prevAlunoCupom) => {
             return prevAlunoCupom.map(aluno => {
                 if (aluno.id_aluno === id_aluno) {
@@ -492,7 +493,7 @@ export default function VoucherEdit(props) {
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <Button text="Salvar " style={{ borderRadius: 2 }} onClick={() => { if (newCupom) { handleCreate() } else { handleEdit() } }} />
                             {!newCupom &&
-                                <Button cancel text="Excluir Conta" style={{ borderRadius: 2 }} onClick={
+                                <Button cancel text="Excluir Cupom" style={{ borderRadius: 2 }} onClick={
                                     (event) => setShowConfirmationDialog({
                                         active: true,
                                         event,
@@ -519,9 +520,10 @@ export default function VoucherEdit(props) {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: .5 }}>
                     <Text small>Selecionados:</Text>
                     {alunoSelected?.map((item, index) => {
+                        let turma = alunoCupom.filter((aluno) => aluno.id_aluno == item.id_material)[0]                   
                         return (
                             <Box key={index} sx={{ display: 'flex', gap: 1, maxWidth: 300, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
-                                <Text small>{item?.titulo}</Text>
+                                <Text small>{item?.titulo} <br/>Turma: {turma?.nome_turma?.split("_")[0]} <br/>Modulo: {turma?.nome_turma?.split("_")[1]}</Text>                             
                                 {isPermissionEdit && <Box sx={{
                                     ...styles.menuIcon,
                                     width: 12,
@@ -570,7 +572,7 @@ export default function VoucherEdit(props) {
                         }
                     }} onClick={() => setEnrollment({ ...enrollment, open: false })} />
                 </Box>
-
+                 
                     {enrollment.class?.length > 0 ?
 
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', marginTop: 2, alignItems: 'center', justifyContent: 'center', height: 100, width: 300, overflow: 'auto', }}>
@@ -578,8 +580,8 @@ export default function VoucherEdit(props) {
                                 <SelectList
                                     data={enrollment.class}
                                     valueSelection={alunoCupom.find(aluno => aluno.id_aluno === selectedAlunoId)?.id_turma || ''}
-                                    onSelect={(value) => updateAlunoCupom(selectedAlunoId, { id_turma: value })}
-                                    title="Turma"
+                                    onSelect={(value,label) => updateAlunoCupom(selectedAlunoId, { id_turma: value, nome_turma: label })}
+                                    title="Turma/Modulo"
                                     filterOpition="value"
                                     sx={{ flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px' }}
@@ -655,9 +657,9 @@ export default function VoucherEdit(props) {
             </Backdrop>
               {!newCupom &&  
               
-                accountHistoricList?.length > 0 ?
+                cupomList?.length > 0 ?
                 <Box>
-                    <TableAccount data={accountHistoricList} handleItems={handleItems}  />
+                    <TableCupom data={cupomList} handleItems={handleItems}  />
                 </Box>
                     :
                   
@@ -669,7 +671,7 @@ export default function VoucherEdit(props) {
         </>
     )
 }
-const TableAccount = ({ data = [], filters = [], onPress = () => { },handleItems }) => {
+const TableCupom = ({ data = [], filters = [], onPress = () => { },handleItems }) => {
 
     const router = useRouter()
     const { setLoading, colorPalette, theme, user, alert } = useAppContext()
@@ -680,44 +682,21 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { },handleItems
     const endIndex = startIndex + rowsPerPage;
 
 
-
+console.log('aqui',data)
 
     const columns = [
         { key: 'id', label: 'ID' },
         { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'location', matricula: true },
         { key: 'nome_social', label: 'Nome Social' },
         { key: 'email', label: 'E-mail' },
-        { key: 'remover cupom', label: 'remover cupom' },
+        { key: 'dt_aplicacao', label: 'Aplicado em' },
+        { key: 'dt_ultilizacao', label: 'Utilizado em' },
+        { key: 'remover cupom', label: 'Remover cupom' },
     ];
 
 
-    const menu = router.pathname === '/' ? null : router.asPath.split('/')[1]
-    const subMenu = router.pathname === '/' ? null : router.asPath.split('/')[2]
 
-    const handleRowClick = async (id_aluno) => {
-        setLoading(true)
-        let dataCupom = {
-            id_cupom: parseInt(id),
-            id_usuario: id_aluno
-        }
-        try {
-            const response = await api.post(`/cupom/insertDesconto`, { dataCupom });
-            const { data } = response
-
-            if (response?.status === 201) {
-                alert.success('Cupom de desconto aplicado ao aluno');
-                location.reload()
-
-            }
-        } catch (error) {
-            const { data } = error.response
-            console.log(error)
-            alert.error(`${data.msg}`);
-
-        } finally {
-            setLoading(false)
-        }
-    };
+   
 
     const removerAlunoCupom = async (dataCupom) => {
         try {
@@ -777,7 +756,7 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { },handleItems
                         {
                             data?.slice(startIndex, endIndex)?.map((item, index) => {
                                 return (
-                                    <TableRow key={`${item}-${index}`} onClick={() => removerAlunoCupom(item)} sx={{
+                                    <TableRow key={`${item}-${index}`}  sx={{
                                         "&:hover": {
                                             cursor: 'pointer',
                                             backgroundColor: colorPalette.primary + '88'
@@ -812,6 +791,16 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { },handleItems
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
                                                 <Text>{item?.email || '-'}</Text>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                                                <Text>{formatTimeStamp(item?.dt_aplicacao) || '-'}</Text>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                                                <Text>{formatTimeStamp(item?.dt_ultilizacao) || '-'}</Text>
                                             </Box>
                                         </TableCell>
                                         <TableCell sx={{padding: '15px 10px', textAlign: 'center' }}>

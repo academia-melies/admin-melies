@@ -11,9 +11,9 @@ import { Backdrop, TablePagination } from "@mui/material"
 import { icons } from "../../../organisms/layout/Colors"
 import { Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Avatar } from "@mui/material";
 import { format } from "date-fns"
+import { formatTimeStamp } from "../../../helpers";
 
-
-export default function ListAccounts(props) {
+export default function ListCupom(props) {
     const [cupomList, setCupomList] = useState([])
     const [filterData, setFilterData] = useState('')
     const { setLoading, colorPalette, alert, userPermissions, menuItemsList } = useAppContext()
@@ -200,7 +200,7 @@ export default function ListAccounts(props) {
            
                 <div >
                     {/* <Table_V1 data={cupomList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_conta'} columnActive={true} /> */}
-                    <TableAccount data={cupomList?.filter(filter)} />
+                    <TableCupom data={cupomList?.filter(filter)} />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
@@ -210,8 +210,8 @@ export default function ListAccounts(props) {
         </>
     )
 }
-const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
-    console.log("aqui 2",data)
+const TableCupom = ({ data = [], filters = [], onPress = () => { } }) => {
+   
     const { setLoading, colorPalette, theme, user } = useAppContext()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -337,11 +337,11 @@ const TableAccount = ({ data = [], filters = [], onPress = () => { } }) => {
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                                                <Text>{item?.created_at.split("T")[0] || '-'}</Text>
+                                                <Text>{formatTimeStamp(item?.dt_criacao) || '-'}</Text>
                                             </Box>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.updated_at.split("T")[0] || '-'}</Text>
+                                            <Text>{formatTimeStamp(item?.dt_atualizacao) || '-'}</Text>
                                         </TableCell>
                                     </TableRow>
                                 );
