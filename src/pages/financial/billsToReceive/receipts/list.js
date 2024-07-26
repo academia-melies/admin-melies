@@ -66,8 +66,11 @@ export default function ListReceipts(props) {
             if (typeof searchTerm === 'string' && searchTerm.trim() !== '') {
                 const normalizedSearchTerm = removeAccents(searchTerm.toLowerCase());
                 const normalizedItemName = item?.aluno ? removeAccents(item.aluno.toLowerCase()) : '';
+                const normalizedItemResponsible = item?.responsavel_pagante ? removeAccents(item.responsavel_pagante.toLowerCase()) : '';
                 const normalizedOrderReference = item?.referenceId ? removeAccents(item?.referenceId.toLowerCase()) : '';
-                return normalizedItemName.includes(normalizedSearchTerm) || normalizedOrderReference.includes(normalizedSearchTerm);
+                return (normalizedItemName.includes(normalizedSearchTerm) ||
+                 normalizedOrderReference.includes(normalizedSearchTerm) ||
+                 normalizedItemResponsible.includes(normalizedSearchTerm));
             }
             return true;
         },

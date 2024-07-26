@@ -676,7 +676,11 @@ export default function StuatusPayment() {
             <Backdrop open={showDeclatation?.paymentVoucher} sx={{ zIndex: 99999, overflow: 'auto', }}>
                 <DeclarationDocument
                     contractEnrollment={nameContract}
-                    userData={userData}
+                    userData={responsiblePayerData ? {
+                        nome: responsiblePayerData?.nome_resp,
+                        email: responsiblePayerData?.email_resp,
+                        cpf: responsiblePayerData?.cpf_resp
+                    } : userData}
                     setShowDeclaration={setShowDeclaration}
                     installmentsData={installmentsData}
                     filterDate={filterDate}
