@@ -1931,6 +1931,9 @@ export const Payment = (props) => {
 
             let valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
             let costDiscipline = (valueModuleCourse / calculationDisciplinesModule).toFixed(2);
+            if(isDp){
+                costDiscipline = (valueModuleCourse / 5).toFixed(2);
+            }
             let calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
             let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
             let valuesDisciplineDpTotal = (costDiscipline * (calculationDisciplinesDpSelected?.length)).toFixed(2)
