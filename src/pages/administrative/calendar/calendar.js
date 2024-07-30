@@ -201,18 +201,29 @@ export default function CalendarComponent(props) {
             const response = await api.get(`/events`)
             const { data } = response
             if (data) {
-                const eventsMap = data?.map((event) => ({
-                    id_evento_calendario: event.id_evento_calendario,
-                    start: event.inicio, // Adicione o início e o fim do evento como propriedades start e end
-                    end: event.fim,
-                    title: event.titulo,
-                    description: event.descricao,
-                    location: event.local,
-                    color: event.color,
-                    perfil_evento: event?.perfil_evento,
-                    allDay: false, // Ajuste isso com base no seu caso de uso
+                const eventsMap = data?.map((event) => {
+                    const start = new Date(event.inicio);
+                    start.setHours(12, 0, 0, 0);
+    
+                    const end = new Date(event.fim);
+                    end.setHours(12, 0, 0, 0);
+    
+                    return {
+                        id_evento_calendario: event.id_evento_calendario,
+                        start: start.toISOString(), // Ajuste o formato conforme necessário
+                        end: end.toISOString(),
+                        title: event.titulo,
+                        description: event.descricao,
+                        location: event.local,
+                        color: event.color,
+                        perfil_evento: event?.perfil_evento,
+                        allDay: false, // Ajuste isso com base no seu caso de uso
+                    };
+                });
+    
 
-                }));
+            console.log(eventsMap)
+
                 setEvents([...eventsMap, ...Holidays]);
                 return
             }

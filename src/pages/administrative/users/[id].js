@@ -52,6 +52,18 @@ export default function EditUser() {
         preferencia_pagamento: null,
         disciplinesData: [],
     })
+    const [enrollmentUnlockingData, setEnrollmentUnlockingData] = useState({
+        turma_id: null,
+        modulo: null,
+        qnt_disci_dp: 0,
+        qnt_disci_disp: 0,
+        dt_inicio: null,
+        dt_final: null,
+        status: null,
+        adimplente: 0,
+        preferencia_pagamento: null,
+        disciplinesData: [],
+    })
     const [arrayEnrollmentRegisterData, setArrayEnrollmentRegisterData] = useState([])
     const [userData, setUserData] = useState({
         cd_cliente: null,
@@ -790,6 +802,17 @@ export default function EditUser() {
     }
 
 
+    const handleChangeUnlockingData = (value) => {
+
+        setEnrollmentUnlockingData((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
+
+
+
+
     const handleChangeEnrollmentDisciplinesDataRegister = (disciplineId, field, value) => {
 
         setEnrollmentRegisterData((prevValues) => {
@@ -812,7 +835,7 @@ export default function EditUser() {
 
     const handleChangeEnrollmentDisciplinesDataDestrancamento = (modulo, disciplineId, field, value) => {
 
-        setEnrollmentRegisterData((prevValues) => {
+        setEnrollmentUnlockingData((prevValues) => {
             const updatedDisciplinesData = prevValues?.disciplinesData?.map((m) => {
                 if (modulo === m.modulo_grade) {
                     m.disciplinas?.map((item) => {
@@ -1769,10 +1792,8 @@ export default function EditUser() {
                 }
             });
 
-            console.log(groupDisciplines)
-
             setDisciplinesEnrollmentRegister(groupDisciplines);
-            setEnrollmentRegisterData({
+            setEnrollmentUnlockingData({
                 ...enrollmentRegisterData,
                 disciplinesData: groupDisciplines,
                 turma_id: value
@@ -2132,7 +2153,7 @@ export default function EditUser() {
         { id: '04', icon: '/icons/cursos_icon_home.png', text: 'Inscrições e Interesses', queryId: true, screen: 'interests', perfil: ['aluno', 'interessado'] },
         { id: '05', icon: '/icons/contract_icon.png', text: 'Contrato do Funcionário', queryId: true, screen: 'contractEmployee', perfil: ['funcionario'] },
         { id: '06', icon: '/icons/holerite.png', text: 'Preferência de Pagamento', queryId: true, screen: 'paymentPerfil', perfil: ['aluno'] },
-        // { id: '06', icon: '/icons/grade_icon.png', text: 'Destrancamento de Matrícula', queryId: true, screen: 'openEnrollment', perfil: ['aluno'] },
+        { id: '06', icon: '/icons/grade_icon.png', text: 'Destrancamento de Matrícula', queryId: true, screen: 'openEnrollment', perfil: ['aluno'] },
     ]
 
 
@@ -5063,11 +5084,11 @@ export default function EditUser() {
 
 
 
-            {/* {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'openEnrollment') &&
+            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'openEnrollment') &&
                 <>
-                    <ContentContainer style={{ ...styles.containerContract, padding: showEnrollmentAdd ? '40px' : '25px', }}>
+                    <ContentContainer style={{ ...styles.containerContract, padding: '40px', }}>
                         <Box sx={{
-                            display: 'flex', alignItems: 'center', padding: showEnrollmentAdd ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
+                            display: 'flex', alignItems: 'center', padding: '0px 0px 20px 0px', gap: 1, "&:hover": {
                                 opacity: 0.8,
                                 cursor: 'pointer'
                             },
@@ -5077,7 +5098,7 @@ export default function EditUser() {
                             <Box sx={{
                                 ...styles.menuIcon,
                                 backgroundImage: `url(${icons.gray_arrow_down})`,
-                                transform: showEnrollmentAdd ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                transform: 'rotate(0deg)',
                                 transition: '.3s',
                                 "&:hover": {
                                     opacity: 0.8,
@@ -5085,318 +5106,137 @@ export default function EditUser() {
                                 }
                             }} />
                         </Box>
-                        {showEnrollmentAdd &&
-                            <>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <Text bold large style={{ color: colorPalette?.buttonColor }}>Matrículas Incluídas:</Text>
-                                    {arrayEnrollmentRegisterData?.length > 0 && arrayEnrollmentRegisterData?.map((item, index) => {
-                                        const initDate = formatTimeStamp(item?.dt_inicio)
-                                        const endDate = formatTimeStamp(item?.dt_final)
-                                        const className = classes?.filter(v => v.value === item?.turma_id)?.map(i => i.label)
-                                        const title = `${className}_${item?.modulo}º Módulo - ${initDate} á ${endDate} - ${item?.status}`
-                                        return (
-                                            <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'start', flexDirection: 'column', backgroundColor: colorPalette?.primary, borderRadius: 2, padding: '15px 20px' }}>
 
-                                                <Box sx={{
-                                                    display: 'flex', alignItems: 'center', padding: showEnrollmentsRegisters[index] ? '0px 0px 20px 0px' : '0px', gap: 1, "&:hover": {
-                                                        opacity: 0.8,
-                                                        cursor: 'pointer'
-                                                    },
-                                                    justifyContent: 'space-between'
-                                                }} onClick={() => toggleEnrollmentRegisters(index)}>
-                                                    <Text bold title>{title}</Text>
-                                                    <Box sx={{
-                                                        ...styles.menuIcon,
-                                                        backgroundImage: `url(${icons.gray_arrow_down})`,
-                                                        transform: showEnrollmentsRegisters[index] ? 'rotate(0deg)' : 'rotate(-90deg)',
-                                                        transition: '.3s',
-                                                        "&:hover": {
-                                                            opacity: 0.8,
-                                                            cursor: 'pointer'
-                                                        }
-                                                    }} />
-                                                </Box>
-                                                <Box sx={{
-                                                    display: showEnrollmentsRegisters[index] ? 'flex' : 'none', flexDirection: 'column', gap: 2, alignItems: 'start', backgroundColor: colorPalette?.primary, borderRadius: 2, padding: '15px 20px',
-                                                    width: '100%'
-                                                }}>
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Turma:</Text>
-                                                        <Text>{className}</Text>
-                                                    </Box>
-
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Módulo/Semestre:</Text>
-                                                        <Text>{item?.modulo}</Text>
-                                                    </Box>
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Qnt de Disciplina com DP:</Text>
-                                                        <Text>{item?.qnt_disci_dp}</Text>
-                                                    </Box>
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Qnt de Disciplina Dispensada:</Text>
-                                                        <Text>{item?.qnt_disci_disp}</Text>
-                                                    </Box>
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Cursando Rematrícula:</Text>
-                                                        <Text>{groupEnrollment?.filter(v => v.value === item?.rematricula)?.map(i => i.label)}</Text>
-                                                    </Box>
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Cursando alguma DP:</Text>
-                                                        <Text>{groupEnrollment?.filter(v => v.value === item?.cursando_dp)?.map(i => i.label)}</Text>
-                                                    </Box>
-
-
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Inicio:</Text>
-                                                        <Text>{initDate}</Text>
-                                                    </Box>
-
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Fim:</Text>
-                                                        <Text>{endDate}</Text>
-                                                    </Box>
-
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Status/Situação:</Text>
-                                                        <Text>{groupSituation?.filter(v => v.value === item?.status)?.map(i => i.label)}</Text>
-                                                    </Box>
-                                                    {
-                                                        enrollmentData.status?.includes('Desistente') &&
-                                                        <>
-                                                            <Divider padding={0} />
-                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                                <Text bold>Motivo da desistência:</Text>
-                                                                <Text>{groupReasonsDroppingOut?.filter(v => v.value === item?.motivo_desistencia)?.map(i => i.label)}</Text>
-                                                            </Box>
-                                                            <Divider padding={0} />
-                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                                <Text bold>Data da desistência:</Text>
-                                                                <Text>{item?.dt_desistencia}</Text>
-                                                            </Box>
-
-                                                        </>
-                                                    }
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Certificado emitido:</Text>
-                                                        <Text>{groupCertificate?.filter(v => v.value === item?.certificado_emitido)?.map(i => i.label)}</Text>
-                                                    </Box>
-                                                    <Divider padding={0} />
-                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                        <Text bold>Preferência de Pagamento:</Text>
-                                                        <Text>{grouPreferPayment?.filter(v => v.value === item?.preferencia_pagamento)?.map(i => i.label)}</Text>
-                                                    </Box>
-
-                                                    {item?.disciplinesData?.length > 0 &&
-                                                        <Box sx={{
-                                                            display: 'flex', width: '100%', flexDirection: 'column', gap: 1.8, marginTop: 2, borderRadius: 2, padding: '20px',
-                                                            border: `1px solid ${colorPalette?.buttonColor}`
-                                                        }}>
-                                                            <Text bold style={{ color: colorPalette?.buttonColor }}>Disciplinas referente ao Módulo Cursado: </Text>
-                                                            {item?.disciplinesData?.map((item, index) => (
-                                                                <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                                                                    <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minWidth: 350 }}>
-                                                                            <Box sx={{
-                                                                                display: 'flex',
-                                                                                alignItems: 'center',
-                                                                                justifyContent: 'center',
-                                                                                width: 16,
-                                                                                height: 16,
-                                                                                borderRadius: 16,
-                                                                                cursor: 'pointer',
-                                                                                transition: '.5s',
-                                                                                border: parseInt(item?.selecionada) > 0 ? '' : `1px solid ${colorPalette.textColor}`,
-                                                                                '&:hover': {
-                                                                                    opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
-                                                                                    boxShadow: parseInt(item?.selecionada) > 0 ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                                                }
-                                                                            }}
-                                                                                onClick={() => {
-                                                                                    if (parseInt(item?.selecionada) > 0) {
-                                                                                        handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, 'selecionada', parseInt(0))
-                                                                                    } else {
-                                                                                        handleChangeEnrollmentDisciplinesDataRegister(item?.disciplina_id, 'selecionada', 1)
-                                                                                    }
-                                                                                }}>
-                                                                                {parseInt(item?.selecionada) > 0 ? (
-                                                                                    <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
-                                                                                ) : (
-                                                                                    <Box
-                                                                                        sx={{
-                                                                                            width: 11,
-                                                                                            height: 11,
-                                                                                            borderRadius: 11,
-                                                                                            cursor: 'pointer',
-                                                                                            '&:hover': {
-                                                                                                opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
-                                                                                                boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                                                            },
-                                                                                        }}
-                                                                                    />
-                                                                                )}
-                                                                            </Box>
-                                                                            <Text bold small>{item?.nome_disciplina}</Text>
-                                                                        </Box>
-                                                                        <TextInput disabled={!isPermissionEdit && true} label="Nota Final" name='nt_final' value={item?.nt_final} sx={{ width: '120px' }} />
-                                                                        <TextInput disabled={!isPermissionEdit && true} label="Qnt Presenças" Ï name='qnt_presenca' value={item?.qnt_presenca} sx={{ width: '120px' }} />
-                                                                        <TextInput disabled={!isPermissionEdit && true} label="Qnt Faltas" name='qnt_falta' value={item?.qnt_falta} sx={{ width: '120px' }} />
-                                                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                                                            <Text bold small>Frequência:</Text>
-                                                                            <Text bold small>{handleCalculateFrequency(item?.qnt_presenca, item?.qnt_falta)}</Text>
-                                                                        </Box>
-                                                                    </Box>
-                                                                    <Divider distance={0} />
-                                                                </Box>
-                                                            ))}
-                                                        </Box>}
-
-                                                    <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-start' }}>
-                                                        <Button text="Remover" small onClick={() => removeEnrollmentRegister(index)} style={{ width: 120, height: 30 }} />
-                                                    </Box>
-                                                </Box>
-                                            </Box>
-                                        )
-                                    })}
-                                </Box>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <Divider padding={0} />
-                                    <Text bold title>Nova Matrícula/Rematrícula</Text>
-                                    <Box sx={styles.inputSection}>
-                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={enrollmentRegisterData?.turma_id}
-                                            onSelect={(value) => handleSelectDisciplinesGrid(value)}
-                                            title="Turma " filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
-                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.modulo} label='Módulo/Semestre *' sx={{ flex: 1, }} onBlur={(e) => handleSelectModule(e.target.value)} />
-                                    </Box>
-                                    <Box sx={styles.inputSection}>
-                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.rematricula} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, rematricula: value })}
-                                            title="Cursando Rematrícula? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
-                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.cursando_dp} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, cursando_dp: value })}
-                                            title="Cursando alguma DP? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
-                                    </Box>
-                                    <Box sx={styles.inputSection}>
-                                        <TextInput disabled={!isPermissionEdit && true} name='dt_inicio' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_inicio)?.split('T')[0] || ''} label='Inicio *' sx={{ flex: 1, }} />
-                                        <TextInput disabled={!isPermissionEdit && true} name='dt_final' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_final)?.split('T')[0] || ''} label='Fim *' sx={{ flex: 1, }} />
-                                        <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupSituation} valueSelection={enrollmentRegisterData?.status} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, status: value })}
-                                            title="Status/Situação *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                        />
-                                    </Box>
-                                    {
-                                        enrollmentData.status?.includes('Desistente') &&
-                                        <>
-
-                                            <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                                valueChecked={enrollmentRegisterData?.motivo_desistencia || ''}
-                                                boxGroup={groupReasonsDroppingOut}
-                                                title="Motivo da desistência"
-                                                horizontal={mobile ? false : true}
-                                                onSelect={(value) => setEnrollmentRegisterData({
-                                                    ...enrollmentRegisterData,
-                                                    motivo_desistencia: value
-                                                })}
-                                                sx={{ width: 1 }}
-                                            />
-                                            <TextInput disabled={!isPermissionEdit && true} name='dt_desistencia' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
-                                        </>
-                                    }
-                                    <RadioItem disabled={!isPermissionEdit && true} valueRadio={enrollmentRegisterData?.certificado_emitido}
-                                        group={groupCertificate}
-                                        title="Certificado emitido: *"
-                                        horizontal={mobile ? false : true}
-                                        onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, certificado_emitido: parseInt(value) })} />
-
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={grouPreferPayment} valueSelection={enrollmentRegisterData?.preferencia_pagamento} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, preferencia_pagamento: value })}
-                                        title="Preferência de Pagamento: *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                        <>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Divider padding={0} />
+                                <Text bold title>Nova Matrícula/Rematrícula</Text>
+                                <Box sx={styles.inputSection}>
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={enrollmentRegisterData?.turma_id}
+                                        onSelect={(value) => handleSelectDisciplinesGrid(value)}
+                                        title="Turma " filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.modulo} label='Módulo/Semestre *' sx={{ flex: 1, }} onBlur={(e) => handleSelectModule(e.target.value)} />
+                                </Box>
+                                <Box sx={styles.inputSection}>
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.rematricula} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, rematricula: value })}
+                                        title="Cursando Rematrícula? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.cursando_dp} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, cursando_dp: value })}
+                                        title="Cursando alguma DP? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                </Box>
+                                <Box sx={styles.inputSection}>
+                                    <TextInput disabled={!isPermissionEdit && true} name='dt_inicio' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_inicio)?.split('T')[0] || ''} label='Inicio *' sx={{ flex: 1, }} />
+                                    <TextInput disabled={!isPermissionEdit && true} name='dt_final' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_final)?.split('T')[0] || ''} label='Fim *' sx={{ flex: 1, }} />
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupSituation} valueSelection={enrollmentRegisterData?.status} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, status: value })}
+                                        title="Status/Situação *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                </Box>
+                                {
+                                    enrollmentData.status?.includes('Desistente') &&
+                                    <>
 
-                                    {enrollmentRegisterData?.disciplinesData?.length > 0 &&
-                                        <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
-                                            <Text bold>Disciplinas referente a grade do Curso</Text>
-                                            {enrollmentRegisterData?.disciplinesData?.map((mod, index) => {
-                                                return (
-                                                    <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                                                        <Text bold large>{mod?.modulo_grade}º Módulo</Text>
-
-                                                        <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
-                                                            {mod?.disciplinas?.map((item, index) => (
-                                                                <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minWidth: 350 }}>
-                                                                        <Box sx={{
-                                                                            display: 'flex',
-                                                                            alignItems: 'center',
-                                                                            justifyContent: 'center',
-                                                                            width: 16,
-                                                                            height: 16,
-                                                                            borderRadius: 16,
-                                                                            cursor: 'pointer',
-                                                                            transition: '.5s',
-                                                                            border: parseInt(item?.selecionada) > 0 ? '' : `1px solid ${colorPalette.textColor}`,
-                                                                            '&:hover': {
-                                                                                opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
-                                                                                boxShadow: parseInt(item?.selecionada) > 0 ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                                            }
-                                                                        }}
-                                                                            onClick={() => {
-                                                                                if (parseInt(item?.selecionada) > 0) {
-                                                                                    handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', parseInt(0))
-                                                                                } else {
-                                                                                    handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', 1)
-                                                                                }
-                                                                            }}>
-                                                                            {parseInt(item?.selecionada) > 0 ? (
-                                                                                <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
-                                                                            ) : (
-                                                                                <Box
-                                                                                    sx={{
-                                                                                        width: 11,
-                                                                                        height: 11,
-                                                                                        borderRadius: 11,
-                                                                                        cursor: 'pointer',
-                                                                                        '&:hover': {
-                                                                                            opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
-                                                                                            boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                                                        },
-                                                                                    }}
-                                                                                />
-                                                                            )}
-                                                                        </Box>
-                                                                        <Text bold small>{item?.nome_disciplina}</Text>
-                                                                    </Box>
-                                                                    <Divider distance={0} />
-                                                                </Box>
-                                                            ))}
-                                                        </Box>
-                                                    </Box>
-                                                )
+                                        <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                            valueChecked={enrollmentRegisterData?.motivo_desistencia || ''}
+                                            boxGroup={groupReasonsDroppingOut}
+                                            title="Motivo da desistência"
+                                            horizontal={mobile ? false : true}
+                                            onSelect={(value) => setEnrollmentRegisterData({
+                                                ...enrollmentRegisterData,
+                                                motivo_desistencia: value
                                             })}
-                                        </Box>}
-                                </Box>
-                                <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
-                                    <Button text="Adicionar" small onClick={() => handleAddEnrollmentRegister()} style={{ width: 120, height: 30 }} />
-                                </Box>
-                            </>
-                        }
+                                            sx={{ width: 1 }}
+                                        />
+                                        <TextInput disabled={!isPermissionEdit && true} name='dt_desistencia' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
+                                    </>
+                                }
+                                <RadioItem disabled={!isPermissionEdit && true} valueRadio={enrollmentRegisterData?.certificado_emitido}
+                                    group={groupCertificate}
+                                    title="Certificado emitido: *"
+                                    horizontal={mobile ? false : true}
+                                    onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, certificado_emitido: parseInt(value) })} />
+
+                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={grouPreferPayment} valueSelection={enrollmentRegisterData?.preferencia_pagamento} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, preferencia_pagamento: value })}
+                                    title="Preferência de Pagamento: *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+
+                                {enrollmentUnlockingData?.disciplinesData?.length > 0 &&
+                                    <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
+                                        <Text bold>Disciplinas referente a grade do Curso</Text>
+                                        {enrollmentUnlockingData?.disciplinesData?.map((mod, index) => {
+                                            return (
+                                                <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                                    <Text bold large>{mod?.modulo_grade}º Módulo</Text>
+
+                                                    <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                                        {mod?.disciplinas?.map((item, index) => (
+                                                            <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minWidth: 350 }}>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        width: 16,
+                                                                        height: 16,
+                                                                        borderRadius: 16,
+                                                                        cursor: 'pointer',
+                                                                        transition: '.5s',
+                                                                        border: parseInt(item?.selecionada) > 0 ? '' : `1px solid ${colorPalette.textColor}`,
+                                                                        '&:hover': {
+                                                                            opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
+                                                                            boxShadow: parseInt(item?.selecionada) > 0 ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                        }
+                                                                    }}
+                                                                        onClick={() => {
+                                                                            if (parseInt(item?.selecionada) > 0) {
+                                                                                handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', parseInt(0))
+                                                                            } else {
+                                                                                handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', 1)
+                                                                            }
+                                                                        }}>
+                                                                        {parseInt(item?.selecionada) > 0 ? (
+                                                                            <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
+                                                                        ) : (
+                                                                            <Box
+                                                                                sx={{
+                                                                                    width: 11,
+                                                                                    height: 11,
+                                                                                    borderRadius: 11,
+                                                                                    cursor: 'pointer',
+                                                                                    '&:hover': {
+                                                                                        opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
+                                                                                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                                    },
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                    </Box>
+                                                                    <Text bold small>{item?.nome_disciplina}</Text>
+                                                                </Box>
+                                                                <Divider distance={0} />
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+                                                </Box>
+                                            )
+                                        })}
+                                    </Box>}
+                            </Box>
+                            <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
+                                <Button text="Adicionar" small onClick={() => handleAddEnrollmentRegister()} style={{ width: 120, height: 30 }} />
+                            </Box>
+                        </>
+
 
                     </ContentContainer >
                 </>
-            } */}
+            }
         </>
     )
 }
