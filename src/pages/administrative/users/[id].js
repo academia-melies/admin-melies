@@ -832,22 +832,27 @@ export default function EditUser() {
         })
     }
 
+    console.log(enrollmentUnlockingData.disciplinesData)
 
     const handleChangeEnrollmentDisciplinesDataDestrancamento = (modulo, disciplineId, field, value) => {
 
         setEnrollmentUnlockingData((prevValues) => {
             const updatedDisciplinesData = prevValues?.disciplinesData?.map((m) => {
                 if (modulo === m.modulo_grade) {
-                    m.disciplinas?.map((item) => {
-                        if (item?.disciplina_id === disciplineId) {
-                            return {
-                                ...item,
-                                [field]: value
+                    return {
+                        ...m,
+                        disciplinas: m.disciplinas.map((item) => {
+                            if (item?.disciplina_id === disciplineId) {
+                                return {
+                                    ...item,
+                                    [field]: value
+                                }
                             }
-                        }
-                        return item
-                    })
+                            return item
+                        })
+                    }
                 }
+                return m
             })
 
             return {
@@ -5110,65 +5115,42 @@ export default function EditUser() {
                         <>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <Divider padding={0} />
-                                <Text bold title>Nova Matrícula/Rematrícula</Text>
+                                <Text bold title>Dados da Matrícula</Text>
                                 <Box sx={styles.inputSection}>
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={enrollmentRegisterData?.turma_id}
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={enrollmentUnlockingData?.turma_id}
                                         onSelect={(value) => handleSelectDisciplinesGrid(value)}
                                         title="Turma " filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeEnrollmentRegister} type="number" value={enrollmentRegisterData?.modulo} label='Módulo/Semestre *' sx={{ flex: 1, }} onBlur={(e) => handleSelectModule(e.target.value)} />
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeUnlockingData} type="number" value={enrollmentUnlockingData?.modulo} label='Módulo/Semestre *' sx={{ flex: 1, }} onBlur={(e) => handleSelectModule(e.target.value)} />
                                 </Box>
                                 <Box sx={styles.inputSection}>
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.rematricula} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, rematricula: value })}
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentUnlockingData?.rematricula} onSelect={(value) => setEnrollmentUnlockingData({ ...enrollmentUnlockingData, rematricula: value })}
                                         title="Cursando Rematrícula? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentRegisterData?.cursando_dp} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, cursando_dp: value })}
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentUnlockingData?.cursando_dp} onSelect={(value) => setEnrollmentUnlockingData({ ...enrollmentUnlockingData, cursando_dp: value })}
                                         title="Cursando alguma DP? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
                                 </Box>
                                 <Box sx={styles.inputSection}>
-                                    <TextInput disabled={!isPermissionEdit && true} name='dt_inicio' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_inicio)?.split('T')[0] || ''} label='Inicio *' sx={{ flex: 1, }} />
-                                    <TextInput disabled={!isPermissionEdit && true} name='dt_final' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_final)?.split('T')[0] || ''} label='Fim *' sx={{ flex: 1, }} />
-                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupSituation} valueSelection={enrollmentRegisterData?.status} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, status: value })}
+                                    <TextInput disabled={!isPermissionEdit && true} name='dt_inicio' onChange={handleChangeUnlockingData} type="date" value={(enrollmentUnlockingData?.dt_inicio)?.split('T')[0] || ''} label='Inicio *' sx={{ flex: 1, }} />
+                                    <TextInput disabled={!isPermissionEdit && true} name='dt_final' onChange={handleChangeUnlockingData} type="date" value={(enrollmentUnlockingData?.dt_final)?.split('T')[0] || ''} label='Fim *' sx={{ flex: 1, }} />
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupSituation} valueSelection={enrollmentUnlockingData?.status} onSelect={(value) => setEnrollmentUnlockingData({ ...enrollmentUnlockingData, status: value })}
                                         title="Status/Situação *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />
                                 </Box>
-                                {
-                                    enrollmentData.status?.includes('Desistente') &&
-                                    <>
 
-                                        <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                            valueChecked={enrollmentRegisterData?.motivo_desistencia || ''}
-                                            boxGroup={groupReasonsDroppingOut}
-                                            title="Motivo da desistência"
-                                            horizontal={mobile ? false : true}
-                                            onSelect={(value) => setEnrollmentRegisterData({
-                                                ...enrollmentRegisterData,
-                                                motivo_desistencia: value
-                                            })}
-                                            sx={{ width: 1 }}
-                                        />
-                                        <TextInput disabled={!isPermissionEdit && true} name='dt_desistencia' onChange={handleChangeEnrollmentRegister} type="date" value={(enrollmentRegisterData?.dt_desistencia)?.split('T')[0] || ''} label='Data da desistência' sx={{ flex: 1, }} />
-                                    </>
-                                }
-                                <RadioItem disabled={!isPermissionEdit && true} valueRadio={enrollmentRegisterData?.certificado_emitido}
-                                    group={groupCertificate}
-                                    title="Certificado emitido: *"
-                                    horizontal={mobile ? false : true}
-                                    onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, certificado_emitido: parseInt(value) })} />
-
-                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={grouPreferPayment} valueSelection={enrollmentRegisterData?.preferencia_pagamento} onSelect={(value) => setEnrollmentRegisterData({ ...enrollmentRegisterData, preferencia_pagamento: value })}
+                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={grouPreferPayment} valueSelection={enrollmentUnlockingData?.preferencia_pagamento} onSelect={(value) => setEnrollmentUnlockingData({ ...enrollmentRegisterData, preferencia_pagamento: value })}
                                     title="Preferência de Pagamento: *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                 />
 
                                 {enrollmentUnlockingData?.disciplinesData?.length > 0 &&
                                     <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
-                                        <Text bold>Disciplinas referente a grade do Curso</Text>
+                                        <Text bold>Disciplinas que o aluno irá cursar</Text>
                                         {enrollmentUnlockingData?.disciplinesData?.map((mod, index) => {
                                             return (
                                                 <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
@@ -5193,13 +5175,11 @@ export default function EditUser() {
                                                                             boxShadow: parseInt(item?.selecionada) > 0 ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                                                                         }
                                                                     }}
-                                                                        onClick={() => {
-                                                                            if (parseInt(item?.selecionada) > 0) {
-                                                                                handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', parseInt(0))
-                                                                            } else {
-                                                                                handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', 1)
-                                                                            }
-                                                                        }}>
+                                                                    onClick={() => {
+                                                                        const newValue = parseInt(item?.selecionada) > 0 ? 0 : 1;
+                                                                        handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', newValue);
+                                                                    }}
+                                                                        >
                                                                         {parseInt(item?.selecionada) > 0 ? (
                                                                             <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
                                                                         ) : (
@@ -5228,9 +5208,9 @@ export default function EditUser() {
                                         })}
                                     </Box>}
                             </Box>
-                            <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
+                            {/* <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
                                 <Button text="Adicionar" small onClick={() => handleAddEnrollmentRegister()} style={{ width: 120, height: 30 }} />
-                            </Box>
+                            </Box> */}
                         </>
 
 
