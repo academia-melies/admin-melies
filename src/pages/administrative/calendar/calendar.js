@@ -204,10 +204,10 @@ export default function CalendarComponent(props) {
                 const eventsMap = data?.map((event) => {
                     const start = new Date(event.inicio);
                     start.setHours(12, 0, 0, 0);
-    
+
                     const end = new Date(event.fim);
                     end.setHours(12, 0, 0, 0);
-    
+
                     return {
                         id_evento_calendario: event.id_evento_calendario,
                         start: start.toISOString(), // Ajuste o formato conforme necessário
@@ -220,9 +220,9 @@ export default function CalendarComponent(props) {
                         allDay: false, // Ajuste isso com base no seu caso de uso
                     };
                 });
-    
 
-            console.log(eventsMap)
+
+                console.log(eventsMap)
 
                 setEvents([...eventsMap, ...Holidays]);
                 return
@@ -447,10 +447,15 @@ export default function CalendarComponent(props) {
                             endAccessor="end" // Use "end" como acessor para o fim do evento
                             selectable
                             onSelectSlot={(slotInfo) => {
+
+                                let findEnd = slotInfo?.slots[slotInfo.slots.length - 1];
+                                findEnd = new Date(findEnd)
+                                findEnd.setHours(12, 0, 0, 0);
+
                                 setEventData({
                                     ...eventData,
                                     start: slotInfo.start,
-                                    end: slotInfo.end,
+                                    end: findEnd,
                                 });
                                 setSelectedEvent(null);
                                 setShowEventForm(true);
