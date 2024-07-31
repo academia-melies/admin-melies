@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../context/AppContext";
 import { Box, Button, ContentContainer, Divider, Text } from "../../atoms";
 import { Colors, icons } from "../layout/Colors";
-import { Avatar, Backdrop, CircularProgress } from "@mui/material";
+import { Avatar, Backdrop, CircularProgress, IconButton } from "@mui/material";
 import { api } from "../../api/api";
 import { formatTimeAgo } from "../../helpers";
 import { DialogNotifications } from "./dialogNotification";
@@ -18,10 +18,103 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         archive: false
     })
     const [showOpitions, setShowOpitions] = useState(false)
-
+    const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
+    const [showPopup, setShowPopup] = useState(false);
+    const [progress, setProgress] = useState(100);
+    const notificationTimeoutRef = useRef(null);
     const [notificationData, setNotificationData] = useState([])
     const [notificationSelect, setNotificationSelect] = useState()
     const [showDialog, setShowDialog] = useState(false)
+
+
+    const fetchNotifications = async () => {
+        try {
+            const response = await api.get(`/notification/${user?.id}`);
+            setNotificationData(response.data);
+            setNotificationUser(response.data);
+            const notifications = response.data.length > 0 ? response.data.filter(item => item.mostrada === 0) : []
+            if (notifications.length > 0) {
+                setShowPopup(true);
+                setCurrentNotificationIndex(0);
+            } else {
+                setShowPopup(false);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar notificações:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (user) {
+            const intervalId = setInterval(() => {
+                fetchNotifications();
+            }, 8000);
+            return () => clearInterval(intervalId);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (notificationData.filter(item => item.ativo === 1 & item.mostrada === 0)?.length > 0) {
+            const intervalId = setInterval(() => {
+                setCurrentNotificationIndex((prevIndex) => (prevIndex + 1) % notificationData.length);
+            }, 3000);
+            return () => clearInterval(intervalId);
+        }
+    }, [notificationData]);
+
+    useEffect(() => {
+        const lenghtNotification = notificationData.filter(item => item.ativo === 1 && item.mostrada === 0)?.length
+        if (lenghtNotification > 0 && showPopup) {
+            // Chama handleShowed quando o popup aparece
+            handleShowed(notificationData[currentNotificationIndex]?.id_notificacao);
+
+            const switchIntervalId = setInterval(() => {
+                setCurrentNotificationIndex((prevIndex) => {
+                    const nextIndex = (prevIndex + 1) % lenghtNotification;
+                    if (nextIndex === 0) {
+                        setShowPopup(false); // Desativa o popup após mostrar a última notificação
+                        clearInterval(switchIntervalId);
+                    }
+                    return nextIndex;
+                });
+            }, 8000);
+
+            return () => clearInterval(switchIntervalId);
+        }
+    }, [notificationData, showPopup, currentNotificationIndex]);
+
+    useEffect(() => {
+        if (showPopup) {
+            const progressInterval = 50; // Intervalo para atualizar a barra de progresso (em ms)
+            let timeLeft = 8000; // Duração de cada notificação (em ms)
+
+            const updateProgress = () => {
+                setProgress((prev) => {
+                    const newProgress = (prev - (100 / (timeLeft / progressInterval)));
+                    if (newProgress <= 0) {
+                        clearInterval(progressIntervalId);
+                        return 0;
+                    }
+                    return newProgress;
+                });
+            };
+
+            const progressIntervalId = setInterval(updateProgress, progressInterval);
+
+            notificationTimeoutRef.current = setTimeout(() => {
+                setShowPopup(false);
+                setProgress(100); // Reset progress for next notification
+            }, timeLeft);
+
+            return () => {
+                clearInterval(progressIntervalId);
+                clearTimeout(notificationTimeoutRef.current);
+            };
+        }
+    }, [showPopup, currentNotificationIndex]);
+
+
+    const currentNotification = notificationData[currentNotificationIndex];
 
     useEffect(() => {
         if (!showNotification) {
@@ -49,6 +142,12 @@ export const Notifications = ({ showNotification = false, setShowNotification })
     }, [showMenu, notificationUser])
 
 
+    const handleClose = () => {
+        setShowPopup(false);
+        setProgress(100); // Reset progress
+        clearTimeout(notificationTimeoutRef.current); // Clear timeout if user closes early
+    };
+
     const handleGroupMouseEnter = (index) => {
         setGroupStates((prevGroupStates) => {
             if (!prevGroupStates[index]) {
@@ -71,6 +170,26 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         });
     };
 
+
+    const handleShowed = async (id) => {
+        let notificationToPatch = notificationUser.find(item => item.id_notificacao === id);
+
+        if (notificationToPatch && notificationToPatch.mostrada === 0) {
+            try {
+                await api.patch(`/notification/update/show-popup/${id}`, { mostrada: 1 });
+                setNotificationUser(prevValue => {
+                    return prevValue.map(item => {
+                        if (item.id_notificacao === id) {
+                            return { ...item, mostrada: 1 };
+                        }
+                        return item;
+                    });
+                });
+            } catch (error) {
+                console.error('Erro ao atualizar notificação:', error);
+            }
+        }
+    };
 
     const handleVizualizeded = async (id) => {
 
@@ -136,6 +255,35 @@ export const Notifications = ({ showNotification = false, setShowNotification })
 
     return (
         <>
+
+            {showPopup && currentNotification && (
+                <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000, padding: '16px', backgroundColor: 'white', boxShadow: 3, borderRadius: '8px', width: 400 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                        <Avatar src={currentNotification?.imagem || currentNotification?.location || ''} sx={{ width: 45, height: 45 }} />
+                        <Box sx={{ marginLeft: 2, flex: 1 }}>
+                            <Text bold>{currentNotification?.titulo}</Text>
+                            <Text small>{currentNotification?.menssagem}</Text>
+                            <Text xsmall>{formatTimeAgo(currentNotification?.dt_criacao, true)}</Text>
+                        </Box>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            position: 'absolute',
+                            top: 8, right: 8, width: 12, height: 12,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => handleClose()} />
+                    </Box>
+                    <Box sx={{ height: 3, width: '100%', backgroundColor: '#ddd', marginTop: 1 }}>
+                        <Box sx={{ height: '100%', width: `${progress}%`, backgroundColor: '#4caf50' }} />
+                    </Box>
+                </Box>
+            )}
+
             <div ref={containerRef}>
                 {showNotification &&
 
