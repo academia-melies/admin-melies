@@ -918,12 +918,14 @@ export default function InterestEnroll() {
                 cartao_credito_id: null,
                 conta: 34,
                 obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
-                status_gateway: 'Pago',
-                status_parcela: 'Pago',
+                status_gateway: paymentsInfoData?.typePaymentEntry !== 'Boleto' ? 'Pago' : 'Pendente',
+                status_parcela: paymentsInfoData?.typePaymentEntry !== 'Boleto' ? 'Pago' : 'Pendente',
                 parc_protestada: 0,
                 usuario_resp: userId
             }
         }
+
+        console.log(paymentEntryData)
 
         setLoadingEnrollment(true);
 
@@ -1074,8 +1076,8 @@ export default function InterestEnroll() {
                 cartao_credito_id: null,
                 conta: 34,
                 obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
-                status_gateway: 'Pago',
-                status_parcela: 'Pago',
+                status_gateway: paymentsInfoData?.typePaymentEntry !== 'Boleto' ? 'Pago' : 'Pendente',
+                status_parcela: paymentsInfoData?.typePaymentEntry !== 'Boleto' ? 'Pago' : 'Pendente',
                 parc_protestada: 0,
                 usuario_resp: userId
             }
@@ -2636,6 +2638,7 @@ export const Payment = (props) => {
     const listPaymentTypeEntry = [
         { label: 'Pix', value: 'Pix' },
         { label: 'Dinheiro', value: 'Dinheiro' },
+        { label: 'Boleto', value: 'Boleto' },
         { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
     ]
 
