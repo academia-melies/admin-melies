@@ -1926,6 +1926,7 @@ export default function EditUser() {
         { label: 'Segunda Graduação', value: 'Segunda Graduação' },
         { label: 'Trânsferência', value: 'Trânsferência' },
         { label: 'Curso de extensão', value: 'Curso de extensão' },
+        { label: 'Destrancamento de matrícula', value: 'Destrancamento de matrícula' },
     ]
 
     const groupPayment = [

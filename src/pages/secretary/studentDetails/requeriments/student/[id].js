@@ -307,19 +307,19 @@ export default function RequerimentEnrollmentStudent(props) {
 
     const documentsStudent = [
         {
-            id: '01', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            id: '01', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
             icon: '/icons/folder_icon.png', key: 'cpf', text: 'CPF', description: '*Não aceitamos CNH Link para acesso do CPF: link da receita - https://l1nk.dev/pSxQH'
         },
         {
-            id: '02', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            id: '02', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
             icon: '/icons/folder_icon.png', key: 'rg', text: 'RG', description: '*Não aceitamos CNH'
         },
         {
-            id: '03', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            id: '03', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
             icon: '/icons/folder_icon.png', key: 'comprovante_residencia', text: 'Comprovante de Residência', description: ''
         },
         {
-            id: '04', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            id: '04', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
             icon: '/icons/folder_icon.png', key: 'nascimento', text: 'Certidão de nascimento', description: ''
         },
         {
@@ -327,11 +327,11 @@ export default function RequerimentEnrollmentStudent(props) {
             icon: '/icons/folder_icon.png', key: 'diploma_historico_graduacao', text: 'Diploma e histórico de graduação', description: ''
         },
         {
-            id: '05', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            id: '05', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
             icon: '/icons/folder_icon.png', key: 'historico_ensino_medio', text: 'Histórico do ensino médio', description: ''
         },
         {
-            id: '05', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            id: '05', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
             icon: '/icons/folder_icon.png', key: 'certificado_ensino_medio', text: 'Certificado do ensino médio', description: ''
         },
         {
@@ -339,7 +339,7 @@ export default function RequerimentEnrollmentStudent(props) {
             icon: '/icons/folder_icon.png', key: 'boletim_enem', text: 'Boletim do ENEM', description: ''
         },
         {
-            id: '08', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            id: '08', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
             icon: '/icons/folder_icon.png', key: 'foto_perfil', text: 'Foto/Selfie (3/4)', description: ''
         },
         {
