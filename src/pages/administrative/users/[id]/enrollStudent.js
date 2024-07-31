@@ -3731,8 +3731,8 @@ export const ContractStudent = (props) => {
                         },
 
                         ...(paymentsInfoData?.valueEntry > 0 ? [{ text: 'Forma de pagamento escolhida:', bold: true, margin: [0, 40, 0, 10], alignment: 'center' }] : []),
-                        // ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20], alignment: 'center' }] : []),
-                        // createPaymentEntryTable(paymentsInfoData),
+                        ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20], alignment: 'center' }] : []),
+                        createPaymentEntryTable(paymentsInfoData),
                         ...(paymentData?.map((payment, index) => {
                             const nonNullPayments = payment?.filter(pay => pay?.valor_parcela);
                             if (nonNullPayments?.length > 0) {

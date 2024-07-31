@@ -84,8 +84,13 @@ export default function ListReceipts(props) {
         const date = new Date(dateString);
         const start = new Date(startDate);
         const end = new Date(endDate);
-
-        return date >= start && date <= end;
+    
+        // Ajustar as datas para o mesmo horário local
+        const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+        const localStart = new Date(start.getTime() + start.getTimezoneOffset() * 60000);
+        const localEnd = new Date(end.getTime() + end.getTimezoneOffset() * 60000);
+    
+        return localDate >= localStart && localDate <= localEnd;
     }
 
     const filter = (item) => {
