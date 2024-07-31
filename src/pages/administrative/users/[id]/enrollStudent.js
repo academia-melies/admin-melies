@@ -991,7 +991,7 @@ export default function InterestEnroll() {
                         pendencia_aluno: classesDisciplinesDpSelected?.length,
                         dt_inicio: isReenrollment ? new Date(startDateEnrollment) : startDate,
                         dt_final: isReenrollment ? new Date(endDateEnrollment) : endDate,
-                        status: 'Pendente de assinatura do contrato',
+                        status: 'Aguardando início',
                         turma_id: classesDisciplinesDpSelected[0]?.turma,
                         motivo_desistencia: null,
                         dt_desistencia: null,
