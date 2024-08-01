@@ -221,9 +221,6 @@ export default function CalendarComponent(props) {
                     };
                 });
 
-
-                console.log(eventsMap)
-
                 setEvents([...eventsMap, ...Holidays]);
                 return
             }

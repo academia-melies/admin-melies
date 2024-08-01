@@ -22,7 +22,7 @@ export default function InterestEnroll() {
     const router = useRouter();
     const { setLoading, user, alert, colorPalette } = useAppContext()
     const userId = user?.id;
-    const { id, interest, reenrollment, classId, courseId } = router.query;
+    const { id, interest, reenrollment, classId, courseId, unlocked } = router.query;
     let isReenrollment = reenrollment ? true : false
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
@@ -336,6 +336,7 @@ export default function InterestEnroll() {
                     modulo: disciplines?.modulo
                 }));
 
+
                 const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
                 const flattenedDisciplinesSelected = disciplinesSelect.join(', ');
                 setQuantityDisciplinesDp(groupDisciplines?.length)
@@ -482,8 +483,12 @@ export default function InterestEnroll() {
             const interests = await handleInterest()
             let classIdEnrollment = classIdSelected ? classIdSelected : interests?.turma_id
             let courseIdEnrollment = interests?.curso_id
-            if (isReenrollment) {
+            if (isReenrollment || unlocked) {
                 moduleCurrent = await handleEnrollments()
+                if (unlocked) {
+                    moduleCurrent = interests?.modulo_curso
+                    setCurrentModule(moduleCurrent)
+                }
                 await handleDisciplinesDP(moduleCurrent)
                 if (enrollmentDataSelected?.turma_id) {
                     classIdEnrollment = enrollmentDataSelected?.turma_id
@@ -925,8 +930,6 @@ export default function InterestEnroll() {
             }
         }
 
-        console.log(paymentEntryData)
-
         setLoadingEnrollment(true);
 
         try {
@@ -937,7 +940,7 @@ export default function InterestEnroll() {
                 const createInstallments = await handleCreateInstallments({ enrollmentId: data, paymentInstallmentsEnrollment, creditCard: paymentsProfile })
                 if (createInstallments) {
 
-                    if (isReenrollment) {
+                    if (isReenrollment && !unlocked) {
                         alert.success('Matrícula efetivada com sucesso!')
                     } else {
                         const fileId = await handleUploadContract(pdfBlob, contractData, data)
@@ -1094,7 +1097,7 @@ export default function InterestEnroll() {
                 const createInstallments = await handleCreateInstallments({ enrollmentId: data, paymentInstallmentsEnrollment, creditCard: paymentsProfile })
                 if (createInstallments) {
 
-                    if (isReenrollment) {
+                    if (isReenrollment && !unlocked) {
                         alert.success('Matrícula efetivada com sucesso!')
                         window.location.reload();
                     } else {
@@ -1192,6 +1195,7 @@ export default function InterestEnroll() {
                     setFormData={setFormData}
                     reenrollmentDp={reenrollmentDp}
                     forma_pagamento={subscriptionData?.forma_pagamento}
+                    unlocked={unlocked}
                 />
             </>
         ),
@@ -1434,7 +1438,8 @@ export const EnrollStudentDetails = (props) => {
         isReprovved,
         subscriptionData,
         numParc,
-        handleCreateResponsible
+        handleCreateResponsible,
+        unlocked
     } = props
 
     const { colorPalette, theme, alert } = useAppContext()
@@ -1634,7 +1639,9 @@ export const EnrollStudentDetails = (props) => {
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', flexDirection: 'column', gap: 0.5 }}>
                                 <Text bold>Observação: </Text>
-                                <Text>Rematricula - {currentModule}º Semestre/Módulo</Text>
+                                {unlocked ?
+                                    <Text>{interestData?.observacao_int || `Destrancamento de matrícula - ${currentModule}º Semestre/Módulo`}</Text>
+                                    : <Text>Rematricula - {currentModule}º Semestre/Módulo</Text>}
                             </Box>
                         </Box>
                     }
@@ -3612,8 +3619,6 @@ export const ContractStudent = (props) => {
     }
 
     const handleGeneratePdf = async () => {
-
-        console.log(paymentsInfoData?.valueEntry)
         try {
             return new Promise(async (resolve, reject) => {
 

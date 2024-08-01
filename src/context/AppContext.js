@@ -114,7 +114,6 @@ export const AppProvider = ({ children }) => {
             if (userData.token) {
                 const { data } = response;
                 const { userData, getPhoto, notificationsData } = data;
-                console.log(notificationsData)
                 localStorage.setItem('token', userData?.token);
                 api.defaults.headers.Authorization = `Bearer ${userData?.token}`
                 setUser({ ...userData, getPhoto });

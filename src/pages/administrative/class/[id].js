@@ -211,7 +211,6 @@ export default function EditClass(props) {
             const { data } = response
 
             const sortedStudents = data?.sort((a, b) => b.nome.localeCompare(a.nome))
-            console.log(sortedStudents)
             setEnrolledStudents(sortedStudents)
         } catch (error) {
             console.log(error)

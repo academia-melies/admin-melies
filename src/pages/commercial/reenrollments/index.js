@@ -101,7 +101,6 @@ export default function ReenrollmentsStudent(props) {
         try {
             const response = await api.get('/enrollment/list/students/reenrollment')
             const { data } = response;
-            console.log(data)
             setStudents(data)
         } catch (error) {
             console.log(error)

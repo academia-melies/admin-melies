@@ -596,8 +596,6 @@ export default function EditUser() {
                 modules: handleModules(turma?.duracao)
             }));
 
-            console.log(groupClass)
-
             const groupPeriod = data.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma?.periodo,
                 value: turma?.periodo
@@ -832,8 +830,6 @@ export default function EditUser() {
         })
     }
 
-    console.log(enrollmentUnlockingData.disciplinesData)
-
     const handleChangeEnrollmentDisciplinesDataDestrancamento = (modulo, disciplineId, field, value) => {
 
         setEnrollmentUnlockingData((prevValues) => {
@@ -902,7 +898,6 @@ export default function EditUser() {
             })
 
             const duration = classesInterest?.filter(item => item.value === value)?.map(item => item.modules)
-            console.log(duration)
             return
         }
 
@@ -1615,7 +1610,10 @@ export default function EditUser() {
                 try {
                     const result = await handleValidateGetway()
                     if (result?.status === 201 || result?.status === 200) {
-                        if (subscription?.forma_ingresso !== 'Trânsferência') {
+                        if (subscription?.forma_ingresso === 'Destrancamento de matrícula') {
+                            router.push(`/administrative/users/${id}/enrollStudent?classId=${interest?.turma_id}&courseId=${interest?.curso_id}&reenrollment=true&unlocked=true&interest=${interest?.id_interesse}`)
+                        }
+                        else if ((subscription?.forma_ingresso !== 'Trânsferência')) {
                             router.push(`/administrative/users/${id}/enrollStudent?interest=${interest?.id_interesse}`)
                         } else {
                             router.push(`/administrative/users/${id}/enrollStudent?classId=${interest?.turma_id}&courseId=${interest?.curso_id}&reenrollment=true`)
@@ -3681,7 +3679,6 @@ export default function EditUser() {
                                             const className = item?.nome_turma;
                                             const courseName = item?.nome_curso;
                                             const period = item?.periodo;
-                                            console.log(enrollmentData)
                                             let datePeriod = new Date(item?.dt_inicio)
                                             // let datePeriod = new Date(item?.dt_inicio_cronograma || item?.dt_inicio)
                                             let year = datePeriod.getFullYear()
@@ -4073,7 +4070,7 @@ export default function EditUser() {
                                             const [isRequerimentoReproved] = interest?.requeriments && interest?.requeriments?.map(item => parseInt(item?.aprovado) === 0) || [];
                                             const approvedRequeriment = requeriments ? true : false;
                                             const subscription = interest?.inscricao;
-                                            const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit && subscription?.forma_ingresso !== 'Trânsferência') ? false : true;
+                                            const disable = (interest?.turma_id && approvedRequeriment && isPermissionEdit && (subscription?.forma_ingresso !== 'Trânsferência' && subscription?.forma_ingresso !== 'Destrancamento de matrícula')) ? false : true;
                                             const interestTitle = `${interest?.nome_curso}_${interest?.nome_turma}_${interest?.periodo_interesse}_${interest?.modulo_curso}º módulo`;
                                             const [respAnalisar] = interest?.requeriments?.map(req => req.analisado_por) || [];
                                             let linkRequeriment;
@@ -4275,10 +4272,10 @@ export default function EditUser() {
 
                                                             <Divider padding={0} />
                                                             {(!newUser) && <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, alignItems: 'start', flex: 1, padding: '0px 0px 0px 5px', flexDirection: 'column' }}>
-                                                                <Text bold>{subscription?.forma_ingresso !== 'Trânsferência' ?
+                                                                <Text bold>{(subscription?.forma_ingresso !== 'Trânsferência' && subscription?.forma_ingresso !== 'Destrancamento de matrícula') ?
                                                                     'Requerimento de Matrícula/Cadastro:' : 'Matrícula:'}</Text>
                                                                 <Box sx={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
-                                                                    {subscription?.forma_ingresso !== 'Trânsferência' && <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isRequerimentoReproved ? 'Requerimento reprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
+                                                                    {(subscription?.forma_ingresso !== 'Trânsferência' && subscription?.forma_ingresso !== 'Destrancamento de matrícula') && <Tooltip title={isRequerimentoAproved ? 'Requerimento aprovado' : isRequerimentoReproved ? 'Requerimento reprovado' : isHaveRequeriment ? 'Já existe um requerimento em andamento' : ''}>
                                                                         <div>
                                                                             {isRequerimentoAproved ?
                                                                                 <Box sx={{
@@ -4342,9 +4339,9 @@ export default function EditUser() {
                                                                             }
                                                                         </div>
                                                                     </Tooltip>}
-                                                                    <Tooltip title={subscription?.forma_ingresso === 'Trânsferência' ? false : disable ? 'Necessário primeiro requerimento' : ''}>
+                                                                    <Tooltip title={(subscription?.forma_ingresso === 'Trânsferência' || subscription?.forma_ingresso === 'Destrancamento de matrícula') ? false : disable ? 'Necessário primeiro requerimento' : ''}>
                                                                         <div>
-                                                                            <Button disabled={subscription?.forma_ingresso === 'Trânsferência' ? false : disable} small text="Matricular" sx={{
+                                                                            <Button disabled={(subscription?.forma_ingresso === 'Trânsferência' || subscription?.forma_ingresso === 'Destrancamento de matrícula') ? false : disable} small text="Matricular" sx={{
                                                                                 // width: 25,
                                                                                 transition: '.3s',
                                                                                 zIndex: 999999999,
@@ -5176,11 +5173,11 @@ export default function EditUser() {
                                                                             boxShadow: parseInt(item?.selecionada) > 0 ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
                                                                         }
                                                                     }}
-                                                                    onClick={() => {
-                                                                        const newValue = parseInt(item?.selecionada) > 0 ? 0 : 1;
-                                                                        handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', newValue);
-                                                                    }}
-                                                                        >
+                                                                        onClick={() => {
+                                                                            const newValue = parseInt(item?.selecionada) > 0 ? 0 : 1;
+                                                                            handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', newValue);
+                                                                        }}
+                                                                    >
                                                                         {parseInt(item?.selecionada) > 0 ? (
                                                                             <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
                                                                         ) : (
