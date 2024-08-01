@@ -30,9 +30,9 @@ export const Notifications = ({ showNotification = false, setShowNotification })
     const fetchNotifications = async () => {
         try {
             const response = await api.get(`/notification/${user?.id}`);
-            setNotificationData(response.data);
             setNotificationUser(response.data);
-            const notifications = response.data.length > 0 ? response.data.filter(item => item.mostrada === 0) : []
+            const notifications = response.data.length > 0 ? response.data.filter(item => item.mostrada === 0 && item?.vizualizado !== 1) : []
+            setNotificationData(notifications);
             if (notifications.length > 0) {
                 setShowPopup(true);
                 setCurrentNotificationIndex(0);
@@ -54,7 +54,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
     }, [user]);
 
     useEffect(() => {
-        if (notificationData.filter(item => item.ativo === 1 & item.mostrada === 0)?.length > 0) {
+        if (notificationData.filter(item => item?.vizualizado !== 1 & item.mostrada === 0)?.length > 0) {
             const intervalId = setInterval(() => {
                 setCurrentNotificationIndex((prevIndex) => (prevIndex + 1) % notificationData.length);
             }, 3000);
@@ -63,7 +63,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
     }, [notificationData]);
 
     useEffect(() => {
-        const lenghtNotification = notificationData.filter(item => item.ativo === 1 && item.mostrada === 0)?.length
+        const lenghtNotification = notificationData.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.length
         if (lenghtNotification > 0 && showPopup) {
             // Chama handleShowed quando o popup aparece
             handleShowed(notificationData[currentNotificationIndex]?.id_notificacao);
@@ -178,6 +178,14 @@ export const Notifications = ({ showNotification = false, setShowNotification })
             try {
                 await api.patch(`/notification/update/show-popup/${id}`, { mostrada: 1 });
                 setNotificationUser(prevValue => {
+                    return prevValue.map(item => {
+                        if (item.id_notificacao === id) {
+                            return { ...item, mostrada: 1 };
+                        }
+                        return item;
+                    });
+                });
+                setNotificationData(prevValue => {
                     return prevValue.map(item => {
                         if (item.id_notificacao === id) {
                             return { ...item, mostrada: 1 };
