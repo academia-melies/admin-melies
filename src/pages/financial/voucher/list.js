@@ -64,7 +64,6 @@ export default function ListCupom(props) {
         try {
             const response = await api.get('/cupom')
             const { data = [] } = response;
-            console.log('aqui', data)
             if (data?.length > 0) {
                 setCupomList(data)
             }

@@ -36,8 +36,12 @@ export const Notifications = ({ showNotification = false, setShowNotification })
             if (notifications.length > 0) {
                 setShowPopup(true);
                 setCurrentNotificationIndex(0);
+                handlePermissionSound();
+                updateNotificationPopup();
+
             } else {
                 setShowPopup(false);
+                updateNotificationPopup();
             }
         } catch (error) {
             console.error('Erro ao buscar notificações:', error);
@@ -51,6 +55,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
             }, 8000);
             return () => clearInterval(intervalId);
         }
+
     }, [user]);
 
     useEffect(() => {
@@ -141,6 +146,30 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         }
     }, [showMenu, notificationUser])
 
+
+    const updateNotificationPopup = () => {
+        const newMessagesCount = notificationUser?.filter(item => item.vizualizado === 0)?.length || 0;
+        // Testa a atualização do título com um valor fixo
+        document.title = newMessagesCount > 0 ? `(${newMessagesCount}) - Administrativo Méliès` : 'Administrativo Méliès';
+    };
+
+    const audioRef = useRef(null);
+    const handlePermissionSound = async () => {
+        try {
+            if (Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    audioRef.current.muted = false;
+                    await audioRef.current.play();
+                }
+            } else if (Notification.permission === 'granted') {
+                audioRef.current.muted = false;
+                await audioRef.current.play();
+            }
+        } catch (error) {
+            console.error('Erro ao reproduzir áudio:', error);
+        }
+    };
 
     const handleClose = () => {
         setShowPopup(false);
@@ -263,6 +292,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
 
     return (
         <>
+            <audio ref={audioRef} src="/sons/notification_sound.mp3" style={{ display: 'none' }} muted></audio>
 
             {showPopup && currentNotification && (
                 <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000, padding: '16px', backgroundColor: 'white', boxShadow: 3, borderRadius: '8px', width: 400 }}>

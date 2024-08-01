@@ -215,24 +215,7 @@ export const AppProvider = ({ children }) => {
         handleMenuItems()
     }, [])
 
-    useEffect(() => {
-        const fetchNotifications = async () => {
-            try {
-                const response = await api.get(`/notification/${user?.id}`);
-                setNotificationUser(response.data);
-            } catch (error) {
-                console.error('Erro ao buscar notificações:', error);
-                return error;
-            }
-        };
 
-        if (user) {
-            const intervalId = setInterval(() => {
-                fetchNotifications();
-            }, 8000);
-            return () => clearInterval(intervalId);
-        }
-    }, [user]);
 
     return (
         <AppContext.Provider
