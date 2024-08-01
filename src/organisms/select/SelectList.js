@@ -1,5 +1,5 @@
 import { FormControl, InputLabel, Select, MenuItem, InputAdornment, Autocomplete, TextField } from "@mui/material";
-import { Box, Text, TextInput } from "../../atoms";
+import { Box } from "../../atoms";
 import { useAppContext } from "../../context/AppContext";
 import { useState } from "react";
 
@@ -7,7 +7,7 @@ export const SelectList = (props) => {
     const {
         title = '',
         style = {},
-        onSelect = (value) => { },
+        onSelect = (value, label) => { },
         sx = {},
         data = [],
         valueSelection = '',
@@ -21,25 +21,40 @@ export const SelectList = (props) => {
         filterValue = null
     } = props;
 
-    const { colorPalette } = useAppContext()
+    const { colorPalette } = useAppContext();
     const [showClearButton, setShowClearButton] = useState(false);
-    const [filterData, setFilterData] = useState('')
+    const [filterData, setFilterData] = useState('');
 
     const filteredData = data.filter(item => {
         return filterData.trim() === '' || item[filterOpition].toLowerCase().includes(filterData.toLowerCase());
     });
 
+    const handleSelectChange = (event) => {
+        const value = event.target.value;
+        let label = ""
+        if(title == "Turma/Modulo"){
+            let nome_turma = data.filter((item) => item.value == value)      
+            label = nome_turma[0].label;
+        }
+      
+        onSelect(value, label);
+    };
+
     return (
         <>
-            {onFilter ?
+            {onFilter ? (
                 <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px" }}>
                     <Autocomplete
                         options={filteredData}
                         getOptionLabel={(option) => option[filterValue]}
                         value={data.find(item => item[filterOpition] === valueSelection) || null}
-                        onChange={(event, newValue) => onSelect(newValue ? newValue[filterOpition] : "")}
+                        onChange={(event, newValue) => {
+                            const value = newValue ? newValue[filterOpition] : "";
+                            const label = newValue ? newValue[filterValue] : "";
+                            onSelect(value, label);
+                        }}
                         disableClearable
-                        sx={{ height: '45px' }} 
+                        sx={{ height: '45px' }}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -84,22 +99,31 @@ export const SelectList = (props) => {
                         )}
                     />
                 </Box>
-                :
+            ) : (
                 <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px" }}>
                     <FormControl fullWidth>
                         <InputLabel
                             InputLabelProps={{ sx: { fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } } }}
-                            sx={{ ...inputStyle, fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } }}>{title}</InputLabel>
+                            sx={{ ...inputStyle, fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } }}
+                        >
+                            {title}
+                        </InputLabel>
                         <Select
-                            disabled={false}
+                            disabled={disabled}
                             sx={{
-                                borderRadius: "8px", backgroundColor: colorPalette.inputColor, height: 45, color: colorPalette.textColor, ...sx, maxHeight: 45, transition: 'background-color 1s',
+                                borderRadius: "8px",
+                                backgroundColor: colorPalette.inputColor,
+                                height: 45,
+                                color: colorPalette.textColor,
+                                ...sx,
+                                maxHeight: 45,
+                                transition: 'background-color 1s',
                                 fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' }
                             }}
                             value={valueSelection}
                             label={title}
-                            onChange={disabled ? () => { } : (event) => onSelect(event.target.value)}
-                            endAdornment={clean ?
+                            onChange={disabled ? () => { } : handleSelectChange}
+                            endAdornment={clean ? (
                                 <InputAdornment position="end">
                                     {(valueSelection && !disabled) && (
                                         <Box
@@ -117,12 +141,11 @@ export const SelectList = (props) => {
                                                     cursor: "pointer",
                                                 },
                                             }}
-                                            onClick={() => onSelect("")}
+                                            onClick={() => onSelect("", "")}
                                         />
                                     )}
                                 </InputAdornment>
-                                : false
-                            }
+                            ) : false}
                         >
                             {data.map((item, index) => (
                                 <MenuItem key={index} value={item[filterOpition]} sx={{ fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } }}>
@@ -132,10 +155,7 @@ export const SelectList = (props) => {
                         </Select>
                     </FormControl>
                 </Box>
-            }
+            )}
         </>
-    )
-}
-
-const styles = {
-}
+    );
+};
