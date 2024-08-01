@@ -54,7 +54,7 @@ export default function ClassSheduleList(props) {
             const response = await api.get(`/classSchedules`)
             const { data } = response
             let classScheduleData = data;
-            if(data?.length > 0){
+            if (data?.length > 0) {
                 classScheduleData = classScheduleData?.sort((a, b) => a.nome_cronograma.localeCompare(b.nome_cronograma))
             }
             setDateClass(classScheduleData)
@@ -238,6 +238,16 @@ export default function ClassSheduleList(props) {
                                 <Box sx={{ ...styles.tableContainer, display: 'flex', maxHeight: '500px', overflow: 'auto', borderRadius: '12px' }}>
 
                                     {Object.entries(aulasPorDiaSemana).map(([diaSemana, aulas]) => {
+                                        // Agrupamento por data dentro do dia da semana
+                                        const aulasPorDataNoDia = {};
+                                        aulas.forEach((classData) => {
+                                            const data = formatDate(classData.dt_aula);
+                                            if (!aulasPorDataNoDia[data]) {
+                                                aulasPorDataNoDia[data] = [];
+                                            }
+                                            aulasPorDataNoDia[data].push(classData);
+                                        });
+
                                         return (
                                             <Box key={diaSemana} sx={{ padding: '0px 8px 0px 0px', flex: diaSemana.length > 3 && 1, }}>
                                                 <Text bold
@@ -250,53 +260,70 @@ export default function ClassSheduleList(props) {
                                                     {diaSemana}
                                                 </Text>
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: diaSemana.length > 2 && 1 }}>
-                                                    {aulas.map((classData, index) => {
-                                                        const obsClassDay = classData.observacao_dia
-                                                        const isNotClassDay = (obsClassDay === 'Feriado' || obsClassDay === 'Não existe aula agendada para esse dia.') ? true : false
-                                                        const optative = parseInt(classData?.optativa) > 0;
-                                                        return (
-                                                            <ContentContainer key={`${index}-${classData}`} sx={{
-                                                                height: '300px',
-                                                                transition: '0.3s',
-                                                                overflow: 'auto',
-                                                                minWidth: '180px',
-                                                                backgroundColor: optative ? (colorPalette?.buttonColor + '88') : colorPalette?.secondary,
-                                                                opacity: isNotClassDay ? 0.3 : 1,
-                                                                boxShadow: isNotClassDay ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                                "&:hover": {
-                                                                    boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                                                                    cursor: 'pointer',
-                                                                    transform: 'scale(0.9)',
-                                                                }
-                                                            }}
-                                                                onClick={() => {
-                                                                    setClassScheduleId(classData.id_aula)
-                                                                    if (classData.id_aula) { setShowClassDay(true) }
-                                                                }}
-                                                            >
-                                                                <Box sx={styles.containerClass}>
-                                                                    <Text bold small style={{ color: colorPalette.buttonColor }}>Data: </Text>
-                                                                    <Text bold small>{formatDate(classData?.dt_aula)}</Text>
-                                                                </Box>
-                                                                {classData?.professor1 && <Box sx={styles.containerClass}>
-                                                                    <Text bold small style={{ color: colorPalette.buttonColor }}>Professor 1: </Text>
-                                                                    <Text bold small>{classData?.professor1}</Text>
-                                                                </Box>}
-                                                                {classData?.professor2 && <Box sx={styles.containerClass}>
-                                                                    <Text bold small style={{ color: colorPalette.buttonColor }}>Professor 2: </Text>
-                                                                    <Text bold small>{classData?.professor2}</Text>
-                                                                </Box>}
-                                                                {classData?.disciplina && <Box sx={styles.containerClass}>
-                                                                    <Text bold small style={{ color: colorPalette.buttonColor }}>Disciplina: </Text>
-                                                                    <Text bold small>{classData?.disciplina}</Text>
-                                                                </Box>}
-                                                                <Box sx={styles.containerClass}>
-                                                                    <Text bold small style={{ color: colorPalette.buttonColor }}>Observação: </Text>
-                                                                    <Text bold small>{classData?.observacao_dia}</Text>
-                                                                </Box>
-                                                            </ContentContainer>
-                                                        )
-                                                    })}
+                                                    {Object.entries(aulasPorDataNoDia).map(([data, aulasNoDia]) => (
+                                                        <ContentContainer key={data} sx={{
+                                                            height: '300px',
+                                                            gap: .5,
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            padding: '15px',
+                                                            transition: '0.3s',
+                                                            overflow: 'auto',
+                                                            minWidth: '180px',
+                                                            backgroundColor: colorPalette?.secondary,
+                                                            boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                        }}
+                                                        >
+                                                            {aulasNoDia.map((classData, index) => {
+                                                                const obsClassDay = classData.observacao_dia;
+                                                                const isNotClassDay = (obsClassDay === 'Feriado' || obsClassDay === 'Não existe aula agendada para esse dia.') ? true : false;
+                                                                const optative = parseInt(classData?.optativa) > 0;
+                                                                return (
+                                                                    <Box key={`${index}-${classData}`} sx={{
+                                                                        height: '300px',
+                                                                        borderRadius: 2,
+                                                                        transition: '0.3s',
+                                                                        padding: '15px',
+                                                                        overflow: 'auto',
+                                                                        minWidth: '180px',
+                                                                        backgroundColor: optative ? (colorPalette?.buttonColor + '88') : colorPalette?.secondary,
+                                                                        opacity: isNotClassDay ? 0.3 : 1,
+                                                                        "&:hover": {
+                                                                            boxShadow: isNotClassDay ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                            cursor: 'pointer',
+                                                                            transform: 'scale(0.9)',
+                                                                        }
+                                                                    }}
+                                                                        onClick={() => {
+                                                                            setClassScheduleId(classData.id_aula);
+                                                                            if (classData.id_aula) { setShowClassDay(true); }
+                                                                        }}
+                                                                    >
+                                                                        <Box sx={styles.containerClass}>
+                                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Data: </Text>
+                                                                            <Text bold small>{formatDate(classData?.dt_aula)}</Text>
+                                                                        </Box>
+                                                                        {classData?.professor1 && <Box sx={styles.containerClass}>
+                                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Professor 1: </Text>
+                                                                            <Text bold small>{classData?.professor1}</Text>
+                                                                        </Box>}
+                                                                        {classData?.professor2 && <Box sx={styles.containerClass}>
+                                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Professor 2: </Text>
+                                                                            <Text bold small>{classData?.professor2}</Text>
+                                                                        </Box>}
+                                                                        {classData?.disciplina && <Box sx={styles.containerClass}>
+                                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Disciplina: </Text>
+                                                                            <Text bold small>{classData?.disciplina}</Text>
+                                                                        </Box>}
+                                                                        <Box sx={styles.containerClass}>
+                                                                            <Text bold small style={{ color: colorPalette.buttonColor }}>Observação: </Text>
+                                                                            <Text bold small>{classData?.observacao_dia}</Text>
+                                                                        </Box>
+                                                                    </Box>
+                                                                );
+                                                            })}
+                                                        </ContentContainer>
+                                                    ))}
                                                 </Box>
                                             </Box>
                                         )
