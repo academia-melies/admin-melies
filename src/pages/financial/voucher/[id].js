@@ -681,14 +681,12 @@ const TableCupom = ({ data = [], filters = [], onPress = () => { },handleItems }
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-
-console.log('aqui',data)
-
     const columns = [
         { key: 'id', label: 'ID' },
         { key: 'nome', avatar: true, label: 'Nome', avatarUrl: 'location', matricula: true },
         { key: 'nome_social', label: 'Nome Social' },
-        { key: 'email', label: 'E-mail' },
+        { key: 'id_turma', label: 'Turma' },
+        { key: 'modulo', label: 'Módulo' },
         { key: 'dt_aplicacao', label: 'Aplicado em' },
         { key: 'dt_ultilizacao', label: 'Utilizado em' },
         { key: 'remover cupom', label: 'Remover cupom' },
@@ -730,23 +728,6 @@ console.log('aqui',data)
                                 <TableCell key={index} sx={{ padding: '16px', }}>
                                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
                                         <Text bold style={{ textAlign: 'center' }}>{column.label}</Text>
-                                        {/* <Box sx={{
-                                            ...styles.menuIcon,
-                                            backgroundImage: `url(${icons.gray_arrow_down})`,
-                                            transform: filters?.filterName === column.key ? filters?.filterOrder === 'asc' ? 'rotate(-0deg)' : 'rotate(-180deg)' : 'rotate(-0deg)',
-                                            transition: '.3s',
-                                            width: 17,
-                                            height: 17,
-
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: 'pointer'
-                                            },
-                                        }}
-                                            onClick={() => onPress({
-                                                filterName: column.key,
-                                                filterOrder: filters?.filterOrder === 'asc' ? 'desc' : 'asc'
-                                            })} /> */}
                                     </Box>
                                 </TableCell>
                             ))}
@@ -776,21 +757,18 @@ console.log('aqui',data)
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                                <Box sx={{
-                                                    ...styles.menuIcon,
-                                                    width: 14,
-                                                    height: 14,
-                                                    aspectRatio: '1/1',
-                                                    backgroundImage: `url('/icons/arrow_up_green_icon.png')`,
-                                                    transition: '.3s',
-                                                }} />
                                                 <Text>{item?.nome_social || '-'}</Text>
                                             </Box>
                                         </TableCell>
 
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                                                <Text>{item?.email || '-'}</Text>
+                                                <Text>{item?.nome_turma || '-'}</Text>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                                                <Text>{item?.modulo || '-'}</Text>
                                             </Box>
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>

@@ -132,7 +132,7 @@ export default function ListCupom(props) {
             </ContentContainer>
 
             <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>
-                <TextInput placeholder="Buscar por conta" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+                <TextInput placeholder="Buscar por cupom" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
 
                 <Button secondary style={{ height: 35, borderRadius: 2 }} text="Editar Filtros" onClick={() => setShowFilterMobile(true)} />
                 <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
@@ -199,12 +199,11 @@ export default function ListCupom(props) {
             {cupomList?.length > 0 ?
            
                 <div >
-                    {/* <Table_V1 data={cupomList?.filter(filter).slice(startIndex, endIndex)} columns={column} columnId={'id_conta'} columnActive={true} /> */}
                     <TableCupom data={cupomList?.filter(filter)} />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>
-                    <Text bold>Não conseguimos encontrar Contas cadastradas</Text>
+                    <Text bold>Não conseguimos encontrar Cupons cadastradas</Text>
                 </Box>
             }
         </>
