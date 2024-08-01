@@ -33,7 +33,6 @@ export const formatTimeStamp = (timestamp, time) => {
                minute: '2-digit',
                second: '2-digit'
             };
-            console.log('aqui',date.toLocaleString('pt-BR', options))
             return date.toLocaleString('pt-BR', options);
          } else {
             const day = String(date.getDate()).padStart(2, '0');
@@ -64,7 +63,6 @@ export const formatTimeStampTimezone = (timestamp, time) => {
                minute: '2-digit',
                second: '2-digit'
             };
-            console.log('aqui',date.toLocaleString('pt-BR', options))
             return date.toLocaleString('pt-BR', options);
          } else {
             const day = String(date.getDate()).padStart(2, '0');
