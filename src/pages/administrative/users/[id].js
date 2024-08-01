@@ -52,6 +52,18 @@ export default function EditUser() {
         preferencia_pagamento: null,
         disciplinesData: [],
     })
+    const [enrollmentUnlockingData, setEnrollmentUnlockingData] = useState({
+        turma_id: null,
+        modulo: null,
+        qnt_disci_dp: 0,
+        qnt_disci_disp: 0,
+        dt_inicio: null,
+        dt_final: null,
+        status: null,
+        adimplente: 0,
+        preferencia_pagamento: null,
+        disciplinesData: [],
+    })
     const [arrayEnrollmentRegisterData, setArrayEnrollmentRegisterData] = useState([])
     const [userData, setUserData] = useState({
         cd_cliente: null,
@@ -790,6 +802,17 @@ export default function EditUser() {
     }
 
 
+    const handleChangeUnlockingData = (value) => {
+
+        setEnrollmentUnlockingData((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
+
+
+
+
     const handleChangeEnrollmentDisciplinesDataRegister = (disciplineId, field, value) => {
 
         setEnrollmentRegisterData((prevValues) => {
@@ -802,6 +825,36 @@ export default function EditUser() {
                 }
                 return item
             })
+            return {
+                ...prevValues,
+                disciplinesData: updatedDisciplinesData
+            }
+        })
+    }
+
+    console.log(enrollmentUnlockingData.disciplinesData)
+
+    const handleChangeEnrollmentDisciplinesDataDestrancamento = (modulo, disciplineId, field, value) => {
+
+        setEnrollmentUnlockingData((prevValues) => {
+            const updatedDisciplinesData = prevValues?.disciplinesData?.map((m) => {
+                if (modulo === m.modulo_grade) {
+                    return {
+                        ...m,
+                        disciplinas: m.disciplinas.map((item) => {
+                            if (item?.disciplina_id === disciplineId) {
+                                return {
+                                    ...item,
+                                    [field]: value
+                                }
+                            }
+                            return item
+                        })
+                    }
+                }
+                return m
+            })
+
             return {
                 ...prevValues,
                 disciplinesData: updatedDisciplinesData
@@ -1562,9 +1615,9 @@ export default function EditUser() {
                 try {
                     const result = await handleValidateGetway()
                     if (result?.status === 201 || result?.status === 200) {
-                        if(subscription?.forma_ingresso !== 'Trânsferência'){
+                        if (subscription?.forma_ingresso !== 'Trânsferência') {
                             router.push(`/administrative/users/${id}/enrollStudent?interest=${interest?.id_interesse}`)
-                        }else{
+                        } else {
                             router.push(`/administrative/users/${id}/enrollStudent?classId=${interest?.turma_id}&courseId=${interest?.curso_id}&reenrollment=true`)
                         }
                         return
@@ -1709,6 +1762,53 @@ export default function EditUser() {
     }
 
 
+    async function handleSelectDisciplinesGrid(value) {
+
+        try {
+            const response = await api.get(`/grid/disciplines/classId/${value}`)
+            const { data } = response
+            const groupDisciplines = []
+
+            data.forEach((objeto) => {
+                const currentModule = objeto?.modulo_grade;
+                const grupo = groupDisciplines.find((grupo) => grupo.modulo_grade === currentModule);
+
+                if (grupo) {
+                    grupo.disciplinas.push({
+                        nome_disciplina: objeto?.nome_disciplina,
+                        disciplina_id: objeto?.id_disciplina,
+                        modulo_curso: objeto?.id_disciplina,
+                        selecionada: objeto?.modulo_grade
+                    });
+
+                } else {
+                    const newGrupo = {
+                        modulo_grade: objeto?.modulo_grade,
+                        disciplinas: [
+                            {
+                                nome_disciplina: objeto?.nome_disciplina,
+                                disciplina_id: objeto?.id_disciplina,
+                                modulo_curso: objeto?.id_disciplina,
+                                selecionada: objeto?.modulo_grade
+                            }
+                        ]
+                    };
+                    groupDisciplines.push(newGrupo);
+                }
+            });
+
+            setDisciplinesEnrollmentRegister(groupDisciplines);
+            setEnrollmentUnlockingData({
+                ...enrollmentRegisterData,
+                disciplinesData: groupDisciplines,
+                turma_id: value
+            })
+        } catch (error) {
+            return error
+        }
+    }
+
+
 
 
     const handleChangeSubscriptionData = ({ interestId, field, value }) => {
@@ -1826,6 +1926,7 @@ export default function EditUser() {
         { label: 'Segunda Graduação', value: 'Segunda Graduação' },
         { label: 'Trânsferência', value: 'Trânsferência' },
         { label: 'Curso de extensão', value: 'Curso de extensão' },
+        { label: 'Destrancamento de matrícula', value: 'Destrancamento de matrícula' },
     ]
 
     const groupPayment = [
@@ -2058,6 +2159,7 @@ export default function EditUser() {
         { id: '04', icon: '/icons/cursos_icon_home.png', text: 'Inscrições e Interesses', queryId: true, screen: 'interests', perfil: ['aluno', 'interessado'] },
         { id: '05', icon: '/icons/contract_icon.png', text: 'Contrato do Funcionário', queryId: true, screen: 'contractEmployee', perfil: ['funcionario'] },
         { id: '06', icon: '/icons/holerite.png', text: 'Preferência de Pagamento', queryId: true, screen: 'paymentPerfil', perfil: ['aluno'] },
+        { id: '06', icon: '/icons/grade_icon.png', text: 'Destrancamento de Matrícula', queryId: true, screen: 'openEnrollment', perfil: ['aluno'] },
     ]
 
 
@@ -4982,6 +5084,138 @@ export default function EditUser() {
                                 ))}
                             </Box>
                         </ContentContainer>}
+                </>
+            }
+
+
+
+
+            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'openEnrollment') &&
+                <>
+                    <ContentContainer style={{ ...styles.containerContract, padding: '40px', }}>
+                        <Box sx={{
+                            display: 'flex', alignItems: 'center', padding: '0px 0px 20px 0px', gap: 1, "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            },
+                            justifyContent: 'space-between'
+                        }} onClick={() => setShowEnrollmentAdd(!showEnrollmentAdd)}>
+                            <Text title bold >Destrancamento de Matrícula</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                transform: 'rotate(0deg)',
+                                transition: '.3s',
+                                "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer'
+                                }
+                            }} />
+                        </Box>
+
+                        <>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Divider padding={0} />
+                                <Text bold title>Dados da Matrícula</Text>
+                                <Box sx={styles.inputSection}>
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={classes} valueSelection={enrollmentUnlockingData?.turma_id}
+                                        onSelect={(value) => handleSelectDisciplinesGrid(value)}
+                                        title="Turma " filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Módulo/Semestre' name='modulo' onChange={handleChangeUnlockingData} type="number" value={enrollmentUnlockingData?.modulo} label='Módulo/Semestre *' sx={{ flex: 1, }} onBlur={(e) => handleSelectModule(e.target.value)} />
+                                </Box>
+                                <Box sx={styles.inputSection}>
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentUnlockingData?.rematricula} onSelect={(value) => setEnrollmentUnlockingData({ ...enrollmentUnlockingData, rematricula: value })}
+                                        title="Cursando Rematrícula? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupEnrollment} valueSelection={enrollmentUnlockingData?.cursando_dp} onSelect={(value) => setEnrollmentUnlockingData({ ...enrollmentUnlockingData, cursando_dp: value })}
+                                        title="Cursando alguma DP? *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                </Box>
+                                <Box sx={styles.inputSection}>
+                                    <TextInput disabled={!isPermissionEdit && true} name='dt_inicio' onChange={handleChangeUnlockingData} type="date" value={(enrollmentUnlockingData?.dt_inicio)?.split('T')[0] || ''} label='Inicio *' sx={{ flex: 1, }} />
+                                    <TextInput disabled={!isPermissionEdit && true} name='dt_final' onChange={handleChangeUnlockingData} type="date" value={(enrollmentUnlockingData?.dt_final)?.split('T')[0] || ''} label='Fim *' sx={{ flex: 1, }} />
+                                    <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupSituation} valueSelection={enrollmentUnlockingData?.status} onSelect={(value) => setEnrollmentUnlockingData({ ...enrollmentUnlockingData, status: value })}
+                                        title="Status/Situação *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                    />
+                                </Box>
+
+                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={grouPreferPayment} valueSelection={enrollmentUnlockingData?.preferencia_pagamento} onSelect={(value) => setEnrollmentUnlockingData({ ...enrollmentRegisterData, preferencia_pagamento: value })}
+                                    title="Preferência de Pagamento: *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+
+                                {enrollmentUnlockingData?.disciplinesData?.length > 0 &&
+                                    <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1.8, marginTop: 2 }}>
+                                        <Text bold>Disciplinas que o aluno irá cursar</Text>
+                                        {enrollmentUnlockingData?.disciplinesData?.map((mod, index) => {
+                                            return (
+                                                <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                                    <Text bold large>{mod?.modulo_grade}º Módulo</Text>
+
+                                                    <Box key={index} sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
+                                                        {mod?.disciplinas?.map((item, index) => (
+                                                            <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minWidth: 350 }}>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        width: 16,
+                                                                        height: 16,
+                                                                        borderRadius: 16,
+                                                                        cursor: 'pointer',
+                                                                        transition: '.5s',
+                                                                        border: parseInt(item?.selecionada) > 0 ? '' : `1px solid ${colorPalette.textColor}`,
+                                                                        '&:hover': {
+                                                                            opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
+                                                                            boxShadow: parseInt(item?.selecionada) > 0 ? 'none' : `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                        }
+                                                                    }}
+                                                                    onClick={() => {
+                                                                        const newValue = parseInt(item?.selecionada) > 0 ? 0 : 1;
+                                                                        handleChangeEnrollmentDisciplinesDataDestrancamento(mod?.modulo_grade, item?.disciplina_id, 'selecionada', newValue);
+                                                                    }}
+                                                                        >
+                                                                        {parseInt(item?.selecionada) > 0 ? (
+                                                                            <CheckCircleIcon style={{ color: 'green', fontSize: 20 }} />
+                                                                        ) : (
+                                                                            <Box
+                                                                                sx={{
+                                                                                    width: 11,
+                                                                                    height: 11,
+                                                                                    borderRadius: 11,
+                                                                                    cursor: 'pointer',
+                                                                                    '&:hover': {
+                                                                                        opacity: parseInt(item?.selecionada) > 0 ? 0.8 : 0.6,
+                                                                                        boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
+                                                                                    },
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                    </Box>
+                                                                    <Text bold small>{item?.nome_disciplina}</Text>
+                                                                </Box>
+                                                                <Divider distance={0} />
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+                                                </Box>
+                                            )
+                                        })}
+                                    </Box>}
+                            </Box>
+                            {/* <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
+                                <Button text="Adicionar" small onClick={() => handleAddEnrollmentRegister()} style={{ width: 120, height: 30 }} />
+                            </Box> */}
+                        </>
+
+
+                    </ContentContainer >
                 </>
             }
         </>

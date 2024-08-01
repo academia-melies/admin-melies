@@ -66,8 +66,11 @@ export default function ListReceipts(props) {
             if (typeof searchTerm === 'string' && searchTerm.trim() !== '') {
                 const normalizedSearchTerm = removeAccents(searchTerm.toLowerCase());
                 const normalizedItemName = item?.aluno ? removeAccents(item.aluno.toLowerCase()) : '';
+                const normalizedItemResponsible = item?.responsavel_pagante ? removeAccents(item.responsavel_pagante.toLowerCase()) : '';
                 const normalizedOrderReference = item?.referenceId ? removeAccents(item?.referenceId.toLowerCase()) : '';
-                return normalizedItemName.includes(normalizedSearchTerm) || normalizedOrderReference.includes(normalizedSearchTerm);
+                return (normalizedItemName.includes(normalizedSearchTerm) ||
+                 normalizedOrderReference.includes(normalizedSearchTerm) ||
+                 normalizedItemResponsible.includes(normalizedSearchTerm));
             }
             return true;
         },
@@ -81,8 +84,13 @@ export default function ListReceipts(props) {
         const date = new Date(dateString);
         const start = new Date(startDate);
         const end = new Date(endDate);
-
-        return date >= start && date <= end;
+    
+        // Ajustar as datas para o mesmo horário local
+        const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+        const localStart = new Date(start.getTime() + start.getTimezoneOffset() * 60000);
+        const localEnd = new Date(end.getTime() + end.getTimezoneOffset() * 60000);
+    
+        return localDate >= localStart && localDate <= localEnd;
     }
 
     const filter = (item) => {
@@ -399,13 +407,13 @@ export default function ListReceipts(props) {
 
     const listPayment = [
         { label: 'Todos', value: 'todos' },
-        { label: 'Cartão de crédito', value: 'Cartão' },
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
         { label: 'Cartão', value: 'Cartão' },
         { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
-
-
+        { label: 'Pix', value: 'Pix' },
+        { label: 'Transferência bancária', value: 'Transferência bancária' },
+        { label: 'Dinheiro', value: 'Dinheiro' }
     ]
 
     const groupSelect = (id) => [

@@ -45,12 +45,14 @@ export default function ListInvoices(props) {
 
     const filterFunctions = {
         parcel: (item) => filters.parcel === 'todos' || item?.status_parcela === filters.parcel,
-        nfse: (item) => filters.nfse === 'todos' || item?.status_nfse === filters.nfse,
+        nfse: (item) => filters.nfse === 'todos' || filters.nfse === 'nao_emitida' ? !item?.status_nfse : item?.status_nfse === filters.nfse,
         date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
         search: (item) => {
             const normalizedSearchTerm = removeAccents(filters?.search.toLowerCase());
-            const normalizedItemName = item?.pagante ? removeAccents(item?.pagante?.toLowerCase()) : removeAccents(item?.aluno?.toLowerCase());
-            return normalizedItemName && normalizedItemName?.includes(normalizedSearchTerm)
+            const normalizedItemName = item?.aluno ? removeAccents(item.aluno.toLowerCase()) : '';
+            const normalizedItemResponsible = item?.pagante ? removeAccents(item.pagante.toLowerCase()) : '';
+            return (normalizedItemName.includes(normalizedSearchTerm) ||
+                normalizedItemResponsible.includes(normalizedSearchTerm));
         },
     };
 
@@ -181,7 +183,7 @@ export default function ListInvoices(props) {
     const listStatusNF = [
         { label: 'Todos', value: 'todos' },
         { label: 'Em processamento', value: 'Em processamento' },
-        { label: 'Não emitida', value: 'Não emitida' },
+        { label: 'Não emitida', value: 'nao_emitida' },
         { label: 'Emitida/Autorizada', value: 'Emitida/Autorizada' },
         { label: 'Cancelada', value: 'Cancelada' },
         { label: 'Erro na autorização', value: 'Erro na autorização' },
@@ -390,7 +392,8 @@ export default function ListInvoices(props) {
                                         sx={{ display: 'flex', maxWidth: 25 }}
                                     />
                                 </th>
-                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Pagante</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Resp. Pagante</Text></th>
+                                <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Aluno</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>CPF</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
@@ -400,7 +403,7 @@ export default function ListInvoices(props) {
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Parcela Paga</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Emissão NFSe</Text></th>
                                 <th style={{ padding: '4px 0px', minWidth: '80px' }}><Text bold>NFSe PDF</Text></th>
-                                <th style={{ padding: '4px 0px', minWidth: '80px' }}><Text bold>NFSe XML</Text></th>
+                                {/* <th style={{ padding: '4px 0px', minWidth: '80px' }}><Text bold>NFSe XML</Text></th> */}
                             </tr>
                         </thead>
                         <tbody style={{ flex: 1, }}>
@@ -427,7 +430,10 @@ export default function ListInvoices(props) {
                                             />
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
-                                            {item?.pagante == null ? item?.aluno : item?.pagante || '-'}
+                                            {item?.pagante || '-'}
+                                        </td>
+                                        <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                            {item?.aluno || '-'}
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             {item?.cpf}
@@ -488,13 +494,13 @@ export default function ListInvoices(props) {
                                                 </Link> : '-'
                                             }
                                         </td>
-                                        <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
+                                        {/* <td style={{ fontSize: '13px', padding: '0px 5px', flex: 1, fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                             {item?.url_nfse_xml ? <Link href={item?.url_nfse_xml || ''} target="_blank" underline="hover" color="primary">
                                                 <Button bold small style={{ height: 25, borderRadius: 2 }} text="Abrir XML" />
                                             </Link>
                                                 : '-'
                                             }
-                                        </td>
+                                        </td> */}
                                     </tr>
                                 );
                             })}

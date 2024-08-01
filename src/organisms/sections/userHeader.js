@@ -153,7 +153,7 @@ export const UserHeader = (props) => {
                                 transition: 'background-color 1s',
                             }} />
                         </Box>
-                        {notificationUser?.filter(item => item.vizualizado === 0)?.length > 0 &&
+                        {notificationUser?.length > 0 && notificationUser?.filter(item => item.vizualizado === 0)?.length > 0 &&
                             <Box sx={{
                                 position: 'absolute',
                                 width: 11,

@@ -4,9 +4,9 @@ import { SectionHeader, SelectList } from "../../../organisms";
 import { api } from "../../../api/api";
 import { useAppContext } from "../../../context/AppContext";
 import dynamic from "next/dynamic";
-import { Backdrop } from "@mui/material";
+import { Backdrop, Tooltip } from "@mui/material";
 import { icons } from "../../../organisms/layout/Colors";
-import { formatTimeStamp } from "../../../helpers";
+import { formatTimeStamp, formatTimeStampTimezone } from "../../../helpers";
 const GraphChart = dynamic(() => import('../../../organisms/graph/graph'), { ssr: false });
 
 
@@ -68,13 +68,17 @@ export default function ListBillsToPay(props) {
     const filter = (item) => {
         return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
     };
-
     const rangeDate = (dateString, startDate, endDate) => {
         const date = new Date(dateString);
         const start = new Date(startDate);
         const end = new Date(endDate);
 
-        return date >= start && date <= end;
+        // Ajustar as datas para o mesmo horário local
+        const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+        const localStart = new Date(start.getTime() + start.getTimezoneOffset() * 60000);
+        const localEnd = new Date(end.getTime() + end.getTimezoneOffset() * 60000);
+
+        return localDate >= localStart && localDate <= localEnd;
     }
 
     const getBillsReceive = async () => {
@@ -135,16 +139,15 @@ export default function ListBillsToPay(props) {
         const currentDate = new Date()
         const currentMonth = currentDate.getMonth() + 1;
         const currentYear = currentDate.getFullYear();
-        setFilters({
-            ...filters,
-            startDate: `${currentYear}-${currentMonth}-01`,
-            endDate: `${currentYear}-${currentMonth}-30`
-        })
     }, []);
 
 
     const handleCalculationGraph = async (billstReceive, billstPay) => {
         const currentDate = new Date()
+        const start = new Date(filters?.startDate);
+        const end = new Date(filters?.endDate);
+        const localStart = new Date(start.getTime() + start.getTimezoneOffset() * 60000);
+        const localEnd = new Date(end.getTime() + end.getTimezoneOffset() * 60000);
 
         let billsExpenses = billstPay?.expenses?.filter(filter);
         let billsPersonal = billstPay?.personal?.filter(filter);
@@ -162,13 +165,16 @@ export default function ListBillsToPay(props) {
         setTotalPays(filteredFixed + filteredPersonal)
         setTotalFuturePays(filteredFixedFuture + filteredPersonalFuture)
 
-        
+
         let data = billstReceive?.filter(filter);
+        let dataGraphReceivedAndFuture = data?.filter(item => (item?.status_parcela === 'Pago' || item?.status_parcela === 'Aprovado' ||
+            item?.status_parcela === 'Pendente'))
+
         let qntSalesValue = data?.length;
-        let totalSalesValue = data?.filter(item => item?.dt_pagamento !== null &&
-            item?.dt_pagamento !== ''
-            && new Date(item?.dt_pagamento) <= currentDate)?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
-        let totalSalesFutureValue = data?.filter(item => new Date(item?.vencimento) > currentDate)?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
+        let totalSalesValue = data?.filter(item => (item?.status_parcela === 'Pago' || item?.status_parcela === 'Aprovado'))?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
+
+        let totalSalesFutureValue = data?.filter(item => new Date(item?.vencimento) >= (filters?.startDate !== '' ?
+            localStart : currentDate) && item?.status_parcela === 'Pendente')?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) || 0;
         let averageTicketValue = (totalSalesValue && totalSalesFutureValue) ? ((totalSalesValue + totalSalesFutureValue) / qntSalesValue).toFixed(2) :
             totalSalesValue ? (totalSalesValue / qntSalesValue).toFixed(2) : 0
 
@@ -179,7 +185,7 @@ export default function ListBillsToPay(props) {
         setTotalFutureSales(totalSalesFutureValue)
         setTotalFuturePays
 
-        const { series, labels } = processChartData(data);
+        const { series, labels } = processChartData(dataGraphReceivedAndFuture);
         setFormPaymentGraph({ series, labels });
 
         let expenseData = [];
@@ -203,7 +209,7 @@ export default function ListBillsToPay(props) {
         });
 
 
-        const monthlyData = processMonthlyData(data);
+        const monthlyData = processMonthlyData(dataGraphReceivedAndFuture);
         const formattedSeries = monthlyData?.series?.map(valor => (valor).toFixed(2));
         setBillstToReceiveGraph(formattedSeries);
         setBarChartLabels(monthlyData.labels);
@@ -378,9 +384,9 @@ export default function ListBillsToPay(props) {
                             {(filters?.endDate && filters?.startDate) && <Box sx={{
                                 display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1
                             }}>
-                                <Text small>{formatTimeStamp(filters?.startDate)}</Text>
+                                <Text small>{formatTimeStampTimezone(filters?.startDate)}</Text>
                                 <Text small bold>até:</Text>
-                                <Text small>{formatTimeStamp(filters?.endDate)}</Text>
+                                <Text small>{formatTimeStampTimezone(filters?.endDate)}</Text>
                             </Box>}
 
 
@@ -403,16 +409,13 @@ export default function ListBillsToPay(props) {
 
                     <Box sx={{ display: 'flex' }}>
                         <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
-                            const currentDate = new Date()
-                            const currentMonth = currentDate.getMonth() + 1;
-                            const currentYear = currentDate.getFullYear();
 
                             setFilters({
                                 payment: 'Todos',
                                 month: 'Todos',
                                 // year: 'Todos',
-                                startDate: `${currentYear}-${currentMonth}-01`,
-                                endDate: `${currentYear}-${currentMonth}-30`
+                                startDate: ``,
+                                endDate: ``
                             })
                         }} />
                     </Box>
@@ -527,7 +530,25 @@ export default function ListBillsToPay(props) {
                             <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                                 <Text title bold style={{ color: 'green' }}>{formatter.format(totalSales)}</Text>
                             </Box>
-                            <Text large light>Total Recebido</Text>
+                            <Box sx={{ display: 'flex', gap: .5 }}>
+                                <Text large light>Total Recebido</Text>
+                                <Tooltip title={"Valores Recebidos e em processamento"}>
+                                    <div>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 12,
+                                            height: 12,
+                                            aspectRatio: '1/1',
+                                            backgroundColor: '#fff',
+                                            backgroundImage: `url('/icons/about.png')`,
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                opacity: 0.8
+                                            }
+                                        }} />
+                                    </div>
+                                </Tooltip>
+                            </Box>
                         </Box>
                     </ContentContainer>
 
@@ -538,7 +559,26 @@ export default function ListBillsToPay(props) {
                             <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                                 <Text title bold style={{ color: 'green' }}>{formatter.format(totalFutureSales)}</Text>
                             </Box>
-                            <Text large light>Total á Receber</Text>
+
+                            <Box sx={{ display: 'flex', gap: .5 }}>
+                                <Text large light>Total á Receber</Text>
+                                <Tooltip title={`Valores com status "Pendente"`}>
+                                    <div>
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 12,
+                                            height: 12,
+                                            aspectRatio: '1/1',
+                                            backgroundColor: '#fff',
+                                            backgroundImage: `url('/icons/about.png')`,
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                opacity: 0.8
+                                            }
+                                        }} />
+                                    </div>
+                                </Tooltip>
+                            </Box>
                         </Box>
                     </ContentContainer>
 
@@ -618,7 +658,7 @@ export default function ListBillsToPay(props) {
                                 }
                             }}
 
-                            type="line"
+                            type="bar"
                             series={[{
                                 data: billstToReceiveGraph,
                             }]}

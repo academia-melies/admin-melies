@@ -918,12 +918,14 @@ export default function InterestEnroll() {
                 cartao_credito_id: null,
                 conta: 34,
                 obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
-                status_gateway: 'Pago',
-                status_parcela: 'Pago',
+                status_gateway: paymentsInfoData?.typePaymentEntry !== 'Boleto' ? 'Pago' : 'Pendente',
+                status_parcela: paymentsInfoData?.typePaymentEntry !== 'Boleto' ? 'Pago' : 'Pendente',
                 parc_protestada: 0,
                 usuario_resp: userId
             }
         }
+
+        console.log(paymentEntryData)
 
         setLoadingEnrollment(true);
 
@@ -991,7 +993,7 @@ export default function InterestEnroll() {
                         pendencia_aluno: classesDisciplinesDpSelected?.length,
                         dt_inicio: isReenrollment ? new Date(startDateEnrollment) : startDate,
                         dt_final: isReenrollment ? new Date(endDateEnrollment) : endDate,
-                        status: 'Pendente de assinatura do contrato',
+                        status: 'Aguardando início',
                         turma_id: classesDisciplinesDpSelected[0]?.turma,
                         motivo_desistencia: null,
                         dt_desistencia: null,
@@ -1074,8 +1076,8 @@ export default function InterestEnroll() {
                 cartao_credito_id: null,
                 conta: 34,
                 obs_pagamento: 'Pagamento de entrada do curso realizado presencialmente',
-                status_gateway: 'Pago',
-                status_parcela: 'Pago',
+                status_gateway: paymentsInfoData?.typePaymentEntry !== 'Boleto' ? 'Pago' : 'Pendente',
+                status_parcela: paymentsInfoData?.typePaymentEntry !== 'Boleto' ? 'Pago' : 'Pendente',
                 parc_protestada: 0,
                 usuario_resp: userId
             }
@@ -1931,6 +1933,9 @@ export const Payment = (props) => {
 
             let valueModuleCourse = (valuesCourse?.valor_total_curso).toFixed(2);
             let costDiscipline = (valueModuleCourse / calculationDisciplinesModule).toFixed(2);
+            if (isDp) {
+                costDiscipline = (valueModuleCourse / 5).toFixed(2);
+            }
             let calculationDiscount = (costDiscipline * disciplinesDispensed).toFixed(2)
             let valueFinally = (valueModuleCourse - calculationDiscount).toFixed(2)
             let valuesDisciplineDpTotal = (costDiscipline * (calculationDisciplinesDpSelected?.length)).toFixed(2)
@@ -2633,6 +2638,7 @@ export const Payment = (props) => {
     const listPaymentTypeEntry = [
         { label: 'Pix', value: 'Pix' },
         { label: 'Dinheiro', value: 'Dinheiro' },
+        { label: 'Boleto', value: 'Boleto' },
         { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
     ]
 
@@ -3606,167 +3612,174 @@ export const ContractStudent = (props) => {
     }
 
     const handleGeneratePdf = async () => {
-        return new Promise(async (resolve, reject) => {
 
-            const currentDate = new Date();
-            const options = {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-            };
-            const formattedDate = new Intl.DateTimeFormat("pt-BR", options).format(currentDate);
-            const imageUrl = '/background/doc_melies_contrato_compacto.jpeg';
-            const imageDataURL = await loadImageAsDataURL(imageUrl);
+        console.log(paymentsInfoData?.valueEntry)
+        try {
+            return new Promise(async (resolve, reject) => {
 
-            try {
-                const documentDefinition = {
-                    background: function (currentPage, pageSize) {
-                        return {
-                            image: imageDataURL,
-                            width: pageSize.width,
-                            height: pageSize.height,
-                            absolutePosition: { x: 0, y: 0 },
-                            opacity: 0.5, // Opacidade da marca d'água (opcional)
-                        };
-
-                    },
-                    content: [
-                        { text: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS', fontSize: 16, alignment: 'center', fontFamily: 'MetropolisBold', bold: true },
-
-                        { text: '', margin: [0, 20, 0, 20], },
-                        {
-                            table: {
-                                widths: ['30%', '70%'],
-                                body: userDataTable(userData).map(row => [
-                                    { text: row?.title, bold: true, fontFamily: 'Metropolis Regular' },
-                                    { text: row?.value || '', fontFamily: 'MetropolisBold' },
-                                ]),
-                                layout: {
-                                    hLineWidth: function (i, node) {
-                                        return i === 0 ? 0 : 1;
-                                    },
-                                    vLineWidth: function (i, node) {
-                                        return 0;
-                                    },
-                                },
-                            },
-                        },
-
-                        {
-                            text: 'Dados do(a) Responsável / Empresa / Pagante',
-                            fontFamily: 'MetropolisBold',
-                            background: '#F49519',
-                            bold: true,
-                            alignment: 'center',
-                            width: '100%',
-                            margin: [0, 20, 0, 20],
-                        },
-
-                        {
-                            table: {
-                                widths: ['30%', '70%'],
-                                body: responsiblePayerDataTable(responsiblePayerData, userData).map(row => [
-                                    { text: row.title, bold: true },
-                                    { text: row.value || '' },
-                                ]),
-                                layout: {
-                                    hLineWidth: function (i, node) {
-                                        return i === 0 ? 0 : 1;
-                                    },
-                                    vLineWidth: function (i, node) {
-                                        return 0;
-                                    },
-                                },
-                            },
-                        },
-
-
-
-                        { text: query || 'Dados de pagamento', bold: true, margin: [0, 40, 0, 20], alignment: 'center', fontFamily: 'MetropolisBold' },
-
-                        {
-                            margin: [80, 0],
-
-                            table: {
-                                widths: ['45%', '50%'],
-                                body: [
-                                    userData?.nome ? ['Aluno:', userData?.nome] : [],
-                                    ['Resp. pagante:', responsiblePayerData?.nome_resp || userData?.nome],
-                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['Valor total do semestre:', formatter.format(formatter.format(valueContractPravaler))] : isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
-
-
-                                    ['Disciplinas dispensadas:', valuesContract?.qntDispensadas],
-                                    classesDisciplinesDpSelected?.length > 0 && ['Disciplinas DP:', classesDisciplinesDpSelected?.length],
-                                    valuesContract?.descontoDispensadas > 0 && ['Disciplinas dispensadas - Desconto (R$):', formatter.format(valuesContract.descontoDispensadas)],
-                                    valuesContract?.descontoPorcentagemDisp != '0.00%' && ['Disciplinas dispensadas - Desconto (%):', valuesContract?.descontoPorcentagemDisp],
-                                    valuesContract?.descontoAdicional && ['DESCONTO (adicional):', (typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
-                                        || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
-                                        || '0'],
-
-                                    (forma_pagamento == 'Ex Aluno' && valuesContract?.desconto_ex_aluno > 0) && ['DESCONTO Ex aluno (5%):', formatter.format(parseFloat(valuesContract?.desconto_ex_aluno))],
-                                    (valuesContract?.desconto_avista > 0) && ['DESCONTO á vista (5%):', formatter.format(parseFloat(valuesContract?.desconto_avista))],
-                                    (valuesContract?.jurosPagamentoEstendido > 0) && ['Juros Pagamento Estendido (10%):', formatter.format(parseFloat(valuesContract?.jurosPagamentoEstendido))],
-
-
-                                    (valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0) && ['DESCONTO TOTAL:', formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))],
-
-
-                                    paymentsInfoData?.valueEntry > 0 && ['VALOR DE ENTRADA:', formatter.format(paymentsInfoData?.valueEntry)],
-
-                                    paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['VALOR A PAGAR:', formatter.format(valueContractPravaler)] : ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],
-
-                                ].filter(row => row.length > 0),
-                                layout: {
-                                    hLineWidth: function (i, node) {
-                                        return i === 0 ? 0 : 1;
-                                    },
-                                    vLineWidth: function (i, node) {
-                                        return 0;
-                                    },
-                                },
-                            },
-                        },
-
-                        ...(paymentsInfoData?.valueEntry > 0 ? [{ text: 'Forma de pagamento escolhida:', bold: true, margin: [0, 40, 0, 10], alignment: 'center' }] : []),
-                        // ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20], alignment: 'center' }] : []),
-                        // createPaymentEntryTable(paymentsInfoData),
-                        ...(paymentData?.map((payment, index) => {
-                            const nonNullPayments = payment?.filter(pay => pay?.valor_parcela);
-                            if (nonNullPayments?.length > 0) {
-                                return [
-                                    { text: `${index + 1}º Pagante/Pagamento:`, bold: true, margin: [10, 20, 10, 20], alignment: 'center', },
-                                    createPaymentTable(payment),
-                                ];
-                            }
-                            return null;
-                        }).filter(Boolean)),
-                        { text: ``, margin: [10, 30, 10, 30] },
-                        ...(bodyContractEnrollment?.map((body, index) => {
-                            const title = body?.title ? true : false;
-                            return [
-                                { text: `${body?.text}`, fontFamily: title ? 'MetropolisBold' : 'Metropolis Regular', margin: title ? [10, 30, 10, 10] : [10, 10], bold: title ? true : false, fontSize: title ? 12 : 10 },
-                            ];
-                        })),
-                        { text: `São Paulo, ${formattedDate}`, margin: [80, 30, 10, 10], fontFamily: 'MetropolisBold', }
-                    ],
-                    styles: {
-                        header: { fontSize: 18, bold: true },
-                    },
-                    pageMargins: [40, 80, 30, 80],
-
+                const currentDate = new Date();
+                const options = {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
                 };
+                const formattedDate = new Intl.DateTimeFormat("pt-BR", options).format(currentDate);
+                const imageUrl = '/background/doc_melies_contrato_compacto.jpeg';
+                const imageDataURL = await loadImageAsDataURL(imageUrl);
 
-                const pdfDocGenerator = pdfMake.createPdf(documentDefinition);
-                const pdfBlob = await new Promise((pdfResolve) => {
-                    pdfDocGenerator.getBlob(pdfResolve);
-                });
+                try {
+                    const documentDefinition = {
+                        background: function (currentPage, pageSize) {
+                            return {
+                                image: imageDataURL,
+                                width: pageSize.width,
+                                height: pageSize.height,
+                                absolutePosition: { x: 0, y: 0 },
+                                opacity: 0.5, // Opacidade da marca d'água (opcional)
+                            };
 
-                resolve(pdfBlob);
-            } catch (error) {
-                console.log(error)
-                reject(error);
-            }
-        });
+                        },
+                        content: [
+                            { text: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS', fontSize: 16, alignment: 'center', fontFamily: 'MetropolisBold', bold: true },
+
+                            { text: '', margin: [0, 20, 0, 20], },
+                            {
+                                table: {
+                                    widths: ['30%', '70%'],
+                                    body: userDataTable(userData).map(row => [
+                                        { text: row?.title, bold: true, fontFamily: 'Metropolis Regular' },
+                                        { text: row?.value || '', fontFamily: 'MetropolisBold' },
+                                    ]),
+                                    layout: {
+                                        hLineWidth: function (i, node) {
+                                            return i === 0 ? 0 : 1;
+                                        },
+                                        vLineWidth: function (i, node) {
+                                            return 0;
+                                        },
+                                    },
+                                },
+                            },
+
+                            {
+                                text: 'Dados do(a) Responsável / Empresa / Pagante',
+                                fontFamily: 'MetropolisBold',
+                                background: '#F49519',
+                                bold: true,
+                                alignment: 'center',
+                                width: '100%',
+                                margin: [0, 20, 0, 20],
+                            },
+
+                            {
+                                table: {
+                                    widths: ['30%', '70%'],
+                                    body: responsiblePayerDataTable(responsiblePayerData, userData).map(row => [
+                                        { text: row.title, bold: true },
+                                        { text: row.value || '' },
+                                    ]),
+                                    layout: {
+                                        hLineWidth: function (i, node) {
+                                            return i === 0 ? 0 : 1;
+                                        },
+                                        vLineWidth: function (i, node) {
+                                            return 0;
+                                        },
+                                    },
+                                },
+                            },
+
+
+
+                            { text: query || 'Dados de pagamento', bold: true, margin: [0, 40, 0, 20], alignment: 'center', fontFamily: 'MetropolisBold' },
+
+                            {
+                                margin: [80, 0],
+
+                                table: {
+                                    widths: ['45%', '50%'],
+                                    body: [
+                                        userData?.nome ? ['Aluno:', userData?.nome] : [],
+                                        ['Resp. pagante:', responsiblePayerData?.nome_resp || userData?.nome],
+                                        paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['Valor total do semestre:', formatter.format(valueContractPravaler)] : isDp ? ['Valor total do semestre:', formatter.format(valuesContract?.valorFinal)] : ['Valor total do semestre:', formatter.format(valuesContract?.valorSemestre)],
+
+
+                                        ['Disciplinas dispensadas:', valuesContract?.qntDispensadas],
+                                        classesDisciplinesDpSelected?.length > 0 && ['Disciplinas DP:', classesDisciplinesDpSelected?.length],
+                                        valuesContract?.descontoDispensadas > 0 && ['Disciplinas dispensadas - Desconto (R$):', formatter.format(valuesContract.descontoDispensadas)],
+                                        valuesContract?.descontoPorcentagemDisp != '0.00%' && ['Disciplinas dispensadas - Desconto (%):', valuesContract?.descontoPorcentagemDisp],
+                                        valuesContract?.descontoAdicional && ['DESCONTO (adicional):', (typeDiscountAdditional?.real && formatter.format(valuesContract?.descontoAdicional || 0))
+                                            || (typeDiscountAdditional?.porcent && parseFloat(valuesContract?.descontoAdicional || 0).toFixed(2) + '%')
+                                            || '0'],
+
+                                        (forma_pagamento == 'Ex Aluno' && valuesContract?.desconto_ex_aluno > 0) && ['DESCONTO Ex aluno (5%):', formatter.format(parseFloat(valuesContract?.desconto_ex_aluno))],
+                                        (valuesContract?.desconto_avista > 0) && ['DESCONTO á vista (5%):', formatter.format(parseFloat(valuesContract?.desconto_avista))],
+                                        (valuesContract?.jurosPagamentoEstendido > 0) && ['Juros Pagamento Estendido (10%):', formatter.format(parseFloat(valuesContract?.jurosPagamentoEstendido))],
+
+
+                                        (valuesContract?.descontoAdicional && valuesContract?.descontoDispensadas > 0) && ['DESCONTO TOTAL:', formatter.format(parseFloat(valuesContract?.valorDescontoAdicional) + parseFloat(valuesContract?.descontoDispensadas))],
+
+
+                                        paymentsInfoData?.valueEntry > 0 && ['VALOR DE ENTRADA:', formatter.format(paymentsInfoData?.valueEntry)],
+
+                                        paymentForm[0][0].tipo == 'Boleto(PRAVALER)' ? ['VALOR A PAGAR:', formatter.format(valueContractPravaler)] : ['VALOR A PAGAR:', formatter.format(valuesContract?.valorFinal)],
+
+                                    ].filter(row => row.length > 0),
+                                    layout: {
+                                        hLineWidth: function (i, node) {
+                                            return i === 0 ? 0 : 1;
+                                        },
+                                        vLineWidth: function (i, node) {
+                                            return 0;
+                                        },
+                                    },
+                                },
+                            },
+
+                            ...(paymentsInfoData?.valueEntry > 0 ? [{ text: 'Forma de pagamento escolhida:', bold: true, margin: [0, 40, 0, 10], alignment: 'center' }] : []),
+                            ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20], alignment: 'center' }] : []),
+                            ...(paymentsInfoData?.valueEntry > 0 ? createPaymentEntryTable(paymentsInfoData) : []),
+                            ...(paymentData?.map((payment, index) => {
+                                const nonNullPayments = payment?.filter(pay => pay?.valor_parcela);
+                                if (nonNullPayments?.length > 0) {
+                                    return [
+                                        { text: `${index + 1}º Pagante/Pagamento:`, bold: true, margin: [10, 20, 10, 20], alignment: 'center', },
+                                        createPaymentTable(payment),
+                                    ];
+                                }
+                                return null;
+                            }).filter(Boolean)),
+                            { text: ``, margin: [10, 30, 10, 30] },
+                            ...(bodyContractEnrollment?.map((body, index) => {
+                                const title = body?.title ? true : false;
+                                return [
+                                    { text: `${body?.text}`, fontFamily: title ? 'MetropolisBold' : 'Metropolis Regular', margin: title ? [10, 30, 10, 10] : [10, 10], bold: title ? true : false, fontSize: title ? 12 : 10 },
+                                ];
+                            })),
+                            { text: `São Paulo, ${formattedDate}`, margin: [80, 30, 10, 10], fontFamily: 'MetropolisBold', }
+                        ],
+                        styles: {
+                            header: { fontSize: 18, bold: true },
+                        },
+                        pageMargins: [40, 80, 30, 80],
+
+                    };
+
+                    const pdfDocGenerator = pdfMake.createPdf(documentDefinition);
+                    const pdfBlob = await new Promise((pdfResolve) => {
+                        pdfDocGenerator.getBlob(pdfResolve);
+                    });
+
+                    resolve(pdfBlob);
+                } catch (error) {
+                    console.log(error)
+                    reject(error);
+                }
+            });
+
+        } catch (error) {
+            console.log(error)
+        }
     };
 
 

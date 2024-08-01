@@ -388,8 +388,11 @@ export default function StuatusPayment() {
     const listPayment = [
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
-        // { label: 'Cartão', value: 'Cartão' },
-        { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },]
+        { label: 'Pix', value: 'Pix' },
+        { label: 'Transferência bancária', value: 'Transferência bancária' },
+        { label: 'Dinheiro', value: 'Dinheiro' },
+        { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
+    ]
 
     const contractValue = installmentsData?.length > 0 ? installmentsData?.filter(item => item?.status_parcela === 'Aprovado' ||
         item?.status_parcela === 'Pago' ||
@@ -673,7 +676,11 @@ export default function StuatusPayment() {
             <Backdrop open={showDeclatation?.paymentVoucher} sx={{ zIndex: 99999, overflow: 'auto', }}>
                 <DeclarationDocument
                     contractEnrollment={nameContract}
-                    userData={userData}
+                    userData={responsiblePayerData ? {
+                        nome: responsiblePayerData?.nome_resp,
+                        email: responsiblePayerData?.email_resp,
+                        cpf: responsiblePayerData?.cpf_resp
+                    } : userData}
                     setShowDeclaration={setShowDeclaration}
                     installmentsData={installmentsData}
                     filterDate={filterDate}

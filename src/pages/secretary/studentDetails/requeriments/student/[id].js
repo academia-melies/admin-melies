@@ -28,7 +28,7 @@ export default function RequerimentEnrollmentStudent(props) {
     const [requerimentData, setRequerimentData] = useState({})
     const [fileUser, setFileUser] = useState([])
     const [showDocSection, setShowDocSection] = useState(true)
-    const [showDropFile, setShowDropFile] = useState({ active: false, campo: '', tipo: 'documento usuario', title: '' })
+    const [showDropFile, setShowDropFile] = useState({ active: false, campo: '', tipo: 'documento usuario', title: '', description: '' })
     const [showDropFileDiscipline, setShowDropFileDiscipline] = useState({ active: false, fileUrl: '', tipo: 'documento de dispensa', title: '' })
 
 
@@ -307,56 +307,56 @@ export default function RequerimentEnrollmentStudent(props) {
 
     const documentsStudent = [
         {
-            id: '01', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'cpf', text: 'CPF'
+            id: '01', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'cpf', text: 'CPF', description: '*Não aceitamos CNH Link para acesso do CPF: link da receita - https://l1nk.dev/pSxQH'
         },
         {
-            id: '02', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'rg', text: 'RG'
+            id: '02', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'rg', text: 'RG', description: '*Não aceitamos CNH'
         },
         {
-            id: '03', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'comprovante_residencia', text: 'Comprovante de Residência'
+            id: '03', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'comprovante_residencia', text: 'Comprovante de Residência', description: ''
         },
         {
-            id: '04', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'nascimento', text: 'Certidão de nascimento'
+            id: '04', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'nascimento', text: 'Certidão de nascimento', description: ''
         },
         {
             id: '05', entryForm: ['Segunda Graduação'],
-            icon: '/icons/folder_icon.png', key: 'diploma_historico_graduacao', text: 'Diploma e histórico de graduação'
+            icon: '/icons/folder_icon.png', key: 'diploma_historico_graduacao', text: 'Diploma e histórico de graduação', description: ''
         },
         {
-            id: '05', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'historico_ensino_medio', text: 'Histórico do ensino médio'
+            id: '05', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'historico_ensino_medio', text: 'Histórico do ensino médio', description: ''
         },
         {
-            id: '05', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'certificado_ensino_medio', text: 'Certificado do ensino médio'
+            id: '05', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'certificado_ensino_medio', text: 'Certificado do ensino médio', description: ''
         },
         {
             id: '07', entryForm: ['Nota do Enem'],
-            icon: '/icons/folder_icon.png', key: 'boletim_enem', text: 'Boletim do ENEM'
+            icon: '/icons/folder_icon.png', key: 'boletim_enem', text: 'Boletim do ENEM', description: ''
         },
         {
-            id: '08', entryForm: ['Redação Online', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'foto_perfil', text: 'Foto/Selfie (3/4)'
+            id: '08', entryForm: ['Redação Online', 'Curso de extensão', 'Destrancamento de matrícula', '', 'Nota do Enem', 'Segunda Graduação', 'Trânsferência'],
+            icon: '/icons/folder_icon.png', key: 'foto_perfil', text: 'Foto/Selfie (3/4)', description: ''
         },
         {
             id: '09', entryForm: ['Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'declaracao_transferencia', text: 'Declaração de transferência'
+            icon: '/icons/folder_icon.png', key: 'declaracao_transferencia', text: 'Declaração de transferência', description: ''
         },
         {
             id: '10', entryForm: ['Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'solicitacao_vaga', text: 'Solicitação de vaga'
+            icon: '/icons/folder_icon.png', key: 'solicitacao_vaga', text: 'Solicitação de vaga', description: ''
         },
         {
             id: '11', entryForm: ['Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'historico_escolar_graduacao', text: 'Histórico escolar de graduação'
+            icon: '/icons/folder_icon.png', key: 'historico_escolar_graduacao', text: 'Histórico escolar de graduação', description: ''
         },
         {
             id: '12', entryForm: ['Trânsferência'],
-            icon: '/icons/folder_icon.png', key: 'conteudo_programatico', text: 'Conteúdo programático das disciplinas cursadas'
+            icon: '/icons/folder_icon.png', key: 'conteudo_programatico', text: 'Conteúdo programático das disciplinas cursadas', description: ''
         },
     ]
 
@@ -494,7 +494,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                         transform: 'scale(1.1, 1.1)'
                                                                     }
 
-                                                                }} onClick={() => setShowDropFile({ ...showDropFile, active: true, campo: item?.key, title: item?.text })}>
+                                                                }} onClick={() => setShowDropFile({ ...showDropFile, active: true, campo: item?.key, title: item?.text, description: item?.description })}>
                                                                     <Box sx={{
                                                                         ...styles.menuIcon,
                                                                         width: 13, height: 13, aspectRatio: '1/1',
@@ -530,6 +530,11 @@ export default function RequerimentEnrollmentStudent(props) {
                                                                         </Box>
                                                                         {/* <DropZoneDocument setFilesDrop={setFileUser} filesDrop={fileUser} campo={showDropFile?.campo} /> */}
 
+                                                                        {showDropFile?.description && <Box sx={{
+                                                                            display: 'flex', whiteSpace: 'wrap',
+                                                                            maxWidth: '400px',
+                                                                            overflow: 'auto'
+                                                                        }}><Text light>{showDropFile?.description}</Text></Box>}
                                                                         {fileUser?.length > 0 &&
                                                                             <Box sx={{ display: 'flex', gap: 2 }}>
                                                                                 {fileUser?.filter(item => item?.campo === showDropFile?.campo)?.map((item, index) => {
@@ -886,7 +891,7 @@ export default function RequerimentEnrollmentStudent(props) {
                                                 return (
                                                     <Box key={index} sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
                                                         <Box sx={{
-                                                            display: 'flex', gap: 2, flexDirection: 'column', borderRadius: 2,padding: '15px 20px'
+                                                            display: 'flex', gap: 2, flexDirection: 'column', borderRadius: 2, padding: '15px 20px'
                                                         }}>
                                                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
                                                                 <Box
