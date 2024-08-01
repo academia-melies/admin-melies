@@ -195,9 +195,9 @@ export default function ListCupom(props) {
                     </Box>
                 </ContentContainer>
             </Backdrop>
-            
+
             {cupomList?.length > 0 ?
-           
+
                 <div >
                     <TableCupom data={cupomList?.filter(filter)} />
                 </div>
@@ -210,7 +210,7 @@ export default function ListCupom(props) {
     )
 }
 const TableCupom = ({ data = [], filters = [], onPress = () => { } }) => {
-   
+
     const { setLoading, colorPalette, theme, user } = useAppContext()
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -218,7 +218,7 @@ const TableCupom = ({ data = [], filters = [], onPress = () => { } }) => {
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-  
+
 
 
     const columns = [
@@ -251,7 +251,71 @@ const TableCupom = ({ data = [], filters = [], onPress = () => { } }) => {
             border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
         }}>
 
-            <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+                {data?.map((item, index) => (
+                    <Box
+                        key={index}
+                        sx={{
+                            position: 'relative',
+                            backgroundImage: `url('/icons/ticket.png')`,
+                            backgroundSize: 'contain',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'start',
+                            width: '450px',
+                            height: '350px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: 2,
+                            transition: '.3s',
+                            '&:hover': {
+                                cursor: 'pointer',
+                                transform: 'scale(1.03, 1.03)',
+                                opacity: .8
+                            }
+                        }}
+                        onClick={() => handleRowClick(item?.id)}
+                    >
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: '100px',
+                                left: '80px',
+                                right: '0px',
+                                bottom: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                backgroundColor: colorPalette?.primary,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#fff', // Adjust color based on the background image for better visibility
+                                textAlign: 'center',
+                                maxWidth: 300,
+                                maxHeight: '100px',
+                                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`,
+                                boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                            }}
+                        >
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                position: 'absolute',
+                                left: 10,
+                                top: 10,
+                                width: 18,
+                                height: 18,
+                                aspectRatio: '1/1',
+                                backgroundImage: item?.status ? `url('/icons/check_around_icon.png')` : `url('/icons/remove_icon.png')`,
+                                transition: '.3s',
+                            }} />
+                            
+                            <Text bold large>{!item?.porcetagem ? formatter.format(item?.valor) : item?.valor + ' %' || '-'}</Text>
+                            <Text light>{item?.nome_cupom}</Text>
+                            {/* Add more information as needed */}
+                        </Box>
+                    </Box>
+                ))}
+            </Box>
+            {/* <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                 <Table sx={{ borderCollapse: 'collapse', width: '100%' }}>
                     <TableHead>
                         <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
@@ -259,23 +323,6 @@ const TableCupom = ({ data = [], filters = [], onPress = () => { } }) => {
                                 <TableCell key={index} sx={{ padding: '16px', }}>
                                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
                                         <Text bold style={{ textAlign: 'center' }}>{column.label}</Text>
-                                        {/* <Box sx={{
-                                            ...styles.menuIcon,
-                                            backgroundImage: `url(${icons.gray_arrow_down})`,
-                                            transform: filters?.filterName === column.key ? filters?.filterOrder === 'asc' ? 'rotate(-0deg)' : 'rotate(-180deg)' : 'rotate(-0deg)',
-                                            transition: '.3s',
-                                            width: 17,
-                                            height: 17,
-
-                                            "&:hover": {
-                                                opacity: 0.8,
-                                                cursor: 'pointer'
-                                            },
-                                        }}
-                                            onClick={() => onPress({
-                                                filterName: column.key,
-                                                filterOrder: filters?.filterOrder === 'asc' ? 'desc' : 'asc'
-                                            })} /> */}
                                     </Box>
                                 </TableCell>
                             ))}
@@ -349,11 +396,12 @@ const TableCupom = ({ data = [], filters = [], onPress = () => { } }) => {
                         }
                     </TableBody>
                 </Table>
-            </TableContainer>
+            </TableContainer> */}
             <PaginationTable data={data}
                 page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
             />
-        </ContentContainer >
+
+        </ContentContainer>
     )
 }
 

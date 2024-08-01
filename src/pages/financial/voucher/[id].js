@@ -291,7 +291,7 @@ export default function VoucherEdit(props) {
                 setLoading(false)
                 return
             }
-            if (!coupom.porcetagem) {
+            if (!coupom.porcetagem && typeof coupom.valor === 'string') {
                 coupom.valor = parseFloat(coupom.valor.replace(',', '.').replace('R$', '').trim())
             }
 
