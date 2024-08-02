@@ -45,7 +45,7 @@ export default function ListInvoices(props) {
 
     const filterFunctions = {
         parcel: (item) => filters.parcel === 'todos' || item?.status_parcela === filters.parcel,
-        nfse: (item) => filters.nfse === 'todos' || filters.nfse === 'nao_emitida' ? !item?.status_nfse : item?.status_nfse === filters.nfse,
+        nfse: (item) => filters.nfse === 'todos' ? item : filters.nfse === 'nao_emitida' ? !item?.nf_emitida : item?.status_nfse === filters.nfse,
         date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
         search: (item) => {
             const normalizedSearchTerm = removeAccents(filters?.search.toLowerCase());
@@ -83,8 +83,14 @@ export default function ListInvoices(props) {
             const response = await api.get('/student/installments/invoices')
             const { data } = response;
             const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
+            const formatData = data?.map((item) => {
+                return {
+                    ...item,
+                    nf_emitida: item?.status_nfse ? true : false
+                }
+            })
             setAllSelected(groupIds)
-            setInvoicesList(data)
+            setInvoicesList(formatData)
         } catch (error) {
             console.log(error)
         } finally {
