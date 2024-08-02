@@ -1889,7 +1889,7 @@ export const Payment = (props) => {
             const nextMonth = currentDate.getMonth() + 2 > 12 ? 1 : currentDate.getMonth() + 2;
             const nextMonthString = String(nextMonth).padStart(2, '0');
             const day = String(currentDate.getDate()).padStart(2, '0');
-            const formattedDate = `${year}-${nextMonthString}-${day}`;
+            const formattedDate = `${year}-08-${day}`;
             setDayForPayment(currentDate.getDate() + 1)
             setMonthDayForPayment(formattedDate)
         } else {
@@ -1902,7 +1902,7 @@ export const Payment = (props) => {
             if (mesAtual > 5) {
                 datePayment = new Date();
             } else {
-                datePayment = `${anoAtual}-07-${dataAtual.getDate()}`
+                datePayment = `${anoAtual}-08-${dataAtual.getDate()}`
                 datePayment = new Date(datePayment)
             }
 
@@ -1913,15 +1913,16 @@ export const Payment = (props) => {
             const day = String(datePayment.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${nextMonthString}-${day}`;
             const formattedDateNow = `${year}-${month}-${day}`;
+            const dateActually = `${anoAtual}-08-${String(dataAtual.getDate()).padStart(2, '0')}`
 
             if (monthForPayment == null) {
-                setMonthDayForPayment(`${anoAtual}-07-${dataAtual.getDate()}`)
+                setMonthDayForPayment(dateActually)
 
             }
             if (!dayForPayment) {
                 setDayForPayment(dataAtual.getDate())
             }
-            setDateForPaymentEntry(formattedDateNow)
+            setDateForPaymentEntry(dateActually)
         }
     }
 
@@ -2075,6 +2076,9 @@ export const Payment = (props) => {
             for (let i = 0; i < numberOfInstallments; i++) {
                 let date = monthForPayment ? new Date(monthForPayment) : new Date()
                 let selectedDay = dayForPayment;
+
+                console.log('date: ', date)
+                console.log('selectedDay: ', selectedDay)
                 const paymentDate = date;
                 const typePayment = prevTypePaymentsSelected[i + 1]
                 let month = (paymentDate.getMonth() + i + 1) % 12;
