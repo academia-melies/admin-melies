@@ -6,7 +6,7 @@ import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
 import { formatTimeStamp, formatTimeStampTimezone } from "../../../../helpers"
-import { Backdrop, TablePagination } from "@mui/material"
+import { Backdrop, TablePagination, Tooltip } from "@mui/material"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 import { icons } from "../../../../organisms/layout/Colors"
 import Link from "next/link"
@@ -47,6 +47,7 @@ export default function ListReceipts(props) {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [showBaixa, setShowBaixa] = useState(false)
+    const [showEditFields, setShowEditFields] = useState(false)
     const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_recebimento: '' })
     const fetchPermissions = async () => {
         try {
@@ -69,8 +70,8 @@ export default function ListReceipts(props) {
                 const normalizedItemResponsible = item?.responsavel_pagante ? removeAccents(item.responsavel_pagante.toLowerCase()) : '';
                 const normalizedOrderReference = item?.referenceId ? removeAccents(item?.referenceId.toLowerCase()) : '';
                 return (normalizedItemName.includes(normalizedSearchTerm) ||
-                 normalizedOrderReference.includes(normalizedSearchTerm) ||
-                 normalizedItemResponsible.includes(normalizedSearchTerm));
+                    normalizedOrderReference.includes(normalizedSearchTerm) ||
+                    normalizedItemResponsible.includes(normalizedSearchTerm));
             }
             return true;
         },
@@ -84,12 +85,12 @@ export default function ListReceipts(props) {
         const date = new Date(dateString);
         const start = new Date(startDate);
         const end = new Date(endDate);
-    
+
         // Ajustar as datas para o mesmo horário local
         const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
         const localStart = new Date(start.getTime() + start.getTimezoneOffset() * 60000);
         const localEnd = new Date(end.getTime() + end.getTimezoneOffset() * 60000);
-    
+
         return localDate >= localStart && localDate <= localEnd;
     }
 
@@ -200,10 +201,30 @@ export default function ListReceipts(props) {
 
 
     const handleChangeInstallmentDate = (installmentId, field, value) => {
+
+        let formattedValue = value
+        if (field === 'valor_liquido') {
+            const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                formattedValue = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValueCoin = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                formattedValue = formattedValueCoin;
+
+            }
+        }
         setInstallmentsList(prevInstallments => {
             return prevInstallments?.map(installment => {
                 if (installment.id_parcela_matr === installmentId) {
-                    return { ...installment, [field]: value };
+                    return { ...installment, [field]: formattedValue };
                 }
                 return installment;
             });
@@ -679,6 +700,25 @@ export default function ListReceipts(props) {
                 </Box>
             </Box> */}
 
+            <Box sx={{
+                display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', padding: '8px 12px', borderRadius: 2,
+                backgroundColor: colorPalette?.buttonColor, width: 180, transition: '.3s',
+                "&:hover": {
+                    opacity: 0.8,
+                    cursor: 'pointer',
+                    transform: 'scale(1.03, 1.03)'
+                }
+            }} onClick={() => setShowEditFields(!showEditFields)}>
+                <Text light small bold style={{ color: `#fff` }}>Editar Valores</Text>
+                <Box sx={{
+                    ...styles.menuIcon,
+                    backgroundImage: showEditFields ? `url(${icons.gray_close})` : `url(${icons.edit})`,
+                    width: 12,
+                    height: 12,
+                    zIndex: 9999
+                }} />
+            </Box>
+
             {installmentsList.length > 0 ?
                 <div style={{
                     borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap',
@@ -723,31 +763,19 @@ export default function ListReceipts(props) {
                                 {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Status BemPaggo</Text></th> */}
                                 <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Status</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>ID BemP</Text></th>
-                                <th style={{ padding: '8px 0px', minWidth: '80px' }}><Text bold></Text></th>
+                                {!showEditFields && <th style={{ padding: '8px 0px', minWidth: '80px' }}><Text bold></Text></th>}
                             </tr>
                         </thead>
                         <tbody style={{ flex: 1, }}>
                             {sortedInstallments?.filter(filter)?.slice(startIndex, endIndex).map((item, index) => {
                                 const isSelected = installmentsSelected?.includes(item?.id_parcela_matr) || null;
                                 const responsiblePay = item?.responsavel_pagante ? item?.responsavel_pagante : item?.aluno;
+                                const chargeGenerated = parseInt(item?.cobranca_emitida) > 0;
                                 return (
                                     <tr key={index} style={{
                                         backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary,
                                         opacity: 1,
-                                        // transition: 'opacity 0.3s, background-color 0.3s',
-                                        // cursor: 'pointer',
-                                    }}
-                                    // onMouseOver={(e) => {
-                                    //     e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.primary + '77';
-                                    //     e.currentTarget.style.opacity = '0.5';
-                                    // }}
-                                    // onMouseOut={(e) => {
-                                    //     e.currentTarget.style.backgroundColor = isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary;
-                                    //     e.currentTarget.style.opacity = '1';
-                                    // }}
-                                    // onClick={() => router.push(`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`)}
-                                    >
-
+                                    }}>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                             <CheckBoxComponent
                                                 disabled={!isPermissionEdit && true}
@@ -778,9 +806,44 @@ export default function ListReceipts(props) {
                                             </Text>
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                            <Text light small>
-                                                {formatTimeStampTimezone(item?.vencimento)}</Text>
-                                            {/* <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
+                                            {(showEditFields && !chargeGenerated) ?
+                                                <TextInput disabled={!isPermissionEdit && true}
+                                                    name='vencimento'
+                                                    onChange={(e) =>
+                                                        handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)}
+                                                    value={(item?.vencimento)?.split('T')[0] || ''}
+                                                    small type="date"
+                                                    sx={{ padding: '0px 8px' }}
+                                                />
+                                                : (chargeGenerated ?
+                                                    <Box sx={{ display: 'flex', gap: .5, alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Text light small>
+                                                            {formatTimeStampTimezone(item?.vencimento)}
+                                                        </Text>
+                                                        <Tooltip title={"Cobrança gerada na BemPaggo"}>
+                                                            <div>
+                                                                <Box sx={{
+                                                                    ...styles.menuIcon,
+                                                                    width: 12,
+                                                                    height: 12,
+                                                                    aspectRatio: '1/1',
+                                                                    backgroundColor: '#fff',
+                                                                    backgroundImage: `url('/icons/about.png')`,
+                                                                    cursor: 'pointer',
+                                                                    '&:hover': {
+                                                                        opacity: 0.8
+                                                                    }
+                                                                }} />
+                                                            </div>
+                                                        </Tooltip>
+                                                    </Box>
+                                                    :
+                                                    <Text light small>
+                                                        {formatTimeStampTimezone(item?.vencimento)}
+                                                    </Text>
+                                                )
+                                            }
+
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>{item?.dt_pagamento ? formatTimeStampTimezone(item?.dt_pagamento) : '-'}</Text>
@@ -795,7 +858,15 @@ export default function ListReceipts(props) {
                                             <Text light small>{formatter.format(item?.valor_parcela)}</Text>
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                            <Text light small>{formatter.format(item?.valor_liquido || 0)}</Text>
+                                            {showEditFields ?
+                                                <TextInput
+                                                    placeholder='R$ 5,00'
+                                                    name='valor_liquido'
+                                                    onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)}
+                                                    value={item?.valor_liquido}
+                                                    sx={{ width: '120px', }} />
+                                                :
+                                                <Text light small>{formatter.format(item?.valor_liquido || 0)}</Text>}
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>{item?.n_parcela || '-'}</Text>
@@ -840,15 +911,15 @@ export default function ListReceipts(props) {
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>{item?.referenceId || '-'}</Text>
                                         </td>
-                                        <td style={{
+                                        {!showEditFields && <td style={{
                                             fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`,
                                             padding: '5px 12px'
                                         }}>
                                             <Link href={`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`} target="_blank">
                                                 <Button text="Ver" small style={{ borderRadius: 2 }} />
                                             </Link>
-                                            {/* <RadioItem disabled={!isPermissionEdit && true} valueRadio={item?.parc_protestada} group={groupProstated} horizontal={true} onSelect={(value) => handleChangeInstallmentDate(item?.id_parcela_matr, 'parc_protestada', parseInt(value))} /> */}
                                         </td>
+                                        }
                                     </tr>
                                 );
                             })}
@@ -867,7 +938,7 @@ export default function ListReceipts(props) {
                 </Box>
             }
 
-            {(installmentsSelected && isPermissionEdit) && <>
+            {(installmentsSelected && isPermissionEdit && !showEditFields) && <>
                 <Box sx={{
                     display: 'flex', position: 'fixed',
                     left: { xs: 20, sm: 20, md: 280, lg: 280, xl: 280 }, bottom: 20, display: 'flex', gap: 2, flexWrap: 'wrap'
@@ -884,6 +955,13 @@ export default function ListReceipts(props) {
                 </Box>
                 <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2 }}>
                     <Button text="Salvar" style={{ width: '120px', height: '40px' }} />
+                </Box>
+            </>
+            }
+
+            {(showEditFields && installmentsSelected) && <>
+                <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2 }}>
+                    <Button text="Processar alterações" style={{ width: '200px', height: '40px' }} />
                 </Box>
             </>
             }

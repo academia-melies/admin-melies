@@ -82,6 +82,7 @@ export default function ListInvoices(props) {
         try {
             const response = await api.get('/student/installments/invoices')
             const { data } = response;
+            console.log(data)
             const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
             const formatData = data?.map((item) => {
                 return {
@@ -121,27 +122,28 @@ export default function ListInvoices(props) {
 
     const handleGenerateInvoice = async () => {
         if (verifyExistsNfse()) {
-            try {
-                setLoading(true)
-                const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
-                let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
-                const response = await api.post(`/nfse/create/${user?.id}`, { installmentData })
-                const { data } = response;
-                if (response?.status === 201) {
-                    alert.success('Notas enviadas para processamento.')
-                    await getInstallments()
-                    setInvoicesSelected(null)
-                } else {
-                    alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
-                    return
-                }
-            } catch (error) {
-                console.log(error)
-                alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
-                return error
-            } finally {
-                setLoading(false)
-            }
+            alert.success('Nota gerada')
+            // try {
+            //     setLoading(true)
+            //     const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
+            //     let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
+            //     const response = await api.post(`/nfse/create/${user?.id}`, { installmentData })
+            //     const { data } = response;
+            //     if (response?.status === 201) {
+            //         alert.success('Notas enviadas para processamento.')
+            //         await getInstallments()
+            //         setInvoicesSelected(null)
+            //     } else {
+            //         alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
+            //         return
+            //     }
+            // } catch (error) {
+            //     console.log(error)
+            //     alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
+            //     return error
+            // } finally {
+            //     setLoading(false)
+            // }
         }
     }
 
@@ -152,7 +154,8 @@ export default function ListInvoices(props) {
     const verifyExistsNfse = () => {
         const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
         let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
-        let [verifyNfseExists] = installmentData?.map(item => item.url_nfse_pdf !== null)
+        // let [verifyNfseExists] = installmentData?.map(item => item.url_nfse_pdf !== null)
+        let [verifyNfseExists] = installmentData?.map(item => item.nf_emitida)
         if (verifyNfseExists) {
             alert.error('Você selecionou alguma nota que já possui NFSe gerada. Selecione apenas notas que ainda não foram emitidas. ')
             return false
@@ -176,13 +179,8 @@ export default function ListInvoices(props) {
 
     const listAtivo = [
         { label: 'Todos', value: 'todos' },
-        { label: 'Pendente', value: 'Pendente' },
-        { label: 'Inativa', value: 'Inativa' },
         { label: 'Pago', value: 'Pago' },
-        { label: 'Aprovado/Liquidado', value: 'Aprovado' },
-        { label: 'Cancelada', value: 'Cancelada' },
-        { label: 'Pagamento reprovado', value: 'Pagamento reprovado' },
-        { label: 'Erro com o pagamento', value: 'Erro com o pagamento' },
+        { label: 'Aprovado/Liquidado', value: 'Aprovado' }
     ]
 
 
@@ -225,6 +223,8 @@ export default function ListInvoices(props) {
 
         return dateA - dateB;
     });
+
+    console.log(sortedInstallments)
 
     const totalValueToReceive = invoicesList?.filter(filter)
         ?.filter(item => item?.status_parcela === 'Pendente')
