@@ -122,28 +122,27 @@ export default function ListInvoices(props) {
 
     const handleGenerateInvoice = async () => {
         if (verifyExistsNfse()) {
-            alert.success('Nota gerada')
-            // try {
-            //     setLoading(true)
-            //     const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
-            //     let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
-            //     const response = await api.post(`/nfse/create/${user?.id}`, { installmentData })
-            //     const { data } = response;
-            //     if (response?.status === 201) {
-            //         alert.success('Notas enviadas para processamento.')
-            //         await getInstallments()
-            //         setInvoicesSelected(null)
-            //     } else {
-            //         alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
-            //         return
-            //     }
-            // } catch (error) {
-            //     console.log(error)
-            //     alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
-            //     return error
-            // } finally {
-            //     setLoading(false)
-            // }
+            try {
+                setLoading(true)
+                const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
+                let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
+                const response = await api.post(`/nfse/create/${user?.id}`, { installmentData })
+                const { data } = response;
+                if (response?.status === 201) {
+                    alert.success('Notas enviadas para processamento.')
+                    await getInstallments()
+                    setInvoicesSelected(null)
+                } else {
+                    alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
+                    return
+                }
+            } catch (error) {
+                console.log(error)
+                alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
+                return error
+            } finally {
+                setLoading(false)
+            }
         }
     }
 
@@ -154,7 +153,6 @@ export default function ListInvoices(props) {
     const verifyExistsNfse = () => {
         const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
         let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
-        // let [verifyNfseExists] = installmentData?.map(item => item.url_nfse_pdf !== null)
         let [verifyNfseExists] = installmentData?.map(item => item.nf_emitida)
         if (verifyNfseExists) {
             alert.error('Você selecionou alguma nota que já possui NFSe gerada. Selecione apenas notas que ainda não foram emitidas. ')
