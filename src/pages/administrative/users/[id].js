@@ -332,6 +332,7 @@ export default function EditUser() {
                 // const highestModule = data[data.length - 1].modulo;
                 setHighestModule(highestModule);
             }
+            console.log(data)
             setEnrollmentData(data)
         } catch (error) {
             console.log(error)

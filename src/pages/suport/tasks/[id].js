@@ -1266,7 +1266,14 @@ const DropZoneTasks = ({ filesDrop, setFilesDrop, children }) => {
 
     return (
         <Dropzone
-            accept={{ 'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'], 'image/png': ['.png', '.PNG'], 'application/pdf': ['.pdf'] }}
+        accept={{
+            'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'],
+            'image/png': ['.png', '.PNG'],
+            'application/pdf': ['.pdf'],
+            'text/csv': ['.csv'], // Adicionando suporte para arquivos CSV
+            'application/vnd.ms-excel': ['.xls'], // Adicionando suporte para arquivos XLS
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] // Adicionando suporte para arquivos XLSX
+        }}
             onDrop={onDropFiles}
             addRemoveLinks={true}
             removeLink={(file) => handleRemoveFile(file)}
