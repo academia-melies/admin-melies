@@ -328,6 +328,8 @@ export default function InterestEnroll() {
         try {
             const response = await api.get(`/enrollment/disciplines/dp/${id}`);
             const { data } = response;
+            console.log(data)
+
             if (data.length > 0) {
                 let groupDisciplines = data.map(disciplines => ({
                     label: disciplines.nome_disciplina,
@@ -335,7 +337,6 @@ export default function InterestEnroll() {
                     id_disc_matricula: disciplines?.id_disc_matricula,
                     modulo: disciplines?.modulo
                 }));
-
 
                 const disciplinesSelect = groupDisciplines.map(discipline => discipline.value);
                 const flattenedDisciplinesSelected = disciplinesSelect.join(', ');
@@ -976,6 +977,8 @@ export default function InterestEnroll() {
         let reenrollmentDataDp = []
         const valueModuleCourse = (valuesCourse?.valor_total_curso)?.toFixed(2)
         const costDiscipline = (valueModuleCourse / quantityDisciplinesModule)?.toFixed(2);
+        let startDateEnrollment = `2024-08-05`;
+        let endDateEnrollment = `2024-12-20`;
         if (isReenrollment) {
 
             const areDisciplinesInSameClass = classesDisciplinesDpSelected.every(
@@ -985,8 +988,7 @@ export default function InterestEnroll() {
 
             if (areDisciplinesInSameClass) {
 
-                let startDateEnrollment = `2024-08-05`;
-                let endDateEnrollment = `2024-12-20`;
+
                 let startDate = new Date(classesDisciplinesDpSelected[0]?.dt_inicio);
                 let endDate = new Date(classesDisciplinesDpSelected[0]?.dt_fim);
 
@@ -1255,6 +1257,7 @@ export default function InterestEnroll() {
         (
             <>
                 <ContractStudent
+                    unlocked={unlocked}
                     setCheckValidateScreen={setCheckValidateScreen}
                     paymentForm={paymentForm}
                     isReenrollment={isReenrollment}
@@ -1569,6 +1572,7 @@ export const EnrollStudentDetails = (props) => {
             <>
                 {paymentForm.length > 0 &&
                     <ContractStudent
+                        unlocked={unlocked}
                         setCheckValidateScreen={setCheckValidateScreen}
                         paymentForm={paymentForm}
                         isReenrollment={isReenrollment}
@@ -3431,7 +3435,8 @@ export const ContractStudent = (props) => {
         reenrollmentDp,
         classesDisciplinesDpSelected,
         handleCreateReEnrollStudentDp,
-        forma_pagamento
+        forma_pagamento,
+        unlocked
     } = props
 
 
@@ -3559,7 +3564,10 @@ export const ContractStudent = (props) => {
     const handleSubmitEnrollment = async () => {
         try {
             let pdfBlob;
-            if (isReenrollment) {
+            if (unlocked) {
+                pdfBlob = await handleGeneratePdf()
+            }
+            if (isReenrollment && !unlocked) {
                 pdfBlob = null
             } else {
                 pdfBlob = await handleGeneratePdf();
