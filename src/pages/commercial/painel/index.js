@@ -324,7 +324,7 @@ const TableIndicatorClasses = ({ data = [], title, reportIndicators }) => {
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Turma</Text></th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Aguardando Assinatura</Text></th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Aguardando Inicio</Text></th>
-                        {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Em Andamento</Text></th> */}
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Em Andamento</Text></th>
                     </tr>
                 </thead>
                 <tbody style={{ flex: 1, }}>
@@ -357,11 +357,11 @@ const TableIndicatorClasses = ({ data = [], title, reportIndicators }) => {
                                         {parseInt(item?.aguardandoInicio)}
                                     </Text>
                                 </td>
-                                {/* <td style={{ textAlign: 'center', padding: '5px 12px',borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                <td style={{ textAlign: 'center', padding: '5px 12px',borderBottom: `1px solid ${colorPalette.primary}` }}>
                                     <Text light small>
                                         {parseInt(item?.emAndamento)}
                                     </Text>
-                                </td> */}
+                                </td>
                             </tr>
                         </React.Fragment>
                     ))}
@@ -379,6 +379,11 @@ const TableIndicatorClasses = ({ data = [], title, reportIndicators }) => {
                         <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                             <Text bold >
                                 {reportIndicators?.aguardandoInicio || 0}
+                            </Text>
+                        </td>
+                        <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                            <Text bold >
+                                {reportIndicators?.emAndamento || 0}
                             </Text>
                         </td>
                     </tr>

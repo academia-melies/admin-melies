@@ -119,7 +119,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
     }, [showPopup, currentNotificationIndex]);
 
 
-    const currentNotification = notificationData[currentNotificationIndex];
+    const currentNotification = notificationData?.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.[currentNotificationIndex];
 
     useEffect(() => {
         if (!showNotification) {
