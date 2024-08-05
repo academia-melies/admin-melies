@@ -487,7 +487,7 @@ function Home() {
                   flexDirection: { xs: 'column', xm: 'column', md: 'column', lg: 'column', xl: 'column' }
                }}>
 
-                  <Box sx={{
+                  {/* <Box sx={{
                      display: permissionTop15 ? 'flex' : 'none', gap: 2, alignItems: 'center', width: '100%', borderRadius: 2,
                      backgroundColor: colorPalette?.secondary, padding: '12px 15px'
                   }}>
@@ -505,7 +505,7 @@ function Home() {
                         <Text title>Total de Alunos:</Text>
                         <AnimatedNumbers value={indicatorsEnrollment?.totalStudent} />
                      </Box>
-                  </Box>
+                  </Box> */}
 
                   <Box sx={{
                      display: 'flex', gap: 2, flexDirection: { xs: 'column', xm: 'column', md: 'column', lg: 'row', xl: 'row' },
