@@ -29,13 +29,13 @@ export default function ListBillsToPay(props) {
     const [recurrencyExpenses, setRecurrencyExpenses] = useState([])
     const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_pagamento: '' })
     const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
-    const [expensesSelected, setExpensesSelected] = useState(null);
+    const [expensesSelected, setExpensesSelected] = useState([]);
     const [expenseRecurrencySelected, setExpenseRecurrencySelected] = useState([]);
     const [allSelected, setAllSelected] = useState();
     const [allSelectedRecurrency, setAllSelectedRecurrency] = useState();
     const router = useRouter()
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(50);
     const [showBaixa, setShowBaixa] = useState(false)
     const [showRecurrencyExpense, setShowRecurrencyExpense] = useState(false)
     const [accountList, setAccountList] = useState([])
@@ -55,6 +55,11 @@ export default function ListBillsToPay(props) {
             return error
         }
     }
+
+    const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
 
     const filter = (item) => {
         // let date = new Date(item?.dt_vencimento);
@@ -168,7 +173,7 @@ export default function ListBillsToPay(props) {
                     const valorDesp = parseFloat(item.valor_desp);
                     return {
                         ...item,
-                        valor_tipo: isNaN(valorDesp) ? item.valor_desp : valorDesp.toFixed(2)
+                        valor_desp: formatter.format(valorDesp)
                     };
                 }));
             } else {
@@ -211,6 +216,38 @@ export default function ListBillsToPay(props) {
         setPage(0);
     };
 
+
+    const handleChangeExpenseData = (expenseId, field, value) => {
+
+        let formattedValue = value
+        if (field === 'valor_desp') {
+            const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                formattedValue = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValueCoin = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                formattedValue = formattedValueCoin;
+
+            }
+        }
+        setExpensesData(epxensesData => {
+            return epxensesData?.map(expense => {
+                if (expense.id_despesa === expenseId) {
+                    return { ...expense, [field]: formattedValue };
+                }
+                return expense;
+            });
+        });
+    };
+
     const handleDelete = async () => {
         setLoading(true)
         try {
@@ -224,7 +261,7 @@ export default function ListBillsToPay(props) {
             }
             if (allStatus200) {
                 alert.success('Items excluídos.');
-                setExpensesSelected(null);
+                setExpensesSelected([]);
                 await getExpenses()
             } else {
                 alert.error('Erro ao excluir itens.');
@@ -246,7 +283,7 @@ export default function ListBillsToPay(props) {
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
-                    setExpensesSelected(null);
+                    setExpensesSelected([]);
                     setShowBaixa(false)
                     setBaixaData({ dt_baixa: '', conta_pagamento: '' });
                     getExpenses()
@@ -336,17 +373,6 @@ export default function ListBillsToPay(props) {
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-    const columnExpense = [
-        { key: 'id_despesa', label: 'id' },
-        { key: 'descricao', label: 'Descrição' },
-        { key: 'valor_desp', label: 'Valor', price: true },
-        { key: 'dt_vencimento', label: 'Vencimento', date: true },
-        { key: 'nome_cc', label: 'Centro de Custo' },
-        { key: 'nome_conta', label: 'Conta' },
-        { key: 'dt_pagamento', label: 'Dt Baixa', date: true },
-        { key: 'status', label: 'Status', status: true },
-    ];
-
     const groupSelect = (id) => [
         {
             value: id?.toString()
@@ -381,17 +407,43 @@ export default function ListBillsToPay(props) {
         { label: 'não', value: 0 },
     ]
 
-    const formatter = new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
-
     const selectedMonths = (value) => {
         const alreadySelected = monthReleaseSelected === value;
         if (alreadySelected) {
             setMonthReleaseSelected(null);
         } else {
             setMonthReleaseSelected(value);
+        }
+    };
+
+    const toggleSelectAllExpenses = () => {
+        if (allSelected) {
+            setExpensesSelected([]);
+        } else {
+            const allExpenses = expensesData?.reduce((acc, item) => {
+                if (!expensesSelected.some(expense => expense.expenseId === item.id_despesa)) {
+                    acc.push({ expenseId: item.id_despesa });
+                }
+                return acc;
+            }, [...expensesSelected]);
+
+            setExpensesSelected(allExpenses);
+        }
+        setAllSelected(!allSelected);
+    };
+
+    const selectedExpense = (value) => {
+
+        const alreadySelected = expensesSelected.some(expense => expense.expenseId === value);
+
+        const updatedSelected = alreadySelected ? expensesSelected.filter(expense => expense.expenseId !== value)
+            : [...expensesSelected, { expenseId: value }];
+
+        setExpensesSelected(updatedSelected);
+        if (updatedSelected?.length === expensesData?.length) {
+            setAllSelected(true);
+        } else if (alreadySelected) {
+            setAllSelected(false);
         }
     };
 
@@ -505,123 +557,163 @@ export default function ListBillsToPay(props) {
                 </Box>
             </Box>
 
+            <Box sx={{ display: 'flex', gap: 1, padding: '15px' }}>
+                <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
+                <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
+                <Button text="Buscar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => getExpenses()} />
+            </Box>
 
-            <Box sx={{
-                display: 'flex', backgroundColor: colorPalette.secondary, flexDirection: 'column', width: '100%', boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, overflow: 'auto', borderRadius: 2
-            }}>
-
-                <Box sx={{ display: 'flex', gap: 1, padding: '15px' }}>
-                    <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
-                    <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
-                    <Button text="Buscar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => getExpenses()} />
-                </Box>
-
+            <Box sx={{ display: 'flex', overflow: 'auto', padding: '15px 10px', backgroundColor: colorPalette?.secondary }}>
                 <div style={{
-                    borderRadius: '8px', overflow: 'auto', flexWrap: 'nowrap', width: '100%',
+                    borderRadius: '8px', flexWrap: 'nowrap', width: '100%',
                 }}>
                     {expensesData?.filter(item => filter(item)).length > 0 ?
                         <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', border: `1px solid ${colorPalette.primary}` }}>
                             <thead>
-                                <tr style={{ backgroundColor: colorPalette.secondary, borderBottom: `1px solid ${colorPalette?.primary}` }}>
-                                    <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px', }}>
-                                        <CheckBoxComponent
-                                            disabled={!isPermissionEdit && true}
-                                            boxGroup={[{ value: 'allSelect' }]}
-                                            valueChecked={'select'}
-                                            horizontal={true}
-                                            onSelect={() => {
-                                                if (expensesSelected?.length === allSelected?.length) {
-                                                    let allInstallmentSelected = expensesData?.filter(filter)?.map(item => item?.id_despesa)
-                                                    setExpensesSelected(allInstallmentSelected?.toString())
-                                                } else {
-                                                    setExpensesSelected(null)
+                                <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <th style={{ padding: '8px 0px', display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                            <Box sx={{
+                                                display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                                backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
                                                 }
-                                            }}
-                                            padding={0}
-                                            gap={0}
-                                            sx={{ display: 'flex', maxWidth: 15 }}
-                                        />
+                                            }} onClick={() => toggleSelectAllExpenses()}>
+                                                {(allSelected) &&
+                                                    <Box sx={{
+                                                        ...styles.menuIcon,
+                                                        width: 20, height: 20,
+                                                        backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                                        transition: '.3s',
+                                                    }} />
+                                                }
+                                            </Box>
+                                        </Box>
                                     </th>
-                                    {columnExpense?.map((item, index) => (
-                                        <th key={index} style={{ padding: '8px 0px' }}><Text bold>{item.label}</Text></th>
-                                    ))}
+                                    <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Descrição</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Valor</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Vencimento</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Pagamento</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Tipo</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>C.Custo</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '55px' }}><Text bold small>Conta.</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Status</Text></th>
                                 </tr>
                             </thead>
                             <tbody style={{ flex: 1, }}>
                                 {expensesData?.slice(startIndex, endIndex)?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
-                                    let itemId = item?.id_despesa
-                                    const isSelected = expensesSelected?.includes(itemId) || null;
-
+                                    const expenseId = item?.id_despesa;
+                                    const selected = expensesSelected.some(recurrency => recurrency.expenseId === expenseId);
                                     return (
-                                        <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
-                                            <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                <CheckBoxComponent
-                                                    disabled={!isPermissionEdit && true}
-                                                    boxGroup={
-                                                        groupSelect(itemId)
-                                                    }
-                                                    valueChecked={expensesSelected}
-                                                    horizontal={true}
-                                                    onSelect={(value) => {
-                                                        if (itemId) {
-                                                            setExpensesSelected(value);
+                                        <tr key={index} style={{
+                                            backgroundColor: selected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary
+                                        }}>
+                                            <td style={{ textAlign: 'center', padding: '5px 5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                                    <Box sx={{
+                                                        display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                                        backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                                        "&:hover": {
+                                                            opacity: 0.8,
+                                                            cursor: 'pointer'
                                                         }
-                                                    }}
-                                                    padding={0}
-                                                    gap={0}
-                                                    sx={{ display: 'flex', maxWidth: 15 }}
+                                                    }} onClick={() => selectedExpense(expenseId)}>
+                                                        {selected &&
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                width: 20, height: 20,
+                                                                backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                                                transition: '.3s',
+                                                            }} />
+                                                        }
+                                                    </Box>
+                                                </Box>
+                                            </td>
+
+                                            <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <TextInput disabled={!isPermissionEdit && true}
+                                                    name='descricao'
+                                                    onChange={(e) =>
+                                                        handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
+                                                    value={item?.descricao || ''}
+                                                    small fullWidth
+                                                    sx={{ padding: '0px 8px', minWidth: 300 }}
                                                 />
                                             </td>
-                                            {columnExpense?.map((column, colIndex) => (
-                                                <td key={colIndex} style={{
-                                                    textDecoration: column?.label === 'id' ? 'underline' : 'none', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular',
-                                                    color: column?.label === 'id' ? (theme ? 'blue' : 'red') : colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette?.primary}`,
-                                                    minWidth: column?.label === 'id' ? 60 : 0
-                                                }}
-                                                    onClick={(e) => {
-                                                        column?.label === 'id' ? pusBillId(item)
-                                                            :
-                                                            e.preventDefault()
-                                                        e.stopPropagation()
-                                                    }}>
-                                                    {item[column?.key] ? (
-                                                        <Box sx={{
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: column?.label === 'id' && 'pointer', '&:hover': {
-                                                                opacity: column?.label === 'id' && 0.7
-                                                            }
-                                                        }} >
-                                                            {column.avatar && <Avatar sx={{ width: 27, height: 27, fontSize: 14 }} src={item[column?.avatarUrl || '']} />}
+                                            <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <TextInput disabled={!isPermissionEdit && true}
+                                                    name='valor_desp'
+                                                    onChange={(e) =>
+                                                        handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
+                                                    value={item?.valor_desp || ''}
+                                                    small
+                                                    sx={{ padding: '0px 8px', minWidth: 120 }}
+                                                />
+                                            </td>
+                                            <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                {/* <Text light>{formatTimeStampTimezone(item?.dt_vencimento)}</Text> */}
+                                                <TextInput disabled={!isPermissionEdit && true}
+                                                    name='dt_vencimento'
+                                                    onChange={(e) =>
+                                                        handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
+                                                    value={(item?.dt_vencimento)?.split('T')[0] || ''}
+                                                    small type="date"
+                                                    sx={{ padding: '0px 8px' }}
+                                                />
+                                            </td>
+                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <TextInput disabled={!isPermissionEdit && true}
+                                                    name='dt_pagamento'
+                                                    onChange={(e) =>
+                                                        handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
+                                                    value={(item?.dt_pagamento)?.split('T')[0] || ''}
+                                                    small type="date"
+                                                    sx={{ padding: '0px 8px' }}
+                                                />
+                                            </td>
+                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
 
-                                                            {typeof item[column.key] === 'object' && item[column?.key || '-'] instanceof Date ? (
-                                                                formatTimeStampTimezone(item[column?.key || '-'])
-                                                            ) : (
-                                                                column.status ? (
-                                                                    <Box
-                                                                        sx={{
-                                                                            display: 'flex',
-                                                                            height: 30,
-                                                                            gap: 2,
-                                                                            alignItems: 'center',
-                                                                            borderRadius: 2,
-                                                                            justifyContent: 'center',
-                                                                            borderBottom: `1px solid ${colorPalette?.primary}`
-                                                                        }}
-                                                                    >
-                                                                        <Box sx={{ display: 'flex', backgroundColor: priorityColor(item[column.key]), width: '10px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                                                        <Text small bold style={{ padding: '0px 15px 0px 0px' }}>{item[column.key]}</Text>
-                                                                    </Box>
-                                                                ) :
-                                                                    (column.date ? formatDate(item[column?.key]) : column.price ? formatter.format(parseFloat((item[column?.key]))) : item[column?.key || '-'])
-                                                            )}
-                                                        </Box>
-                                                    ) : (
-                                                        <Text sx={{ border: 'none', padding: '2px', transition: 'background-color 1s', color: colorPalette.textColor }}>-</Text>
-                                                    )}
-                                                </td>
-                                            ))}
+                                                <SelectList fullWidth disabled={!isPermissionEdit && true}
+                                                    data={accountTypesList}
+                                                    valueSelection={item?.tipo}
+                                                    onSelect={(value) => handleChangeExpenseData(expenseId, 'tipo', value)}
+                                                    filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                />
+                                            </td>
+
+                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <SelectList disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={item?.centro_custo}
+                                                    onSelect={(value) => handleChangeExpenseData(expenseId, 'centro_custo', value)}
+                                                    filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold' }}
+                                                />
+                                            </td>
+                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <SelectList disabled={!isPermissionEdit && true}
+                                                    data={costCenterList}
+                                                    valueSelection={item?.conta_pagamento}
+                                                    onSelect={(value) => handleChangeExpenseData(expenseId, 'conta_pagamento', value)}
+                                                    filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold' }}
+                                                />
+                                            </td>
+
+                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <SelectList disabled={!isPermissionEdit && true}
+                                                    data={groupStatus}
+                                                    valueSelection={item?.status}
+                                                    onSelect={(value) => handleChangeExpenseData(expenseId, 'status', value)}
+                                                    filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold' }}
+                                                />
+                                            </td>
                                         </tr>
-                                    )
+                                    );
                                 })}
                             </tbody>
                         </table>
@@ -645,7 +737,6 @@ export default function ListBillsToPay(props) {
                     </Box>
                 </div>
             </Box>
-
 
             <Backdrop open={showBaixa} sx={{ zIndex: 999 }}>
                 <ContentContainer sx={{ zIndex: 9999 }}>
