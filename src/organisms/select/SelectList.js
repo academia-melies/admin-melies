@@ -18,7 +18,8 @@ export const SelectList = (props) => {
         minWidth = 120,
         disabled = false,
         onFilter = false,
-        filterValue = null
+        filterValue = null,
+        small = false
     } = props;
 
     const { colorPalette } = useAppContext();
@@ -32,11 +33,11 @@ export const SelectList = (props) => {
     const handleSelectChange = (event) => {
         const value = event.target.value;
         let label = ""
-        if(title == "Turma/Modulo"){
-            let nome_turma = data.filter((item) => item.value == value)      
+        if (title == "Turma/Modulo") {
+            let nome_turma = data.filter((item) => item.value == value)
             label = nome_turma[0].label;
         }
-      
+
         onSelect(value, label);
     };
 
@@ -54,7 +55,13 @@ export const SelectList = (props) => {
                             onSelect(value, label);
                         }}
                         disableClearable
-                        sx={{ height: '45px' }}
+                        sx={{
+                            height: '45px',
+                            ...(small && {
+                                height: 30,
+                                fontSize: '11px'
+                            })
+                        }}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -66,6 +73,10 @@ export const SelectList = (props) => {
                                         ...params.InputProps.style,
                                         height: '45px',
                                         padding: '0 14px',
+                                        ...(small && {
+                                            height: 30,
+                                            fontSize: '11px'
+                                        })
                                     },
                                 }}
                                 InputLabelProps={{
@@ -104,7 +115,7 @@ export const SelectList = (props) => {
                     <FormControl fullWidth>
                         <InputLabel
                             InputLabelProps={{ sx: { fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } } }}
-                            sx={{ ...inputStyle, fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } }}
+                            sx={{ fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' }, ...inputStyle }}
                         >
                             {title}
                         </InputLabel>
@@ -115,10 +126,11 @@ export const SelectList = (props) => {
                                 backgroundColor: colorPalette.inputColor,
                                 height: 45,
                                 color: colorPalette.textColor,
-                                ...sx,
                                 maxHeight: 45,
                                 transition: 'background-color 1s',
-                                fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' }
+                                fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' },
+                                ...sx,
+                                ...style
                             }}
                             value={valueSelection}
                             label={title}

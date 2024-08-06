@@ -1046,7 +1046,6 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
     }
 
     const columns = [
-        { key: 'id_extrato', label: '#Id' },
         { key: 'descricao', label: 'Descrição' },
         { key: 'dt_baixa', label: 'Dt baixa', date: true },
         { key: 'status', label: 'Status' },
@@ -1103,9 +1102,6 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                             backgroundColor: item?.transferido === 1 ? colorPalette?.buttonColor + '22' : colorPalette.primary + '88'
                                         },
                                     }}>
-                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.id_extrato || '-'}</Text>
-                                        </TableCell>
                                         <TableCell sx={{
                                             padding: '8px 10px', textAlign: 'center',
                                             whiteSpace: 'wrap',
