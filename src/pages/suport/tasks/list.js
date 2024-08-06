@@ -146,15 +146,8 @@ export default function ListTasks(props) {
     const getTasks = async () => {
         setLoading(true)
         try {
-            let query;
-            if (user?.area === "TI - Suporte") {
-                query = '/tasks';
-                setFilters({ ...filters, status: 'Em aberto, Em análise' })
-            } else {
-                query = `/task/user/${user?.id}`;
-                setFilters({ ...filters, status: 'Em aberto, Em análise' })
-            }
-            const response = await api.get(query)
+            setFilters({ ...filters, status: 'Em aberto, Em análise' })
+            const response = await api.get(`/task/user/${user?.id}`)
             const { data } = response;
             setTasksList(data)
         } catch (error) {
