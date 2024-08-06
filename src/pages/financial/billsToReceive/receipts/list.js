@@ -44,7 +44,7 @@ export default function ListReceipts(props) {
     const router = useRouter()
     const [page, setPage] = useState(0);
     const [showFilterMobile, setShowFilterMobile] = useState(false)
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [showBaixa, setShowBaixa] = useState(false)
     const [showEditFields, setShowEditFields] = useState(false)
@@ -181,8 +181,13 @@ export default function ListReceipts(props) {
 
             const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
             setAllSelected(groupIds)
-            console.log(data)
-            setInstallmentsList(data)
+            setInstallmentsList(data.map(item => {
+                const valorDesp = parseFloat(item.valor_liquido);
+                return {
+                    ...item,
+                    valor_liquido: isNaN(valorDesp) ? item.valor_liquido : valorDesp
+                };
+            }));
         } catch (error) {
             console.log(error)
         } finally {
@@ -362,6 +367,45 @@ export default function ListReceipts(props) {
     }
 
 
+    const handleUpdateInstallments = async () => {
+        if (installmentsSelected) {
+            setLoading(true)
+            const isToUpdate = installmentsSelected.split(',').map(id => parseInt(id.trim(), 10));
+            const installmentSelect = installmentsList?.filter(item => isToUpdate.includes(item.id_parcela_matr) && item?.valor_liquido)
+            let statusOk = true
+
+            try {
+                for (let installment of installmentSelect) {
+                    const response = await api.patch(`/student/installment/updateProcess`, { enrollmentStudentData: installment })
+                    const { success } = response?.data
+                    if (!success) {
+                        statusOk = false
+                    }
+                }
+
+                if (statusOk) {
+                    alert.success('Todas as parcelas foram atualizadas.');
+                    setInstallmentsSelected(null);
+                    getInstallments()
+                    setShowEditFields(false)
+                    return
+                }
+                alert.error('Tivemos um problema ao atualizar parcelas.');
+            } catch (error) {
+                alert.error('Tivemos um problema ao atualizar parcelas.');
+                console.log(error)
+                return error
+
+            } finally {
+                setLoading(false)
+            }
+            setLoading(false)
+        } else {
+            alert.info('Selecione as parcelas que desejam atualizar.')
+        }
+    }
+
+
     const handleCancelValue = async () => {
         setLoading(true)
         try {
@@ -452,6 +496,15 @@ export default function ListReceipts(props) {
         style: 'currency',
         currency: 'BRL'
     });
+
+    function formattValue(value) {
+        if (typeof value === 'string' && value !== null) {
+            // Substitui os pontos por nada e as vírgulas por ponto
+            let formattedValue = value.replace(/\./g, '').replace(',', '.');
+            return parseFloat(formattedValue);
+        }
+        return value;
+    }
 
     const sortedInstallments = [...installmentsList].sort((a, b) => {
         const dateA = new Date(a.vencimento);
@@ -814,6 +867,11 @@ export default function ListReceipts(props) {
                                                     value={(item?.vencimento)?.split('T')[0] || ''}
                                                     small type="date"
                                                     sx={{ padding: '0px 8px' }}
+                                                    InputProps={{
+                                                        style: {
+                                                            fontSize: '11px', height: 30
+                                                        }
+                                                    }}
                                                 />
                                                 : (chargeGenerated ?
                                                     <Box sx={{ display: 'flex', gap: .5, alignItems: 'center', justifyContent: 'center' }}>
@@ -864,9 +922,14 @@ export default function ListReceipts(props) {
                                                     name='valor_liquido'
                                                     onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)}
                                                     value={item?.valor_liquido}
-                                                    sx={{ width: '120px', }} />
+                                                    sx={{ width: '120px', }}
+                                                    InputProps={{
+                                                        style: {
+                                                            fontSize: '11px', height: 30
+                                                        }
+                                                    }} />
                                                 :
-                                                <Text light small>{formatter.format(item?.valor_liquido || 0)}</Text>}
+                                                <Text light small>{typeof item?.valor_liquido !== 'string' ? formatter.format(item?.valor_liquido) : formattValue(item?.valor_liquido)}</Text>}
                                         </td>
                                         <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small>{item?.n_parcela || '-'}</Text>
@@ -961,7 +1024,7 @@ export default function ListReceipts(props) {
 
             {(showEditFields && installmentsSelected) && <>
                 <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2 }}>
-                    <Button text="Processar alterações" style={{ width: '200px', height: '40px' }} />
+                    <Button text="Processar alterações" style={{ width: '200px', height: '40px' }} onClick={() => handleUpdateInstallments()} />
                 </Box>
             </>
             }

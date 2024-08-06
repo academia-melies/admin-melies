@@ -1,13 +1,11 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
-import { CheckBoxComponent, ConfirmModal, PaginationTable, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
+import { CheckBoxComponent, ConfirmModal, PaginationTable, SectionHeader } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
-import { formatDate, formatTimeStamp, formatTimeStampTimezone } from "../../../../helpers"
-import { Avatar, Backdrop, TablePagination } from "@mui/material"
-import Link from "next/link"
+import { Backdrop, Tooltip } from "@mui/material"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 import { icons } from "../../../../organisms/layout/Colors"
 
@@ -24,8 +22,6 @@ export default function ListBillsToPay(props) {
         tipo: '',
         search: ''
     })
-
-    const [expensesList, setExpensesList] = useState([])
     const [recurrencyExpenses, setRecurrencyExpenses] = useState([])
     const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_pagamento: '' })
     const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
@@ -62,10 +58,6 @@ export default function ListBillsToPay(props) {
     });
 
     const filter = (item) => {
-        // let date = new Date(item?.dt_vencimento);
-        // let filteredDate = (filters?.startDate && filters?.endDate) ?
-        //     rangeDate(date, filters?.startDate, filters?.endDate) :
-        //     item;
         let filterStatus = filters?.status.includes('todos') ? item : filters?.status.includes(item?.status)
         const normalizedFilterData = normalizeString(filters?.search);
         const filterSearch = filters?.search ? normalizeString(item?.descricao)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) : item
@@ -78,14 +70,6 @@ export default function ListBillsToPay(props) {
     const normalizeString = (str) => {
         return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     };
-
-    const rangeDate = (dateString, startDate, endDate) => {
-        const date = new Date(dateString);
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-
-        return date >= start && date <= end;
-    }
 
     useEffect(() => {
         fetchPermissions()
@@ -142,17 +126,6 @@ export default function ListBillsToPay(props) {
             await listAccounts();
             await getRecurrencyExpenses();
 
-            // const currentData = new Date();
-            // const currentYear = currentData.getFullYear();
-            // const currentMonth = currentData.getMonth() + 1;
-            // const currentDay = currentData.getDate();
-            // const start = `${currentYear}-${currentMonth}-01`;
-            // const end = `${currentYear}-${currentMonth}-${currentDay + 1}`;
-            // setFilters({
-            //     ...filters,
-            //     startDate: start, endDate: end
-            // })
-
         } catch (error) {
             console.log(error)
             return error
@@ -169,17 +142,16 @@ export default function ListBillsToPay(props) {
             const response = await api.get(`/expenses/forDate?startDate=${filters?.startDate}&endDate=${filters?.endDate}`)
             const { expenses, totalValue } = response?.data;
             if (expenses?.length > 0) {
-                setExpensesData(expenses.map(item => {
+                setExpensesData(expenses?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento)).map(item => {
                     const valorDesp = parseFloat(item.valor_desp);
                     return {
                         ...item,
-                        valor_desp: formatter.format(valorDesp)
+                        valor_desp: isNaN(valorDesp) ? item.valor_desp : formattedReal(formatter.format(valorDesp))
                     };
                 }));
             } else {
                 setExpensesData(expenses)
             }
-            setExpensesList(expenses)
             setTotalValue(totalValue)
         } catch (error) {
             console.log(error)
@@ -207,15 +179,30 @@ export default function ListBillsToPay(props) {
         }
     }
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
+    const formattedReal = (value) => {
+        let formattedValue = value
+        if (value) {
+            const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
+            if (rawValue === '') {
+                formattedValue = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
 
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValueCoin = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                formattedValue = formattedValueCoin;
+
+            }
+            return formattedValue
+        } else {
+            return value
+        }
+    }
 
     const handleChangeExpenseData = (expenseId, field, value) => {
 
@@ -277,9 +264,8 @@ export default function ListBillsToPay(props) {
     const handleBaixa = async () => {
         if (expensesSelected && baixaData?.conta_pagamento !== '' && baixaData?.dt_baixa !== '') {
             setLoading(true)
-            const isToUpdate = expensesSelected.split(',').map(id => parseInt(id.trim(), 10));
             try {
-                const response = await api.patch(`/expense/baixa`, { isToUpdate, baixaData, userRespId: user?.id })
+                const response = await api.patch(`/expense/baixa`, { expensesSelected, baixaData, userRespId: user?.id })
                 const { status } = response?.data
                 if (status) {
                     alert.success('Todas as Baixas foram realizadas com sucesso.');
@@ -355,29 +341,9 @@ export default function ListBillsToPay(props) {
         }
     }
 
-    const pusBillId = async (item) => {
-        let itemId = item?.id_despesa || 'new';
-        let queryRoute = `/financial/billsToPay/expenses/${itemId}`
-        router.push(queryRoute)
-    }
-
-    const priorityColor = (data) => (
-        ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
-        ((data === 'Cancelada' || data === 'Pagamento reprovado' || data === 'Não Autorizado') && 'red') ||
-        (data === 'Pago' && 'green') ||
-        (data === 'Aprovado' && 'blue') ||
-        (data === 'Inativa' && '#f0f0f0') ||
-        (data === 'Estornada' && '#f0f0f0'))
-
 
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-
-    const groupSelect = (id) => [
-        {
-            value: id?.toString()
-        },
-    ]
 
     const groupStatus = [
         { label: 'Todos', value: 'todos' },
@@ -399,12 +365,6 @@ export default function ListBillsToPay(props) {
         { label: 'Outubro', value: '9' },
         { label: 'Novembro', value: '10' },
         { label: 'Dezembro', value: '11' }
-    ]
-
-
-    const groupProstated = [
-        { label: 'sim', value: 1 },
-        { label: 'não', value: 0 },
     ]
 
     const selectedMonths = (value) => {
@@ -447,6 +407,44 @@ export default function ListBillsToPay(props) {
         }
     };
 
+    const handleUpdateExpenses = async () => {
+        if (expensesSelected) {
+            setLoading(true)
+            const installmentSelect = expensesData?.filter(item =>
+                expensesSelected?.some(selected => selected.expenseId === item?.id_despesa))
+            let statusOk = true
+
+            try {
+                for (let expense of installmentSelect) {
+                    const response = await api.patch(`/expense/update/processData`, { expenseData: expense })
+                    const { success } = response?.data
+                    if (!success) {
+                        statusOk = false
+                    }
+                }
+
+                if (statusOk) {
+                    alert.success('Todas as despesas foram atualizadas.');
+                    setExpensesSelected([]);
+                    getExpenses()
+                    setAllSelected(false)
+                    return
+                }
+                alert.error('Tivemos um problema ao atualizar despesas.');
+            } catch (error) {
+                alert.error('Tivemos um problema ao atualizar despesas.');
+                console.log(error)
+                return error
+
+            } finally {
+                setLoading(false)
+            }
+            setLoading(false)
+        } else {
+            alert.info('Selecione as despesas que desejam atualizar.')
+        }
+    }
+
     let totalExpensesView = expensesData?.filter(filter)?.map(item => parseFloat(item.valor_tipo)).reduce((acc, currentValue) => acc + (currentValue || 0), 0)
 
     const percentualExpenses = (parseFloat(totalExpensesView) / totalValue) * 100;
@@ -461,48 +459,15 @@ export default function ListBillsToPay(props) {
                 flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
             }}>
 
-                <Box sx={{
-                    display: 'flex', gap: 2,
-                    flexDirection: { xs: 'column', md: 'row', lg: 'row', xl: 'row' }
-                }}>
-                    <ContentContainer row style={{ justifyContent: 'center' }}>
-                        <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'column', alignItems: 'center', gap: .5 }}>
-                            <Box sx={{ display: 'flex', transition: '.5s', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                                <Box sx={{
-                                    ...styles.menuIcon,
-                                    width: 18,
-                                    height: 18,
-                                    aspectRatio: '1/1',
-                                    backgroundImage: `url('/icons/arrow_down_red_icon.png')`,
-                                    transition: '.3s',
-                                }} />
-                                <Text bold title style={{ color: 'red' }}>{formatter.format(parseFloat(totalValue))}</Text>
-                            </Box>
-                            <Text light>Despesa</Text>
-                        </Box>
-                    </ContentContainer>
-                </Box>
-
-                <ContentContainer fullWidth>
-                    <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
-                            <Box sx={{ width: '100%', display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text bold large>Despesas</Text>
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', transition: '.5s', }}>
-                                    <Text bold style={{ color: colorPalette.buttonColor }}>{formatter.format(parseFloat(totalExpensesView))}</Text>
-                                    <Text>de</Text>
-                                    <Text light style={{ color: 'rgb(75 85 99)' }}>{formatter.format(parseFloat(totalValue))}</Text>
-                                </Box>
-                            </Box>
-                            <div style={{ marginTop: '10px', width: '100%', height: '10px', borderRadius: '10px', background: '#ccc', transition: '.5s', }}>
-                                <div style={{ width: `${percentualExpenses}%`, height: '100%', borderRadius: '10px', background: colorPalette.buttonColor, transition: '.5s', }} />
-                            </div>
-                        </Box>
+                {(expensesSelected?.length > 0) && <>
+                    <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2, zIndex: 9999 }}>
+                        <Button text="Processar alterações" style={{ width: '200px', height: '40px' }} onClick={() => handleUpdateExpenses()} />
                     </Box>
-                </ContentContainer>
+                </>
+                }
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column', padding: '30px 30px', backgroundColor: colorPalette?.secondary, borderRadius: 2 }}>
+            {/* <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column', padding: '30px 30px', backgroundColor: colorPalette?.secondary, borderRadius: 2 }}>
                 <Text bold large>Filtros:</Text>
                 <Box sx={{
                     display: 'flex', gap: 1.8, alignItems: 'start', justifyContent: 'center',
@@ -537,37 +502,41 @@ export default function ListBillsToPay(props) {
                         sx={{ width: 1 }} />
                 </Box>
 
-            </Box>
+            </Box> */}
 
-            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between', }}>
-                <Box sx={{ display: 'flex' }}>
-                    <Button disabled={!isPermissionEdit && true} small text="Cadastrar Recorrência" style={{ height: '30px', borderRadius: '6px' }} onClick={() => setShowRecurrencyExpense(true)} />
+            <Box sx={{
+                display: 'flex', overflow: 'auto', padding: '15px 10px', backgroundColor: colorPalette?.secondary,
+                flexDirection: 'column'
+            }}>
+
+                <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between', }}>
+                    <Box sx={{ display: 'flex' }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Cadastrar Recorrência" style={{ height: '30px', borderRadius: '6px' }} onClick={() => setShowRecurrencyExpense(true)} />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/expenses/new`)} />
+                        <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
+                            active: true,
+                            event,
+                            acceptAction: handleDelete,
+                            title: `Excluir Despesa?`,
+                            message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
+                        })} />
+                        <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => setShowBaixa(true)} />
+                    </Box>
                 </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/expenses/new`)} />
-                    <Button disabled={!isPermissionEdit && true} small secondary text="Excluir" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={(event) => setShowConfirmationDialog({
-                        active: true,
-                        event,
-                        acceptAction: handleDelete,
-                        title: `Excluir Despesa?`,
-                        message: 'Tem certeza que deseja seguir com a exclusão? Uma vez excluído, não será possível recuperar novamente.'
-                    })} />
-                    <Button disabled={!isPermissionEdit && true} small secondary text="Dar baixa" style={{ height: '30px', borderRadius: '6px' }}
-                        onClick={() => setShowBaixa(true)} />
+
+                <Box sx={{ display: 'flex', gap: 1, padding: '15px' }}>
+                    <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
+                    <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
+                    <Button text="Buscar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => getExpenses()} />
                 </Box>
-            </Box>
 
-            <Box sx={{ display: 'flex', gap: 1, padding: '15px' }}>
-                <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
-                <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
-                <Button text="Buscar" style={{ borderRadius: 2, height: '100%', width: 110 }} onClick={() => getExpenses()} />
-            </Box>
-
-            <Box sx={{ display: 'flex', overflow: 'auto', padding: '15px 10px', backgroundColor: colorPalette?.secondary }}>
                 <div style={{
                     borderRadius: '8px', flexWrap: 'nowrap', width: '100%',
                 }}>
-                    {expensesData?.filter(item => filter(item)).length > 0 ?
+                    {expensesData?.length > 0 ?
                         <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', border: `1px solid ${colorPalette.primary}` }}>
                             <thead>
                                 <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
@@ -594,19 +563,21 @@ export default function ListBillsToPay(props) {
                                         </Box>
                                     </th>
                                     <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Descrição</Text></th>
-                                    <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Valor</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '60px' }}><Text bold small>Valor</Text></th>
                                     <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Vencimento</Text></th>
                                     <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Pagamento</Text></th>
                                     <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Tipo</Text></th>
                                     <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>C.Custo</Text></th>
                                     <th style={{ padding: '8px 0px', minWidth: '55px' }}><Text bold small>Conta.</Text></th>
                                     <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Status</Text></th>
+                                    <th style={{ padding: '8px 0px', minWidth: '65px' }}><Text bold small>Baixado</Text></th>
                                 </tr>
                             </thead>
                             <tbody style={{ flex: 1, }}>
-                                {expensesData?.slice(startIndex, endIndex)?.sort((a, b) => new Date(a.dt_vencimento) - new Date(b.dt_vencimento))?.filter(filter)?.map((item, index) => {
+                                {expensesData?.slice(startIndex, endIndex)?.map((item, index) => {
                                     const expenseId = item?.id_despesa;
                                     const selected = expensesSelected.some(recurrency => recurrency.expenseId === expenseId);
+                                    const baixado = item?.dt_pagamento && item?.conta_pagamento
                                     return (
                                         <tr key={index} style={{
                                             backgroundColor: selected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary
@@ -641,7 +612,12 @@ export default function ListBillsToPay(props) {
                                                         handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
                                                     value={item?.descricao || ''}
                                                     small fullWidth
-                                                    sx={{ padding: '0px 8px', minWidth: 300 }}
+                                                    sx={{ minWidth: 200 }}
+                                                    InputProps={{
+                                                        style: {
+                                                            fontSize: '11px', height: 30
+                                                        }
+                                                    }}
                                                 />
                                             </td>
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
@@ -651,7 +627,12 @@ export default function ListBillsToPay(props) {
                                                         handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
                                                     value={item?.valor_desp || ''}
                                                     small
-                                                    sx={{ padding: '0px 8px', minWidth: 120 }}
+                                                    sx={{ padding: '0px 8px', width: 120 }}
+                                                    InputProps={{
+                                                        style: {
+                                                            fontSize: '11px', height: 30
+                                                        }
+                                                    }}
                                                 />
                                             </td>
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
@@ -662,55 +643,99 @@ export default function ListBillsToPay(props) {
                                                         handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
                                                     value={(item?.dt_vencimento)?.split('T')[0] || ''}
                                                     small type="date"
-                                                    sx={{ padding: '0px 8px' }}
+
+                                                    InputProps={{
+                                                        style: {
+                                                            fontSize: '11px', height: 30
+                                                        }
+                                                    }}
                                                 />
                                             </td>
-                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                                 <TextInput disabled={!isPermissionEdit && true}
                                                     name='dt_pagamento'
                                                     onChange={(e) =>
                                                         handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
                                                     value={(item?.dt_pagamento)?.split('T')[0] || ''}
                                                     small type="date"
-                                                    sx={{ padding: '0px 8px' }}
+
+                                                    InputProps={{
+                                                        style: {
+                                                            fontSize: '11px', height: 30
+                                                        }
+                                                    }}
                                                 />
                                             </td>
-                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
 
-                                                <SelectList fullWidth disabled={!isPermissionEdit && true}
+                                                <SelectList
+                                                    clean={false}
+                                                    disabled={!isPermissionEdit && true}
                                                     data={accountTypesList}
                                                     valueSelection={item?.tipo}
                                                     onSelect={(value) => handleChangeExpenseData(expenseId, 'tipo', value)}
                                                     filterOpition="value" sx={{ color: colorPalette.textColor }}
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                    style={{ fontSize: '11px', height: 30, width: 120 }}
                                                 />
                                             </td>
 
-                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <SelectList disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={item?.centro_custo}
+                                            <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <SelectList
+                                                    fullWidth
+                                                    clean={false}
+                                                    disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={item?.centro_custo}
                                                     onSelect={(value) => handleChangeExpenseData(expenseId, 'centro_custo', value)}
                                                     filterOpition="value" sx={{ color: colorPalette.textColor }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold' }}
+                                                    inputStyle={{
+                                                        color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold',
+                                                        height: 30
+                                                    }}
+                                                    style={{ fontSize: '11px', height: 30, width: 120 }}
                                                 />
                                             </td>
-                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <SelectList disabled={!isPermissionEdit && true}
+                                            <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <SelectList
+                                                    fullWidth
+                                                    clean={false}
+                                                    disabled={!isPermissionEdit && true}
                                                     data={costCenterList}
                                                     valueSelection={item?.conta_pagamento}
                                                     onSelect={(value) => handleChangeExpenseData(expenseId, 'conta_pagamento', value)}
                                                     filterOpition="value" sx={{ color: colorPalette.textColor }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold' }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold', height: 30 }}
+                                                    style={{ fontSize: '11px', height: 30, width: 120 }}
                                                 />
                                             </td>
 
-                                            <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <SelectList disabled={!isPermissionEdit && true}
+                                            <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <SelectList
+                                                    fullWidth
+                                                    clean={false}
+                                                    disabled={!isPermissionEdit && true}
                                                     data={groupStatus}
                                                     valueSelection={item?.status}
                                                     onSelect={(value) => handleChangeExpenseData(expenseId, 'status', value)}
                                                     filterOpition="value" sx={{ color: colorPalette.textColor }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold' }}
+                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold', height: 30 }}
+                                                    style={{ fontSize: '11px', height: 30, width: 120 }}
                                                 />
+                                            </td>
+                                            <td style={{ textAlign: 'center', padding: '5px', alignItems: 'center', justifyContent: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                                <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Tooltip title={baixado ? 'Despesa com baixa' : "Despesa aguardando baixa"}>
+                                                        <div>
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                width: 13,
+                                                                height: 13,
+                                                                aspectRatio: '1/1',
+                                                                backgroundImage: baixado ? `url('/icons/check_around_icon.png')` : `url('/icons/remove_icon.png')`,
+                                                                transition: '.3s',
+                                                            }} />
+                                                        </div>
+                                                    </Tooltip>
+                                                </Box>
                                             </td>
                                         </tr>
                                     );
