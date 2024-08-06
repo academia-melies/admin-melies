@@ -3567,7 +3567,7 @@ export const ContractStudent = (props) => {
             if (unlocked) {
                 pdfBlob = await handleGeneratePdf()
             }
-            if (isReenrollment && !unlocked) {
+            else if (isReenrollment && !unlocked) {
                 pdfBlob = null
             } else {
                 pdfBlob = await handleGeneratePdf();
@@ -3755,7 +3755,7 @@ export const ContractStudent = (props) => {
 
                             ...(paymentsInfoData?.valueEntry > 0 ? [{ text: 'Forma de pagamento escolhida:', bold: true, margin: [0, 40, 0, 10], alignment: 'center' }] : []),
                             ...(paymentsInfoData?.valueEntry > 0 ? [{ text: `Entrada:`, bold: true, margin: [10, 40, 10, 20], alignment: 'center' }] : []),
-                            ...(paymentsInfoData?.valueEntry > 0 ? createPaymentEntryTable(paymentsInfoData) : []),
+                            ...(paymentsInfoData?.valueEntry > 0 ? createPaymentEntryTable(paymentsInfoData) || [] : []),
                             ...(paymentData?.map((payment, index) => {
                                 const nonNullPayments = payment?.filter(pay => pay?.valor_parcela);
                                 if (nonNullPayments?.length > 0) {
@@ -3867,25 +3867,24 @@ export const ContractStudent = (props) => {
 
             if (isValidDate) {
                 tableBody.push([
-                    formatter.format(paymentData?.valueEntry),
+                    formatter.format(paymentData?.valueEntry || 0),
                     paymentData?.typePaymentEntry || '',
                     'Pagamento realizado presencialmente',
-                    { text: dateForPaymentEntry, alignment: 'center' }, // Format the date
+                    { text: formatTimeStamp(dateForPaymentEntry), alignment: 'center' }, // Format the date
                 ]);
             } else {
                 console.error('Invalid dateForPaymentEntry:', dateForPaymentEntry);
-                return null; // or handle it accordingly
+                return []; // or handle it accordingly
             }
-
 
             const tableDefinition = {
                 table: {
-                    widths: ['auto', 'auto', 'auto', 'auto', 'auto'],
+                    widths: ['auto', 'auto', 'auto', 'auto'],
                     body: tableBody,
                     styles: {
-                        fontSize: 13
+                        fontSize: 13,
                     },
-                    alignment: 'center'
+                    alignment: 'center',
                 },
                 margin: [20, 0, 0, 0],
                 layout: {
@@ -3898,10 +3897,10 @@ export const ContractStudent = (props) => {
                 },
             };
 
-            return tableDefinition;
+            return [tableDefinition];
         } catch (error) {
             alert.error('Houve um erro ao processar contrato.');
-            return error;
+            return [];
         }
     };
 
