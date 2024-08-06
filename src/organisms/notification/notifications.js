@@ -23,6 +23,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
     const [progress, setProgress] = useState(100);
     const notificationTimeoutRef = useRef(null);
     const [notificationData, setNotificationData] = useState([])
+    const [showNotificationList, setShowNotificationList] = useState([])
     const [notificationSelect, setNotificationSelect] = useState()
     const [showDialog, setShowDialog] = useState(false)
 
@@ -31,8 +32,8 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         try {
             const response = await api.get(`/notification/${user?.id}`);
             setNotificationUser(response.data);
-            const notifications = response.data.length > 0 ? response.data.filter(item => item.mostrada === 0 && item?.vizualizado !== 1) : []
-            setNotificationData(notifications);
+            const notifications = response.data.length > 0 ? response.data.sort((a, b) => new Date(b.dt_criacao) - new Date(a.dt_criacao))?.filter(item => item.mostrada === 0 && item?.vizualizado !== 1) : []
+            setShowNotificationList(notifications);
             if (notifications.length > 0) {
                 setShowPopup(true);
                 setCurrentNotificationIndex(0);
@@ -58,21 +59,43 @@ export const Notifications = ({ showNotification = false, setShowNotification })
 
     }, [user]);
 
-    useEffect(() => {
-        if (notificationData.filter(item => item?.vizualizado !== 1 & item.mostrada === 0)?.length > 0) {
-            const intervalId = setInterval(() => {
-                setCurrentNotificationIndex((prevIndex) => (prevIndex + 1) % notificationData.length);
-            }, 3000);
-            return () => clearInterval(intervalId);
-        }
-    }, [notificationData]);
+    const handleUpdatePopup = async () => {
+
+    }
 
     useEffect(() => {
-        const lenghtNotification = notificationData.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.length
+
+        if (showPopup && showNotificationList.length > 0) {
+            const displayDuration = 3000; // Tempo mínimo de exibição de cada notificação (em ms)
+            const switchInterval = displayDuration; // Tempo entre as trocas de notificação (em ms)
+            let currentIndex = 0;
+
+
+            const updateNotificationPopup = async () => {
+                console.log('currentIndex: ', currentIndex)
+                console.log('showNotificationList.length: ', showNotificationList.length)
+
+                if (currentIndex < showNotificationList.length) {
+                    setCurrentNotificationIndex(currentIndex);
+                    currentIndex += 1;
+                    notificationTimeoutRef.current = setTimeout(updateNotificationPopup, switchInterval);
+                } else {
+                    handleShowed();
+                    setShowPopup(false); // Fecha o popup após mostrar todas as notificações
+                }
+            };
+
+            updateNotificationPopup();
+
+            return () => clearTimeout(notificationTimeoutRef.current);
+        }
+    }, [showPopup, showNotificationList]);
+
+
+    useEffect(() => {
+        const lenghtNotification = showNotificationList.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.length
         if (lenghtNotification > 0 && showPopup) {
             // Chama handleShowed quando o popup aparece
-            handleShowed(notificationData[currentNotificationIndex]?.id_notificacao);
-
             const switchIntervalId = setInterval(() => {
                 setCurrentNotificationIndex((prevIndex) => {
                     const nextIndex = (prevIndex + 1) % lenghtNotification;
@@ -86,17 +109,19 @@ export const Notifications = ({ showNotification = false, setShowNotification })
 
             return () => clearInterval(switchIntervalId);
         }
-    }, [notificationData, showPopup, currentNotificationIndex]);
+    }, [showNotificationList, showPopup, currentNotificationIndex]);
 
     useEffect(() => {
-        if (showPopup) {
-            const progressInterval = 50; // Intervalo para atualizar a barra de progresso (em ms)
-            let timeLeft = 8000; // Duração de cada notificação (em ms)
+        if (showPopup && showNotificationList.length > 0) {
+            const timeLeft = 3000; // Tempo total para cada notificação (em ms)
+            const progressInterval = 100; // Intervalo para atualizar a barra de progresso (em ms)
+            let timeRemaining = timeLeft;
 
             const updateProgress = () => {
                 setProgress((prev) => {
-                    const newProgress = (prev - (100 / (timeLeft / progressInterval)));
-                    if (newProgress <= 0) {
+                    const newProgress = (timeRemaining / timeLeft) * 100;
+                    timeRemaining -= progressInterval;
+                    if (timeRemaining <= 0) {
                         clearInterval(progressIntervalId);
                         return 0;
                     }
@@ -106,20 +131,13 @@ export const Notifications = ({ showNotification = false, setShowNotification })
 
             const progressIntervalId = setInterval(updateProgress, progressInterval);
 
-            notificationTimeoutRef.current = setTimeout(() => {
-                setShowPopup(false);
-                setProgress(100); // Reset progress for next notification
-            }, timeLeft);
-
-            return () => {
-                clearInterval(progressIntervalId);
-                clearTimeout(notificationTimeoutRef.current);
-            };
+            return () => clearInterval(progressIntervalId);
         }
     }, [showPopup, currentNotificationIndex]);
 
 
-    const currentNotification = notificationData?.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.[currentNotificationIndex];
+
+    const currentNotification = showNotificationList?.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.[currentNotificationIndex];
 
     useEffect(() => {
         if (!showNotification) {
@@ -201,27 +219,23 @@ export const Notifications = ({ showNotification = false, setShowNotification })
 
 
     const handleShowed = async (id) => {
-        let notificationToPatch = notificationUser.find(item => item.id_notificacao === id);
+        let notifications = showNotificationList.filter(item => item.mostrada === 0);
 
-        if (notificationToPatch && notificationToPatch.mostrada === 0) {
+        if (notifications?.length > 0) {
             try {
-                await api.patch(`/notification/update/show-popup/${id}`, { mostrada: 1 });
-                setNotificationUser(prevValue => {
-                    return prevValue.map(item => {
-                        if (item.id_notificacao === id) {
-                            return { ...item, mostrada: 1 };
-                        }
-                        return item;
+                for (let notification of notifications) {
+                    await api.patch(`/notification/update/show-popup/${notification?.id_notificacao}`, { mostrada: 1 });
+
+                    setShowNotificationList(prevValue => {
+                        return prevValue.map(item => {
+                            if (item.id_notificacao === notification?.id_notificacao) {
+                                return { ...item, mostrada: 1 };
+                            }
+                            return item;
+                        });
                     });
-                });
-                setNotificationData(prevValue => {
-                    return prevValue.map(item => {
-                        if (item.id_notificacao === id) {
-                            return { ...item, mostrada: 1 };
-                        }
-                        return item;
-                    });
-                });
+                }
+
             } catch (error) {
                 console.error('Erro ao atualizar notificação:', error);
             }
