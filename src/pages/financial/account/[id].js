@@ -40,24 +40,28 @@ export default function Editaccount(props) {
     const [accountExtractData, setEditAccount] = useState({ active: false, data: {} })
     const [newBalance, setNewBalance] = useState(false)
     const [showTransfer, setShowTransfer] = useState(false)
+    const [filterData, setFilterData] = useState('')
     const [showExclude, setShowExclude] = useState({ active: false, data: null, event: () => { } })
     const [accountToTransfer, setAccountToTransfer] = useState()
     const [costCenterList, setCostCenterList] = useState([])
     const [accountTypesList, setAccountTypesList] = useState([])
+    const [statmentSelected, setStatmentSelected] = useState([])
     const [accountList, setAccountList] = useState([])
     const [valorFormatado, setValorFormatado] = useState('');
+    const [saldAccount, setSaldAccount] = useState({});
     const [filters, setFilters] = useState({
         search: '',
         startDate: '',
         endDate: ''
     })
-    const filterFunctions = {
-        date: (item) => (filters?.startDate !== '' && filters?.endDate !== '') ? rangeDate(item?.vencimento, filters?.startDate, filters?.endDate) : item,
-        search: (item) => {
-            const normalizedSearchTerm = removeAccents(filters?.search.toLowerCase());
-            const normalizedItemName = item?.pagante ? removeAccents(item?.pagante?.toLowerCase()) : removeAccents(item?.aluno?.toLowerCase());
-            return normalizedItemName && normalizedItemName?.includes(normalizedSearchTerm)
-        },
+    const filter = (item) => {
+        const normalizedSearchTerm = normalizeString(filterData.toLowerCase());
+        const normalizedItemName = item?.descricao ? normalizeString(item?.descricao?.toLowerCase()) : item;
+        return normalizedItemName && normalizedItemName?.includes(normalizedSearchTerm)
+    };
+
+    const normalizeString = (str) => {
+        return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     };
 
     const fetchPermissions = async () => {
@@ -68,15 +72,6 @@ export default function Editaccount(props) {
             console.log(error)
             return error
         }
-    }
-
-
-    const rangeDate = (dateString, startDate, endDate) => {
-        const date = new Date(dateString);
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-
-        return date >= start && date <= end;
     }
 
     useEffect(() => {
@@ -145,7 +140,7 @@ export default function Editaccount(props) {
     const getExtract = async () => {
         try {
             const response = await api.get(`/account/extract/${id}?startDate=${filters?.startDate}&endDate=${filters?.endDate}`)
-            const statmentAccountList = response?.data;
+            const { statmentAccountList, accountDetails } = response?.data;
             const totalValuesDebit = statmentAccountList?.map(item => item.debito)?.reduce((acc, curr) => acc + curr, 0) || 0
             const totalValuesCredit = statmentAccountList?.map(item => item.credito)?.reduce((acc, curr) => acc + curr, 0) || 0
 
@@ -153,8 +148,7 @@ export default function Editaccount(props) {
             const totalDebit = parseFloat(totalValuesDebit) || 0;
             const saldo = (parseFloat(totalCredit) - parseFloat(totalDebit)) || 0;
             setSaldoAccount({ debit: totalDebit.toFixed(2), credit: totalCredit.toFixed(2), saldoAccount: saldo.toFixed(2) })
-
-
+            setSaldAccount(accountDetails)
             setSextractAccount(statmentAccountList);
         } catch (error) {
             console.log(error)
@@ -514,21 +508,30 @@ export default function Editaccount(props) {
     }
 
 
-    const handleDeleteAccountExtract = async (accountExtractId) => {
+    const handleDeleteAccountExtract = async () => {
         setLoading(true)
         try {
-            if (accountExtractId) {
-                const response = await api.delete(`/account/extract/delete/${accountExtractId}`);
-                if (response?.status === 200) {
+            let statusOk = true
+            if (statmentSelected?.length > 0) {
+                for (let statment of statmentSelected) {
+                    const response = await api.delete(`/account/extract/delete/${statment?.statmentId}`);
+                    if (response?.status !== 200) {
+                        statusOk = false;
+                    }
+                }
+
+                if (statusOk) {
                     alert.success('Conta excluída.');
                     setShowExclude({ active: false, data: null, event: () => { } })
+                    setStatmentSelected([])
                     await getExtract()
                     await handleItems()
+                } else {
+                    alert.error('Tivemos um problema ao excluir a Conta.');
                 }
             } else {
                 alert.info('Selecione uma conta.')
             }
-
         } catch (error) {
             alert.error('Tivemos um problema ao excluir a Conta.');
             console.log(error)
@@ -566,6 +569,16 @@ export default function Editaccount(props) {
         currency: 'BRL'
     });
 
+    const calculateSaldoAtual = (data, initialSaldo) => {
+        return data.reduce((saldo, item) => {
+            if (item?.credito) saldo += item.credito;
+            if (item?.debito) saldo -= item.debito;
+            return saldo;
+        }, initialSaldo);
+    };
+
+    const saldoAtual = calculateSaldoAtual(extractAccount, saldAccount.saldo);
+
     return (
         <>
             <SectionHeader
@@ -585,6 +598,21 @@ export default function Editaccount(props) {
                         })} />}
                 </Box>
             </SectionHeader>
+
+            {(statmentSelected?.length > 0) && <>
+                <Box sx={{ display: 'flex', position: 'fixed', right: 60, bottom: 20, display: 'flex', gap: 2, zIndex: 9999 }}>
+                    <Button text="Processar" small style={{ width: '200px', height: '40px', borderRadius: 2 }}
+                        onClick={(e) =>
+                            setShowExclude({
+                                active: true,
+                                title: 'Excluir Contas',
+                                description: 'Tem certeza que deseja excluir as contas selecionadas? Uma vez excluído, não será possível recupera-las, e não aparecerá no relatório final.',
+                                event: handleDeleteAccountExtract
+                            })
+                        } />
+                </Box>
+            </>
+            }
 
             {/* usuario */}
             <Box sx={{ display: 'flex', gap: 3, width: '100%', flexDirection: 'column' }}>
@@ -706,13 +734,6 @@ export default function Editaccount(props) {
                                 })
                                 :
                                 <Text light>Não foi encontrado histórico de trasnferências</Text>}
-                            <Box sx={{
-                                display: 'flex', width: '100%', position: 'absolute', bottom: '-92px',
-                                justifyContent: 'flex-end', right: 20,
-                                padding: '5px'
-                            }}>
-                                <Button style={{ borderRadius: 2 }} text="Nova Transferência" onClick={() => setShowTransfer(true)} />
-                            </Box>
                         </Box>
                     </ContentContainer>
                 </Box>
@@ -723,31 +744,31 @@ export default function Editaccount(props) {
                         <Text bold title>Extrato da conta</Text>
                     </Box>
 
-                    <Box sx={{ ...styles.inputSection, gap: 1, padding: '20px 0px' }}>
+                    <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Nova Transferência" style={{ height: '30px', borderRadius: '6px' }} onClick={() => setShowTransfer(true)} />
+                        {/* <Button disabled={!isPermissionEdit && true} small secondary text="Novo lançamento" style={{ height: '30px', borderRadius: '6px' }} /> */}
+                    </Box>
+
+                    <Box sx={{ ...styles.inputSection, gap: 1, maxWidth: 400 }}>
                         <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
                         <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
                         <Button text="Buscar" style={{ borderRadius: 2, width: 130 }} onClick={() => handleSearchExtractAccounts()} />
                     </Box>
                     {startSearch &&
                         <>
+                            <TextInput placeholder="Buscar pela descrição" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
-                                    <Text bold>Crédito:</Text>
-                                    <Text>{(formatter.format(saldoAccount?.credit))}</Text>
-                                </Box>
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
-                                    <Text bold>Débito:</Text>
-                                    <Text>{formatter.format(-saldoAccount?.debit)}</Text>
-                                </Box>
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
-                                    <Text bold>Saldo:</Text>
-                                    <Text>{formatter.format(saldoAccount?.saldoAccount)}</Text>
+                                    <Text bold>Saldo Anterior:</Text>
+                                    <Text style={{ color: saldAccount?.saldo > 0 ? 'green' : 'red' }}>{formatter.format(saldAccount?.saldo)}</Text>
                                 </Box>
                             </Box>
                             {extractAccount?.length > 0 ?
-                                <TableExtract data={extractAccount} setEditAccount={setEditAccount}
-                                    handleDeleteAccountExtract={handleDeleteAccountExtract} setShowExclude={setShowExclude} />
+                                <TableExtract data={extractAccount?.filter(filter)} setEditAccount={setEditAccount}
+                                    handleDeleteAccountExtract={handleDeleteAccountExtract} setShowExclude={setShowExclude}
+                                    accountDetails={saldAccount} saldoAtual={saldoAtual}
+                                    setStatmentSelected={setStatmentSelected}
+                                    statmentSelected={statmentSelected} />
                                 :
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
                                     <Text large light>Não foi possível encontrar movimentações na conta.</Text>
@@ -944,7 +965,7 @@ export default function Editaccount(props) {
 
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', padding: '10px 15px', backgroundColor: colorPalette.primary }}>
                             <Text bold>Saldo Atual:</Text>
-                            <Text>{formatter.format(saldoAccount?.saldoAccount)}</Text>
+                            <Text>{formatter.format(saldoAtual)}</Text>
                         </Box>
 
                         <TextInput disabled={!isPermissionEdit && true}
@@ -983,10 +1004,6 @@ export default function Editaccount(props) {
                             <Button text="Transferir" small style={{ height: 35, width: '100%' }} onClick={() => handleTrasnferDataAccount()} />
                             < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setShowTransfer(false)} />
                         </Box>
-                        {/* <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', justifyContent: 'center' }}>
-                            <Button text="Salvar" small style={{ height: 35, width: '100%' }} />
-                            < Button secondary text="Cancelar" small style={{ height: 35, width: '100%' }} onClick={() => setEditAccount({ active: false, data: {} })} />
-                        </Box> */}
                     </Box>
                 </ContentContainer>
             </Backdrop>
@@ -1004,7 +1021,9 @@ export default function Editaccount(props) {
 
 
 const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount,
-    handleDeleteAccountExtract, setShowExclude, }) => {
+    handleDeleteAccountExtract, setShowExclude, accountDetails = {}, saldoAtual,
+    setStatmentSelected,
+    statmentSelected }) => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
 
     const formatterReal = async (value) => {
@@ -1029,18 +1048,24 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
         return formattedValue
     }
 
+
+    const selectedStatmentAccount = (value) => {
+
+        const alreadySelected = statmentSelected.some(statment => statment.statmentId === value);
+
+        const updatedSelected = alreadySelected ? statmentSelected.filter(statment => statment.statmentId !== value)
+            : [...statmentSelected, { statmentId: value }];
+
+        setStatmentSelected(updatedSelected);
+        // if (updatedSelected?.length === expensesData?.length) {
+        //     setAllSelected(true);
+        // } else if (alreadySelected) {
+        //     setAllSelected(false);
+        // }
+    };
+
     const openPayment = async (item) => {
         const formattedValueData = item;
-
-        // console.log(item)
-
-        // if(item?.credito){
-        //     formattedValueData.credito = await formatterReal(formattedValueData?.credito)
-        // }
-
-        // if(item?.debito){
-        //     formattedValueData.debito = await formatterReal(formattedValueData?.debito)
-        // }
 
         await setEditAccount({ active: true, data: formattedValueData })
     }
@@ -1051,8 +1076,8 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
         { key: 'status', label: 'Status' },
         { key: 'credito', label: 'Crédito' },
         { key: 'debito', label: 'Débito' },
+        { key: 'saldo', label: 'Saldo Atual' },
         { key: 'forma_pagamento', label: 'Forma Pagamento', },
-        { key: 'observacao', label: 'Observação' },
         { key: 'c_custo', label: 'Centro de Custo' },
         { key: '', label: '' },
 
@@ -1074,26 +1099,73 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
         currency: 'BRL'
     });
 
-
     return (
         <ContentContainer sx={{ display: 'flex', width: '100%', padding: 0, backgroundColor: colorPalette.primary, boxShadow: 'none', borderRadius: 2 }}>
 
             <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
-                <Table sx={{ borderCollapse: 'collapse', width: '100%' }}>
+                <Table sx={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto' }}>
                     <TableHead>
                         <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
-                            {columns.map((column, index) => (
-                                <TableCell key={index} sx={{ padding: '16px', }}>
-                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                        <Text bold style={{ textAlign: 'center' }}>{column.label}</Text>
-                                    </Box>
-                                </TableCell>
-                            ))}
+                            <TableCell sx={{ padding: '10px 6px' }}>Excluir</TableCell>
+                            <TableCell sx={{ padding: '10px 6px' }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}>Descrição</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ padding: '10px 6px', }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}>Pagamento</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ padding: '10px 6px', }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}>Status</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ padding: '10px 6px', }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}>Crédito</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ padding: '10px 6px', }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}>Débito</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ padding: '10px 6px', }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}>Saldo</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ padding: '10px 6px', }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}>Tipo Pagamento</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ padding: '10px 6px', }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}>C. Custo</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ padding: '10px 6px', }}>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text bold style={{ textAlign: 'center' }}></Text>
+                                </Box>
+                            </TableCell>
                         </TableRow>
                     </TableHead>
-                    <TableBody sx={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
+                    <TableBody sx={{ padding: 5, backgroundColor: colorPalette.secondary }}>
                         {
                             data?.map((item, index) => {
+                                const statmentId = item?.id_extrato
+                                const selected = statmentSelected.some(statment => statment.statmentId === statmentId);
+
+                                const saldoAcumulado = accountDetails.saldo + data.slice(0, index + 1)
+                                    .reduce((acc, currentItem) => {
+                                        if (currentItem?.credito) acc += currentItem.credito;
+                                        if (currentItem?.debito) acc -= currentItem.debito;
+                                        return acc;
+                                    }, 0);
 
                                 return (
                                     <TableRow key={`${item}-${index}`} sx={{
@@ -1102,14 +1174,36 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                             backgroundColor: item?.transferido === 1 ? colorPalette?.buttonColor + '22' : colorPalette.primary + '88'
                                         },
                                     }}>
+                                        <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                                <Box sx={{
+                                                    display: 'flex', gap: 1, width: 13, height: 13, border: '1px solid', borderRadius: '2px',
+                                                    backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    }
+                                                }} onClick={() => selectedStatmentAccount(statmentId)}>
+                                                    {selected &&
+                                                        <Box sx={{
+                                                            ...styles.menuIcon,
+                                                            width: 13, height: 13,
+                                                            backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                                            transition: '.3s',
+                                                        }} />
+                                                    }
+                                                </Box>
+                                            </Box>
+                                        </TableCell>
                                         <TableCell sx={{
-                                            padding: '8px 10px', textAlign: 'center',
+                                            padding: '8px 5px', textAlign: 'center',
                                             whiteSpace: 'wrap',
-                                            maxWidth: '180px',
+                                            maxWidth: 300
                                         }}>
                                             <Text>{item?.descricao || '-'}</Text>
                                         </TableCell>
-                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
+                                        <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
                                             <Text>{formatTimeStampTimezone(item?.dt_baixa.split("T")[0], false) || '-'}  </Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '15px 10px', textAlign: 'center' }}>
@@ -1156,13 +1250,27 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                                 }} />
                                                 <Text>{formatter.format(item.debito) || '-'}</Text>
                                             </Box>
-
                                         </TableCell>
+
+                                        <TableCell sx={{ padding: '10px 5px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                                <Box sx={{
+                                                    ...styles.menuIcon,
+                                                    width: 14,
+                                                    height: 14,
+                                                    aspectRatio: '1/1',
+                                                    backgroundImage: saldoAcumulado > 0 ?
+                                                        `url('/icons/arrow_up_green_icon.png')`
+                                                        :
+                                                        `url('/icons/arrow_down_red_icon.png')`,
+                                                    transition: '.3s',
+                                                }} />
+                                                <Text style={{ whiteSpace: 'nowrap' }}>{formatter.format(saldoAcumulado)}</Text>
+                                            </Box>
+                                        </TableCell>
+
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{item?.forma_pagamento || '-'}</Text>
-                                        </TableCell>
-                                        <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
-                                            <Text>{item?.observacao || '-'}</Text>
                                         </TableCell>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Text>{item?.c_custo || '-'}</Text>
@@ -1170,15 +1278,6 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                         <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 2 }}>
                                                 <Button small text="Editar" style={{ height: 30, borderRadius: 2 }} onClick={() => openPayment(item)} />
-                                                <Button small cancel text="Excluir" style={{ height: 30, borderRadius: 2, backgroundColor: 'red' }} onClick={(e) =>
-                                                    setShowExclude({
-                                                        active: true,
-                                                        data: item?.id_extrato,
-                                                        title: 'Excluir Conta',
-                                                        description: 'Tem certeza que deseja excluir a conta? Uma vez excluído, não será possível recupera-la, e não aparecerá no relatório final.',
-                                                        event: handleDeleteAccountExtract
-                                                    })
-                                                } />
                                             </Box>
                                         </TableCell>
                                     </TableRow>
@@ -1186,6 +1285,35 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                             })
 
                         }
+
+                        <TableRow>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell sx={{ padding: '10px 5px', textAlign: 'center', backgroundColor: colorPalette?.buttonColor + '33' }}>
+                                Saldo Final:
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        width: 14,
+                                        height: 14,
+                                        aspectRatio: '1/1',
+                                        backgroundImage: saldoAtual > 0 ?
+                                            `url('/icons/arrow_up_green_icon.png')`
+                                            :
+                                            `url('/icons/arrow_down_red_icon.png')`,
+                                        transition: '.3s',
+                                    }} />
+                                    <Text style={{ whiteSpace: 'nowrap' }}>{formatter.format(saldoAtual)}</Text>
+                                </Box>
+                            </TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>

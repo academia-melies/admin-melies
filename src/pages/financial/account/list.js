@@ -56,17 +56,12 @@ export default function ListAccounts(props) {
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const componentPDF = useRef()
 
-    // const filterRegex = (name) => {
-    //     let filterRegex = name.match(/\b[\wáéíóúâêîôûãõç]+\b/gi)
-    //     return filterRegex
-    // }
-
     useEffect(() => {
         fetchPermissions()
-        getFees();
+        getAccounts();
     }, []);
 
-    const getFees = async () => {
+    const getAccounts = async () => {
         setLoading(true)
         try {
             const response = await api.get('/accounts')
