@@ -1163,8 +1163,10 @@ export default function EditUser() {
 
 
     const handleCreateUser = async () => {
+        
         if (checkRequiredFields()) {
             setLoading(true)
+            userData.arrayContacts = contactsArray
             try {
                 const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
                 const { data } = response
@@ -1435,21 +1437,6 @@ export default function EditUser() {
             });
         }
     };
-    const handleAddContact = async () => {
-        setLoading(true)
-        try {
-            const response = await api.post(`/user/dependent/create/${id}`, { dependent })
-            if (response?.status === 201) {
-                alert.success('Dependente incluido')
-                setDependent({})
-                getDependent()
-            }
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setLoading(false)
-        }
-    }
 
     const handleAddDependent = async () => {
        
