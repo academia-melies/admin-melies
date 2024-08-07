@@ -287,8 +287,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/user/contactemegerncy/${id}`)
             const { data } = response
-            const sortedData = data.sort((a, b) => a.id - b.id);
-            console.log('aqui',sortedData)
+            const sortedData = data.sort((a, b) => a.id - b.id);           
             setContactsArray(sortedData);      
         } catch (error) {
             console.log(error)
