@@ -195,7 +195,7 @@ export default function EditUser() {
     });
     const [arrayHistoric, setArrayHistoric] = useState([])
     const [arrayDependent, setArrayDependent] = useState([])
-    const [dependent, setDependent] = useState({})
+    const [dependent, setDependent] = useState({})  
     const [arrayDisciplinesProfessor, setArrayDisciplinesProfessor] = useState([])
     const [disciplinesProfessor, setDisciplinesProfessor] = useState({})
     const [valueIdHistoric, setValueIdHistoric] = useState()
@@ -226,7 +226,7 @@ export default function EditUser() {
     const [showEditWritingGrade, setShowEditWritingGrade] = useState({ active: false, writing: {} })
     const [essayWritingData, setEssayWritingData] = useState({})
     const [open, setOpen] = useState(false);
-
+    const [contactsArray, setContactsArray] = useState([]);
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -283,6 +283,18 @@ export default function EditUser() {
         }
     }
 
+    const getContactEmergency = async () => {
+        try {
+            const response = await api.get(`/user/contactemegerncy/${id}`)
+            const { data } = response
+            const sortedData = data.sort((a, b) => a.id - b.id);
+            console.log('aqui',sortedData)
+            setContactsArray(sortedData);      
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+    }
 
     const getDependent = async () => {
         try {
@@ -715,6 +727,7 @@ export default function EditUser() {
             await handleEnrollments()
             await handleResponsible()
             await handlePaymentsProfile()
+            await getContactEmergency()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -1222,6 +1235,9 @@ export default function EditUser() {
     }
 
     const handleEditUser = async () => {
+
+        userData.arrayContacts = contactsArray
+       
         if (checkRequiredFields()) {
             setLoading(true)
             try {
@@ -1264,6 +1280,7 @@ export default function EditUser() {
                     }
                 }
                 if (response?.status === 201) {
+
                     alert.success('Usuário atualizado com sucesso.');
                     handleItems()
                     return
@@ -1419,8 +1436,24 @@ export default function EditUser() {
             });
         }
     };
+    const handleAddContact = async () => {
+        setLoading(true)
+        try {
+            const response = await api.post(`/user/dependent/create/${id}`, { dependent })
+            if (response?.status === 201) {
+                alert.success('Dependente incluido')
+                setDependent({})
+                getDependent()
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const handleAddDependent = async () => {
+       
         setLoading(true)
         try {
             const response = await api.post(`/user/dependent/create/${id}`, { dependent })
@@ -2255,7 +2288,30 @@ export default function EditUser() {
 
 
     }
+    const handleAddContactEmeger = () => {
+        setContactsArray([...contactsArray, { nome_emergencia: '', telefone_emergencia: '' }]);
+    };
 
+    const handleInputChange = (index, event, type = 0) => {
+        if (type == 0) {
+            const { name, value } = event.target;
+            const newContacts = [...contactsArray];
+            newContacts[index][name] = value;
+            setContactsArray(newContacts);
+
+        } else {
+          
+            const newContacts = [...contactsArray];
+            newContacts[index].telefone_emergencia = event;
+            setContactsArray(newContacts);
+        }
+
+    };
+
+    const handleRemoveContact = (index) => {
+        const newContacts = contactsArray.filter((_, i) => i !== index);
+        setContactsArray(newContacts);
+    };
     return (
         <>
             <SectionHeader
@@ -3021,6 +3077,7 @@ export default function EditUser() {
                                 </Box>
                                 <ContentContainer>
                                     <Text large bold >Contato de Emergência</Text>
+
                                     <Box sx={styles.inputSection}>
                                         <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_emergencia' onChange={handleChange} value={userData?.nome_emergencia || ''} label='Nome' sx={{ flex: 1, }} />
                                         <PhoneInputField
@@ -3032,7 +3089,68 @@ export default function EditUser() {
                                             value={userData?.telefone_emergencia}
                                             sx={{ flex: 1, }}
                                         />
+
+                                        <Box sx={{
+                                            backgroundSize: 'cover',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center',
+                                            width: 25,
+                                            height: 25,
+                                            borderRadius: '50%',
+                                            backgroundImage: `url(/icons/include_icon.png)`,
+                                            transition: '.3s',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={handleAddContactEmeger} />
                                     </Box>
+                                    {contactsArray.map((contact, index) => (
+                                        <>
+                                            <Box sx={styles.inputSection}>
+                                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_emergencia' onChange={(event) => handleInputChange(index, event)} value={contact?.nome_emergencia || ''} label='Nome' sx={{ flex: 1, }} />
+                                                <PhoneInputField
+                                                    disabled={!isPermissionEdit && true}
+                                                    label='Telefone de emergência'
+                                                    placeholder='(11) 91234-6789'
+                                                    name='telefone_emergencia'
+                                                    onChange={(event) => handleInputChange(index, event,1)}
+                                                    value={contact?.telefone_emergencia}
+                                                    sx={{ flex: 1, }}
+                                                />
+
+                                                <Box sx={{
+                                                    backgroundSize: 'cover',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'center',
+                                                    width: 25,
+                                                    height: 25,
+                                                    borderRadius: '50%',
+                                                    backgroundImage: `url(/icons/include_icon.png)`,
+                                                    transition: '.3s',
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    }
+                                                }} onClick={handleAddContactEmeger} />
+                                                {isPermissionEdit && <Box sx={{
+                                                    backgroundSize: 'cover',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'center',
+                                                    width: 25,
+                                                    height: 25,
+                                                    backgroundImage: `url(/icons/remove_icon.png)`,
+                                                    transition: '.3s',
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    }
+                                                }} onClick={() => handleRemoveContact(index)} />}
+                                            </Box>
+                                        </>
+
+                                    )
+                                    )}
                                 </ContentContainer>
                                 <FileInput onClick={(value) => setShowEditFiles({ ...showEditFile, schoolRecord: value })}
                                     existsFiles={filesUser?.filter((file) => file.campo === 'historico/diploma').length > 0}>
