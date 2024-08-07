@@ -10,7 +10,7 @@ import { checkUserPermissions } from "../../../../validators/checkPermissionUser
 import { icons } from "../../../../organisms/layout/Colors"
 
 
-export default function ListBillsToPay(props) {
+export default function ListBillsToPay() {
     const [expensesData, setExpensesData] = useState([])
     const [monthReleaseSelected, setMonthReleaseSelected] = useState()
     const [showMonths, setShowMonths] = useState(false)
@@ -24,23 +24,23 @@ export default function ListBillsToPay(props) {
     })
     const [recurrencyExpenses, setRecurrencyExpenses] = useState([])
     const [baixaData, setBaixaData] = useState({ dt_baixa: '', conta_pagamento: '' })
-    const { setLoading, colorPalette, theme, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
+    const { setLoading, colorPalette, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
     const [expensesSelected, setExpensesSelected] = useState([]);
     const [expenseRecurrencySelected, setExpenseRecurrencySelected] = useState([]);
     const [allSelected, setAllSelected] = useState();
     const [allSelectedRecurrency, setAllSelectedRecurrency] = useState();
     const router = useRouter()
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(50);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [showBaixa, setShowBaixa] = useState(false)
     const [showRecurrencyExpense, setShowRecurrencyExpense] = useState(false)
     const [accountList, setAccountList] = useState([])
-    const [totalValue, setTotalValue] = useState(0)
     const [accountTypesList, setAccountTypesList] = useState([])
     const [costCenterList, setCostCenterList] = useState([])
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [showExclude, setShowExclude] = useState({ active: false, data: null, event: () => { } })
-
+    const [filterOn, setFilterOn] = useState(false)
+    const [showFilters, setShowFilters] = useState(false)
 
     const fetchPermissions = async () => {
         try {
@@ -59,17 +59,12 @@ export default function ListBillsToPay(props) {
 
     const filter = (item) => {
         let filterStatus = filters?.status.includes('todos') ? item : filters?.status.includes(item?.status)
-        const normalizedFilterData = normalizeString(filters?.search);
-        const filterSearch = filters?.search ? normalizeString(item?.descricao)?.toLowerCase().includes(normalizedFilterData?.toLowerCase()) : item
         let costCenter = filters?.centro_custo ? filters?.centro_custo === item?.centro_custo : item
         let accountType = filters?.tipo ? filters?.tipo === item?.tipo : item
 
-        return (filterStatus && filterSearch && costCenter && accountType);
+        return (filterStatus && costCenter && accountType);
     }
 
-    const normalizeString = (str) => {
-        return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    };
 
     useEffect(() => {
         fetchPermissions()
@@ -77,6 +72,10 @@ export default function ListBillsToPay(props) {
         listCostCenter()
         listAccountTypes()
     }, [])
+
+    useEffect(() => {
+        setShowFilters(false)
+    }, [filterOn])
 
     async function listAccounts() {
         try {
@@ -152,7 +151,6 @@ export default function ListBillsToPay(props) {
             } else {
                 setExpensesData(expenses)
             }
-            setTotalValue(totalValue)
         } catch (error) {
             console.log(error)
         } finally {
@@ -445,10 +443,6 @@ export default function ListBillsToPay(props) {
         }
     }
 
-    let totalExpensesView = expensesData?.filter(filter)?.map(item => parseFloat(item.valor_tipo)).reduce((acc, currentValue) => acc + (currentValue || 0), 0)
-
-    const percentualExpenses = (parseFloat(totalExpensesView) / totalValue) * 100;
-
     return (
         <>
             <SectionHeader
@@ -467,42 +461,100 @@ export default function ListBillsToPay(props) {
                 }
             </Box>
 
-            {/* <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column', padding: '30px 30px', backgroundColor: colorPalette?.secondary, borderRadius: 2 }}>
-                <Text bold large>Filtros:</Text>
-                <Box sx={{
-                    display: 'flex', gap: 1.8, alignItems: 'start', justifyContent: 'center',
-                }}>
-                    <TextInput placeholder="Buscar pela descrição da despesa.." name='filterData' type="search" onChange={(event) => setFilters({ ...filters, search: event.target.value })} value={filters?.search} sx={{ width: '100%' }} />
-                    <SelectList disabled={!isPermissionEdit && true} data={accountTypesList} valueSelection={filters?.tipo} onSelect={(value) => setFilters({ ...filters, tipo: value })}
-                        title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
-                    <SelectList minWidth={200} disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={filters?.centro_custo} onSelect={(value) => setFilters({ ...filters, centro_custo: value })}
-                        title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
-                    <Button text="Limpar" style={{ borderRadius: 2, height: '100%', width: 180 }} onClick={() =>
-                        setFilters({
-                            status: 'todos',
-                            startDate: '',
-                            endDate: '',
-                            centro_custo: '',
-                            tipo: ''
-                        })} />
-                </Box>
+            <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', position: 'relative', width: '100%' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '88%', gap: 4 }}>
+                    <Box sx={{
+                        display: 'flex', gap: 1
+                    }}>
+                        <Box sx={{
+                            display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilters(!showFilters)}>
+                            <Text bold>Filtros</Text>
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                width: 20,
+                                height: 20,
+                                aspectRatio: '1/1',
+                                backgroundColor: '#fff',
+                                backgroundImage: `url('/icons/${!showFilters ? 'add_icon' : 'gray_arrow_down'}.png')`,
+                            }} />
 
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <CheckBoxComponent disabled={!isPermissionEdit && true}
-                        boxGroup={groupStatus}
-                        valueChecked={filters?.status}
-                        horizontal={true}
-                        onSelect={(value) => {
-                            setFilters({ ...filters, status: value })
-                        }}
-                        sx={{ width: 1 }} />
-                </Box>
+                        </Box>
 
-            </Box> */}
+                        <Box sx={{
+                            display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowFilters(!showFilters)}>
+
+                            {(filters?.status !== 'todos' && filters?.status) && <Box sx={{
+                                display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1
+                            }}>
+                                <Text small bold>Status:</Text>
+                                <Text small>{filters?.status}</Text>
+                            </Box>}
+
+                            {(filters?.centro_custo !== 'todos' && filters?.centro_custo) && <Box sx={{
+                                display: 'flex', padding: '8px 18px', borderRadius: 5, border: `1px solid lightgray`, backgroundColor: colorPalette?.secondary, gap: 1
+                            }}>
+                                <Text small bold>Centro de Custo:</Text>
+                                <Text small>{costCenterList?.filter(item => item?.value === filters?.centro_custo)?.map(item => item?.label)}</Text>
+                            </Box>}
+                        </Box>
+                    </Box>
+
+
+                    <Box sx={{ display: 'flex' }}>
+                        <Button secondary text="Limpar filtros" small style={{ width: '100%', }} onClick={() => {
+                            setFilters({
+                                ...filters,
+                                status: 'todos',
+                                centro_custo: '',
+                                tipo: ''
+                            })
+                        }} />
+                    </Box>
+                </Box>
+                {showFilters &&
+                    <ContentContainer row sx={{
+                        display: { xs: 'none', sm: 'none', md: 'flex', lg: 'flex', xl: 'flex' },
+                        position: 'absolute', top: 45,
+                        zIndex: 999
+                    }}>
+
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                boxGroup={groupStatus}
+                                valueChecked={filters?.status}
+                                horizontal={true}
+                                onSelect={(value) => {
+                                    setFilters({ ...filters, status: value })
+                                }}
+                                sx={{ width: 1 }} />
+                        </Box>
+                        <SelectList disabled={!isPermissionEdit && true} data={accountTypesList} valueSelection={filters?.tipo} onSelect={(value) => setFilters({ ...filters, tipo: value })}
+                            title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+                        <SelectList minWidth={200} disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={filters?.centro_custo} onSelect={(value) => setFilters({ ...filters, centro_custo: value })}
+                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
+                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                        />
+
+                        <Box sx={{ display: 'flex' }}>
+                            <Button text="Filtrar" style={{ width: '120px', borderRadius: 2 }} onClick={() => setFilterOn(!filterOn)} />
+                        </Box>
+                    </ContentContainer>
+                }
+            </Box>
+
 
             <Box sx={{
                 display: 'flex', overflow: 'auto', padding: '15px 10px', backgroundColor: colorPalette?.secondary,
@@ -574,7 +626,7 @@ export default function ListBillsToPay(props) {
                                 </tr>
                             </thead>
                             <tbody style={{ flex: 1, }}>
-                                {expensesData?.slice(startIndex, endIndex)?.map((item, index) => {
+                                {expensesData?.filter(filter)?.slice(startIndex, endIndex)?.map((item, index) => {
                                     const expenseId = item?.id_despesa;
                                     const selected = expensesSelected.some(recurrency => recurrency.expenseId === expenseId);
                                     const baixado = item?.dt_pagamento && item?.conta_pagamento
@@ -699,7 +751,7 @@ export default function ListBillsToPay(props) {
                                                     fullWidth
                                                     clean={false}
                                                     disabled={!isPermissionEdit && true}
-                                                    data={costCenterList}
+                                                    data={accountList}
                                                     valueSelection={item?.conta_pagamento}
                                                     onSelect={(value) => handleChangeExpenseData(expenseId, 'conta_pagamento', value)}
                                                     filterOpition="value" sx={{ color: colorPalette.textColor }}
@@ -1123,3 +1175,4 @@ const styles = {
         height: 20,
     },
 }
+
