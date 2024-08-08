@@ -584,10 +584,9 @@ export default function Editaccount(props) {
             <SectionHeader
                 perfil={'conta bancária'}
                 title={accountData?.nome_conta || `Nova Conta`}
-                saveButton={newAccount && isPermissionEdit}
             >
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    {(!newAccount && isPermissionEdit) && <Button text="Salvar" style={{ borderRadius: 2 }} onClick={() => { if (newAccount) { handleCreate() } else { handleEdit() } }} />}
+                    <Button text="Salvar" style={{ borderRadius: 2 }} onClick={() => { if (newAccount) { handleCreate() } else { handleEdit() } }} />
                     {(!newAccount && isPermissionEdit) && <Button cancel text="Excluir Conta" style={{ borderRadius: 2 }} onClick={
                         (event) => setShowConfirmationDialog({
                             active: true,

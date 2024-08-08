@@ -541,39 +541,39 @@ export default function EditFrequency(props) {
                                                         </thead>
                                                         <tbody style={{ flex: 1 }}>
                                                             {
-                                                                classData?.map((item, index) => {
-                                                                    const name = item?.nome_social || item?.nome;
-                                                                    return (
-                                                                        <tr key={`${item}-${index}`}>
-                                                                            <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                                <Text>{name}</Text>
-                                                                            </td>
-                                                                            <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                                <RadioItem
-                                                                                    disabled={!isPermissionEdit && true}
-                                                                                    valueRadio={item?.periodo_1}
-                                                                                    group={groupFrequency}
-                                                                                    horizontal={true}
-                                                                                    onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_1', parseInt(value), aulaId)}
-                                                                                />
-                                                                            </td>
-                                                                            <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                                <RadioItem
-                                                                                    disabled={!isPermissionEdit && true}
-                                                                                    valueRadio={item?.periodo_2}
-                                                                                    group={groupFrequency}
-                                                                                    horizontal={true}
-                                                                                    onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_2', parseInt(value), aulaId)}
-                                                                                />
-                                                                                
-                                                                            </td>
-                                                                            <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
-                                                                                <TextInput disabled={!isPermissionEdit && true}
-                                                                                    fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
-                                                                            </td>
-                                                                        </tr>
-                                                                    );
-                                                                })
+                                                                classData?.sort((a, b) => a.nome.localeCompare(b.nome))?.map((item, index) => {
+                                                                        const name = item?.nome;
+                                                                        return (
+                                                                            <tr key={`${item}-${index}`}>
+                                                                                <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                                    <Text>{name}</Text>
+                                                                                </td>
+                                                                                <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                                    <RadioItem
+                                                                                        disabled={!isPermissionEdit && true}
+                                                                                        valueRadio={item?.periodo_1}
+                                                                                        group={groupFrequency}
+                                                                                        horizontal={true}
+                                                                                        onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_1', parseInt(value), aulaId)}
+                                                                                    />
+                                                                                </td>
+                                                                                <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                                    <RadioItem
+                                                                                        disabled={!isPermissionEdit && true}
+                                                                                        valueRadio={item?.periodo_2}
+                                                                                        group={groupFrequency}
+                                                                                        horizontal={true}
+                                                                                        onSelect={(value) => handleChangeFrequency(item?.usuario_id, 'periodo_2', parseInt(value), aulaId)}
+                                                                                    />
+
+                                                                                </td>
+                                                                                <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
+                                                                                    <TextInput disabled={!isPermissionEdit && true}
+                                                                                        fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
+                                                                                </td>
+                                                                            </tr>
+                                                                        );
+                                                                    })
 
                                                             }
                                                         </tbody>
