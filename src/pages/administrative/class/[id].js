@@ -230,7 +230,8 @@ export default function EditClass(props) {
                 response = await api.get(`/class/students/${id}`)
             }
             const { data } = response
-            await setEnrolledStudents(data)
+            const sortedStudents = data?.sort((a, b) => b.nome.localeCompare(a.nome))
+            await setEnrolledStudents(sortedStudents)
         } catch (error) {
             console.log(error)
             return error
