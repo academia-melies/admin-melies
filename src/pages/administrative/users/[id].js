@@ -3746,7 +3746,7 @@ export default function EditUser() {
                                                                 <Text light>{item?.modulo}º Módulo</Text>
                                                             </Box>
                                                             <Divider padding={0} />
-                                                            <Box sx={styles.inputSection}>
+                                                            <Box sx={{ ...styles.inputSection, justifyContent: 'flex-start', gap: 2 }}>
                                                                 <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1 }}>
                                                                     <Text bold>Contrato do aluno:</Text>
                                                                     <Box sx={{
@@ -3803,6 +3803,13 @@ export default function EditUser() {
                                                                             }
                                                                         }}
                                                                     />
+                                                                </Box>
+
+                                                                <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                    <Text bold>Gerar um novo contrato:</Text>
+                                                                    <Link href={`/administrative/users/${id}/generateContract?enrollmentId=${enrollmentId}`} target="_blank">
+                                                                        <Button small text="Gerar" style={{ width: 105, height: 25, alignItems: 'center' }} />
+                                                                    </Link>
                                                                 </Box>
                                                             </Box>
                                                             <Divider padding={0} />
@@ -5293,7 +5300,7 @@ export const EditFile = (props) => {
         setFileCallback
     } = props
 
-    const { alert, setLoading, matches, theme } = useAppContext()
+    const { alert, setLoading, matches, theme, colorPalette } = useAppContext()
 
     const handleDeleteFile = async (files) => {
         setLoading(true)
@@ -5350,6 +5357,10 @@ export const EditFile = (props) => {
         const arquivosAtualizados = filesUser.filter((uploadedFile) => uploadedFile.id !== file.id);
         setFilesUser(arquivosAtualizados);
     };
+
+
+    const statusColor = (data) => ((data === 'Pendente de assinatura' && 'yellow') ||
+        (data === 'Assinado' && 'green'))
 
     return (
         <>
@@ -5470,7 +5481,7 @@ export const EditFile = (props) => {
                     }
 
                     {campo != 'foto_perfil' && fileData?.length > 0 &&
-                        <ContentContainer>
+                        <ContentContainer style={{ boxShadow: 'none', padding: '15px' }}>
                             <Text bold>Arquivos</Text>
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, overflow: 'auto', padding: '15px 10px' }}>
                                 {fileData?.map((file, index) => {
@@ -5479,7 +5490,12 @@ export const EditFile = (props) => {
                                     const fileName = file?.name_file || file?.name
                                     const fileLocation = file?.location || file?.preview
                                     return (
-                                        <Box key={`${file}-${index}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: '160px' }}>
+                                        <Box key={`${file}-${index}`} sx={{
+                                            display: 'flex', flexDirection: 'column',
+                                            gap: 1,
+                                            maxWidth: '200px',
+                                            padding: '10px 8px', backgroundColor: colorPalette?.primary, borderRadius: 2
+                                        }}>
 
                                             <Link
                                                 style={{ display: 'flex', position: 'relative', border: `1px solid gray`, borderRadius: '8px' }}
@@ -5519,9 +5535,25 @@ export const EditFile = (props) => {
                                                     }
                                                 }} />}
                                             </Link>
-                                            <Text sx={{ fontWeight: 'bold', fontSize: 'small', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {decodeURIComponent(fileName)}
-                                            </Text>
+                                            <Box sx={{ display: 'flex', gap: .5, padding: '5px', borderRadius: 2, flexDirection: 'column', backgroundColor: colorPalette?.secondary }}>
+                                                <Text xsmall sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    Nome: <strong>{decodeURIComponent(fileName)}</strong>
+                                                </Text>
+                                                {file?.dt_criacao && <Text xsmall sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    Dt Criação: <strong>{formatTimeStamp(file?.dt_criacao, true)}</strong>
+                                                </Text>}
+                                                {(columnId === 'id_contrato_aluno' && file?.status_assinaturas) &&
+                                                    <Box sx={{ display: 'flex', gap: .3 }}>
+                                                        <Text xsmall sx={{ whiteSpace: 'nowrap' }}>
+                                                            Status:</Text>
+                                                        <Box sx={{ display: 'flex', padding: '2px 5px', backgroundColor: statusColor(file?.status_assinaturas), borderRadius: 2 }}>
+                                                            <Text bold xsmall sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                                {file?.status_assinaturas}
+                                                            </Text>
+                                                        </Box>
+                                                    </Box>
+                                                }
+                                            </Box>
                                         </Box>
                                     )
                                 })}
