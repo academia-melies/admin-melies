@@ -51,46 +51,42 @@ export const Notifications = ({ showNotification = false, setShowNotification })
 
     useEffect(() => {
         if (user) {
+            fetchNotifications(); // Buscar notificações inicialmente
             const intervalId = setInterval(() => {
-                fetchNotifications();
+                if (!showPopup) { // Só buscar novas notificações se não houver popup ativo
+                    fetchNotifications();
+                }
             }, 8000);
             return () => clearInterval(intervalId);
         }
-
-    }, [user]);
+    }, [user, showPopup]);
 
     const handleUpdatePopup = async () => {
 
     }
 
     useEffect(() => {
-
         if (showPopup && showNotificationList.length > 0) {
             const displayDuration = 3000; // Tempo mínimo de exibição de cada notificação (em ms)
             const switchInterval = displayDuration; // Tempo entre as trocas de notificação (em ms)
-            let currentIndex = 0;
+            const totalNotifications = showNotificationList.length;
 
-
-            const updateNotificationPopup = async () => {
-                console.log('currentIndex: ', currentIndex)
-                console.log('showNotificationList.length: ', showNotificationList.length)
-
-                if (currentIndex < showNotificationList.length) {
-                    setCurrentNotificationIndex(currentIndex);
-                    currentIndex += 1;
-                    notificationTimeoutRef.current = setTimeout(updateNotificationPopup, switchInterval);
+            const updateNotificationPopup = () => {
+                if (currentNotificationIndex < totalNotifications) {
+                    setProgress(100);
+                    notificationTimeoutRef.current = setTimeout(() => {
+                        setCurrentNotificationIndex(currentNotificationIndex + 1);
+                    }, switchInterval);
                 } else {
                     handleShowed();
-                    setShowPopup(false); // Fecha o popup após mostrar todas as notificações
+                    setShowPopup(false);
                 }
             };
 
             updateNotificationPopup();
-
             return () => clearTimeout(notificationTimeoutRef.current);
         }
-    }, [showPopup, showNotificationList]);
-
+    }, [showPopup, currentNotificationIndex, showNotificationList]);
 
     useEffect(() => {
         const lenghtNotification = showNotificationList.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.length
@@ -130,7 +126,6 @@ export const Notifications = ({ showNotification = false, setShowNotification })
             };
 
             const progressIntervalId = setInterval(updateProgress, progressInterval);
-
             return () => clearInterval(progressIntervalId);
         }
     }, [showPopup, currentNotificationIndex]);
