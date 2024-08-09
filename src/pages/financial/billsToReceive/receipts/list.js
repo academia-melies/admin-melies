@@ -226,6 +226,7 @@ export default function ListReceipts(props) {
 
             }
         }
+        console.log(formattedValue)
         setInstallmentsList(prevInstallments => {
             return prevInstallments?.map(installment => {
                 if (installment.id_parcela_matr === installmentId) {
@@ -234,6 +235,8 @@ export default function ListReceipts(props) {
                 return installment;
             });
         });
+        console.log(installmentsList)
+
     };
 
     const checkValuesNewInstallment = async () => {
@@ -371,15 +374,15 @@ export default function ListReceipts(props) {
         if (installmentsSelected) {
             setLoading(true)
             const isToUpdate = installmentsSelected.split(',').map(id => parseInt(id.trim(), 10));
-            const installmentSelect = installmentsList?.filter(item => isToUpdate.includes(item.id_parcela_matr) && item?.valor_liquido)
-            let statusOk = true
-
+            const installmentSelect = installmentsList?.filter(item => isToUpdate.includes(item.id_parcela_matr))
+            let statusOk = false
+            console.log(installmentSelect)
             try {
                 for (let installment of installmentSelect) {
                     const response = await api.patch(`/student/installment/updateProcess`, { enrollmentStudentData: installment })
                     const { success } = response?.data
-                    if (!success) {
-                        statusOk = false
+                    if (success) {
+                        statusOk = true
                     }
                 }
 
