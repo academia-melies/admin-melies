@@ -23,6 +23,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
+import { groupData } from "../../../helpers/groupData"
 require('dotenv').config();
 
 
@@ -2698,7 +2699,7 @@ export default function EditUser() {
 
                                 <Box sx={{ padding: '0px 0px 20px 0px' }}>
                                     <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                        boxGroup={groupForeigner}
+                                        boxGroup={groupData.groupForeigner}
                                         valueChecked={userData?.foreigner || ''}
                                         horizontal={mobile ? false : true}
                                         onSelect={(value) => {
