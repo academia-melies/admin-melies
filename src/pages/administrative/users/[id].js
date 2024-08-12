@@ -34,7 +34,6 @@ export default function EditUser() {
     const newUser = id === 'new';
     const [perfil, setPerfil] = useState('')
     const [fileCallback, setFileCallback] = useState()
-    const [bgPhoto, setBgPhoto] = useState({})
     const [enrollmentRegisterData, setEnrollmentRegisterData] = useState({
         turma_id: null,
         modulo: null,
@@ -109,7 +108,7 @@ export default function EditUser() {
         nascimento: null,
         tipo_deficiencia: null,
         nome_emergencia: null,
-        foto_perfil_id: bgPhoto?.location || fileCallback?.preview || null,
+        foto_perfil_id: fileCallback?.preview || null,
         nome_social: null
     })
     const [contract, setContract] = useState({
@@ -276,7 +275,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/user/${id}`)
             const { data } = response
-            setUserData(data.response)
+            setUserData(data)
         } catch (error) {
             console.log(error)
             return error
@@ -370,16 +369,6 @@ export default function EditUser() {
             const response = await api.get(`/user/historical/${id}`)
             const { data } = response
             setArrayHistoric(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    const getPhoto = async () => {
-        try {
-            const response = await api.get(`/photo/${id}`)
-            const { data } = response
-            setBgPhoto(data)
         } catch (error) {
             console.log(error)
         }
@@ -704,7 +693,6 @@ export default function EditUser() {
             await getContract()
             await getInterest()
             await getHistoric()
-            await getPhoto()
             await getFileUser()
             await getContractStudent()
             await getOfficeHours()
@@ -2130,7 +2118,7 @@ export default function EditUser() {
         },
     ]
 
-    const groupForeigner = [
+    const userForeigner = [
         {
             label: 'Estrangeiro sem CPF',
             value: true
@@ -2332,11 +2320,11 @@ export default function EditUser() {
                                 title='Foto de perfil'
                                 text='Para alterar sua foto de perfil, clique ou arraste no local desejado.'
                                 textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
-                                fileData={bgPhoto}
+                                fileData={userData?.foto}
                                 usuarioId={id}
                                 campo='foto_perfil'
                                 tipo='foto'
-                                bgImage={bgPhoto?.location || fileCallback?.preview}
+                                bgImage={userData?.foto?.location || fileCallback?.preview}
                                 callback={(file) => {
                                     if (file.status === 201 || file.status === 200) {
                                         setFileCallback({
@@ -2356,7 +2344,7 @@ export default function EditUser() {
                                 width: 300,
                                 gap: 2
                             }}>
-                                <Avatar src={bgPhoto?.location || fileCallback?.preview} sx={{
+                                <Avatar src={userData?.foto?.location || fileCallback?.preview} sx={{
                                     height: 'auto',
                                     borderRadius: '16px',
                                     width: { xs: '100%', sm: 150, md: 200, lg: 300 },

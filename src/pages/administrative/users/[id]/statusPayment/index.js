@@ -86,7 +86,7 @@ export default function StuatusPayment() {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             if (response?.status === 200) {
-                setUserData(data?.response)
+                setUserData(data)
                 return data
             }
         } catch (error) {
