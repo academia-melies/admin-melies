@@ -63,8 +63,7 @@ export default function LoansStudentEdit(props) {
     const getStudent = async () => {
         try {
             const userResponse = await api.get(`/user/${id}`)
-            const { response } = userResponse.data
-            setStudentData(response)
+            setStudentData(userResponse.data)
         } catch (error) {
             console.log(error)
             return error

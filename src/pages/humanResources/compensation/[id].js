@@ -52,8 +52,8 @@ export default function EditCompensation(props) {
         try {
             const response = await api.get(`/user/${id}`)
             const { data } = response
-            setUserData(data.response)
-            return data?.response
+            setUserData(data)
+            return data
         } catch (error) {
             console.log(error)
             return error

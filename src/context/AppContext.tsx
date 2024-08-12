@@ -1,7 +1,6 @@
 import { Backdrop, CircularProgress, useMediaQuery } from "@mui/material";
-import Cookies from "js-cookie";
 import { useRouter } from "next/router";
-import { createContext, useContext, useEffect, useReducer, useState } from "react";
+import { ReactNode, createContext, useContext, useEffect, useReducer, useState } from "react";
 import { Box, Button, ContentContainer, Divider, Text } from "../atoms";
 import { getDialogPosition } from "../helpers";
 import { Alert, Colors } from "../organisms";
@@ -10,23 +9,77 @@ import { LoadingIcon } from "../organisms/loading/Loading";
 import { versions } from "../config/config";
 import { icons } from "../organisms/layout/Colors";
 
+export interface ColorPalette {
+    primary: string;
+    secondary: string;
+    third: string;
+    buttonColor: string;
+    inputColor: string;
+    textColor: string;
+}
+
+interface AlertData {
+    active: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+}
+
+export interface AppContextType {
+    isAuthenticated: boolean;
+    user: any; // Ajuste o tipo conforme necessário
+    setUser: React.Dispatch<React.SetStateAction<any>>; // Ajuste o tipo conforme necessário
+    permissions: any; // Ajuste o tipo conforme necessário
+    login: (credentials: { email: string; senha: string }) => Promise<any>; // Ajuste o tipo conforme necessário
+    logout: () => void;
+    loading: boolean;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    setDataBox: React.Dispatch<React.SetStateAction<boolean>>;
+    alert: ShowAlert;
+    setShowConfirmationDialog: React.Dispatch<React.SetStateAction<any>>; // Ajuste o tipo conforme necessário
+    colorPalette: ColorPalette;
+    setColorPalette: React.Dispatch<React.SetStateAction<ColorPalette>>;
+    theme: boolean;
+    setTheme: React.Dispatch<React.SetStateAction<boolean>>;
+    directoryIcons: string;
+    matches: boolean;
+    userPermissions: any; // Ajuste o tipo conforme necessário
+    notificationUser: any[]; // Ajuste o tipo conforme necessário
+    setNotificationUser: React.Dispatch<React.SetStateAction<any[]>>; // Ajuste o tipo conforme necessário
+    latestVersionNumber: string | undefined;
+    latestVersion: any; // Ajuste o tipo conforme necessário
+    menuItemsList: any[]; // Ajuste o tipo conforme necessário
+    showVersion: boolean;
+    setShowVersion: React.Dispatch<React.SetStateAction<boolean>>;
+    permissionTop15: boolean;
+}
+
+interface AppProviderProps {
+    children: ReactNode;
+}
+
+interface Login {
+    email: string
+    senha: string
+}
+
 const MAX_CONFIRMATION_DIALOG_WITH = 360;
 
-export const AppContext = createContext({});
+export const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const AppProvider = ({ children }) => {
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     let directoryIcons = 'https://mf-planejados.s3.us-east-1.amazonaws.com/melies/'
 
-    const reducer = (prev, next) => {
+    const reducer = (prev: any, next: any) => {
         let dialogPosition = null
         if (next.event) dialogPosition = getDialogPosition(next.event, MAX_CONFIRMATION_DIALOG_WITH);
         return { ...prev, ...next, ...(dialogPosition && { position: dialogPosition }) }
     };
 
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
-    const [notificationUser, setNotificationUser] = useState([])
+    const [notificationUser, setNotificationUser] = useState<any>([])
     const [menuItemsList, setMenuItemsList] = useState([])
     const [dataBox, setDataBox] = useState(false)
     const [userPermissions, setUserPermissions] = useState()
@@ -51,26 +104,17 @@ export const AppProvider = ({ children }) => {
     const [showVersion, setShowVersion] = useState(false)
     const router = useRouter()
     const alert = new ShowAlert(setAlertData)
-    const calculateExpiration = (hours) => {
-        const now = new Date();
-        return now.getTime() + hours * 60 * 60 * 1000;
-    };
-
     const filterVersions = versions?.filter(item => item.status === 'lançada');
     const latestVersion = filterVersions[filterVersions.length - 1];
     const latestVersionNumber = latestVersion?.version;
 
     const groupArea = [
         { label: 'Financeiro', value: 'Financeiro' },
-        // { label: 'Biblioteca', value: 'Biblioteca' },
         { label: 'TI - Suporte', value: 'TI - Suporte' },
-        // { label: 'RH', value: 'RH' },
-        // { label: 'Marketing', value: 'Marketing' },
         { label: 'Atendimento/Recepção', value: 'Atendimento/Recepção' },
         { label: 'Secretaria', value: 'Secretaria' },
         { label: 'Administrativo', value: 'Administrativo' },
         { label: 'Diretoria', value: 'Diretoria' },
-        // { label: 'Acadêmica', value: 'Acadêmica' },
     ]
 
     useEffect(() => {
@@ -102,7 +146,7 @@ export const AppProvider = ({ children }) => {
         loadUserFromCookies()
     }, [])
 
-    const login = async ({ email, senha }) => {
+    const login = async ({ email, senha }: Login) => {
         try {
             setLoading(true)
             const response = await api.post('/user/login', { email, senha })
@@ -254,7 +298,6 @@ export const AppProvider = ({ children }) => {
             </Backdrop>
             <ConfirmationModal
                 active={showConfirmationDialog.active}
-                position={showConfirmationDialog.position}
                 title={showConfirmationDialog.title}
                 message={showConfirmationDialog.message}
                 acceptAction={showConfirmationDialog.acceptAction}
@@ -274,7 +317,7 @@ export const AppProvider = ({ children }) => {
     )
 }
 
-export const UpdateVersion = ({ user, showVersion, setShowVersion, latestVersion, colorPalette, setUser, theme }) => {
+export const UpdateVersion = ({ user, showVersion, setShowVersion, latestVersion, colorPalette, setUser, theme }: any) => {
 
     const handleAttMsgVersion = async () => {
         try {
@@ -318,7 +361,7 @@ export const UpdateVersion = ({ user, showVersion, setShowVersion, latestVersion
                         <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column' }}>
                             <Text bold>Algumas mudanças:</Text>
 
-                            {latestVersion?.listChanges?.map((item, index) => {
+                            {latestVersion?.listChanges?.map((item: any, index: number) => {
                                 return (
                                     <Box key={index} sx={{
                                         display: 'flex', gap: 1, color: 'rgb(75 85 99)', "&:hover": {
@@ -350,7 +393,17 @@ export const UpdateVersion = ({ user, showVersion, setShowVersion, latestVersion
     )
 }
 
-export const ConfirmationModal = (props) => {
+interface ConfirmationModal {
+    active: boolean
+    title: string,
+    message: string | null,
+    acceptAction: any,
+    closeDialog: any,
+    colorPalette: ColorPalette | null,
+    theme: boolean
+}
+
+export const ConfirmationModal = (props: ConfirmationModal) => {
 
     const {
         active,
@@ -420,13 +473,17 @@ export const ConfirmationModal = (props) => {
     );
 }
 
+type SetAlertData = (alertData: AlertData) => void;
 
 class ShowAlert {
-    constructor(setAlertData) {
+
+    private setAlertData: SetAlertData
+
+    constructor(setAlertData: SetAlertData) {
         this.setAlertData = setAlertData
     }
 
-    success(message = '',) {
+    success(message: string = '',) {
         this.setAlertData({
             active: true,
             type: 'success',
@@ -435,7 +492,7 @@ class ShowAlert {
         })
     }
 
-    error(message = '') {
+    error(message: string = '') {
         this.setAlertData({
             active: true,
             type: 'error',
@@ -444,7 +501,7 @@ class ShowAlert {
         })
     }
 
-    info(title = '', message = '') {
+    info(title: string = '', message: string = '') {
         this.setAlertData({
             active: true,
             type: 'info',
@@ -474,4 +531,10 @@ const styles = {
     },
 }
 
-export const useAppContext = () => useContext(AppContext)
+export const useAppContext = (): AppContextType => {
+    const context = useContext(AppContext);
+    if (context === undefined) {
+        throw new Error('useAppContext must be used within an AppProvider');
+    }
+    return context;
+};

@@ -155,8 +155,7 @@ export default function InterestEnroll() {
         setLoading(true)
         try {
             const userDetails = await api.get(`/user/${id}`)
-            const { response } = userDetails.data
-            setUserData(response)
+            setUserData(userDetails.data)
 
             const isOfLegalAge = await calculationAge(response?.nascimento)
             setUserIsOfLegalAge(isOfLegalAge)

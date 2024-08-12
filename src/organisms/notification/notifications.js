@@ -28,111 +28,159 @@ export const Notifications = ({ showNotification = false, setShowNotification })
     const [showDialog, setShowDialog] = useState(false)
 
 
-    const fetchNotifications = async () => {
-        try {
-            const response = await api.get(`/notification/${user?.id}`);
-            setNotificationUser(response.data);
-            const notifications = response.data.length > 0 ? response.data.sort((a, b) => new Date(b.dt_criacao) - new Date(a.dt_criacao))?.filter(item => item.mostrada === 0 && item?.vizualizado !== 1) : []
-            setShowNotificationList(notifications);
-            if (notifications.length > 0) {
-                setShowPopup(true);
-                setCurrentNotificationIndex(0);
-                handlePermissionSound();
-                updateNotificationPopup();
+    // const fetchNotifications = async () => {
+    //     try {
+    //         const response = await api.get(`/notification/${user?.id}`);
+    //         setNotificationUser(response.data);
+    //         const notifications = response.data.length > 0 ? response.data.sort((a, b) => new Date(b.dt_criacao) - new Date(a.dt_criacao))?.filter(item => item.mostrada === 0 && item?.vizualizado !== 1) : []
+    //         setShowNotificationList(notifications);
+    //         if (notifications.length > 0) {
+    //             setShowPopup(true);
+    //             setCurrentNotificationIndex(0);
+    //             handlePermissionSound();
+    //             updateNotificationPopup();
 
-            } else {
-                setShowPopup(false);
-                updateNotificationPopup();
-            }
-        } catch (error) {
-            console.error('Erro ao buscar notificações:', error);
-        }
-    };
+    //         } else {
+    //             setShowPopup(false);
+    //             updateNotificationPopup();
+    //         }
+    //     } catch (error) {
+    //         console.error('Erro ao buscar notificações:', error);
+    //     }
+    // };
 
-    useEffect(() => {
-        if (user) {
-            fetchNotifications(); // Buscar notificações inicialmente
-            const intervalId = setInterval(() => {
-                if (!showPopup) { // Só buscar novas notificações se não houver popup ativo
-                    fetchNotifications();
-                }
-            }, 8000);
-            return () => clearInterval(intervalId);
-        }
-    }, [user, showPopup]);
+    // useEffect(() => {
+    //     if (user) {
+    //         fetchNotifications(); // Buscar notificações inicialmente
+    //         const intervalId = setInterval(() => {
+    //             if (!showPopup) { // Só buscar novas notificações se não houver popup ativo
+    //                 fetchNotifications();
+    //             }
+    //         }, 8000);
+    //         return () => clearInterval(intervalId);
+    //     }
+    // }, [user, showPopup]);
 
-    const handleUpdatePopup = async () => {
+    // useEffect(() => {
+    //     if (showPopup && showNotificationList.length > 0) {
+    //         const displayDuration = 3000; // Tempo mínimo de exibição de cada notificação (em ms)
+    //         const switchInterval = displayDuration; // Tempo entre as trocas de notificação (em ms)
+    //         const totalNotifications = showNotificationList.length;
 
-    }
+    //         const updateNotificationPopup = () => {
+    //             if (currentNotificationIndex < totalNotifications) {
+    //                 setProgress(100);
+    //                 notificationTimeoutRef.current = setTimeout(() => {
+    //                     setCurrentNotificationIndex(currentNotificationIndex + 1);
+    //                 }, switchInterval);
+    //             } else {
+    //                 handleShowed();
+    //                 setShowPopup(false);
+    //             }
+    //         };
 
-    useEffect(() => {
-        if (showPopup && showNotificationList.length > 0) {
-            const displayDuration = 3000; // Tempo mínimo de exibição de cada notificação (em ms)
-            const switchInterval = displayDuration; // Tempo entre as trocas de notificação (em ms)
-            const totalNotifications = showNotificationList.length;
+    //         updateNotificationPopup();
+    //         return () => clearTimeout(notificationTimeoutRef.current);
+    //     }
+    // }, [showPopup, currentNotificationIndex, showNotificationList]);
 
-            const updateNotificationPopup = () => {
-                if (currentNotificationIndex < totalNotifications) {
-                    setProgress(100);
-                    notificationTimeoutRef.current = setTimeout(() => {
-                        setCurrentNotificationIndex(currentNotificationIndex + 1);
-                    }, switchInterval);
-                } else {
-                    handleShowed();
-                    setShowPopup(false);
-                }
-            };
+    // useEffect(() => {
+    //     const lenghtNotification = showNotificationList.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.length
+    //     if (lenghtNotification > 0 && showPopup) {
+    //         // Chama handleShowed quando o popup aparece
+    //         const switchIntervalId = setInterval(() => {
+    //             setCurrentNotificationIndex((prevIndex) => {
+    //                 const nextIndex = (prevIndex + 1) % lenghtNotification;
+    //                 if (nextIndex === 0) {
+    //                     setShowPopup(false); // Desativa o popup após mostrar a última notificação
+    //                     clearInterval(switchIntervalId);
+    //                 }
+    //                 return nextIndex;
+    //             });
+    //         }, 8000);
 
-            updateNotificationPopup();
-            return () => clearTimeout(notificationTimeoutRef.current);
-        }
-    }, [showPopup, currentNotificationIndex, showNotificationList]);
+    //         return () => clearInterval(switchIntervalId);
+    //     }
+    // }, [showNotificationList, showPopup, currentNotificationIndex]);
 
-    useEffect(() => {
-        const lenghtNotification = showNotificationList.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.length
-        if (lenghtNotification > 0 && showPopup) {
-            // Chama handleShowed quando o popup aparece
-            const switchIntervalId = setInterval(() => {
-                setCurrentNotificationIndex((prevIndex) => {
-                    const nextIndex = (prevIndex + 1) % lenghtNotification;
-                    if (nextIndex === 0) {
-                        setShowPopup(false); // Desativa o popup após mostrar a última notificação
-                        clearInterval(switchIntervalId);
-                    }
-                    return nextIndex;
-                });
-            }, 8000);
+    // useEffect(() => {
+    //     if (showPopup && showNotificationList.length > 0) {
+    //         const timeLeft = 3000; // Tempo total para cada notificação (em ms)
+    //         const progressInterval = 100; // Intervalo para atualizar a barra de progresso (em ms)
+    //         let timeRemaining = timeLeft;
 
-            return () => clearInterval(switchIntervalId);
-        }
-    }, [showNotificationList, showPopup, currentNotificationIndex]);
+    //         const updateProgress = () => {
+    //             setProgress((prev) => {
+    //                 const newProgress = (timeRemaining / timeLeft) * 100;
+    //                 timeRemaining -= progressInterval;
+    //                 if (timeRemaining <= 0) {
+    //                     clearInterval(progressIntervalId);
+    //                     return 0;
+    //                 }
+    //                 return newProgress;
+    //             });
+    //         };
 
-    useEffect(() => {
-        if (showPopup && showNotificationList.length > 0) {
-            const timeLeft = 3000; // Tempo total para cada notificação (em ms)
-            const progressInterval = 100; // Intervalo para atualizar a barra de progresso (em ms)
-            let timeRemaining = timeLeft;
+    //         const progressIntervalId = setInterval(updateProgress, progressInterval);
+    //         return () => clearInterval(progressIntervalId);
+    //     }
+    // }, [showPopup, currentNotificationIndex]);
 
-            const updateProgress = () => {
-                setProgress((prev) => {
-                    const newProgress = (timeRemaining / timeLeft) * 100;
-                    timeRemaining -= progressInterval;
-                    if (timeRemaining <= 0) {
-                        clearInterval(progressIntervalId);
-                        return 0;
-                    }
-                    return newProgress;
-                });
-            };
+    // const currentNotification = showNotificationList?.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.[currentNotificationIndex];
 
-            const progressIntervalId = setInterval(updateProgress, progressInterval);
-            return () => clearInterval(progressIntervalId);
-        }
-    }, [showPopup, currentNotificationIndex]);
+    // const updateNotificationPopup = () => {
+    //     const newMessagesCount = notificationUser?.filter(item => item.vizualizado === 0)?.length || 0;
+    //     // Testa a atualização do título com um valor fixo
+    //     document.title = newMessagesCount > 0 ? `(${newMessagesCount}) - Administrativo Méliès` : 'Administrativo Méliès';
+    // };
 
+    // const audioRef = useRef(null);
+    // const handlePermissionSound = async () => {
+    //     try {
+    //         if (Notification.permission === 'default') {
+    //             const permission = await Notification.requestPermission();
+    //             if (permission === 'granted') {
+    //                 audioRef.current.muted = false;
+    //                 await audioRef.current.play();
+    //             }
+    //         } else if (Notification.permission === 'granted') {
+    //             audioRef.current.muted = false;
+    //             await audioRef.current.play();
+    //         }
+    //     } catch (error) {
+    //         console.error('Erro ao reproduzir áudio:', error);
+    //     }
+    // };
 
+    // const handleClose = () => {
+    //     setShowPopup(false);
+    //     setProgress(100); // Reset progress
+    //     clearTimeout(notificationTimeoutRef.current); // Clear timeout if user closes early
+    // };
 
-    const currentNotification = showNotificationList?.filter(item => item?.vizualizado !== 1 && item.mostrada === 0)?.[currentNotificationIndex];
+    // const handleShowed = async (id) => {
+    //     let notifications = showNotificationList.filter(item => item.mostrada === 0);
+
+    //     if (notifications?.length > 0) {
+    //         try {
+    //             for (let notification of notifications) {
+    //                 await api.patch(`/notification/update/show-popup/${notification?.id_notificacao}`, { mostrada: 1 });
+
+    //                 setShowNotificationList(prevValue => {
+    //                     return prevValue.map(item => {
+    //                         if (item.id_notificacao === notification?.id_notificacao) {
+    //                             return { ...item, mostrada: 1 };
+    //                         }
+    //                         return item;
+    //                     });
+    //                 });
+    //             }
+
+    //         } catch (error) {
+    //             console.error('Erro ao atualizar notificação:', error);
+    //         }
+    //     }
+    // };
 
     useEffect(() => {
         if (!showNotification) {
@@ -159,37 +207,6 @@ export const Notifications = ({ showNotification = false, setShowNotification })
         }
     }, [showMenu, notificationUser])
 
-
-    const updateNotificationPopup = () => {
-        const newMessagesCount = notificationUser?.filter(item => item.vizualizado === 0)?.length || 0;
-        // Testa a atualização do título com um valor fixo
-        document.title = newMessagesCount > 0 ? `(${newMessagesCount}) - Administrativo Méliès` : 'Administrativo Méliès';
-    };
-
-    const audioRef = useRef(null);
-    const handlePermissionSound = async () => {
-        try {
-            if (Notification.permission === 'default') {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    audioRef.current.muted = false;
-                    await audioRef.current.play();
-                }
-            } else if (Notification.permission === 'granted') {
-                audioRef.current.muted = false;
-                await audioRef.current.play();
-            }
-        } catch (error) {
-            console.error('Erro ao reproduzir áudio:', error);
-        }
-    };
-
-    const handleClose = () => {
-        setShowPopup(false);
-        setProgress(100); // Reset progress
-        clearTimeout(notificationTimeoutRef.current); // Clear timeout if user closes early
-    };
-
     const handleGroupMouseEnter = (index) => {
         setGroupStates((prevGroupStates) => {
             if (!prevGroupStates[index]) {
@@ -213,29 +230,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
     };
 
 
-    const handleShowed = async (id) => {
-        let notifications = showNotificationList.filter(item => item.mostrada === 0);
-
-        if (notifications?.length > 0) {
-            try {
-                for (let notification of notifications) {
-                    await api.patch(`/notification/update/show-popup/${notification?.id_notificacao}`, { mostrada: 1 });
-
-                    setShowNotificationList(prevValue => {
-                        return prevValue.map(item => {
-                            if (item.id_notificacao === notification?.id_notificacao) {
-                                return { ...item, mostrada: 1 };
-                            }
-                            return item;
-                        });
-                    });
-                }
-
-            } catch (error) {
-                console.error('Erro ao atualizar notificação:', error);
-            }
-        }
-    };
+  
 
     const handleVizualizeded = async (id) => {
 
@@ -301,9 +296,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
 
     return (
         <>
-            <audio ref={audioRef} src="/sons/notification_sound.mp3" style={{ display: 'none' }} muted></audio>
-
-            {showPopup && currentNotification && (
+            {/* {showPopup && currentNotification && (
                 <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000, padding: '16px', backgroundColor: 'white', boxShadow: 3, borderRadius: '8px', width: 400 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
                         <Avatar src={currentNotification?.imagem || currentNotification?.location || ''} sx={{ width: 45, height: 45 }} />
@@ -329,7 +322,7 @@ export const Notifications = ({ showNotification = false, setShowNotification })
                         <Box sx={{ height: '100%', width: `${progress}%`, backgroundColor: '#4caf50' }} />
                     </Box>
                 </Box>
-            )}
+            )} */}
 
             <div ref={containerRef}>
                 {showNotification &&

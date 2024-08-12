@@ -26,7 +26,7 @@ export default function GenerateContract() {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             if (response?.status === 200) {
-                setUserData(data?.response)
+                setUserData(data)
                 return data
             }
         } catch (error) {
