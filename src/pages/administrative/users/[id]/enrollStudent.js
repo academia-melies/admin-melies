@@ -157,12 +157,12 @@ export default function InterestEnroll() {
             const userDetails = await api.get(`/user/${id}`)
             setUserData(userDetails.data)
 
-            const isOfLegalAge = await calculationAge(response?.nascimento)
+            const isOfLegalAge = await calculationAge(userDetails.data?.nascimento)
             setUserIsOfLegalAge(isOfLegalAge)
             if (!isOfLegalAge) {
                 alert.info('Aluno menor de idade. Por favor, cadastrar responsável pagante para prosseguir com a matrícula.')
             }
-            return response
+            return userDetails.data
         } catch (error) {
             console.log(error)
             return error
@@ -3454,9 +3454,8 @@ export const ContractStudent = (props) => {
         setLoading(true)
         try {
             const user = await api.get(`/user/${userId}`)
-            const { response } = user.data
-            setUserData(response)
-            setEmailDigitalSignature({ ...emailDigitalSignature, email_1: response?.email })
+            setUserData(user.data)
+            setEmailDigitalSignature({ ...emailDigitalSignature, email_1: user.data?.email })
         } catch (error) {
             return error
         } finally {

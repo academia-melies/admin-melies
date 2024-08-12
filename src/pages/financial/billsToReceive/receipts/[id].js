@@ -49,9 +49,8 @@ export default function EditBillsReceived(props) {
         setLoading(true);
         try {
             const userResponse = await api.get(`/user/${userId}`);
-            const { response } = userResponse?.data;
-            if (response) {
-                setUserData(response);
+            if (userResponse?.data) {
+                setUserData(userResponse?.data);
             }
         } catch (error) {
             console.log(error);

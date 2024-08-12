@@ -56,8 +56,7 @@ export default function RequerimentEnrollment(props) {
     const getUserData = async () => {
         try {
             const user = await api.get(`/user/${userId}`)
-            const { response } = user?.data
-            setUserData(response)
+            setUserData(user?.data)
         } catch (error) {
             console.log(error)
             return error

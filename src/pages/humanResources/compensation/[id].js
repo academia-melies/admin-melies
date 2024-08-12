@@ -91,8 +91,8 @@ export default function EditCompensation(props) {
             if (contractData?.data?.superior) {
                 const superiorData = await api.get(`/user/${contractData?.data?.superior}`)
                 const { data } = superiorData
-                let contractDatas = data.response;
-                setSuperiorData(data.response)
+                let contractDatas = data;
+                setSuperiorData(data)
             }
             setContract(contractData?.data)
             return contractData
