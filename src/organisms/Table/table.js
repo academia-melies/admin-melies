@@ -82,12 +82,12 @@ export const Table_V1 = (props) => {
         <>
             <Box sx={{
                 backgroundColor: colorPalette.secondary, transition: 'background-color 1s',
-                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, ...sx
+                border: `1px solid ${theme ? '#eaeaea' : '#404040'}`, borderRadius: 3, ...sx
             }}>
                 <TableContainer sx={{ borderRadius: '8px', overflow: 'auto' }}>
                     <Table>
                         <TableHead>
-                            <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
+                            <TableRow sx={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
                                 {columns.map((column) => (
                                     <TableCell key={column?.key} sx={{ ...styles.cell, fontFamily: 'MetropolisBold', }}>
 

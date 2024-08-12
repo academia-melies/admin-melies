@@ -12,6 +12,7 @@ export const TextInput = (props) => {
 
    return (
       <TextField
+         size="small"
          autoComplete='off'
          id="fieldssss"
          label={label}
@@ -32,7 +33,7 @@ export const TextInput = (props) => {
                fontFamily: bold ? 'MetropolisBold' : 'MetropolisRegular',
                backgroundColor: colorPalette.inputColor,
                color: colorPalette.textColor,
-               height: props.multiline ? 'none' : '45px',
+               // height: props.multiline ? 'none' : '45px',
                '&.disabled': {
                   color: 'white', // Cor do texto quando desabilitado
                },

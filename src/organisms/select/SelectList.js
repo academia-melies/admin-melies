@@ -46,6 +46,7 @@ export const SelectList = (props) => {
             {onFilter ? (
                 <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px" }}>
                     <Autocomplete
+                        size="small"
                         options={filteredData}
                         getOptionLabel={(option) => option[filterValue]}
                         value={data.find(item => item[filterOpition] === valueSelection) || null}
@@ -56,14 +57,15 @@ export const SelectList = (props) => {
                         }}
                         disableClearable
                         sx={{
-                            height: '45px',
+                            // height: '45px',
                             ...(small && {
-                                height: 30,
+                                // height: 30,
                                 fontSize: '11px'
                             })
                         }}
                         renderInput={(params) => (
                             <TextField
+                                size="small"
                                 {...params}
                                 label={title}
                                 InputProps={{
@@ -71,10 +73,10 @@ export const SelectList = (props) => {
                                     style: {
                                         borderRadius: '8px',
                                         ...params.InputProps.style,
-                                        height: '45px',
+                                        // height: '45px',
                                         padding: '0 14px',
                                         ...(small && {
-                                            height: 30,
+                                            // height: 30,
                                             fontSize: '11px'
                                         })
                                     },
@@ -100,7 +102,7 @@ export const SelectList = (props) => {
                                     fontFamily: 'MetropolisRegular',
                                     backgroundColor: colorPalette.inputColor,
                                     color: colorPalette.textColor,
-                                    height: '45px',
+                                    // height: '45px',
                                     '&.disabled': {
                                         color: 'white',
                                     },
@@ -120,13 +122,12 @@ export const SelectList = (props) => {
                             {title}
                         </InputLabel>
                         <Select
+                        size="small"
                             disabled={disabled}
                             sx={{
                                 borderRadius: "8px",
                                 backgroundColor: colorPalette.inputColor,
-                                height: 45,
                                 color: colorPalette.textColor,
-                                maxHeight: 45,
                                 transition: 'background-color 1s',
                                 fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' },
                                 ...sx,
