@@ -26,12 +26,12 @@ require('dotenv').config();
 
 
 export default function EditUser() {
-    const { setLoading, alert, colorPalette, user, matches, theme, setShowConfirmationDialog, menuItemsList, userPermissions } = useAppContext()
+    const { setLoading, alert, colorPalette, user, theme, menuItemsList, userPermissions } = useAppContext()
     const usuario_id = user.id;
     const router = useRouter()
     const { id, slug } = router.query;
     const newUser = id === 'new';
-    const [fileCallback, setFileCallback] = useState()
+    const [perfil, setPerfil] = useState('')
     const [enrollmentRegisterData, setEnrollmentRegisterData] = useState({
         turma_id: null,
         modulo: null,
@@ -49,19 +49,6 @@ export default function EditUser() {
         preferencia_pagamento: null,
         disciplinesData: [],
     })
-    const [enrollmentUnlockingData, setEnrollmentUnlockingData] = useState({
-        turma_id: null,
-        modulo: null,
-        qnt_disci_dp: 0,
-        qnt_disci_disp: 0,
-        dt_inicio: null,
-        dt_final: null,
-        status: null,
-        adimplente: 0,
-        preferencia_pagamento: null,
-        disciplinesData: [],
-    })
-    const [arrayEnrollmentRegisterData, setArrayEnrollmentRegisterData] = useState([])
     const [userData, setUserData] = useState({
         cd_cliente: null,
         autista: null,
@@ -106,32 +93,16 @@ export default function EditUser() {
         nascimento: null,
         tipo_deficiencia: null,
         nome_emergencia: null,
-        foto_perfil_id: fileCallback?.preview || null,
+        foto_perfil_id: null,
         nome_social: null
     })
-    const [enrollmentData, setEnrollmentData] = useState([])
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
     const [period, setPeriod] = useState([])
-    const [permissionPerfil, setPermissionPerfil] = useState()
-    const [showEnrollmentAdd, setShowEnrollmentAdd] = useState(false)
     const themeApp = useTheme()
     const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
-    const [interests, setInterests] = useState({
-        modulo_curso: 1
-    });
-    const [arrayInterests, setArrayInterests] = useState([])
-    const [arrayHistoric, setArrayHistoric] = useState([])
-    const [arrayDependent, setArrayDependent] = useState([])
-    const [arrayDisciplinesProfessor, setArrayDisciplinesProfessor] = useState([])
-    const [interestSelected, setInterestSelected] = useState({})
-    const [filesUser, setFilesUser] = useState([])
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [menuView, setMenuView] = useState('userData');
-
-    const handleClose = () => {
-        setOpen(false);
-    };
 
     const fetchPermissions = async () => {
         try {
@@ -150,7 +121,7 @@ export default function EditUser() {
 
     useEffect(() => {
         listClass()
-    }, [enrollmentData?.curso_id, interests.curso_id, interestSelected?.curso_id])
+    }, [])
 
 
     const getUserData = async () => {
@@ -158,81 +129,7 @@ export default function EditUser() {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             setUserData(data)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
-
-    const getInterest = async () => {
-        try {
-            const response = await api.get(`/user/interests/${id}`)
-            const { data } = response
-            setArrayInterests(data)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
-
-    const getHistoric = async () => {
-        try {
-            const response = await api.get(`/user/historical/${id}`)
-            const { data } = response
-            setArrayHistoric(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    const getFileUser = async () => {
-        try {
-            const response = await api.get(`/files/${id}`)
-            const { data } = response
-            setFilesUser(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    const handleResponsible = async () => {
-        try {
-            const response = await api.get(`/responsible/${id}`)
-            const { data } = response
-            if (data) {
-                setResponsiblePayerData(data)
-            }
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
-
-
-    const handlePaymentsProfile = async () => {
-        try {
-            const response = await api.get(`/order/paymentProfile/list/${id}`)
-            const { success } = response?.data
-            if (success) {
-                const { crediCards } = response?.data
-                const groupPaymentsPerfil = crediCards?.map(item => ({
-                    numero_cartao: `${item?.primeiros_numeros} XXXX XXXX ${item?.ultimos_numeros}`,
-                    nome_cartao: item?.nome_cartao,
-                    dt_expiracao: item?.dt_expiracao,
-                }))
-
-                const removeDuplicateCards = (cards) => {
-                    const seen = new Set();
-                    return cards.filter(card => {
-                        const duplicate = seen.has(card.numero_cartao);
-                        seen.add(card.numero_cartao);
-                        return !duplicate;
-                    });
-                };
-
-                const uniqueCreditCards = removeDuplicateCards(groupPaymentsPerfil);
-                setCreditCards(uniqueCreditCards);
-            }
+            setPerfil(data?.perfil)
         } catch (error) {
             console.log(error)
             return error
@@ -287,52 +184,12 @@ export default function EditUser() {
         }
     }
 
-    const handleModules = (module) => {
-        if (module) {
-
-            const moduleArray = [];
-            for (let i = 1; i <= module; i++) {
-                moduleArray.push({
-                    label: `${i}º Módulo`,
-                    value: i,
-                });
-            }
-            return moduleArray;
-        } else {
-            return []
-        }
-    }
-
-
-    const handleEnrollments = async () => {
-        try {
-            const response = await api.get(`/enrollments/user/reenrollment/${id}`)
-            const { data } = response
-            if (data?.length > 0) {
-                const lastModule = data?.map(item => item.modulo)
-                lastModule.sort((a, b) => a - b)
-                const highestModule = Math.max(...lastModule);
-                setCurrentModule(highestModule + 1)
-                return highestModule + 1
-            }
-            return false
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
 
     const handleItems = async () => {
         setLoading(true)
         try {
             await getUserData()
-            await getInterest()
-            await getHistoric()
-            await getFileUser()
             await listClass()
-            await handleEnrollments()
-            await handleResponsible()
-            await handlePaymentsProfile()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -400,135 +257,135 @@ export default function EditUser() {
     }
 
 
-    const handleCreateUser = async () => {
-        if (checkRequiredFields()) {
-            setLoading(true)
-            try {
-                const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
-                const { data } = response
-                if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
-                if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
-                    await api.post(`/enrollment/student/register/${data?.userId}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
-                }
-                // if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
-                if (fileCallback) {
-                    const formData = new FormData();
-                    formData.append('file', fileCallback?.file, encodeURIComponent(fileCallback?.name));
-                    let query = `?usuario_id=${data?.userId}`;
-                    if (fileCallback?.campo) query += `&campo=${fileCallback?.campo}`;
-                    if (fileCallback?.tipo) query += `&tipo=${fileCallback?.tipo}`;
-                    await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
-                }
-                if (filesUser?.length > 0) {
-                    for (const uploadedFile of filesUser) {
-                        const formData = new FormData();
-                        formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
-                        let query = `?usuario_id=${data?.userId}`;
-                        if (uploadedFile?.campo) query += `&campo=${uploadedFile?.campo}`;
-                        if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
-                        if (uploadedFile?.matricula_id) query += `&matricula_id=${uploadedFile?.matricula_id}`;
-                        const documents = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
-                    }
-                }
-                if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
-                if (newUser && filesUser) { await api.patch(`/file/editFiles/${data?.userId}`, { filesUser }); }
-                if (permissionPerfil) {
-                    const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
-                    if (permissionsToAdd.length > 0) {
-                        await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
-                    }
-                }
-                if (response?.status === 201) {
-                    alert.success('Usuário cadastrado com sucesso.');
-                    router.push(`/administrative/users/list`)
-                }
-                if (response?.status === 200) {
-                    return alert.error(response?.data?.msg);
-                }
-            } catch (error) {
-                alert.error('Tivemos um problema ao cadastrar usuário.');
-                console.log(error)
-            } finally {
-                setLoading(false)
-            }
-            return setLoading(false)
-        }
-    }
+    // const handleCreateUser = async () => {
+    //     if (checkRequiredFields()) {
+    //         setLoading(true)
+    //         try {
+    //             const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
+    //             const { data } = response
+    //             if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
+    //             if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
+    //                 await api.post(`/enrollment/student/register/${data?.userId}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
+    //             }
+    //             // if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
+    //             if (fileCallback) {
+    //                 const formData = new FormData();
+    //                 formData.append('file', fileCallback?.file, encodeURIComponent(fileCallback?.name));
+    //                 let query = `?usuario_id=${data?.userId}`;
+    //                 if (fileCallback?.campo) query += `&campo=${fileCallback?.campo}`;
+    //                 if (fileCallback?.tipo) query += `&tipo=${fileCallback?.tipo}`;
+    //                 await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+    //             }
+    //             if (filesUser?.length > 0) {
+    //                 for (const uploadedFile of filesUser) {
+    //                     const formData = new FormData();
+    //                     formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
+    //                     let query = `?usuario_id=${data?.userId}`;
+    //                     if (uploadedFile?.campo) query += `&campo=${uploadedFile?.campo}`;
+    //                     if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
+    //                     if (uploadedFile?.matricula_id) query += `&matricula_id=${uploadedFile?.matricula_id}`;
+    //                     const documents = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+    //                 }
+    //             }
+    //             if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
+    //             if (newUser && filesUser) { await api.patch(`/file/editFiles/${data?.userId}`, { filesUser }); }
+    //             if (permissionPerfil) {
+    //                 const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
+    //                 if (permissionsToAdd.length > 0) {
+    //                     await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
+    //                 }
+    //             }
+    //             if (response?.status === 201) {
+    //                 alert.success('Usuário cadastrado com sucesso.');
+    //                 router.push(`/administrative/users/list`)
+    //             }
+    //             if (response?.status === 200) {
+    //                 return alert.error(response?.data?.msg);
+    //             }
+    //         } catch (error) {
+    //             alert.error('Tivemos um problema ao cadastrar usuário.');
+    //             console.log(error)
+    //         } finally {
+    //             setLoading(false)
+    //         }
+    //         return setLoading(false)
+    //     }
+    // }
 
-    const handleDeleteUser = async () => {
-        setLoading(true)
-        try {
-            const response = await deleteUser(id)
-            if (response?.status == 200) {
-                alert.success('Usuário excluído com sucesso.');
-                router.push(`/administrative/users/list`)
-            }
-        } catch (error) {
-            alert.error('Tivemos um problema ao excluir usuário.');
-            console.log(error)
-        } finally {
-            setLoading(false)
-        }
-    }
+    // const handleDeleteUser = async () => {
+    //     setLoading(true)
+    //     try {
+    //         const response = await deleteUser(id)
+    //         if (response?.status == 200) {
+    //             alert.success('Usuário excluído com sucesso.');
+    //             router.push(`/administrative/users/list`)
+    //         }
+    //     } catch (error) {
+    //         alert.error('Tivemos um problema ao excluir usuário.');
+    //         console.log(error)
+    //     } finally {
+    //         setLoading(false)
+    //     }
+    // }
 
-    const handleEditUser = async () => {
-        if (checkRequiredFields()) {
-            setLoading(true)
-            try {
-                const response = await editeUser({ id, userData })
-                if (response.status === 422) return alert.error('CPF já cadastrado.')
-                if (contract) {
-                    const contr = await editContract({ id, contract })
-                }
-                if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
-                    await api.post(`/enrollment/student/register/${id}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
-                }
-                if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
-                    await api.post(`/officeHours/create/${id}`, { officeHours })
-                }
-                if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
-                    await api.patch(`/officeHours/update`, { officeHours })
-                }
-                if (arrayDependent?.length > 0) {
-                    await api.patch(`/user/dependent/update`, { arrayDependent })
-                }
+    // const handleEditUser = async () => {
+    //     if (checkRequiredFields()) {
+    //         setLoading(true)
+    //         try {
+    //             const response = await editeUser({ id, userData })
+    //             if (response.status === 422) return alert.error('CPF já cadastrado.')
+    //             if (contract) {
+    //                 const contr = await editContract({ id, contract })
+    //             }
+    //             if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
+    //                 await api.post(`/enrollment/student/register/${id}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
+    //             }
+    //             if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
+    //                 await api.post(`/officeHours/create/${id}`, { officeHours })
+    //             }
+    //             if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
+    //                 await api.patch(`/officeHours/update`, { officeHours })
+    //             }
+    //             if (arrayDependent?.length > 0) {
+    //                 await api.patch(`/user/dependent/update`, { arrayDependent })
+    //             }
 
-                if (arrayInterests?.length > 0) {
-                    for (let interest of arrayInterests) {
-                        const subscription = { ...interest?.inscricao, id_redacao: interest?.id_redacao };
-                        if (subscription) {
-                            if (subscription?.id_inscricao) {
-                                await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription, userResp: user?.id })
-                            } else if (subscription?.forma_ingresso) {
-                                await api.post(`/subscription/create`, {
-                                    subscriptionData: {
-                                        ...subscription,
-                                        turma_id: interest?.turma_id,
-                                        usuario_id: id,
-                                        interesse_id: interest?.id_interesse
-                                    }
-                                })
-                            }
+    //             if (arrayInterests?.length > 0) {
+    //                 for (let interest of arrayInterests) {
+    //                     const subscription = { ...interest?.inscricao, id_redacao: interest?.id_redacao };
+    //                     if (subscription) {
+    //                         if (subscription?.id_inscricao) {
+    //                             await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription, userResp: user?.id })
+    //                         } else if (subscription?.forma_ingresso) {
+    //                             await api.post(`/subscription/create`, {
+    //                                 subscriptionData: {
+    //                                     ...subscription,
+    //                                     turma_id: interest?.turma_id,
+    //                                     usuario_id: id,
+    //                                     interesse_id: interest?.id_interesse
+    //                                 }
+    //                             })
+    //                         }
 
-                        }
-                    }
-                }
-                if (response?.status === 201) {
-                    alert.success('Usuário atualizado com sucesso.');
-                    handleItems()
-                    return
-                }
-                alert.error('Tivemos um problema ao atualizar usuário.');
-            } catch (error) {
-                console.log(error)
-                alert.error('Tivemos um problema ao atualizar usuário.');
-                return error;
-            } finally {
-                setLoading(false)
-            }
-        }
+    //                     }
+    //                 }
+    //             }
+    //             if (response?.status === 201) {
+    //                 alert.success('Usuário atualizado com sucesso.');
+    //                 handleItems()
+    //                 return
+    //             }
+    //             alert.error('Tivemos um problema ao atualizar usuário.');
+    //         } catch (error) {
+    //             console.log(error)
+    //             alert.error('Tivemos um problema ao atualizar usuário.');
+    //             return error;
+    //         } finally {
+    //             setLoading(false)
+    //         }
+    //     }
 
-    }
+    // }
 
     const handleChange = (value) => {
 
@@ -553,185 +410,100 @@ export default function EditUser() {
         }))
     }
 
-    const checkEnrollmentData = (enrollmentRegisterData) => {
-        const requiredFields = ['turma_id', 'modulo', 'dt_inicio', 'dt_final', 'status', 'preferencia_pagamento', 'rematricula', 'cursando_dp'];
+    // const checkEnrollmentData = (enrollmentRegisterData) => {
+    //     const requiredFields = ['turma_id', 'modulo', 'dt_inicio', 'dt_final', 'status', 'preferencia_pagamento', 'rematricula', 'cursando_dp'];
 
 
-        for (const field of requiredFields) {
-            if (enrollmentRegisterData[field] === '' || enrollmentRegisterData[field] === null) {
-                alert.info('Preencha todos os campos obrigatórios antes de prosseguir.');
-                return false;
-            }
-        }
+    //     for (const field of requiredFields) {
+    //         if (enrollmentRegisterData[field] === '' || enrollmentRegisterData[field] === null) {
+    //             alert.info('Preencha todos os campos obrigatórios antes de prosseguir.');
+    //             return false;
+    //         }
+    //     }
 
-        let classId = enrollmentRegisterData?.turma_id;
-        let selectedModule = enrollmentRegisterData?.modulo;
-        let statusEnrollment = enrollmentRegisterData?.status;
-        if (arrayEnrollmentRegisterData?.filter(item => (item.turma_id === classId) && item?.modulo === selectedModule && item?.status === statusEnrollment)?.length > 0
-        ) {
-            alert.info('Já foi adicionado uma matrícula com a turma e módulo selecionados. Verifique nas matriculas já incluídas acima, para que não haja duplicidade.')
-            return false;
-        }
+    //     let classId = enrollmentRegisterData?.turma_id;
+    //     let selectedModule = enrollmentRegisterData?.modulo;
+    //     let statusEnrollment = enrollmentRegisterData?.status;
+    //     if (arrayEnrollmentRegisterData?.filter(item => (item.turma_id === classId) && item?.modulo === selectedModule && item?.status === statusEnrollment)?.length > 0
+    //     ) {
+    //         alert.info('Já foi adicionado uma matrícula com a turma e módulo selecionados. Verifique nas matriculas já incluídas acima, para que não haja duplicidade.')
+    //         return false;
+    //     }
 
-        return true
-    }
+    //     return true
+    // }
 
-    const verifyDataToGetway = () => {
+    // async function handleSelectModule(value) {
 
-        if (!userData?.nome) {
-            alert.error('Preencha o campo nome para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.cpf) {
-            alert.error('Preencha o campo cpf para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.nascimento) {
-            alert.error('Preencha o campo nascimento para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.telefone) {
-            alert.error('Preencha o campo telefone para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.rua) {
-            alert.error('Preencha o campo rua para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.numero) {
-            alert.error('Preencha o campo numero para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.bairro) {
-            alert.error('Preencha o campo bairro para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.cidade) {
-            alert.error('Preencha o campo cidade para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.uf) {
-            alert.error('Preencha o campo uf para seguirmos com a matrícula.')
-            return false
-        }
-        if (!userData?.cep) {
-            alert.error('Preencha o campo cep para seguirmos com a matrícula.')
-            return false
-        }
+    //     let moduleClass = value;
+    //     try {
+    //         const response = await api.get(`/classSchedule/disciplines/${enrollmentRegisterData?.turma_id}/${moduleClass}`)
+    //         const { data } = response
+    //         const groupDisciplines = data.map(disciplines => ({
+    //             nome_disciplina: disciplines.nome_disciplina,
+    //             disciplina_id: disciplines?.id_disciplina,
+    //             nt_final: 0,
+    //             qnt_presenca: 0,
+    //             qnt_falta: 0,
+    //             selecionada: 1
+    //         }));
 
-        return true
-    }
-
-    const verifyEnrollment = (interest) => {
-        const isRegistered = enrollmentData?.filter(item => item.turma_id === interest?.turma_id)
-
-        if (isRegistered?.length > 0) {
-            alert.info('O aluno já está matrículado na turma selecionada. Analíse bem antes de prosseguir, para não "duplicar" matrículas ativas.')
-            return false
-        }
-        return true
-    }
-
-    async function handleSelectModule(value) {
-
-        let moduleClass = value;
-        try {
-            const response = await api.get(`/classSchedule/disciplines/${enrollmentRegisterData?.turma_id}/${moduleClass}`)
-            const { data } = response
-            const groupDisciplines = data.map(disciplines => ({
-                nome_disciplina: disciplines.nome_disciplina,
-                disciplina_id: disciplines?.id_disciplina,
-                nt_final: 0,
-                qnt_presenca: 0,
-                qnt_falta: 0,
-                selecionada: 1
-            }));
-
-            setDisciplinesEnrollmentRegister(groupDisciplines);
-            setEnrollmentRegisterData({
-                ...enrollmentRegisterData,
-                disciplinesData: groupDisciplines
-            })
-        } catch (error) {
-            return error
-        }
-    }
+    //         setDisciplinesEnrollmentRegister(groupDisciplines);
+    //         setEnrollmentRegisterData({
+    //             ...enrollmentRegisterData,
+    //             disciplinesData: groupDisciplines
+    //         })
+    //     } catch (error) {
+    //         return error
+    //     }
+    // }
 
 
-    async function handleSelectDisciplinesGrid(value) {
+    // async function handleSelectDisciplinesGrid(value) {
 
-        try {
-            const response = await api.get(`/grid/disciplines/classId/${value}`)
-            const { data } = response
-            const groupDisciplines = []
+    //     try {
+    //         const response = await api.get(`/grid/disciplines/classId/${value}`)
+    //         const { data } = response
+    //         const groupDisciplines = []
 
-            data.forEach((objeto) => {
-                const currentModule = objeto?.modulo_grade;
-                const grupo = groupDisciplines.find((grupo) => grupo.modulo_grade === currentModule);
+    //         data.forEach((objeto) => {
+    //             const currentModule = objeto?.modulo_grade;
+    //             const grupo = groupDisciplines.find((grupo) => grupo.modulo_grade === currentModule);
 
-                if (grupo) {
-                    grupo.disciplinas.push({
-                        nome_disciplina: objeto?.nome_disciplina,
-                        disciplina_id: objeto?.id_disciplina,
-                        modulo_curso: objeto?.id_disciplina,
-                        selecionada: objeto?.modulo_grade
-                    });
+    //             if (grupo) {
+    //                 grupo.disciplinas.push({
+    //                     nome_disciplina: objeto?.nome_disciplina,
+    //                     disciplina_id: objeto?.id_disciplina,
+    //                     modulo_curso: objeto?.id_disciplina,
+    //                     selecionada: objeto?.modulo_grade
+    //                 });
 
-                } else {
-                    const newGrupo = {
-                        modulo_grade: objeto?.modulo_grade,
-                        disciplinas: [
-                            {
-                                nome_disciplina: objeto?.nome_disciplina,
-                                disciplina_id: objeto?.id_disciplina,
-                                modulo_curso: objeto?.id_disciplina,
-                                selecionada: objeto?.modulo_grade
-                            }
-                        ]
-                    };
-                    groupDisciplines.push(newGrupo);
-                }
-            });
+    //             } else {
+    //                 const newGrupo = {
+    //                     modulo_grade: objeto?.modulo_grade,
+    //                     disciplinas: [
+    //                         {
+    //                             nome_disciplina: objeto?.nome_disciplina,
+    //                             disciplina_id: objeto?.id_disciplina,
+    //                             modulo_curso: objeto?.id_disciplina,
+    //                             selecionada: objeto?.modulo_grade
+    //                         }
+    //                     ]
+    //                 };
+    //                 groupDisciplines.push(newGrupo);
+    //             }
+    //         });
 
-            setDisciplinesEnrollmentRegister(groupDisciplines);
-            setEnrollmentUnlockingData({
-                ...enrollmentRegisterData,
-                disciplinesData: groupDisciplines,
-                turma_id: value
-            })
-        } catch (error) {
-            return error
-        }
-    }
-
-    const groupEnrollment = [
-        { label: 'Sim', value: 1 },
-        { label: 'Não', value: 0 },
-    ]
-
-    const grouPreferPayment = [
-        { label: 'Cartão de crédito', value: 'cartao de credito' },
-        { label: 'Boleto', value: 'boleto' },
-        { label: 'Boleto (PRAVALER)', value: 'pravaler(boleto)' },
-        { label: 'Pix', value: 'pix' },
-    ]
-
-    const groupSituation = [
-        { label: 'Aguardando início', value: 'Aguardando início' },
-        { label: 'Pendente de assinatura do contrato', value: 'Pendente de assinatura do contrato' },
-        { label: 'Em andamento', value: 'Em andamento' },
-        { label: 'Concluído', value: 'Concluído' },
-        { label: 'Curso Finalizado', value: 'Curso Finalizado' },
-        { label: 'Turma cancelada', value: 'Turma cancelada' },
-        { label: 'Aprovado', value: 'Aprovado' },
-        { label: 'Reprovado', value: 'Reprovado' },
-        { label: 'Bloq. Online', value: 'Bloq. Online' },
-        { label: 'Matrícula cancelada', value: 'Matrícula cancelada' },
-        { label: 'Transferido ', value: 'Transferido ' },
-        { label: 'Desistente ', value: 'Desistente ' },
-        { label: 'Nenhuma', value: 'Nenhuma' },
-        { label: 'Trancamento', value: 'Trancamento' },
-    ]
+    //         setDisciplinesEnrollmentRegister(groupDisciplines);
+    //         setEnrollmentUnlockingData({
+    //             ...enrollmentRegisterData,
+    //             disciplinesData: groupDisciplines,
+    //             turma_id: value
+    //         })
+    //     } catch (error) {
+    //         return error
+    //     }
+    // }
 
     const menuUser = [
         {
@@ -754,28 +526,16 @@ export default function EditUser() {
             <SectionHeader
                 perfil={userData?.perfil}
                 title={newUser ? 'Criar Usuário' : `Editar Usuário`}
-            // saveButton={isPermissionEdit}
-            // saveButtonAction={newUser ? handleCreateUser : handleEditUser}
-            // deleteButton={!newUser && isPermissionEdit && menuView === 'userData'}
-            // deleteButtonAction={(event) => setShowConfirmationDialog({
-            //     active: true,
-            //     event,
-            //     acceptAction: handleDeleteUser,
-            //     title: 'Excluir usuário',
-            //     message: 'Tem certeza que deseja prosseguir com a exclusão do usuário? Todos os dados vinculados a esse usuário serão excluídos, sem opção de recuperação.',
-            // })}
             />
 
 
             <Box sx={{
-                display: 'flex', flexWrap: 'wrap', backgroundColor: colorPalette?.secondary, padding: '8px 10px', borderRadius: 2,
+                display: perfil !== '' ? 'flex' : 'none', flexWrap: 'wrap', backgroundColor: colorPalette?.secondary, padding: '8px 10px', borderRadius: 2,
                 boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
             }}>
                 {menuUser?.map((item, index) => {
                     const isScreen = item?.screen === menuView;
-                    const userProfiles = userData?.perfil?.includes(',') ? userData?.perfil?.split(',').map(profile => profile.trim()) : userData?.perfil?.trim();
-                    console.log(userProfiles)
-                    console.log(userData?.perfil)
+                    const userProfiles = perfil?.includes(',') ? perfil?.split(',').map(profile => profile.trim()) : perfil?.trim();
                     const showMenu = item?.perfil.some(profile => userProfiles?.includes(profile));
                     return (
                         <Box key={index} sx={{
@@ -815,6 +575,8 @@ export default function EditUser() {
                     userId={usuario_id}
                     userDataProps={userData}
                     handleChange={handleChange}
+                    perfil={perfil}
+                    setPerfil={setPerfil}
                 />
             }
 

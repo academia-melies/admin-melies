@@ -85,8 +85,8 @@ const PaymentsPreference = ({ id }: PaymentsPreferenceProps) => {
     const handlePaymentsProfile = async () => {
         try {
             const response = await api.get<{ success: boolean; crediCards: ApiCreditCard[] }>(`/order/paymentProfile/list/${id}`)
-            const { success } = response?.data
-            if (success) {
+            const { success, crediCards } = response?.data
+            if (success && crediCards && crediCards?.length > 0) {
                 const { crediCards } = response?.data
                 const groupPaymentsPerfil = crediCards?.map(item => ({
                     numero_cartao: `${item?.primeiros_numeros} XXXX XXXX ${item?.ultimos_numeros}`,

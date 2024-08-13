@@ -210,7 +210,7 @@ export default function ListUsers(props) {
             />
 
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', position: 'relative', width: '70%', gap: 2 }}>
+                <Box sx={{ display: 'flex', position: 'relative', width: '50%', gap: 2 }}>
                     <Box sx={{ ...styles.filterButton, backgroundColor: colorPalette?.secondary }}
                         onClick={() => setShowFieldsFilter(!showFieldsFilter)}>
                         <Text bold>Filtros</Text>

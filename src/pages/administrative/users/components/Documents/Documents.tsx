@@ -91,7 +91,9 @@ const Documents = ({ id }: DocumentsProps) => {
     ]
 
     useEffect(() => {
-        getFileUser()
+        if (id !== 'new') {
+            getFileUser()
+        }
     }, [id])
 
     const getFileUser = async () => {
@@ -99,10 +101,12 @@ const Documents = ({ id }: DocumentsProps) => {
         try {
             const response = await api.get(`/files/${id}`)
             const { data } = response
+            console.log(data)
+            console.log(id)
             setFilesUser(data)
         } catch (error) {
             console.log(error)
-        } finally{
+        } finally {
             setLoadingData(false)
         }
     }
@@ -114,7 +118,7 @@ const Documents = ({ id }: DocumentsProps) => {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', heigth: '100%', position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}>
                     <CircularProgress />
                 </Box>}
-            <Box sx={{opacity: loadingData ? .6 : 1, display: 'flex', gap: 2, flexDirection: 'column' }}>
+            <Box sx={{ opacity: loadingData ? .6 : 1, display: 'flex', gap: 2, flexDirection: 'column' }}>
                 {documentsStudent?.map((item, index) => {
 
                     const fileInsert = filesUser?.filter(file => file?.campo === item?.key)?.length > 0;

@@ -20,6 +20,7 @@ interface UserDataProps {
     userId: number | string
     userDataProps: UserDataObjectProps | null
     handleChange: any
+    setPerfil: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 export interface UserDataObjectProps {
@@ -199,7 +200,8 @@ const UserData = ({
     mobile,
     userId,
     userDataProps,
-    handleChange
+    handleChange,
+    setPerfil
 }: UserDataProps) => {
     const [showEditFile, setShowEditFiles] = useState({
         photoProfile: false,
@@ -322,7 +324,8 @@ const UserData = ({
     const fetchData = async () => {
         setLoadingData(true)
         try {
-            const [dependentResponse, disciplineResponse, permissionsResponse, disciplinesResponse, countriesResponse, arrayHistoricResponse] = await Promise.all([
+            const [userResponse, dependentResponse, disciplineResponse, permissionsResponse, disciplinesResponse, countriesResponse, arrayHistoricResponse] = await Promise.all([
+                api.get(`/user/${id}`),
                 api.get(`/user/dependent/${id}`),
                 api.get(`/discipline/professor/${id}`),
                 api.get<Permission[]>(`/permissions`),
@@ -330,9 +333,8 @@ const UserData = ({
                 axios.get<Country[]>(`https://servicodados.ibge.gov.br/api/v1/paises/paises`),
                 api.get(`/user/historical/${id}`)
             ]);
-            if (userDataProps) {
-                setUserData(userDataProps);
-            }
+            const userDataResponse = userResponse.data
+            setUserData(userDataResponse);
 
             const dependents = dependentResponse.data.dependents;
             setArrayDependent(dependents);
@@ -962,12 +964,15 @@ const UserData = ({
                                     boxGroup={groupData.userPerfil}
                                     title="Perfil *"
                                     horizontal={mobile ? false : true}
-                                    onSelect={(value: string) => setUserData({
-                                        ...userData,
-                                        perfil: value,
-                                        admin_melies: !value.includes('funcionario') ? 0 : 1,
-                                        // portal_aluno: !value.includes('aluno') ? 0 : 1,
-                                    })}
+                                    onSelect={(value: string) => {
+                                        setPerfil(value)
+                                        setUserData({
+                                            ...userData,
+                                            perfil: value,
+                                            admin_melies: !value.includes('funcionario') ? 0 : 1,
+                                        })
+                                    }
+                                    }
                                     sx={{ flex: 1, }}
                                 />
 
@@ -1415,7 +1420,7 @@ const UserData = ({
                         </Box>
                         <Box sx={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <Text bold style={{ padding: '0px 0px 0px 10px' }}>Dependentes</Text>
-                            {arrayDependent.map((dep, index) => (
+                            {arrayDependent && arrayDependent.length > 0 && arrayDependent.map((dep, index) => (
                                 <>
 
                                     <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
@@ -1618,10 +1623,10 @@ const UserData = ({
             </Box>
 
 
-            <Backdrop open={showSections.historic} sx={{ zIndex: 99999, }}>
+            <Backdrop open={showSections.historic} sx={{ zIndex: 99999, paddingTop: 5 }}>
                 {showSections.historic &&
                     <ContentContainer style={{
-                        maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '280px' },
+                        maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '650px', xl: '1080px' }, marginLeft: { md: '180px', lg: '280px' },
                         margin: { xs: '0px 10px', md: '0px', lg: '0px' }, overflowY: matches && 'auto',
                     }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
@@ -1638,7 +1643,7 @@ const UserData = ({
                             }} onClick={() => setShowSections({ ...showSections, historic: false })} />
                         </Box>
                         <Divider padding={0} />
-                        <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
+                        <ContentContainer style={{ boxShadow: 'none', overflow: 'auto', }}>
                             <Table_V1 columns={columnHistoric}
                                 data={arrayHistoric}
                                 columnId="id_historico"
@@ -1656,7 +1661,7 @@ const UserData = ({
 
                             {showSections.addHistoric &&
                                 <>
-                                    <ContentContainer style={{ overflowY: matches && 'auto', }}>
+                                    <ContentContainer style={{ overflow:'auto', }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                                             <Text bold>Nova Observação</Text>
                                             <Box sx={{
