@@ -47,6 +47,22 @@ export const formatTimeStamp = (timestamp, time) => {
    }
 };
 
+export const handleModules = (module) => {
+   if (module) {
+
+       const moduleArray = [];
+       for (let i = 1; i <= module; i++) {
+           moduleArray.push({
+               label: `${i}º Módulo`,
+               value: i,
+           });
+       }
+       return moduleArray;
+   } else {
+       return []
+   }
+}
+
 export const formatTimeStampTimezone = (timestamp, time) => {
    try {
       

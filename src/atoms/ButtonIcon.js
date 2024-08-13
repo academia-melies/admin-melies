@@ -34,7 +34,7 @@ export const ButtonIcon = (props) => {
             }}
             onClick={!disabled ? onClick : () => { }}
         >
-             <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icon})` }} />
+            {icon && <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icon})` }} />}
             <Text small={small} bold style={{ color: 'inherit' }}>{text}</Text>
         </Box>
     )

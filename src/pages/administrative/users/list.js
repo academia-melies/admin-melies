@@ -198,7 +198,6 @@ export default function ListUsers(props) {
     ]
 
     const fields = [
-        { label: 'Nome ou Nome Social', value: 'name' },
         { label: 'Tipo de Usuário', value: 'tipo_usuario' },
         { label: 'Status', value: 'status' },
         { label: 'Situação Matrícula', value: 'situacao_matricula' }
@@ -219,46 +218,37 @@ export default function ListUsers(props) {
                     </Box>
 
                     {showFieldsFilter &&
-                            <div ref={containerRef}>
-                                <Box sx={{ ...styles.containerFilter, backgroundColor: colorPalette?.secondary }}>
-                                    {fields?.map((item, index) => {
-                                        const isSelected = fieldersSelected.find(f => f.includes(item?.value))
-                                        return (
-                                            <Box key={index} sx={{
-                                                display: 'flex', gap: 1, alignItems: 'center', transition: '.3s',
-                                                color: isSelected && colorPalette?.buttonColor,
-                                                '&:hover': {
-                                                    color: colorPalette?.buttonColor,
-                                                    cursor: 'pointer'
-                                                }
-                                            }} onClick={() => {
-                                                if (isSelected) {
-                                                    handleFieldClick(item?.value)
-                                                } else {
-                                                    handleFieldClick(item?.value)
-                                                }
-                                            }}>
-                                                <Box sx={{ ...styles.iconFilter, backgroundImage: `url(/icons/${isSelected ? 'remove_icon' : 'add_icon'}.png)` }} />
-                                                <Text style={{ color: 'inherit' }}>{item?.label}</Text>
-                                            </Box>
-                                        )
-                                    })}
-                                </Box>
-                            </div>
+                        <div ref={containerRef}>
+                            <Box sx={{ ...styles.containerFilter, backgroundColor: colorPalette?.secondary }}>
+                                {fields?.map((item, index) => {
+                                    const isSelected = fieldersSelected.find(f => f.includes(item?.value))
+                                    return (
+                                        <Box key={index} sx={{
+                                            display: 'flex', gap: 1, alignItems: 'center', transition: '.3s',
+                                            color: isSelected && colorPalette?.buttonColor,
+                                            '&:hover': {
+                                                color: colorPalette?.buttonColor,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => {
+                                            if (isSelected) {
+                                                handleFieldClick(item?.value)
+                                            } else {
+                                                handleFieldClick(item?.value)
+                                            }
+                                        }}>
+                                            <Box sx={{ ...styles.iconFilter, backgroundImage: `url(/icons/${isSelected ? 'remove_icon' : 'add_icon'}.png)` }} />
+                                            <Text style={{ color: 'inherit' }}>{item?.label}</Text>
+                                        </Box>
+                                    )
+                                })}
+                            </Box>
+                        </div>
                     }
 
                     <Box sx={{ display: fieldersSelected?.length > 0 ? 'flex' : 'none', gap: 1 }}>
                         {fieldersSelected.map((field, index) => (
                             <Box key={index}>
-                                {/* <Text bold>{fields.find(f => f.value === field)?.label}:</Text> */}
-                                {field === 'name' &&
-                                    <TextInput placeholder="Buscar pelo nome ou pelo ID.."
-                                        name='filterData'
-                                        type="search"
-                                        onChange={(event) => setFilterData(event.target.value)} value={filterData}
-                                        InputProps={{ style: { backgroundColor: colorPalette?.secondary } }}
-                                    />
-                                }
                                 {field === 'tipo_usuario' &&
                                     <SelectList
                                         data={listUser}
@@ -297,9 +287,18 @@ export default function ListUsers(props) {
                     </Box>
 
                 </Box>
-                {isPermissionEdit && <ButtonIcon text="Novo Usuário" icon={'/icons/add-friend.png'} color="#fff" onClick={() => router.push(`/administrative/${pathname}/new`)} />}
+                <Box sx={{display: 'flex', gap: 1, width: '50%'}}>
+                    <TextInput
+                        fullWidth
+                        placeholder="Buscar pelo nome ou pelo ID.."
+                        name='filterData'
+                        type="search"
+                        onChange={(event) => setFilterData(event.target.value)} value={filterData}
+                        InputProps={{ style: { backgroundColor: colorPalette?.secondary } }}
+                    />
+                    {isPermissionEdit && <ButtonIcon text="Novo Usuário" style={{width: 200}} icon={'/icons/add-friend.png'} color="#fff" onClick={() => router.push(`/administrative/${pathname}/new`)} />}
+                </Box>
             </Box>
-
 
 
             <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none', lg: 'none', xl: 'none' }, flexDirection: 'column', gap: 2 }}>

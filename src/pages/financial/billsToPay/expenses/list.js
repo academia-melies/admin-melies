@@ -8,6 +8,7 @@ import { SelectList } from "../../../../organisms/select/SelectList"
 import { Backdrop, Tooltip } from "@mui/material"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 import { icons } from "../../../../organisms/layout/Colors"
+import { formatTimeStampTimezone } from "../../../../helpers"
 
 
 export default function ListBillsToPay() {
@@ -443,6 +444,12 @@ export default function ListBillsToPay() {
         }
     }
 
+    const handleLabelList = (list, value) => {
+        const filtered = list?.filter(item => item.value === value)?.map(item => item.label)
+        console.log(filtered)
+        return filtered[0]
+    }
+
     return (
         <>
             <SectionHeader
@@ -638,7 +645,7 @@ export default function ListBillsToPay() {
                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 
                                                     <Box sx={{
-                                                        display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                                        display: 'flex', gap: 1, width: 16, height: 16, border: '1px solid', borderRadius: '2px',
                                                         backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
                                                         "&:hover": {
                                                             opacity: 0.8,
@@ -648,7 +655,7 @@ export default function ListBillsToPay() {
                                                         {selected &&
                                                             <Box sx={{
                                                                 ...styles.menuIcon,
-                                                                width: 20, height: 20,
+                                                                width: 16, height: 16,
                                                                 backgroundImage: `url('/icons/checkbox-icon.png')`,
                                                                 transition: '.3s',
                                                             }} />
@@ -658,7 +665,7 @@ export default function ListBillsToPay() {
                                             </td>
 
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <TextInput disabled={!isPermissionEdit && true}
+                                                {selected ? <TextInput disabled={!isPermissionEdit && true}
                                                     name='descricao'
                                                     onChange={(e) =>
                                                         handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
@@ -670,10 +677,11 @@ export default function ListBillsToPay() {
                                                             fontSize: '11px', height: 30
                                                         }
                                                     }}
-                                                />
+                                                /> :
+                                                    <Text>{item?.descricao || ''}</Text>}
                                             </td>
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <TextInput disabled={!isPermissionEdit && true}
+                                                {selected ? <TextInput disabled={!isPermissionEdit && true}
                                                     name='valor_desp'
                                                     onChange={(e) =>
                                                         handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
@@ -686,10 +694,10 @@ export default function ListBillsToPay() {
                                                         }
                                                     }}
                                                 />
+                                                    : <Text>{formatter.format(parseInt(item?.valor_desp)) || ''}</Text>}
                                             </td>
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                {/* <Text light>{formatTimeStampTimezone(item?.dt_vencimento)}</Text> */}
-                                                <TextInput disabled={!isPermissionEdit && true}
+                                                {selected ? <TextInput disabled={!isPermissionEdit && true}
                                                     name='dt_vencimento'
                                                     onChange={(e) =>
                                                         handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
@@ -702,9 +710,11 @@ export default function ListBillsToPay() {
                                                         }
                                                     }}
                                                 />
+                                                    :
+                                                    <Text light>{formatTimeStampTimezone(item?.dt_vencimento)}</Text>}
                                             </td>
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <TextInput disabled={!isPermissionEdit && true}
+                                                {selected ? <TextInput disabled={!isPermissionEdit && true}
                                                     name='dt_pagamento'
                                                     onChange={(e) =>
                                                         handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
@@ -717,23 +727,25 @@ export default function ListBillsToPay() {
                                                         }
                                                     }}
                                                 />
+                                                    : <Text light>{formatTimeStampTimezone(item?.dt_pagamento)}</Text>}
                                             </td>
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-
-                                                <SelectList
-                                                    clean={false}
-                                                    disabled={!isPermissionEdit && true}
-                                                    data={accountTypesList}
-                                                    valueSelection={item?.tipo}
-                                                    onSelect={(value) => handleChangeExpenseData(expenseId, 'tipo', value)}
-                                                    filterOpition="value" sx={{ color: colorPalette.textColor }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                                                    style={{ fontSize: '11px', height: 30, width: 120 }}
-                                                />
+                                                {selected ?
+                                                    <SelectList
+                                                        clean={false}
+                                                        disabled={!isPermissionEdit && true}
+                                                        data={accountTypesList}
+                                                        valueSelection={item?.tipo}
+                                                        onSelect={(value) => handleChangeExpenseData(expenseId, 'tipo', value)}
+                                                        filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                                        style={{ fontSize: '11px', height: 30, width: 120 }}
+                                                    />
+                                                    : <Text light>{handleLabelList(accountTypesList, item?.tipo)}</Text>}
                                             </td>
 
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <SelectList
+                                                {selected ? <SelectList
                                                     fullWidth
                                                     clean={false}
                                                     disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={item?.centro_custo}
@@ -745,9 +757,10 @@ export default function ListBillsToPay() {
                                                     }}
                                                     style={{ fontSize: '11px', height: 30, width: 120 }}
                                                 />
+                                                    : <Text light>{handleLabelList(costCenterList, item?.centro_custo)}</Text>}
                                             </td>
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <SelectList
+                                                {selected ? <SelectList
                                                     fullWidth
                                                     clean={false}
                                                     disabled={!isPermissionEdit && true}
@@ -758,20 +771,23 @@ export default function ListBillsToPay() {
                                                     inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold', height: 30 }}
                                                     style={{ fontSize: '11px', height: 30, width: 120 }}
                                                 />
+                                                    : <Text light>{handleLabelList(accountList, item?.conta_pagamento)}</Text>}
                                             </td>
 
                                             <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <SelectList
-                                                    fullWidth
-                                                    clean={false}
-                                                    disabled={!isPermissionEdit && true}
-                                                    data={groupStatus}
-                                                    valueSelection={item?.status}
-                                                    onSelect={(value) => handleChangeExpenseData(expenseId, 'status', value)}
-                                                    filterOpition="value" sx={{ color: colorPalette.textColor }}
-                                                    inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold', height: 30 }}
-                                                    style={{ fontSize: '11px', height: 30, width: 120 }}
-                                                />
+                                                {selected ?
+                                                    <SelectList
+                                                        fullWidth
+                                                        clean={false}
+                                                        disabled={!isPermissionEdit && true}
+                                                        data={groupStatus}
+                                                        valueSelection={item?.status}
+                                                        onSelect={(value) => handleChangeExpenseData(expenseId, 'status', value)}
+                                                        filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                                        inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold', height: 30 }}
+                                                        style={{ fontSize: '11px', height: 30, width: 120 }}
+                                                    />
+                                                    : <Text light>{item?.status}</Text>}
                                             </td>
                                             <td style={{ textAlign: 'center', padding: '5px', alignItems: 'center', justifyContent: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                                 <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
