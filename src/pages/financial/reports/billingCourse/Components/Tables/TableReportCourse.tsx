@@ -8,7 +8,7 @@ interface TableReportCourseProps {
     data: InstallmentsCourse[];
 }
 
-export const TableReportCourse: React.FC<TableReportCourseProps> = ({ data = [] }) => {
+const TableReportCourse: React.FC<TableReportCourseProps> = ({ data = [] }) => {
     const { colorPalette, theme } = useAppContext()
     return (
         <Box>
@@ -51,3 +51,5 @@ export const TableReportCourse: React.FC<TableReportCourseProps> = ({ data = [] 
         </Box>
     )
 }
+
+export default TableReportCourse

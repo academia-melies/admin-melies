@@ -8,7 +8,7 @@ interface TableReporClassProps {
     data: InstallmentsClasses[];
 }
 
-export const TableReportClass: React.FC<TableReporClassProps> = ({ data = [] }) => {
+const TableReportClass: React.FC<TableReporClassProps> = ({ data = [] }) => {
     const { colorPalette, theme } = useAppContext()
     return (
         <Box>
@@ -51,3 +51,5 @@ export const TableReportClass: React.FC<TableReporClassProps> = ({ data = [] }) 
         </Box>
     )
 }
+
+export default TableReportClass

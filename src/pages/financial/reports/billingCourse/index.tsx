@@ -6,8 +6,10 @@ import { SectionHeader } from "../../../../organisms";
 import { api } from "../../../../api/api";
 import { formatReal } from "../../../../helpers";
 import { CircularProgress } from "@mui/material";
-import { TableReport, TableReportClass, TableReportCourse } from "./Components/Tables";
-import { HeaderFilters } from "./Components/Header";
+import HeaderFilters from "./Components/Header/HeaderFilters";
+import TableReport from "./Components/Tables/TableReport";
+import TableReportClass from "./Components/Tables/TableReportClass";
+import TableReportCourse from "./Components/Tables/TableReportCourse";
 
 export interface FiltersField {
     forma_pagamento: string | null

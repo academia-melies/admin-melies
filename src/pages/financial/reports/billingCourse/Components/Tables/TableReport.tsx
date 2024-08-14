@@ -8,7 +8,7 @@ interface TableReportProps {
     data: Installments[];
 }
 
-export const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
+const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
     const { colorPalette, theme } = useAppContext()
     return (
         <Box>
@@ -78,3 +78,5 @@ export const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
         </Box>
     )
 }
+
+export default TableReport

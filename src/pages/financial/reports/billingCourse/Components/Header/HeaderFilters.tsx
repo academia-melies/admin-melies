@@ -20,7 +20,7 @@ interface HeaderFiltersProps {
     setReportClass: Dispatch<SetStateAction<InstallmentsClasses[]>>
 }
 
-export const HeaderFilters: React.FC<HeaderFiltersProps> = ({
+const HeaderFilters: React.FC<HeaderFiltersProps> = ({
     filtersField, setFiltersField, fetchReportData,
     setReportData,
     setReportCourse,
@@ -306,3 +306,5 @@ const styles = {
         right: 0
     }
 }
+
+export default HeaderFilters
