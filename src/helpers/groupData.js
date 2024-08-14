@@ -77,5 +77,24 @@ export const groupData = {
     origemEnsinoMedio: [
         { label: 'Pública', value: 'Pública' },
         { label: 'Privada', value: 'Privada' }
+    ],
+    paymentForm: [
+        { label: 'Todos', value: 'todos' },
+        { label: 'Boleto', value: 'Boleto' },
+        { label: 'Boleto(PRAVALER)', value: 'Boleto(PRAVALER)' },
+        { label: 'Cartão', value: 'Cartão' },
+        { label: 'Cartão (Maquininha melies)', value: 'Cartão (Maquininha melies)' },
+        { label: 'Pix', value: 'Pix' },
+        { label: 'Transferência bancária', value: 'Transferência bancária' },
+        { label: 'Dinheiro', value: 'Dinheiro' }
+    ],
+    statusPayment: [
+        { label: 'Pendente', value: 'Pendente' },
+        { label: 'Pago', value: 'Pago' },
+        { label: 'Cancelado', value: 'Cancelado' },
+        { label: 'Pagamento reprovado', value: 'Pagamento reprovado' },
+        { label: 'Estornada', value: 'Estornada' },
+        { label: 'Não Autorizado', value: 'Não Autorizado' },
+        { label: 'Erro com o pagamento', value: 'Erro com o pagamento' }
     ]
 }

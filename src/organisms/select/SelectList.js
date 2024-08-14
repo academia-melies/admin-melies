@@ -46,7 +46,6 @@ export const SelectList = (props) => {
             {onFilter ? (
                 <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px" }}>
                     <Autocomplete
-                        size="small"
                         options={filteredData}
                         getOptionLabel={(option) => option[filterValue]}
                         value={data.find(item => item[filterOpition] === valueSelection) || null}
@@ -65,7 +64,7 @@ export const SelectList = (props) => {
                         }}
                         renderInput={(params) => (
                             <TextField
-                                size="small"
+                            size="small"
                                 {...params}
                                 label={title}
                                 InputProps={{
@@ -73,10 +72,8 @@ export const SelectList = (props) => {
                                     style: {
                                         borderRadius: '8px',
                                         ...params.InputProps.style,
-                                        // height: '45px',
                                         padding: '0 14px',
                                         ...(small && {
-                                            // height: 30,
                                             fontSize: '11px'
                                         })
                                     },
@@ -102,7 +99,6 @@ export const SelectList = (props) => {
                                     fontFamily: 'MetropolisRegular',
                                     backgroundColor: colorPalette.inputColor,
                                     color: colorPalette.textColor,
-                                    // height: '45px',
                                     '&.disabled': {
                                         color: 'white',
                                     },
@@ -116,13 +112,14 @@ export const SelectList = (props) => {
                 <Box sx={{ minWidth: minWidth, flex: fullWidth && 1, borderRadius: "8px" }}>
                     <FormControl fullWidth>
                         <InputLabel
+                            size="small"
                             InputLabelProps={{ sx: { fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' } } }}
                             sx={{ fontSize: { xs: '13px', xm: '13px', md: '13px', lg: '14px', xl: '15px' }, ...inputStyle }}
                         >
                             {title}
                         </InputLabel>
                         <Select
-                        size="small"
+                            size="small"
                             disabled={disabled}
                             sx={{
                                 borderRadius: "8px",

@@ -161,7 +161,7 @@ export const formatCEP = (cep) => {
 
 export const formatReal = (valor) => {
    if (typeof valor !== 'number') {
-      return '';
+      parseInt(valor)
    }
 
    const formatter = new Intl.NumberFormat('pt-BR', {

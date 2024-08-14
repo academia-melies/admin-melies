@@ -45,7 +45,7 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 2,
+        gap: 1,
         padding: '8px 15px',
         borderRadius: 3,
     },
