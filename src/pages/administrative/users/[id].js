@@ -3885,7 +3885,7 @@ export default function EditUser() {
                                                                     <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
                                                                 </Link>
                                                             </Box>
-                                                            <Divider padding={0} />
+                                                            {/* <Divider padding={0} />
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
                                                                 <Text bold>Excluir Matricula:</Text>
                                                                 <Button small text="Excluir" onClick={handleClickOpen} style={{ width: 105, height: 25, alignItems: 'center' }} />
@@ -3908,7 +3908,7 @@ export default function EditUser() {
                                                                     <Button onClick={handleClose} small text="Não" />
                                                                     <Button onClick={() => deleteMatricula(id, item?.turma_id, enrollmentId, item?.modulo)} small text="Sim" />
                                                                 </DialogActions>
-                                                            </Dialog>
+                                                            </Dialog> */}
 
                                                             <Divider padding={0} />
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
