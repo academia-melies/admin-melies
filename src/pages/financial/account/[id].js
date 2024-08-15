@@ -93,7 +93,8 @@ export default function Editaccount(props) {
         try {
             const response = await api.get(`/account/historic/${id}`)
             const { data } = response
-            setAccountHistoricList(data)
+            const historicSorted = data?.sort((a, b) => new Date(b.dt_transferencia) - new Date(a.dt_transferencia))
+            setAccountHistoricList(historicSorted)
         } catch (error) {
             console.log(error)
             return error
@@ -987,6 +988,8 @@ export default function Editaccount(props) {
                             title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                             inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                         />
+
+                        <TextInput disabled={!isPermissionEdit && true} type="date" name='dt_baixa' onChange={handleChangeTransfer} value={transferData?.dt_baixa?.split('T')[0] || ''} label='Dt transferência:' sx={{ width: '100%', }} />
 
                         <Text light>Transferir para Conta:</Text>
                         <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountList} valueSelection={transferData?.conta_id}
