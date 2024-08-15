@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import { AnimatedNumbers, Box, Button, ContentContainer, Divider, Text, TextInput } from '../atoms'
-import { BirthDaysMonth, Carousel, ClassDays, MenuHomeList, Top15List } from '../organisms'
+import { BirthDaysMonth, Carousel, ClassDays, MenuHomeList, Top15List, News } from '../organisms'
 import { useAppContext } from '../context/AppContext'
 import { icons } from '../organisms/layout/Colors'
 import { useEffect, useState } from 'react'
@@ -187,7 +187,7 @@ function Home() {
          setLoading(false)
       }
    }
-   
+
 
 
    useEffect(() => {
@@ -371,7 +371,7 @@ function Home() {
             <meta charset="utf-8" />
             <link rel="icon" href="https://adm-melies.s3.amazonaws.com/logo_vermelho_linhas_brancas.svg" />
          </Head>
-         <Box sx={{ display: 'flex', marginTop: '50px', overflow: 'hidden', display: 'flex' }}>
+         {/* <Box sx={{ display: 'flex', marginTop: '50px', overflow: 'hidden', display: 'flex' }}>
             <Box sx={{width: { xs: '100%', xm: '100%', md: '96.5%', lg: '95.5%', xl: '96.5%' }}}>
                <Carousel
                   data={imagesList || backgroundHome}
@@ -386,8 +386,8 @@ function Home() {
             <Box sx={{ width: 50, display: { xs: 'none', xm: 'none', md: 'flex', lg: 'flex', xl: 'flex' }, height: { xs: 200, xm: 480, md: 200, lg: 300, xl: 400 } }}>
                <p></p>
             </Box>
-         </Box>
-         <Box sx={{ display: 'flex', gap: 1, flexDirection: 'row' }}>
+         </Box> */}
+         <Box sx={{ display: 'flex', gap: 1, flexDirection: 'row', marginTop: '60px' }}>
             <Box sx={{
                display: 'flex', flexDirection: 'column', width: showMenuHelp ? { xs: '100%', xm: '100%', md: '75%', lg: '75%' } : { xs: '100%', xm: '96%', md: '96%', lg: '96%' },
                transition: '0.5s',
@@ -507,7 +507,7 @@ function Home() {
                      </Box>
                   </Box> */}
 
-                  <Box sx={{
+                  {/* <Box sx={{
                      display: 'flex', gap: 2, flexDirection: { xs: 'column', xm: 'column', md: 'column', lg: 'row', xl: 'row' },
                   }}>
 
@@ -538,6 +538,13 @@ function Home() {
                         </Box>
 
                      </Box>
+                  </Box> */}
+
+                  <Box sx={{ width: '100%', display: 'flex', gap: 2,
+                     flexDirection: { xs: 'column', xm: 'column', md: 'row', lg: 'row', xl: 'row' }
+                   }}>
+                     <MenuHomeList />
+                     <News />
                   </Box>
 
                </Box>
