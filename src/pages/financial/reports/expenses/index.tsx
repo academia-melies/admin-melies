@@ -8,92 +8,67 @@ import { formatReal } from "../../../../helpers";
 import { CircularProgress } from "@mui/material";
 import HeaderFilters from "./Components/Header/HeaderFilters";
 import TableReport from "./Components/Tables/TableReport";
-import TableReportClass from "./Components/Tables/TableReportClass";
-import TableReportCourse from "./Components/Tables/TableReportCourse";
-import { Account, CostCenter, DataFilters, TypesAccount } from "../expenses";
 
 export interface FiltersField {
-    forma_pagamento: string | null
     status: string | null
-    tipo_data: string | null
-    data: string | null
-    classId: string | number | null
-    course: string | number | null
+    account: string | null
+    costCenter: string | null
+    type: string | null
     startDate: string | null
     endDate: string | null
-    costCenter: string | number | null
-    account: string | number | null
-    type: string | number | null
+    tipo_data: string | null
 }
 
-export interface Installments {
-    id: string | number | null,
-    usuario_id: string | number | null
-    resp_pagante_id: string | number | null
-    vencimento: string | null
+export interface DataFilters {
+    label: string | null
+    value: number | string | null
+}
+
+export interface Account {
+    nome_conta: string | null
+    id_conta: string | null
+    ativo: number
+}
+
+export interface TypesAccount {
+    nome_tipo: string | null
+    id_tipo: string | null
+    ativo: number
+}
+
+export interface CostCenter {
+    nome_cc: string | null
+    id_centro_custo: string | null
+    ativo: number
+}
+
+export interface Expenses {
+    descricao: string | null
+    dt_vencimento: string | null
     dt_pagamento: string | null
     valor: number | null
-    n_parcela: string | number | null
-    forma_pagamento: string | null
-    obs_pagamento: string | null
-    observacao: string | null
-    status: string | null
-    conta: string | null
-    c_custo: string | null
-    nome_curso: string | null
-    nome_turma: string | null
-    aluno: string | null
-    responsavel: string | null
+    conta_pagamento: string | number | null
+    nome_cc: string | null
+    nome_tipo: string | null
+    nome_conta: string | null
 }
 
-export interface InstallmentsCourse {
-    valor: number | null
-    nome_curso: string | null
-}
-
-export interface InstallmentsClasses {
-    valor: number | null
-    nome_turma: string | null
-}
-
-export interface CourseCenter {
-    nome_curso: string | null
-    modalidade_curso: string | null
-    id_curso: string | null
-    ativo: number
-}
-
-export interface ClassCenter {
-    nome_turma: string | null
-    id_turma: string | null
-    ativo: number
-}
-
-export default function BillingCourses() {
-    const [reportData, setReportData] = useState<Installments[]>([])
-    const [reportClass, setReportClass] = useState<InstallmentsClasses[]>([])
-    const [reportCourse, setReportCourse] = useState<InstallmentsCourse[]>([])
+export default function ExpensesReport() {
+    const [reportData, setReportData] = useState<Expenses[]>([])
     const [loadingData, setLoadingData] = useState<boolean>(false)
     const [filterAbaData, setFilterAbaData] = useState<string>('relatorio_geral')
+    const [filtersField, setFiltersField] = useState<FiltersField>({
+        status: '',
+        account: '',
+        costCenter: '',
+        type: '',
+        startDate: '',
+        endDate: '',
+        tipo_data: ''
+    })
     const [accountList, setAccountList] = useState<DataFilters[]>([])
     const [typesList, setTypesList] = useState<DataFilters[]>([])
     const [costCenterList, setCostCenterList] = useState<DataFilters[]>([])
-    const [coursesList, setCourses] = useState<DataFilters[]>([])
-    const [classesList, setClasses] = useState<DataFilters[]>([])
-
-    const [filtersField, setFiltersField] = useState<FiltersField>({
-        forma_pagamento: '',
-        status: '',
-        tipo_data: '',
-        data: '',
-        startDate: '',
-        endDate: '',
-        classId: '',
-        course: '',
-        costCenter: '',
-        account: '',
-        type: ''
-    })
 
     const { colorPalette, alert } = useAppContext()
 
@@ -101,29 +76,25 @@ export default function BillingCourses() {
         if (filtersField.startDate && filtersField.endDate) {
             setLoadingData(true)
             try {
-                const response = await api.get('/report/financial/billing/course', {
+                const response = await api.get('/report/financial/expenses', {
                     params: {
                         date: {
                             startDate: filtersField.startDate,
                             endDate: filtersField.endDate
                         },
-                        classId: filtersField.classId,
-                        course: filtersField.course,
-                        account: filtersField.account,
-                        costCenter: filtersField.costCenter,
-                        type: filtersField.type,
-                        paymentForm: filtersField.forma_pagamento,
                         status: filtersField.status,
+                        costCenter: filtersField.costCenter,
+                        account: filtersField.account,
+                        type: filtersField.type,
+                        dateType: filtersField.tipo_data,
                         page: 1, // exemplo
                         limit: 100,    // exemplo
-                        dateType: filtersField.tipo_data
                     }
                 });
-                const { installments, forCourseData, forClassData } = response.data
 
-                setReportData(installments);
-                setReportCourse(forCourseData)
-                setReportClass(forClassData)
+                const { expenses } = response.data
+
+                setReportData(expenses);
             } catch (error) {
                 console.error('Erro ao buscar dados do relatório:', error);
             } finally {
@@ -134,34 +105,11 @@ export default function BillingCourses() {
         }
     };
 
-    const exportToExcel = async (installments: Installments[], forCourseData: any[], forClassData: any[]): Promise<void> => {
-        // Cria uma nova planilha de trabalho
-        const workbook = XLSX.utils.book_new();
-
-        // Converte os dados para o formato de planilha
-        const installmentsSheet = XLSX.utils.json_to_sheet(installments);
-        const courseSheet = XLSX.utils.json_to_sheet(forCourseData);
-        const classSheet = XLSX.utils.json_to_sheet(forClassData);
-
-        // Adiciona as planilhas ao livro
-        XLSX.utils.book_append_sheet(workbook, installmentsSheet, 'Installments');
-        XLSX.utils.book_append_sheet(workbook, courseSheet, 'Course Data');
-        XLSX.utils.book_append_sheet(workbook, classSheet, 'Class Data');
-
-        // Gera o arquivo Excel
-        XLSX.writeFile(workbook, 'report.xlsx');
-
-        alert.info('Relatórios exportados.')
-    };
-
-
     const fetchFilters = async () => {
-        const [costCenterResponse, accountsResponse, typesResponse, classResponse, courseResponse] = await Promise.all([
+        const [costCenterResponse, accountsResponse, typesResponse] = await Promise.all([
             api.get<CostCenter[]>(`/costCenters`),
             api.get<Account[]>(`/accounts`),
-            api.get<TypesAccount[]>(`/account/types`),
-            api.get<ClassCenter[]>(`/classes`),
-            api.get<CourseCenter[]>(`/courses`)
+            api.get<TypesAccount[]>(`/account/types`)
         ])
 
         const costCenterData = costCenterResponse.data
@@ -182,36 +130,35 @@ export default function BillingCourses() {
 
         const typesData = typesResponse.data
         const groupTypes = typesData?.filter(item => item.ativo === 1)?.map(cc => ({
-            label: cc.nome_tipo || '',
+            label: cc.nome_tipo,
             value: cc?.id_tipo
         }));
+
         setTypesList(groupTypes)
-
-
-        const classData = classResponse.data
-        let groupClass = classData.filter(item => item.ativo === 1)?.map(turma => ({
-            label: turma.nome_turma || '',
-            value: turma.id_turma
-        }));
-
-        groupClass = groupClass.sort((a, b) => a.label.localeCompare(b.label))
-        setClasses(groupClass);
-
-
-        const courseData = courseResponse.data
-        let groupCourses = courseData?.filter(item => item.ativo === 1)?.map(course => ({
-            label: `${course.nome_curso}_${course?.modalidade_curso}`,
-            value: course?.id_curso
-        }));
-        groupCourses = groupCourses.sort((a, b) => a.label.localeCompare(b.label))
-        setCourses(groupCourses);
     }
 
     useEffect(() => {
         fetchFilters()
     }, [])
 
-    const calculationTotal = (data: Installments[]): number => {
+    const exportToExcel = async (expenses: Expenses[]): Promise<void> => {
+        // Cria uma nova planilha de trabalho
+        const workbook = XLSX.utils.book_new();
+
+        // Converte os dados para o formato de planilha
+        const ExpensesSheet = XLSX.utils.json_to_sheet(expenses);
+
+        // Adiciona as planilhas ao livro
+        XLSX.utils.book_append_sheet(workbook, ExpensesSheet, 'Despesas');
+
+        // Gera o arquivo Excel
+        XLSX.writeFile(workbook, 'report.xlsx');
+
+        alert.info('Relatórios exportados.')
+    };
+
+
+    const calculationTotal = (data: Expenses[]): number => {
         const total = data
             .map(item => {
                 return typeof item.valor === 'number' ? item.valor : 0
@@ -222,17 +169,13 @@ export default function BillingCourses() {
 
     return (
         <>
-            <SectionHeader title="Relatório de Faturamento" />
+            <SectionHeader title="Relatório de Despesas" />
             <Box sx={{ ...styles.sectionContainer, backgroundColor: colorPalette.secondary, }}>
                 <HeaderFilters
                     filtersField={filtersField}
                     setFiltersField={setFiltersField}
                     fetchReportData={fetchReportData}
                     setReportData={setReportData}
-                    setReportCourse={setReportCourse}
-                    setReportClass={setReportClass}
-                    classesList={classesList}
-                    coursesList={coursesList}
                     accountList={accountList}
                     typesList={typesList}
                     costCenterList={costCenterList}
@@ -250,16 +193,6 @@ export default function BillingCourses() {
                                     onClick={() => setFilterAbaData('relatorio_geral')}>
                                     <Text bold={filterAbaData === 'relatorio_geral'}>Relatório Geral</Text>
                                 </Box>
-
-                                <Box sx={{ ...styles.filterField, borderBottom: filterAbaData === 'relatorio_turma' && `1px solid ${colorPalette.buttonColor}` }}
-                                    onClick={() => setFilterAbaData('relatorio_turma')}>
-                                    <Text bold={filterAbaData === 'relatorio_turma'}>Relatório por Turma</Text>
-                                </Box>
-
-                                <Box sx={{ ...styles.filterField, borderBottom: filterAbaData === 'relatorio_curso' && `1px solid ${colorPalette.buttonColor}` }}
-                                    onClick={() => setFilterAbaData('relatorio_curso')}>
-                                    <Text bold={filterAbaData === 'relatorio_curso'}>Relatório por Curso</Text>
-                                </Box>
                             </Box>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                                 <Text bold>Exportar relatório: </Text>
@@ -273,12 +206,10 @@ export default function BillingCourses() {
                                         opacity: 0.8,
                                         cursor: 'pointer'
                                     }
-                                }} onClick={() => exportToExcel(reportData, reportCourse, reportClass)} />
+                                }} onClick={() => exportToExcel(reportData)} />
                             </Box>
                         </Box>
                         {filterAbaData === 'relatorio_geral' && <TableReport data={reportData} />}
-                        {filterAbaData === 'relatorio_turma' && <TableReportClass data={reportClass} />}
-                        {filterAbaData === 'relatorio_curso' && <TableReportCourse data={reportCourse} />}
                         <Box sx={styles.boxValueTotally}>
                             <Text title light>Total {filtersField.status}: </Text>
                             <Text title bold>{formatReal(calculationTotal(reportData))}</Text>

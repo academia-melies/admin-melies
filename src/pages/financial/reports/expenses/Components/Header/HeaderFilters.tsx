@@ -1,11 +1,10 @@
 
 import { ChangeEvent, Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import { ClassCenter, CourseCenter, FiltersField, Installments, InstallmentsClasses, InstallmentsCourse } from "../..";
+import { DataFilters, FiltersField, Expenses } from "../..";
 import { Box, ButtonIcon, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
 import { SelectList } from "../../../../../../organisms";
 import { groupData } from "../../../../../../helpers/groupData";
-import { DataFilters } from "../../../expenses";
 
 interface Fields {
     label: string
@@ -16,11 +15,7 @@ interface HeaderFiltersProps {
     filtersField: FiltersField
     setFiltersField: Dispatch<SetStateAction<FiltersField>>
     fetchReportData: () => Promise<void>
-    setReportData: Dispatch<SetStateAction<Installments[]>>
-    setReportCourse: Dispatch<SetStateAction<InstallmentsCourse[]>>
-    setReportClass: Dispatch<SetStateAction<InstallmentsClasses[]>>
-    classesList: DataFilters[]
-    coursesList: DataFilters[]
+    setReportData: Dispatch<SetStateAction<Expenses[]>>
     accountList: DataFilters[]
     typesList: DataFilters[]
     costCenterList: DataFilters[]
@@ -29,10 +24,6 @@ interface HeaderFiltersProps {
 const HeaderFilters: React.FC<HeaderFiltersProps> = ({
     filtersField, setFiltersField, fetchReportData,
     setReportData,
-    setReportCourse,
-    setReportClass,
-    classesList,
-    coursesList,
     accountList,
     typesList,
     costCenterList
@@ -63,11 +54,9 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
     const fields: Fields[] = [
         { label: 'Status', value: 'status' },
         { label: 'Filtrar por Data', value: 'tipo_data' },
-        { label: 'Curso', value: 'curso' },
-        { label: 'Turma', value: 'turma' },
-        { label: 'Forma de Pagamento', value: 'forma_pagamento' },
-        { label: 'Centro de Custo', value: 'centro_custo' },
-        { label: 'Conta', value: 'conta' },
+        { label: 'Conta', value: 'account' },
+        { label: 'Centro de Custo', value: 'costCenter' },
+        { label: 'Tipo', value: 'type' },
     ]
 
     const handleFieldClick = (fieldValue: string) => {
@@ -122,10 +111,23 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                 <Box sx={{ display: fieldersSelected?.length > 0 ? 'flex' : 'none', gap: 1 }}>
                     {fieldersSelected.map((field, index) => (
                         <Box key={index}>
-
+                            {field === 'status' &&
+                                <SelectList
+                                    data={[
+                                        { label: 'Pago', value: 'Pago' },
+                                        { label: 'Pendente', value: 'Pendente' }
+                                    ]}
+                                    valueSelection={filtersField?.status}
+                                    onSelect={(value: string) => setFiltersField({ ...filtersField, status: value })}
+                                    title="Status:"
+                                    filterOpition="value"
+                                    style={{ backgroundColor: colorPalette?.secondary }}
+                                    clean={false}
+                                />
+                            }
                             {field === 'tipo_data' &&
                                 <SelectList
-                                    data={[{ label: 'Vencimento', value: 'vencimento' },
+                                    data={[{ label: 'Vencimento', value: 'dt_vencimento' },
                                     { label: 'Pagamento', value: 'dt_pagamento' },]}
                                     valueSelection={filtersField?.tipo_data}
                                     onSelect={(value: string) => setFiltersField({ ...filtersField, tipo_data: value })}
@@ -135,53 +137,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     clean={false}
                                 />
                             }
-                            {field === 'status' &&
-                                <SelectList
-                                    data={groupData.statusPayment}
-                                    valueSelection={filtersField?.status}
-                                    onSelect={(value: string) => setFiltersField({ ...filtersField, status: value })}
-                                    title="Status:"
-                                    filterOpition="value"
-                                    style={{ backgroundColor: colorPalette?.secondary }}
-                                    clean={false}
-                                />
-                            }
 
-                            {field === 'curso' &&
-                                <SelectList
-                                    data={coursesList}
-                                    valueSelection={filtersField?.course}
-                                    onSelect={(value: string) => setFiltersField({ ...filtersField, course: value })}
-                                    title="Curso:"
-                                    filterOpition="value"
-                                    style={{ backgroundColor: colorPalette?.secondary }}
-                                    clean={false}
-                                />
-                            }
-
-                            {field === 'turma' &&
-                                <SelectList
-                                    data={classesList}
-                                    valueSelection={filtersField?.classId}
-                                    onSelect={(value: string) => setFiltersField({ ...filtersField, classId: value })}
-                                    title="Turma:"
-                                    filterOpition="value"
-                                    style={{ backgroundColor: colorPalette?.secondary }}
-                                    clean={false}
-                                />
-                            }
-
-                            {field === 'forma_pagamento' &&
-                                <SelectList
-                                    data={groupData.paymentForm}
-                                    valueSelection={filtersField?.forma_pagamento}
-                                    onSelect={(value: string) => setFiltersField({ ...filtersField, forma_pagamento: value })}
-                                    title="Forma de Pagamento:"
-                                    filterOpition="value"
-                                    style={{ backgroundColor: colorPalette?.secondary, minWidth: 200 }}
-                                    clean={false}
-                                />
-                            }
                             {field === 'account' &&
                                 <SelectList
                                     data={accountList}
@@ -205,6 +161,18 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     clean={false}
                                 />
                             }
+                            {field === 'type' &&
+                                <SelectList
+                                    data={typesList}
+                                    valueSelection={filtersField?.type}
+                                    onSelect={(value: string) => setFiltersField({ ...filtersField, type: value })}
+                                    title="Tipo:"
+                                    filterOpition="value"
+                                    style={{ backgroundColor: colorPalette?.secondary }}
+                                    clean={false}
+                                />
+                            }
+
                         </Box>
                     ))}
 
@@ -233,21 +201,15 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                 <Box sx={{ ...styles.filterButton, backgroundColor: colorPalette?.secondary, gap: .5 }} onClick={() => {
                     setFieldersSelected([])
                     setFiltersField({
-                        forma_pagamento: '',
+                        account: '',
                         status: '',
                         tipo_data: '',
-                        data: '',
-                        startDate: '',
-                        endDate: '',
-                        classId: '',
-                        course: '',
                         costCenter: '',
-                        account: '',
-                        type: ''
+                        type: '',
+                        startDate: '',
+                        endDate: ''
                     })
                     setReportData([]);
-                    setReportCourse([])
-                    setReportClass([])
                 }}>
                     <Box sx={{ ...styles.iconFilter, backgroundImage: `url(/icons/clear-filter.png)` }} />
                     <Text light bold={fieldersSelected?.length > 0} style={{ color: fieldersSelected?.length > 0 && colorPalette?.buttonColor }}>Limpar</Text>
