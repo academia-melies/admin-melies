@@ -3885,30 +3885,33 @@ export default function EditUser() {
                                                                     <Button small text="vizualizar" style={{ width: 105, height: 25, alignItems: 'center' }} />
                                                                 </Link>
                                                             </Box>
-                                                            {/* <Divider padding={0} />
-                                                            <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
-                                                                <Text bold>Excluir Matricula:</Text>
-                                                                <Button small text="Excluir" onClick={handleClickOpen} style={{ width: 105, height: 25, alignItems: 'center' }} />
+                                                            {user?.area === 'TI - Suporte' &&
+                                                                <>
+                                                                    <Divider padding={0} />
+                                                                    <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
+                                                                        <Text bold>Excluir Matricula:</Text>
+                                                                        <Button small text="Excluir" onClick={handleClickOpen} style={{ width: 105, height: 25, alignItems: 'center' }} />
 
-                                                            </Box>
-                                                            <Dialog
-                                                                open={open}
+                                                                    </Box>
+                                                                    <Dialog
+                                                                        open={open}
 
-                                                                keepMounted
-                                                                onClose={handleClose}
-                                                                aria-describedby="alert-dialog-slide-description"
-                                                            >
-                                                                <DialogTitle>{"ATENÇÃO!"}</DialogTitle>
-                                                                <DialogContent>
-                                                                    <DialogContentText id="alert-dialog-slide-description">
-                                                                        Deseja apagar essa matrícula permanentemente
-                                                                    </DialogContentText>
-                                                                </DialogContent>
-                                                                <DialogActions>
-                                                                    <Button onClick={handleClose} small text="Não" />
-                                                                    <Button onClick={() => deleteMatricula(id, item?.turma_id, enrollmentId, item?.modulo)} small text="Sim" />
-                                                                </DialogActions>
-                                                            </Dialog> */}
+                                                                        keepMounted
+                                                                        onClose={handleClose}
+                                                                        aria-describedby="alert-dialog-slide-description"
+                                                                    >
+                                                                        <DialogTitle>{"ATENÇÃO!"}</DialogTitle>
+                                                                        <DialogContent>
+                                                                            <DialogContentText id="alert-dialog-slide-description">
+                                                                                Deseja apagar essa matrícula permanentemente
+                                                                            </DialogContentText>
+                                                                        </DialogContent>
+                                                                        <DialogActions>
+                                                                            <Button onClick={handleClose} small text="Não" />
+                                                                            <Button onClick={() => deleteMatricula(id, item?.turma_id, enrollmentId, item?.modulo)} small text="Sim" />
+                                                                        </DialogActions>
+                                                                    </Dialog>
+                                                                </>}
 
                                                             <Divider padding={0} />
                                                             <Box sx={{ display: 'flex', gap: 1.8, alignItems: 'center' }}>
@@ -5536,7 +5539,7 @@ export const EditFile = (props) => {
                                                         <Text xsmall sx={{ whiteSpace: 'nowrap' }}>
                                                             Status:</Text>
                                                         <Box sx={{ display: 'flex', padding: '2px 5px', backgroundColor: statusColor(file?.status_assinaturas), borderRadius: 2 }}>
-                                                            <Text bold xsmall sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                            <Text bold xsmall sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                 {file?.status_assinaturas}
                                                             </Text>
                                                         </Box>
