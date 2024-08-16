@@ -38,7 +38,7 @@ export const MenuHomeList = (props) => {
                         backgroundColor: colorPalette.secondary,
                         flexDirection: 'row',
                         // width: permissionTop15 ? '31%' : '100%',
-                        width: { xs: '100%', xm: '100%', md: '49%', lg: '49%', xl: '49%' },
+                        width: { xs: '100%', xm: '100%', md: '46%', lg: '48%', xl: '48%' },
                         padding: '25px 20px',
                         // padding: permissionTop15 ? '15px 20px' : '25px 20px',
                         gap: 2,
