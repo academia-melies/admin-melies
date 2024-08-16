@@ -33,7 +33,7 @@ export const WorkChat = () => {
         userWritingPhoto: null
     })
     const [loadingChat, setLoadingChat] = useState(false)
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const API_URL = process.env.NEXT_PUBLIC_API_CHAT_URL;
     const messagesContainerRef = useRef(null);
     const socket = io(API_URL, {
         transports: ["websocket"]
