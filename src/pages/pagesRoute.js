@@ -26,7 +26,7 @@ const PagesRoute = ({ Component, pageProps }) => {
                 <Box sx={{ ...styles.bodyContainer, backgroundColor: colorPalette.primary }}>
                     <LeftMenu />
                     <UserHeader />
-                    {/* <WorkChat /> */}
+                    <WorkChat />
                     <Box sx={{
                         ...styles.contentContainer, backgroundColor: colorPalette.primary, transition: 'background-color 1s',
                         padding: removePadding ? '0' : { xs: `30px 30px 85px 30px`, xm: `25px`, md: `120px 65px`, lg: `120px 65px` }

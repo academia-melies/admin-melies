@@ -316,7 +316,7 @@ export default function StuatusPayment() {
                     usuario_id: id,
                     matricula_id: enrollmentId,
                     cartao_credito_id: '',
-                    resp_pagante_id: newInstallment?.responsavel_financeiro !== 0 ? responsiblePayerData?.id_resp_pag : userData?.id,
+                    resp_pagante_id: newInstallment?.responsavel_financeiro !== 0 ? responsiblePayerData?.id_resp_pag : null,
                     aluno: userData?.nome,
                     vencimento: newInstallment?.vencimento,
                     valor_parcela: newInstallment?.valor_parcela,
