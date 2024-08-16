@@ -14,16 +14,25 @@ export const News = () => {
 
     const newsData = [
         {
+            imagem: '/background/chat-image.jpg', area: 'Suporte', title: 'Novo Chat Interno!',
+            date: '2024-08-16',
+            new: true,
+            description: 'Agora, temos nosso prórpio chat interno! É isso mesmo, agora no Painel Administrativo, você pode interagir com qualquer funcionário. Está em fase de implementação e testes, caso tenham sugestões, correções, nos dê seu feedback através no chamado!'
+        },
+        {
             imagem: '/background/aviso-4.jpg', area: 'Suporte', title: 'Atualizações Painel Administrativo',
-            date: '2024-08-15',
+            date: '2024-08-15', new: false,
             description: 'O Painel administrativo está passando por novas atualizações constantemente, para melhorar sua experiência.'
         },
         {
-            imagem: '/background/aviso-6.jpg', area: 'Suporte', title: 'Em Breve: Guia de Boas Práticas de Segurança Digital', date: '2024-08-15',
+            imagem: '/background/aviso-6.jpg',
+            new: false,
+            area: 'Suporte', title: 'Em Breve: Guia de Boas Práticas de Segurança Digital', date: '2024-08-15',
             description: 'Em breve, disponibilizaremos um Guia de Boas Práticas de Segurança Digital desenvolvido especialmente para todos os funcionários da Melies. Este guia oferecerá dicas valiosas sobre como proteger seus dados e dispositivos no ambiente digital, ajudando a manter nossa faculdade segura.'
         },
         {
-            imagem: '/background/aviso-7.jpeg', area: 'Suporte', title: 'Precisa de Ajuda?', date: '2024-08-05',
+            imagem: '/background/aviso-7.jpeg', area: 'Suporte',
+            new: false, title: 'Precisa de Ajuda?', date: '2024-08-05',
             description: 'Agora, para resolver qualquer questão, basta abrir um chamado no Portal do Aluno. O processo é simples: acesse o portal, clique em "Ajuda", selecione a categoria que melhor descreve sua necessidade, descreva o problema e envie o chamado. Nossa equipe cuidará disso com agilidade.'
         },
     ]
@@ -46,13 +55,14 @@ export const News = () => {
                     width: 20, height: 20,
                     backgroundImage: `url(${icons.gray_close})`,
                     transition: '.3s',
-                    zIndex: 999999999,
+
                     "&:hover": {
                         opacity: 0.8,
                         cursor: 'pointer'
                     }
                 }} />
             </Box>
+
             <Box sx={{ display: 'flex', gap: 2, width: '100%', alignItems: 'center', }}>
                 <Swiper
                     modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay]}
@@ -61,11 +71,11 @@ export const News = () => {
                     navigation
                     pagination={{ clickable: true }}
                     autoplay={{ delay: 7000, disableOnInteraction: false }}
-                    style={{ width: '100%' }} 
+                    style={{ width: '100%' }}
                 >
                     {newsData.map((item, index) => (
                         <SwiperSlide key={index}>
-                            <Box sx={{ display: 'flex', gap: 3, padding: '15px', flexDirection: 'column', width: '100%' }}>
+                            <Box sx={{ display: 'flex', gap: 3, padding: '15px', flexDirection: 'column', width: '100%', position: 'relative' }}>
                                 <Box sx={{
                                     backgroundSize: 'cover',
                                     backgroundRepeat: 'no-repeat',
@@ -75,6 +85,7 @@ export const News = () => {
                                     height: 280,
                                     backgroundImage: `url(${item.imagem})`,
                                 }} />
+
                                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                                     <Text light style={{ color: 'gray' }} xsmall>{formatTimeStamp(item?.date)}</Text>
                                     <Box sx={{
@@ -83,7 +94,12 @@ export const News = () => {
                                     }}>
                                         <Text bold xsmall>{item?.area}</Text>
                                     </Box>
+
+                                    {item.new && <Box sx={{ display: 'flex',  zIndex: 999999999, padding: '5px 12px', borderRadius: 5, backgroundColor: colorPalette.buttonColor }}>
+                                        <Text bold large style={{ color: '#fff' }}>Novo</Text>
+                                    </Box>}
                                 </Box>
+
                                 <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', width: '100%' }}>
                                     <Text bold large>{item?.title}</Text>
                                     <Text light>{item?.description}</Text>
