@@ -118,6 +118,8 @@ export const WorkChat = () => {
             const response = await api.get(`/conversations/chat/${user?.id}`)
             const { data = [] } = response;
 
+            console.log(data)
+
             const newMessagesFiltered = data?.map(item => parseInt(item?.msg_novas))?.reduce((curr, acc) => curr += acc, 0)
             if (newMessagesFiltered > 0) {
                 document.title = `(${newMessagesFiltered}) - Administrativo Méliès`;
@@ -243,26 +245,26 @@ export const WorkChat = () => {
     document.title = newMessages > 0 ? `(${newMessages}) - Administrativo Méliès` : originalTitle;
 
 
-    // useEffect(() => {
-    //     let writingData = {}
-    //     if (message !== '') {
-    //         writingData = {
-    //             active: true, conversa_id: conversationData?.id_conversa,
-    //             userWriting: user?.id,
-    //             userWritingName: user?.nome,
-    //             userWritingPhoto: user?.getPhoto?.location
-    //         }
-    //     } else {
-    //         writingData = {
-    //             active: false, conversa_id: conversationData?.id_conversa,
-    //             userWriting: user?.id,
-    //             userWritingName: user?.nome,
-    //             userWritingPhoto: user?.getPhoto?.location
-    //         }
-    //     }
-    //     socket.emit('userWriting', writingData);
+    useEffect(() => {
+        let writingData = {}
+        if (message !== '') {
+            writingData = {
+                active: true, conversa_id: conversationData?.id_conversa,
+                userWriting: user?.id,
+                userWritingName: user?.nome,
+                userWritingPhoto: user?.getPhoto?.location
+            }
+        } else {
+            writingData = {
+                active: false, conversa_id: conversationData?.id_conversa,
+                userWriting: user?.id,
+                userWritingName: user?.nome,
+                userWritingPhoto: user?.getPhoto?.location
+            }
+        }
+        socket.emit('userWriting', writingData);
 
-    // }, [message])
+    }, [message])
 
     // useEffect(() => {
     //     socket.on('userWriting', (writing) => {
