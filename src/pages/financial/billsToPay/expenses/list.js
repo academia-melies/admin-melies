@@ -14,6 +14,8 @@ export default function ListBillsToPay() {
     const [expensesData, setExpensesData] = useState([])
     const [monthReleaseSelected, setMonthReleaseSelected] = useState()
     const [showMonths, setShowMonths] = useState(false)
+    const [compensations, setCompensations] = useState([])
+    const [payrollRecurrencySelected, setPayrollRecurrencySelected] = useState([]);
     const [filters, setFilters] = useState({
         status: 'todos',
         startDate: '',
@@ -34,6 +36,7 @@ export default function ListBillsToPay() {
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const [showBaixa, setShowBaixa] = useState(false)
     const [showRecurrencyExpense, setShowRecurrencyExpense] = useState(false)
+    const [showRecurrencyPayroll, setShowRecurrencyPayroll] = useState(false)
     const [accountList, setAccountList] = useState([])
     const [accountTypesList, setAccountTypesList] = useState([])
     const [costCenterList, setCostCenterList] = useState([])
@@ -41,6 +44,7 @@ export default function ListBillsToPay() {
     const [showExclude, setShowExclude] = useState({ active: false, data: null, event: () => { } })
     const [filterOn, setFilterOn] = useState(false)
     const [showFilters, setShowFilters] = useState(false)
+    const [editRecurrency, setEditRecurrency] = useState(false)
 
     const fetchPermissions = async () => {
         try {
@@ -174,6 +178,34 @@ export default function ListBillsToPay() {
             }
         } catch (error) {
             console.log(error)
+        }
+    }
+
+    const getPayrollCompensation = async () => {
+        setLoading(true)
+        try {
+            const response = await api.get(`/compensation/employees`)
+            const { data } = response;
+
+            console.log(data)
+            if (data?.length > 0) {
+                setCompensations(data.sort((a, b) => a.funcionario.localeCompare(b.funcionario))?.map(item => {
+                    const remuneration = parseFloat(item.salario);
+                    const liquidRemunaration = parseFloat(item.salario_liq);
+                    return {
+                        ...item,
+                        salario: isNaN(remuneration) ? item.salario : remuneration.toFixed(2),
+                        salario_liq: isNaN(liquidRemunaration) ? item.salario_liq : liquidRemunaration.toFixed(2),
+                    };
+                }));
+            } else {
+                setCompensations([])
+            }
+
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -443,6 +475,37 @@ export default function ListBillsToPay() {
         }
     }
 
+
+    const handleUpdate = async () => {
+        try {
+            setLoading(true)
+
+            let success = true
+            for (let compensation of compensations) {
+                if (compensation?.salario_liq) {
+                    const updateCompensations = await api.patch(`/compensation/employee/update/remunaration-liquid/${compensation?.id_remuneracao}`,
+                        { salario_liq: compensation?.salario_liq })
+                    if (updateCompensations?.status !== 200) {
+                        success = false
+                    }
+                }
+            }
+
+            if (success) {
+                alert.success(`Salários atualizados.`)
+                setEditRecurrency(false)
+                await getPayrollCompensation()
+            } else {
+                alert.success(`Ocorreu um erro ao atualizar salários.`)
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <>
             <SectionHeader
@@ -561,9 +624,17 @@ export default function ListBillsToPay() {
                 flexDirection: 'column'
             }}>
 
-                <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between', }}>
-                    <Box sx={{ display: 'flex' }}>
-                        <Button disabled={!isPermissionEdit && true} small text="Cadastrar Recorrência" style={{ height: '30px', borderRadius: '6px' }} onClick={() => setShowRecurrencyExpense(true)} />
+                <Box sx={{
+                    display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between', backgroundColor: colorPalette.primary, padding: '5px', borderRadius: 2, alignItems: 'center',
+                    border: `1px solid lightgray`
+                }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, padding: '5px 15px' }}>
+                        <Button disabled={!isPermissionEdit && true} small text="Despesas Recorrênte" style={{ height: '30px', borderRadius: '6px' }} onClick={() => setShowRecurrencyExpense(true)} />
+                        <Button disabled={!isPermissionEdit && true} small text="Salários Recorrênte" style={{ height: '30px', borderRadius: '6px' }} onClick={
+                            async () => {
+                                setShowRecurrencyPayroll(true)
+                                await getPayrollCompensation()
+                            }} />
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         <Button disabled={!isPermissionEdit && true} small text="Novo" style={{ width: '80px', height: '30px', borderRadius: '6px' }} onClick={() => router.push(`/financial/billsToPay/expenses/new`)} />
@@ -925,6 +996,72 @@ export default function ListBillsToPay() {
             </Backdrop>
 
 
+            <Backdrop open={showRecurrencyPayroll} sx={{ zIndex: 999, paddingTop: 5 }}>
+                <ContentContainer sx={{ zIndex: 9999 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
+                        <Text bold large>Folha de Pagamento</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 99999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => {
+                            setShowRecurrencyPayroll(false)
+                            setPayrollRecurrencySelected([])
+                            setAllSelectedRecurrency(false)
+                            setShowMonths(false)
+                            setMonthReleaseSelected(null)
+                        }} />
+                    </Box>
+                    <Divider distance={0} />
+                    <Box sx={{
+                        display: 'flex', gap: 1.75, alignItems: 'start',
+                        maxHeight: { xs: '200px', sm: '200px', md: '350px', lg: '400px', xl: '580px' },
+                        overflow: 'auto',
+                    }}>
+                        {compensations?.length > 0 ?
+                            <TableRecurrencyPayroll
+                                data={compensations}
+                                setData={setCompensations}
+                                editRecurrency={editRecurrency}
+                                payrollRecurrencySelected={payrollRecurrencySelected}
+                                setPayrollRecurrencySelected={setPayrollRecurrencySelected}
+                                allSelectedRecurrency={allSelectedRecurrency}
+                                setAllSelectedRecurrency={setAllSelectedRecurrency}
+                            />
+                            : <Text light>Não existem salários cadastrados.</Text>}
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                        {payrollRecurrencySelected?.length > 0 &&
+                            <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text>Selecione o mês de lancamento:</Text>
+                                <Button secondary disabled={!isPermissionEdit && true} text="Selecionar" style={{ height: '30px', borderRadius: '6px' }}
+                                    onClick={() => setShowMonths(true)} />
+                            </Box>}
+                        {(monthReleaseSelected?.length > 0 && payrollRecurrencySelected?.length > 0) &&
+                            <Button disabled={!isPermissionEdit && true} text="Lançar"
+                                style={{ height: '30px', borderRadius: '6px' }} onClick={() => handleCreateRecurrencyPayroll()} />
+                        }
+                        {payrollRecurrencySelected?.length < 1 && <Box sx={{ display: 'flex', gap: 1 }}>
+                            {(!editRecurrency) ? <Button disabled={!isPermissionEdit && true} secondary text="Editar Salários" style={{ height: '30px', borderRadius: '6px' }}
+                                onClick={() => setEditRecurrency(true)} />
+                                :
+                                <Button disabled={!isPermissionEdit && true} cancel text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                                    onClick={() => setEditRecurrency(false)} />
+                            }
+                            {editRecurrency && <Button disabled={!isPermissionEdit && true} text="Salvar" style={{ height: '30px', borderRadius: '6px' }}
+                                onClick={() => handleUpdate()} />}
+                        </Box>}
+                    </Box>
+                </ContentContainer>
+            </Backdrop>
+
+
             <Backdrop open={showMonths} sx={{ zIndex: 999, paddingTop: 5 }}>
                 <ContentContainer sx={{ zIndex: 9999 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
@@ -1150,6 +1287,201 @@ const TableRecurrencyExpenses = ({ data = [], handleDeleteRecurrencyExpense, set
                                                 })
                                             } />
                                     </Box>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+
+            </table>
+
+            <PaginationTable data={data}
+                page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage}
+            />
+
+        </div >
+    )
+}
+
+
+const TableRecurrencyPayroll = ({ data = [], handleDeleteRecurrencyExpense, setShowExclude, setData,
+    payrollRecurrencySelected, setPayrollRecurrencySelected, allSelectedRecurrency, setAllSelectedRecurrency,
+    editRecurrency }) => {
+
+    const { setLoading, theme, colorPalette } = useAppContext()
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const router = useRouter()
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+    const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+
+
+    const toggleSelectAll = () => {
+        if (allSelectedRecurrency) {
+            setPayrollRecurrencySelected([]);
+        } else {
+            const allRecurrencies = data?.reduce((acc, item) => {
+                if (!payrollRecurrencySelected.some(recurrency => recurrency.recurrencyId === item.id_remuneracao)) {
+                    acc.push({ recurrencyId: item.id_remuneracao });
+                }
+                return acc;
+            }, [...payrollRecurrencySelected]);
+
+            setPayrollRecurrencySelected(allRecurrencies);
+        }
+        setAllSelectedRecurrency(!allSelectedRecurrency);
+    };
+
+    const selectedRecurrency = (value) => {
+
+        const alreadySelected = payrollRecurrencySelected.some(recurrency => recurrency.recurrencyId === value);
+
+        const updatedRecurrencySelected = alreadySelected ? payrollRecurrencySelected.filter(recurrency => recurrency.recurrencyId !== value)
+            : [...payrollRecurrencySelected, { recurrencyId: value }];
+
+        setPayrollRecurrencySelected(updatedRecurrencySelected);
+        if (updatedRecurrencySelected?.length === data?.length) {
+            setAllSelectedRecurrency(true);
+        } else if (alreadySelected) {
+            setAllSelectedRecurrency(false);
+        }
+    };
+
+
+    const handleChangeEditSalLiq = (remunerationId, value) => {
+
+        const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+        if (rawValue === '') {
+            value = '';
+        } else {
+            let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+            const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+            if (intValue === '0' && rawValue.length > 2) {
+                intValue = '';
+            }
+
+            const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+            value = formattedValue;
+
+        }
+
+        setData((prevValues) => {
+
+            const updatedValues = prevValues.map((compensation) => {
+                if (compensation?.id_remuneracao === remunerationId) {
+                    return {
+                        ...compensation,
+                        salario_liq: value
+                    }
+                }
+
+                return compensation
+            })
+            return updatedValues
+        })
+
+    }
+
+
+    return (
+        <div style={{
+            borderRadius: '8px', overflow: 'auto', marginTop: '10px', flexWrap: 'nowrap',
+            backgroundColor: colorPalette?.secondary,
+            border: `1px solid ${theme ? '#eaeaea' : '#404040'}`
+        }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
+                <thead>
+                    <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
+                        <th style={{ padding: '8px 5px', minWidth: '50px' }}>
+                            {editRecurrency ? <></> : <Box sx={{ display: 'flex', gap: .5, flexDirection: 'column', alignItems: 'center' }}>
+                                <Text xsmall>Selecionar tudo</Text>
+                                <Box sx={{
+                                    display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                    backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                    "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer'
+                                    }
+                                }} onClick={() => toggleSelectAll()}>
+                                    {allSelectedRecurrency &&
+                                        <Box sx={{
+                                            ...styles.menuIcon,
+                                            width: 20, height: 20,
+                                            backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                            transition: '.3s',
+                                        }} />
+                                    }
+                                </Box>
+                            </Box>}
+                        </th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Funcionário</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dia de Pagamento</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor Bruto</Text></th>
+                        <th style={{ padding: '8px 0px', maxWidth: '80px' }}><Text bold>Valor Líq</Text></th>
+                    </tr>
+                </thead>
+                <tbody style={{ flex: 1, }}>
+                    {data?.slice(startIndex, endIndex).map((item, index) => {
+                        const recurrencyId = item?.id_remuneracao;
+                        const selected = payrollRecurrencySelected?.some(recurrency => recurrency?.recurrencyId === recurrencyId);
+                        return (
+                            <tr key={index} style={{
+                                backgroundColor: colorPalette?.secondary
+                            }}>
+                                <td style={{ textAlign: 'center', padding: '5px 5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    {editRecurrency ? <> </> : <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                        <Box sx={{
+                                            display: 'flex', gap: 1, width: 20, height: 20, border: '1px solid', borderRadius: '2px',
+                                            backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => selectedRecurrency(recurrencyId)}>
+                                            {selected &&
+                                                <Box sx={{
+                                                    ...styles.menuIcon,
+                                                    width: 20, height: 20,
+                                                    backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                                    transition: '.3s',
+                                                }} />
+                                            }
+                                        </Box>
+                                    </Box>}
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light>
+                                        {item?.funcionario}
+                                    </Text>
+                                </td>
+
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light>
+                                        {item?.dia_pagamento}
+                                    </Text>
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light >{formatter.format(item?.salario)}</Text>
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '10px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    {editRecurrency ?
+                                        <TextInput
+                                            placeholder='R$ 5,00'
+                                            name='salario_liq'
+                                            onChange={(e) => handleChangeEditSalLiq(item?.id_remuneracao, e.target.value)}
+                                            value={item?.salario_liq}
+                                            sx={{ width: '120px', }} />
+                                        :
+                                        <Text light >{formatter.format(item?.salario_liq || 0)}</Text>
+                                    }
                                 </td>
                             </tr>
                         );
