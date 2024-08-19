@@ -18,8 +18,6 @@ interface UserDataProps {
     isPermissionEdit: boolean
     mobile: boolean
     userId: number | string
-    userDataProps: UserDataObjectProps | null
-    handleChange: any
     setPerfil: React.Dispatch<React.SetStateAction<string | null>>
 }
 
@@ -199,8 +197,6 @@ const UserData = ({
     isPermissionEdit,
     mobile,
     userId,
-    userDataProps,
-    handleChange,
     setPerfil
 }: UserDataProps) => {
     const [showEditFile, setShowEditFiles] = useState({
@@ -335,7 +331,7 @@ const UserData = ({
             ]);
             const userDataResponse = userResponse.data
             setUserData(userDataResponse);
-
+            
             const dependents = dependentResponse.data.dependents;
             setArrayDependent(dependents);
 
@@ -390,28 +386,28 @@ const UserData = ({
         ]);
     };
 
-    // const handleChange = (value: ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (value: ChangeEvent<HTMLInputElement>) => {
 
-    //     if (value.target.name == 'cpf') {
-    //         let str = value.target.value;
-    //         value.target.value = formatCPF(str)
-    //     }
+        if (value.target.name == 'cpf') {
+            let str = value.target.value;
+            value.target.value = formatCPF(str)
+        }
 
-    //     if (value.target.name == 'rg') {
-    //         let str = value.target.value;
-    //         value.target.value = formatRg(str)
-    //     }
+        if (value.target.name == 'rg') {
+            let str = value.target.value;
+            value.target.value = formatRg(str)
+        }
 
-    //     if (value.target.name == 'cep') {
-    //         let str = value.target.value;
-    //         value.target.value = formatCEP(str)
-    //     }
+        if (value.target.name == 'cep') {
+            let str = value.target.value;
+            value.target.value = formatCEP(str)
+        }
 
-    //     setUserData((prevValues) => ({
-    //         ...prevValues,
-    //         [value.target.name]: value.target.value,
-    //     }))
-    // }
+        setUserData((prevValues) => ({
+            ...prevValues,
+            [value.target.name]: value.target.value,
+        }))
+    }
 
     const handleAddPermission = async () => {
         setLoading(true)
@@ -1661,7 +1657,7 @@ const UserData = ({
 
                             {showSections.addHistoric &&
                                 <>
-                                    <ContentContainer style={{ overflow:'auto', }}>
+                                    <ContentContainer style={{ overflow: 'auto', }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
                                             <Text bold>Nova Observação</Text>
                                             <Box sx={{

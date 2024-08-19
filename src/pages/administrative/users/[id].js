@@ -50,51 +50,7 @@ export default function EditUser() {
         disciplinesData: [],
     })
     const [userData, setUserData] = useState({
-        cd_cliente: null,
-        autista: null,
-        superdotacao: null,
-        ra: null,
-        cpf: null,
-        naturalidade: null,
-        nacionalidade: 'Brasileira Nata',
-        estado_civil: null,
-        conjuge: null,
-        email_melies: null,
-        email_pessoal: null,
-        nome_pai: null,
-        nome_mae: null,
-        escolaridade: null,
-        genero: null,
-        cor_raca: null,
-        deficiencia: null,
-        doc_estrangeiro: null,
-        pais_origem: 'Brasil',
-        telefone_emergencia: null,
-        telefone: null,
-        professor: 0,
-        rg: null,
-        expedicao: '2001-01-01',
-        orgao: null,
-        uf_rg: null,
-        titulo: null,
-        zona: null,
-        secao: null,
-        rua: null,
-        cidade: null,
-        uf: null,
-        bairro: null,
-        cep: null,
-        complemento: null,
-        numero: null,
-        ativo: 1,
-        admin_melies: 0,
-        portal_aluno: 0,
-        login: null,
-        nascimento: null,
-        tipo_deficiencia: null,
-        nome_emergencia: null,
-        foto_perfil_id: null,
-        nome_social: null
+        perfil: ''
     })
     const [courses, setCourses] = useState([])
     const [classes, setClasses] = useState([])
@@ -114,64 +70,34 @@ export default function EditUser() {
         }
     }
 
-    useEffect(() => {
-        listCourses()
-        fetchPermissions()
-    }, [])
-
-    useEffect(() => {
-        listClass()
-    }, [])
-
-
-    const getUserData = async () => {
+    const fetchData = async () => {
         try {
-            const response = await api.get(`/user/${id}`)
-            const { data } = response
-            setUserData(data)
-            setPerfil(data?.perfil)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
+            const [userDataReponse, couseReponse, classReponse] = await Promise.all([
+                api.get(`/userdata/${id}`),
+                api.get(`/courses`),
+                api.get(`/classes`),
+            ])
 
+            const userDataGet = userDataReponse.data
+            console.log(userDataGet)
+            setUserData(userDataGet)
+            setPerfil(userDataGet?.perfil)
 
-    useEffect(() => {
-        (async () => {
-            if (newUser) {
-                return
-            }
-            await handleItems();
-        })();
-    }, [id])
-
-    async function listCourses() {
-        try {
-            const response = await api.get(`/courses`)
-            const { data } = response
-            const groupCourses = data?.filter(item => item.ativo === 1)?.map(course => ({
+            const courseDataGet = couseReponse.data
+            const groupCourses = courseDataGet?.filter(item => item.ativo === 1)?.map(course => ({
                 label: `${course.nome_curso}_${course?.modalidade_curso}`,
                 value: course?.id_curso
             }));
 
             setCourses(groupCourses);
-        } catch (error) {
-        }
-    }
 
-    async function listClass() {
-
-        try {
-            const response = await api.get(`/classes`)
-
-            const { data = [] } = response
-            const groupClass = data.filter(item => item.ativo === 1)?.map(turma => ({
+            const classDataGet = classReponse.data
+            const groupClass = classDataGet.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma.nome_turma,
                 value: turma?.id_turma
             }));
 
-            const groupPeriod = data.filter(item => item.ativo === 1)?.map(turma => ({
+            const groupPeriod = classDataGet.filter(item => item.ativo === 1)?.map(turma => ({
                 label: turma?.periodo,
                 value: turma?.periodo,
                 idClass: turma?.id_turma
@@ -179,23 +105,16 @@ export default function EditUser() {
 
             setClasses(groupClass);
             setPeriod(groupPeriod)
+
         } catch (error) {
-            return error
+            console.log(error)
         }
     }
 
-
-    const handleItems = async () => {
-        setLoading(true)
-        try {
-            await getUserData()
-            await listClass()
-        } catch (error) {
-            alert.error('Ocorreu um arro ao carregar Usuarios')
-        } finally {
-            setLoading(false)
-        }
-    }
+    useEffect(() => {
+        fetchPermissions()
+        fetchData()
+    }, [id])
 
 
     const handleChangeUnlockingData = (value) => {
@@ -232,182 +151,6 @@ export default function EditUser() {
                 disciplinesData: updatedDisciplinesData
             }
         })
-    }
-
-    const checkRequiredFields = () => {
-        if (!userData?.nome) {
-            alert?.error('O campo nome é obrigatório')
-            return false
-        }
-        if (!userData?.email) {
-            alert?.error('O campo email é obrigatório')
-            return false
-        }
-        if (!emailValidator(userData?.email)) {
-            alert?.error('O e-mail inserido parece estar incorreto.')
-            return false
-        }
-
-        if (userData?.nova_senha !== userData?.confirmar_senha) {
-            alert?.error('As senhas não correspondem. Por favor, verifique novamente.')
-            return false
-        }
-
-        return true
-    }
-
-
-    // const handleCreateUser = async () => {
-    //     if (checkRequiredFields()) {
-    //         setLoading(true)
-    //         try {
-    //             const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
-    //             const { data } = response
-    //             if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
-    //             if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
-    //                 await api.post(`/enrollment/student/register/${data?.userId}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
-    //             }
-    //             // if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
-    //             if (fileCallback) {
-    //                 const formData = new FormData();
-    //                 formData.append('file', fileCallback?.file, encodeURIComponent(fileCallback?.name));
-    //                 let query = `?usuario_id=${data?.userId}`;
-    //                 if (fileCallback?.campo) query += `&campo=${fileCallback?.campo}`;
-    //                 if (fileCallback?.tipo) query += `&tipo=${fileCallback?.tipo}`;
-    //                 await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
-    //             }
-    //             if (filesUser?.length > 0) {
-    //                 for (const uploadedFile of filesUser) {
-    //                     const formData = new FormData();
-    //                     formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
-    //                     let query = `?usuario_id=${data?.userId}`;
-    //                     if (uploadedFile?.campo) query += `&campo=${uploadedFile?.campo}`;
-    //                     if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
-    //                     if (uploadedFile?.matricula_id) query += `&matricula_id=${uploadedFile?.matricula_id}`;
-    //                     const documents = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
-    //                 }
-    //             }
-    //             if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
-    //             if (newUser && filesUser) { await api.patch(`/file/editFiles/${data?.userId}`, { filesUser }); }
-    //             if (permissionPerfil) {
-    //                 const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
-    //                 if (permissionsToAdd.length > 0) {
-    //                     await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
-    //                 }
-    //             }
-    //             if (response?.status === 201) {
-    //                 alert.success('Usuário cadastrado com sucesso.');
-    //                 router.push(`/administrative/users/list`)
-    //             }
-    //             if (response?.status === 200) {
-    //                 return alert.error(response?.data?.msg);
-    //             }
-    //         } catch (error) {
-    //             alert.error('Tivemos um problema ao cadastrar usuário.');
-    //             console.log(error)
-    //         } finally {
-    //             setLoading(false)
-    //         }
-    //         return setLoading(false)
-    //     }
-    // }
-
-    // const handleDeleteUser = async () => {
-    //     setLoading(true)
-    //     try {
-    //         const response = await deleteUser(id)
-    //         if (response?.status == 200) {
-    //             alert.success('Usuário excluído com sucesso.');
-    //             router.push(`/administrative/users/list`)
-    //         }
-    //     } catch (error) {
-    //         alert.error('Tivemos um problema ao excluir usuário.');
-    //         console.log(error)
-    //     } finally {
-    //         setLoading(false)
-    //     }
-    // }
-
-    // const handleEditUser = async () => {
-    //     if (checkRequiredFields()) {
-    //         setLoading(true)
-    //         try {
-    //             const response = await editeUser({ id, userData })
-    //             if (response.status === 422) return alert.error('CPF já cadastrado.')
-    //             if (contract) {
-    //                 const contr = await editContract({ id, contract })
-    //             }
-    //             if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
-    //                 await api.post(`/enrollment/student/register/${id}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
-    //             }
-    //             if (!(officeHours.filter((item) => item?.id_hr_trabalho).length > 0)) {
-    //                 await api.post(`/officeHours/create/${id}`, { officeHours })
-    //             }
-    //             if (officeHours?.map((item) => item.id_hr_trabalho).length > 0) {
-    //                 await api.patch(`/officeHours/update`, { officeHours })
-    //             }
-    //             if (arrayDependent?.length > 0) {
-    //                 await api.patch(`/user/dependent/update`, { arrayDependent })
-    //             }
-
-    //             if (arrayInterests?.length > 0) {
-    //                 for (let interest of arrayInterests) {
-    //                     const subscription = { ...interest?.inscricao, id_redacao: interest?.id_redacao };
-    //                     if (subscription) {
-    //                         if (subscription?.id_inscricao) {
-    //                             await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription, userResp: user?.id })
-    //                         } else if (subscription?.forma_ingresso) {
-    //                             await api.post(`/subscription/create`, {
-    //                                 subscriptionData: {
-    //                                     ...subscription,
-    //                                     turma_id: interest?.turma_id,
-    //                                     usuario_id: id,
-    //                                     interesse_id: interest?.id_interesse
-    //                                 }
-    //                             })
-    //                         }
-
-    //                     }
-    //                 }
-    //             }
-    //             if (response?.status === 201) {
-    //                 alert.success('Usuário atualizado com sucesso.');
-    //                 handleItems()
-    //                 return
-    //             }
-    //             alert.error('Tivemos um problema ao atualizar usuário.');
-    //         } catch (error) {
-    //             console.log(error)
-    //             alert.error('Tivemos um problema ao atualizar usuário.');
-    //             return error;
-    //         } finally {
-    //             setLoading(false)
-    //         }
-    //     }
-
-    // }
-
-    const handleChange = (value) => {
-
-        if (value.target.name == 'cpf') {
-            let str = value.target.value;
-            value.target.value = formatCPF(str)
-        }
-
-        if (value.target.name == 'rg') {
-            let str = value.target.value;
-            value.target.value = formatRg(str)
-        }
-
-        if (value.target.name == 'cep') {
-            let str = value.target.value;
-            value.target.value = formatCEP(str)
-        }
-
-        setUserData((prevValues) => ({
-            ...prevValues,
-            [value.target.name]: value.target.value,
-        }))
     }
 
     // const checkEnrollmentData = (enrollmentRegisterData) => {
@@ -505,6 +248,7 @@ export default function EditUser() {
     //     }
     // }
 
+    console.log(userData.perfil)
     const menuUser = [
         {
             id: '01', icon: '/icons/user.png', text: 'Dados do Usuário', queryId: true, screen: 'userData',
@@ -573,8 +317,6 @@ export default function EditUser() {
                     isPermissionEdit={isPermissionEdit}
                     mobile={mobile}
                     userId={usuario_id}
-                    userDataProps={userData}
-                    handleChange={handleChange}
                     perfil={perfil}
                     setPerfil={setPerfil}
                 />
