@@ -79,7 +79,6 @@ export default function EditUser() {
             ])
 
             const userDataGet = userDataReponse.data
-            console.log(userDataGet)
             setUserData(userDataGet)
             setPerfil(userDataGet?.perfil)
 
@@ -274,7 +273,7 @@ export default function EditUser() {
 
 
             <Box sx={{
-                display: perfil !== '' ? 'flex' : 'none', flexWrap: 'wrap', backgroundColor: colorPalette?.secondary, padding: '8px 10px', borderRadius: 2,
+                display: (perfil !== '' && !newUser) ? 'flex' : 'none', flexWrap: 'wrap', backgroundColor: colorPalette?.secondary, padding: '8px 10px', borderRadius: 2,
                 boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `rgba(35, 32, 51, 0.27) 0px 6px 24px`,
             }}>
                 {menuUser?.map((item, index) => {
@@ -322,14 +321,15 @@ export default function EditUser() {
                 />
             }
 
-            {(userData.perfil && userData.perfil.includes('funcionario') && menuView === 'contractEmployee') &&
+            {(userData.perfil && userData.perfil.includes('funcionario') && menuView === 'contractEmployee' && !newUser) &&
                 <ContractEmployee id={id} isPermissionEdit={isPermissionEdit} newUser={newUser} />
             }
 
-            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'enrollments') &&
+            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'enrollments' && !newUser) &&
                 <Enrollments id={id} isPermissionEdit={isPermissionEdit} mobile={mobile} newUser={newUser} classes={classes} />}
 
-            {(userData.perfil && (userData.perfil.includes('aluno') || userData.perfil.includes('interessado')) && menuView === 'interests') &&
+            {(userData.perfil && (userData.perfil.includes('aluno') || userData.perfil.includes('interessado')) && menuView === 'interests' && !newUser)
+                &&
                 <InterestAndSubscription
                     id={id}
                     isPermissionEdit={isPermissionEdit}
@@ -342,12 +342,12 @@ export default function EditUser() {
                 />
             }
 
-            {menuView === 'userFiles' && <Documents id={id} />}
+            {(menuView === 'userFiles' && !newUser) && <Documents id={id} />}
 
-            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'paymentPerfil') &&
+            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'paymentPerfil' && !newUser) &&
                 <PaymentsPreference id={id} />}
 
-            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'openEnrollment') && <></>
+            {(userData.perfil && userData.perfil.includes('aluno') && menuView === 'openEnrollment' && !newUser) && <></>
                 // <>
                 //     <ContentContainer style={{ ...styles.containerContract, padding: '40px', }}>
                 //         <Box sx={{

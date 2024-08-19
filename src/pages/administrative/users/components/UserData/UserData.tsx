@@ -330,10 +330,13 @@ const UserData = ({
                 api.get(`/user/historical/${id}`)
             ]);
             const userDataResponse = userResponse.data
-            setUserData(userDataResponse);
-            
+            if (!newUser) {
+                setUserData(userDataResponse);
+            }
             const dependents = dependentResponse.data.dependents;
-            setArrayDependent(dependents);
+            if (!newUser) {
+                setArrayDependent(dependents);
+            }
 
             const disciplinesProfessor = disciplineResponse.data;
             setArrayDisciplinesProfessor(disciplinesProfessor);
@@ -1105,517 +1108,520 @@ const UserData = ({
                             transition: '.3s',
                         }} />
                     </Box>
-                    <>
-                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.professor}
-                            group={groupData.typeYesOrNo}
-                            title="Professor *"
-                            horizontal={mobile ? false : true}
-                            onSelect={(value: string) => setUserData({ ...userData, professor: parseInt(value) })} />
-
-                        {userData?.professor === 1 &&
-                            <ContentContainer style={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <Text bold style={{ padding: '0px 0px 0px 10px' }}>Selecionar disciplina</Text>
-                                {arrayDisciplinesProfessor.length > 0 &&
-                                    arrayDisciplinesProfessor?.map((disciplina, index) => (
-                                        <>
-
-                                            <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                                <SelectList disabled={!isPermissionEdit && true}
-                                                    clean={false}
-                                                    fullWidth={true}
-                                                    data={disciplines}
-                                                    valueSelection={disciplina?.disciplina_id}
-                                                    title="Disciplina"
-                                                    filterOpition="value"
-                                                    sx={{ color: colorPalette.textColor, flex: 1 }}
-                                                    inputStyle={{
-                                                        color: colorPalette.textColor,
-                                                        fontSize: "15px",
-                                                        fontFamily: "MetropolisBold",
-                                                    }}
-                                                />
-
-                                                <Box sx={{
-                                                    backgroundSize: 'cover',
-                                                    backgroundRepeat: 'no-repeat',
-                                                    backgroundPosition: 'center',
-                                                    width: 25,
-                                                    height: 25,
-                                                    backgroundImage: `url(/icons/remove_icon.png)`,
-                                                    transition: '.3s',
-                                                    "&:hover": {
-                                                        opacity: 0.8,
-                                                        cursor: 'pointer'
-                                                    }
-                                                }} onClick={() => {
-                                                    newUser ? deleteDisciplineProfessor(index) : handleDeleteDisciplineProfessor(disciplina?.id_disciplina_prof)
-                                                }} />
-                                            </Box>
-                                        </>
-                                    ))}
-                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                    <SelectList disabled={!isPermissionEdit && true}
-
-                                        fullWidth={true}
-                                        data={disciplines}
-                                        valueSelection={disciplinesProfessor?.disciplina_id}
-                                        title="Disciplina"
-                                        filterOpition="value"
-                                        sx={{ color: colorPalette.textColor, flex: 1 }}
-                                        inputStyle={{
-                                            color: colorPalette.textColor,
-                                            fontSize: "15px",
-                                            fontFamily: "MetropolisBold",
-                                        }}
-                                        onSelect={(value: string | number) => setDisciplinesProfessor({ ...disciplinesProfessor, disciplina_id: value })}
-                                    />
-                                    <Box sx={{
-                                        backgroundSize: 'cover',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center',
-                                        width: 25,
-                                        height: 25,
-                                        borderRadius: '50%',
-                                        backgroundImage: `url(/icons/include_icon.png)`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} onClick={() => {
-                                        if (disciplinesProfessor?.disciplina_id) {
-                                            newUser ? addDisciplineProfessor() : handleAddDisciplineProfessor()
-                                        }
-                                    }} />
-                                </Box>
-                            </ContentContainer>
-                        }
-
-                        <Box sx={{ padding: '0px 0px 20px 0px' }}>
-                            <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                boxGroup={groupData.groupForeigner}
-                                valueChecked={userData?.foreigner || ''}
+                    {showSections?.registration &&
+                        <>
+                            <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.professor}
+                                group={groupData.typeYesOrNo}
+                                title="Professor *"
                                 horizontal={mobile ? false : true}
-                                onSelect={(value: boolean) => {
-                                    setForeigner(value)
-                                    setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : 'Brasileira Nata' })
-                                }}
-                                sx={{ width: 1 }} />
-                        </Box>
-                        <Box sx={styles.inputSection}>
-                            {!foreigner &&
-                                <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, cpf: value })}
-                                    existsFiles={filesUser?.filter((file) => file.campo === 'cpf').length > 0}>
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
-                                </FileInput>
-                            }
-                            <EditFile
-                                setFilesUser={setFilesUser}
-                                filesUser={filesUser}
-                                isPermissionEdit={isPermissionEdit}
-                                columnId="id_doc_usuario"
-                                open={showEditFile.cpf}
-                                newUser={newUser}
-                                onSet={(set: boolean) => {
-                                    setShowEditFiles({ ...showEditFile, cpf: set })
-                                }}
-                                title='CPF - Frente e verso'
-                                text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
-                                textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
-                                fileData={filesUser?.filter((file) => file.campo === 'cpf')}
-                                usuarioId={id}
-                                campo='cpf'
-                                tipo='documento usuario'
-                                callback={(file: FilePreview) => {
-                                    if (file.status === 201 || file.status === 200) {
-                                        if (!newUser) { fetchData() }
-                                        else {
-                                            handleChangeFilesUser('cpf', file.fileId, file.filePreview)
-                                        }
-                                    }
-                                }}
-                            />
-                            {foreigner &&
-                                <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, foreigner: value })}
-                                    existsFiles={filesUser?.filter((file) => file.campo === 'estrangeiro').length > 0}>
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />
-                                    <EditFile
-                                        setFilesUser={setFilesUser}
-                                        filesUser={filesUser}
-                                        isPermissionEdit={isPermissionEdit}
-                                        columnId="id_doc_usuario"
-                                        open={showEditFile.foreigner}
-                                        newUser={newUser}
-                                        onSet={(set: boolean) => {
-                                            setShowEditFiles({ ...showEditFile, foreigner: set })
-                                        }}
-                                        title='Documento estrangeiro - Frente e verso'
-                                        text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
-                                        textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
-                                        fileData={filesUser?.filter((file) => file.campo === 'estrangeiro')}
-                                        usuarioId={id}
-                                        campo='estrangeiro'
-                                        tipo='documento usuario'
-                                        callback={(file: FilePreview) => {
-                                            if (file.status === 201 || file.status === 200) {
-                                                if (!newUser) { fetchData() }
-                                                else {
-                                                    handleChangeFilesUser('estrangeiro', file.fileId, file.filePreview)
-                                                }
-                                            }
-                                        }}
-                                    />
-                                </FileInput>
-                            }
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Cidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade *' sx={{ flex: 1, }} />
+                                onSelect={(value: string) => setUserData({ ...userData, professor: parseInt(value) })} />
 
-                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={countries} valueSelection={userData?.pais_origem || ''} onSelect={(value: string) => setUserData({ ...userData, pais_origem: value })}
-                                title="Pais de origem *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupData.userNationality} valueSelection={userData?.nacionalidade || ''} onSelect={(value: string) => setUserData({ ...userData, nacionalidade: value })}
-                                title="Nacionalidade *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-                        </Box>
+                            {userData?.professor === 1 &&
+                                <ContentContainer style={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Text bold style={{ padding: '0px 0px 0px 10px' }}>Selecionar disciplina</Text>
+                                    {arrayDisciplinesProfessor.length > 0 &&
+                                        arrayDisciplinesProfessor?.map((disciplina, index) => (
+                                            <>
 
-                        <Box sx={styles.inputSection}>
-                            <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, rg: value })}
-                                existsFiles={filesUser?.filter((file) => file.campo === 'rg').length > 0}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
-                                <EditFile
-                                    setFilesUser={setFilesUser}
-                                    filesUser={filesUser}
-                                    isPermissionEdit={isPermissionEdit}
-                                    columnId="id_doc_usuario"
-                                    open={showEditFile.rg}
-                                    newUser={newUser}
-                                    onSet={(set: boolean) => {
-                                        setShowEditFiles({ ...showEditFile, rg: set })
-                                    }}
-                                    title='RG - Frente e verso'
-                                    text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
-                                    textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
-                                    fileData={filesUser?.filter((file) => file.campo === 'rg')}
-                                    usuarioId={id}
-                                    campo='rg'
-                                    tipo='documento usuario'
-                                    callback={(file: FilePreview) => {
-                                        if (file.status === 201 || file.status === 200) {
-                                            if (!newUser) { fetchData() }
-                                            else {
-                                                handleChangeFilesUser('rg', file.fileId, file.filePreview)
-                                            }
-                                        }
-                                    }}
-                                />
-                            </FileInput>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='UF' name='uf_rg' onChange={handleChange} value={userData?.uf_rg || ''} label='UF RG *' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Expedição' name='expedicao' onChange={handleChange} type="date" value={(userData?.expedicao)?.split('T')[0] || ''} label='Expedição *' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão *' sx={{ flex: 1, }} />
-                        </Box>
-                        <Box sx={styles.inputSection}>
-                            <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, titleDoc: value })}
-                                existsFiles={filesUser?.filter((file) => file.campo === 'titulo').length > 0}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
-                                <EditFile
-                                    setFilesUser={setFilesUser}
-                                    filesUser={filesUser}
-                                    isPermissionEdit={isPermissionEdit}
-                                    columnId="id_doc_usuario"
-                                    open={showEditFile.titleDoc}
-                                    newUser={newUser}
-                                    onSet={(set: boolean) => {
-                                        setShowEditFiles({ ...showEditFile, titleDoc: set })
-                                    }}
-                                    title='Título de Eleitor'
-                                    text='Faça o upload do seu título, depois clique em salvar.'
-                                    textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
-                                    fileData={filesUser?.filter((file) => file.campo === 'titulo')}
-                                    usuarioId={id}
-                                    campo='titulo'
-                                    tipo='documento usuario'
-                                    callback={(file: FilePreview) => {
-                                        if (file.status === 201 || file.status === 200) {
-                                            if (!newUser) { fetchData() }
-                                            else {
-                                                handleChangeFilesUser('titulo', file.fileId, file.filePreview)
-                                            }
-                                        }
-                                    }}
-                                />
+                                                <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                                    <SelectList disabled={!isPermissionEdit && true}
+                                                        clean={false}
+                                                        fullWidth={true}
+                                                        data={disciplines}
+                                                        valueSelection={disciplina?.disciplina_id}
+                                                        title="Disciplina"
+                                                        filterOpition="value"
+                                                        sx={{ color: colorPalette.textColor, flex: 1 }}
+                                                        inputStyle={{
+                                                            color: colorPalette.textColor,
+                                                            fontSize: "15px",
+                                                            fontFamily: "MetropolisBold",
+                                                        }}
+                                                    />
 
-                            </FileInput>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Zona' name='zona' onChange={handleChange} value={userData?.zona || ''} label='Zona' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Seção' name='secao' onChange={handleChange} value={userData?.secao || ''} label='Seção' sx={{ flex: 1, }} />
-                        </Box>
+                                                    <Box sx={{
+                                                        backgroundSize: 'cover',
+                                                        backgroundRepeat: 'no-repeat',
+                                                        backgroundPosition: 'center',
+                                                        width: 25,
+                                                        height: 25,
+                                                        backgroundImage: `url(/icons/remove_icon.png)`,
+                                                        transition: '.3s',
+                                                        "&:hover": {
+                                                            opacity: 0.8,
+                                                            cursor: 'pointer'
+                                                        }
+                                                    }} onClick={() => {
+                                                        newUser ? deleteDisciplineProfessor(index) : handleDeleteDisciplineProfessor(disciplina?.id_disciplina_prof)
+                                                    }} />
+                                                </Box>
+                                            </>
+                                        ))}
+                                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                        <SelectList disabled={!isPermissionEdit && true}
 
-                        <Box sx={styles.inputSection}>
-
-                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupData.racaCor} valueSelection={userData.cor_raca || ''} onSelect={(value: string) => setUserData({ ...userData, cor_raca: value })}
-                                title="Cor/raça *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-
-                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupData.gender} valueSelection={userData?.genero || ''} onSelect={(value: string) => setUserData({ ...userData, genero: value })}
-                                title="Gênero *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-
-                            <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupData.userDisability} valueSelection={userData?.deficiencia || ''} onSelect={(value: string) => setUserData({ ...userData, deficiencia: value })}
-                                title="Deficiência Física/Necessidade especial educacional*" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
-                                inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                            />
-
-                        </Box>
-
-                        {userData?.deficiencia?.includes('Sim') &&
-                            <>
-                                <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                    valueChecked={userData?.tipo_deficiencia || ''}
-                                    boxGroup={groupData.deficiencyTypes}
-                                    title="Tipo de deficiência"
-                                    horizontal={mobile ? false : true}
-                                    onSelect={(value: string) => setUserData({
-                                        ...userData,
-                                        tipo_deficiencia: value
-                                    })}
-                                    sx={{ width: 1 }}
-                                />
-
-                                <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                    valueChecked={userData?.autista || ''}
-                                    boxGroup={groupData.autismTypes}
-                                    title="Transtorno global do desenvolvimento/Transtorno do espectro autista"
-                                    horizontal={mobile ? false : true}
-                                    onSelect={(value: number | null) => setUserData({
-                                        ...userData,
-                                        autista: value
-                                    })}
-                                    sx={{ width: 1 }}
-                                />
-
-                                <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                    valueChecked={userData?.superdotado || ''}
-                                    boxGroup={groupData.superGifted}
-                                    title="Altas habilidades/superdotação"
-                                    horizontal={mobile ? false : true}
-                                    onSelect={(value: string | null) => setUserData({
-                                        ...userData,
-                                        superdotado: value
-                                    })}
-                                    sx={{ width: 1 }}
-                                />
-                            </>
-                        }
-
-                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.estado_civil} group={groupData.userCivil} title="Estado Cívil *" horizontal={mobile ? false : true} onSelect={(value: string) => setUserData({ ...userData, estado_civil: value })} />
-                        <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                            <TextInput fullWidth disabled={!isPermissionEdit && true} placeholder='E-mail Méliès' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail Méliès' />
-                            <TextInput fullWidth disabled={!isPermissionEdit && true} placeholder='E-mail Pessoal' name='email_pessoal' onChange={handleChange} value={userData?.email_pessoal || ''} label='E-mail Pessoal' />
-                        </Box>
-                        <Box sx={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <Text bold style={{ padding: '0px 0px 0px 10px' }}>Dependentes</Text>
-                            {arrayDependent && arrayDependent.length > 0 && arrayDependent.map((dep, index) => (
-                                <>
-
-                                    <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                        <FileInput left onClick={() => setShowEditFiles({ ...showEditFile, cpf_dependente: true })}
-                                            existsFiles={filesUser?.filter((file) => file.campo === 'cpf_dependente').length > 0}>
-                                            <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente-${index}`} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangeDependentArray(e, 'nome_dependente', dep?.id_dependente)} value={dep.nome_dependente} sx={{ flex: 1 }} />
-                                            <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente-${index}`} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangeDependentArray(e, 'cpf_dependente', dep?.id_dependente)} value={dep.cpf_dependente} sx={{ flex: 1 }} />
-                                            <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente-${index}`} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangeDependentArray(e, 'dt_nasc_dependente', dep?.id_dependente)} type="date" value={(dep.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
-                                        </FileInput>
-                                        <EditFile
-                                            setFilesUser={setFilesUser}
-                                            filesUser={filesUser}
-                                            isPermissionEdit={isPermissionEdit}
-                                            columnId="id_doc_usuario"
-                                            open={showEditFile.cpf_dependente}
-                                            newUser={newUser}
-                                            onSet={(set: boolean) => {
-                                                setShowEditFiles({ ...showEditFile, cpf_dependente: set })
+                                            fullWidth={true}
+                                            data={disciplines}
+                                            valueSelection={disciplinesProfessor?.disciplina_id}
+                                            title="Disciplina"
+                                            filterOpition="value"
+                                            sx={{ color: colorPalette.textColor, flex: 1 }}
+                                            inputStyle={{
+                                                color: colorPalette.textColor,
+                                                fontSize: "15px",
+                                                fontFamily: "MetropolisBold",
                                             }}
-                                            title='CPF Dependente - Frente e verso'
-                                            text='Faça o upload do documento do Dependente frente e verso, depois clique em salvar.'
-                                            textDropzone='Arraste ou clique para selecionar a Foto ou Arquivo que deseja'
-                                            fileData={filesUser?.filter((file) => file.campo === 'cpf_dependente')}
-                                            usuarioId={id}
-                                            campo='cpf_dependente'
-                                            tipo='documento usuario'
-                                            callback={(file: FilePreview) => {
-                                                if (file.status === 201 || file.status === 200) {
-                                                    if (!newUser) { fetchData() }
-                                                    else {
-                                                        handleChangeFilesUser('cpf_dependente', file.fileId, file.filePreview)
-                                                    }
-                                                }
-                                            }}
+                                            onSelect={(value: string | number) => setDisciplinesProfessor({ ...disciplinesProfessor, disciplina_id: value })}
                                         />
-
-                                        {isPermissionEdit && <Box sx={{
+                                        <Box sx={{
                                             backgroundSize: 'cover',
                                             backgroundRepeat: 'no-repeat',
                                             backgroundPosition: 'center',
                                             width: 25,
                                             height: 25,
-                                            backgroundImage: `url(/icons/remove_icon.png)`,
+                                            borderRadius: '50%',
+                                            backgroundImage: `url(/icons/include_icon.png)`,
                                             transition: '.3s',
                                             "&:hover": {
                                                 opacity: 0.8,
                                                 cursor: 'pointer'
                                             }
                                         }} onClick={() => {
-                                            newUser ? deleteDependent(index) : handleDeleteDependent(dep?.id_dependente)
-                                        }} />}
-
+                                            if (disciplinesProfessor?.disciplina_id) {
+                                                newUser ? addDisciplineProfessor() : handleAddDisciplineProfessor()
+                                            }
+                                        }} />
                                     </Box>
-                                </>
-                            ))}
-                            {isPermissionEdit &&
-                                <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente`} onChange={handleChangeDependent} value={dependent?.nome_dependente} sx={{ flex: 1 }} />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente`} onChange={handleChangeDependent} value={dependent?.cpf_dependente} sx={{ flex: 1 }} />
-                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente`} onChange={handleChangeDependent} type="date" value={(dependent?.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
-                                    <Box sx={{
-                                        backgroundSize: 'cover',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center',
-                                        width: 25,
-                                        height: 25,
-                                        borderRadius: '50%',
-                                        backgroundImage: `url(/icons/include_icon.png)`,
-                                        transition: '.3s',
-                                        "&:hover": {
-                                            opacity: 0.8,
-                                            cursor: 'pointer'
-                                        }
-                                    }} onClick={() => {
-                                        newUser ? addDependent() : handleAddDependent()
-                                    }} />
-                                </Box>}
-                        </Box>
+                                </ContentContainer>
+                            }
 
-                        <Box sx={styles.inputSection}>
-                            {userData?.estado_civil === 'Casado' && <TextInput disabled={!isPermissionEdit && true} placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe *' sx={{ flex: 1, }} />
-
-                        </Box>
-                        <ContentContainer>
-                            <Text large bold >Contato de Emergência</Text>
-                            <Box sx={styles.inputSection}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_emergencia' onChange={handleChange} value={userData?.nome_emergencia || ''} label='Nome' sx={{ flex: 1, }} />
-                                <PhoneInputField
-                                    disabled={!isPermissionEdit && true}
-                                    label='Telefone de emergência'
-                                    placeholder='(11) 91234-6789'
-                                    name='telefone_emergencia'
-                                    onChange={(phone: string) => setUserData({ ...userData, telefone_emergencia: phone })}
-                                    value={userData?.telefone_emergencia}
-                                    sx={{ flex: 1, }}
-                                />
+                            <Box sx={{ padding: '0px 0px 20px 0px' }}>
+                                <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                    boxGroup={groupData.groupForeigner}
+                                    valueChecked={userData?.foreigner || ''}
+                                    horizontal={mobile ? false : true}
+                                    onSelect={(value: boolean) => {
+                                        setForeigner(value)
+                                        setUserData({ ...userData, nacionalidade: value === true ? 'Estrangeira' : 'Brasileira Nata' })
+                                    }}
+                                    sx={{ width: 1 }} />
                             </Box>
-                        </ContentContainer>
-                        <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, schoolRecord: value })}
-                            existsFiles={filesUser?.filter((file) => file.campo === 'historico/diploma').length > 0}>
-                            <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.escolaridade} group={groupData.userEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true}
-                                onSelect={(value: string) => {
-                                    if (value !== 'Ensino médio') {
-                                        setUserData({ ...userData, escolaridade: value, tipo_origem_ensi_med: '' })
-                                    } else {
-                                        setUserData({ ...userData, escolaridade: value })
-                                    }
+                            <Box sx={styles.inputSection}>
+                                {!foreigner &&
+                                    <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, cpf: value })}
+                                        existsFiles={filesUser?.filter((file) => file.campo === 'cpf').length > 0}>
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name='cpf' onChange={handleChange} value={userData?.cpf || ''} label='CPF' sx={{ flex: 1, }} />
+                                    </FileInput>
                                 }
-                                } />
-                            <EditFile
-                                setFilesUser={setFilesUser}
-                                filesUser={filesUser}
-                                isPermissionEdit={isPermissionEdit}
-                                columnId="id_doc_usuario"
-                                open={showEditFile.schoolRecord}
-                                newUser={newUser}
-                                onSet={(set: boolean) => {
-                                    setShowEditFiles({ ...showEditFile, schoolRecord: set })
-                                }}
-                                title='Historico Escolar/Diploma/Certificado de conclusão'
-                                text='Por favor, faça o upload do seu certificado, diploma ou histórico escolar. Caso você tenha mais de um diploma ou certificado de conclusão,
-                                 faça também o upload do mesmo.'
-                                textDropzone='Arraste ou clique para selecionar a Foto ou arquivo desejado.'
-                                fileData={filesUser?.filter((file) => file.campo === 'historico/diploma')}
-                                usuarioId={id}
-                                campo='historico/diploma'
-                                tipo='documento usuario'
-                                callback={(file: FilePreview) => {
-                                    if (file.status === 201 || file.status === 200) {
-                                        if (!newUser) { fetchData() }
-                                        else {
-                                            handleChangeFilesUser('historico/diploma', file.fileId, file.filePreview)
-                                        }
-                                    }
-                                }}
-                            />
-                        </FileInput>
-                        {userData?.escolaridade === 'Ensino médio' &&
-                            <RadioItem disabled={!isPermissionEdit && true}
-                                valueRadio={userData?.tipo_origem_ensi_med}
-                                group={groupData.origemEnsinoMedio}
-                                title="Origem Ensino Médio *"
-                                horizontal={mobile ? false : true}
-                                onSelect={(value: string) => setUserData({ ...userData, tipo_origem_ensi_med: value })}
-                            />}
-
-                        <Box sx={styles.inputSection}>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *'
-                                onBlur={handleBlurCEP}
-                                sx={{ flex: 1, }} />
-                            <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, address: value })}
-                                existsFiles={filesUser?.filter((file) => file.campo === 'comprovante_residencia').length > 0}>
-                                <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
                                 <EditFile
                                     setFilesUser={setFilesUser}
                                     filesUser={filesUser}
                                     isPermissionEdit={isPermissionEdit}
                                     columnId="id_doc_usuario"
-                                    open={showEditFile.address}
+                                    open={showEditFile.cpf}
                                     newUser={newUser}
                                     onSet={(set: boolean) => {
-                                        setShowEditFiles({ ...showEditFile, address: set })
+                                        setShowEditFiles({ ...showEditFile, cpf: set })
                                     }}
-                                    title='Comprovante de residencia'
-                                    text='Faça o upload do seu comprovante de residencia, precisa ser uma conta em seu nome ou comprovar que mora com o titular da conta.'
+                                    title='CPF - Frente e verso'
+                                    text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
                                     textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
-                                    fileData={filesUser?.filter((file) => file.campo === 'comprovante_residencia')}
+                                    fileData={filesUser?.filter((file) => file.campo === 'cpf')}
                                     usuarioId={id}
-                                    campo='comprovante_residencia'
+                                    campo='cpf'
                                     tipo='documento usuario'
                                     callback={(file: FilePreview) => {
                                         if (file.status === 201 || file.status === 200) {
                                             if (!newUser) { fetchData() }
                                             else {
-                                                handleChangeFilesUser('comprovante_residencia', file.fileId, file.filePreview)
+                                                handleChangeFilesUser('cpf', file.fileId, file.filePreview)
+                                            }
+                                        }
+                                    }}
+                                />
+                                {foreigner &&
+                                    <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, foreigner: value })}
+                                        existsFiles={filesUser?.filter((file) => file.campo === 'estrangeiro').length > 0}>
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Doc estrangeiro' name='doc_estrangeiro' onChange={handleChange} value={userData?.doc_estrangeiro || ''} label='Doc estrangeiro' sx={{ flex: 1, }} />
+                                        <EditFile
+                                            setFilesUser={setFilesUser}
+                                            filesUser={filesUser}
+                                            isPermissionEdit={isPermissionEdit}
+                                            columnId="id_doc_usuario"
+                                            open={showEditFile.foreigner}
+                                            newUser={newUser}
+                                            onSet={(set: boolean) => {
+                                                setShowEditFiles({ ...showEditFile, foreigner: set })
+                                            }}
+                                            title='Documento estrangeiro - Frente e verso'
+                                            text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
+                                            textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
+                                            fileData={filesUser?.filter((file) => file.campo === 'estrangeiro')}
+                                            usuarioId={id}
+                                            campo='estrangeiro'
+                                            tipo='documento usuario'
+                                            callback={(file: FilePreview) => {
+                                                if (file.status === 201 || file.status === 200) {
+                                                    if (!newUser) { fetchData() }
+                                                    else {
+                                                        handleChangeFilesUser('estrangeiro', file.fileId, file.filePreview)
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    </FileInput>
+                                }
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Cidade' name='naturalidade' onChange={handleChange} value={userData?.naturalidade || ''} label='Naturalidade *' sx={{ flex: 1, }} />
+
+                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={countries} valueSelection={userData?.pais_origem || ''} onSelect={(value: string) => setUserData({ ...userData, pais_origem: value })}
+                                    title="Pais de origem *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupData.userNationality} valueSelection={userData?.nacionalidade || ''} onSelect={(value: string) => setUserData({ ...userData, nacionalidade: value })}
+                                    title="Nacionalidade *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+                            </Box>
+
+                            <Box sx={styles.inputSection}>
+                                <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, rg: value })}
+                                    existsFiles={filesUser?.filter((file) => file.campo === 'rg').length > 0}>
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='RG' name='rg' onChange={handleChange} value={userData?.rg || ''} label='RG *' sx={{ flex: 1, }} />
+                                    <EditFile
+                                        setFilesUser={setFilesUser}
+                                        filesUser={filesUser}
+                                        isPermissionEdit={isPermissionEdit}
+                                        columnId="id_doc_usuario"
+                                        open={showEditFile.rg}
+                                        newUser={newUser}
+                                        onSet={(set: boolean) => {
+                                            setShowEditFiles({ ...showEditFile, rg: set })
+                                        }}
+                                        title='RG - Frente e verso'
+                                        text='Faça o upload do seu documento frente e verso, depois clique em salvar.'
+                                        textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
+                                        fileData={filesUser?.filter((file) => file.campo === 'rg')}
+                                        usuarioId={id}
+                                        campo='rg'
+                                        tipo='documento usuario'
+                                        callback={(file: FilePreview) => {
+                                            if (file.status === 201 || file.status === 200) {
+                                                if (!newUser) { fetchData() }
+                                                else {
+                                                    handleChangeFilesUser('rg', file.fileId, file.filePreview)
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </FileInput>
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='UF' name='uf_rg' onChange={handleChange} value={userData?.uf_rg || ''} label='UF RG *' sx={{ flex: 1, }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Expedição' name='expedicao' onChange={handleChange} type="date" value={(userData?.expedicao)?.split('T')[0] || ''} label='Expedição *' sx={{ flex: 1, }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Orgão' name='orgao' onChange={handleChange} value={userData?.orgao || ''} label='Orgão *' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, titleDoc: value })}
+                                    existsFiles={filesUser?.filter((file) => file.campo === 'titulo').length > 0}>
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Título de Eleitor' name='titulo' onChange={handleChange} value={userData?.titulo || ''} label='Título de Eleitor' sx={{ flex: 1, }} />
+                                    <EditFile
+                                        setFilesUser={setFilesUser}
+                                        filesUser={filesUser}
+                                        isPermissionEdit={isPermissionEdit}
+                                        columnId="id_doc_usuario"
+                                        open={showEditFile.titleDoc}
+                                        newUser={newUser}
+                                        onSet={(set: boolean) => {
+                                            setShowEditFiles({ ...showEditFile, titleDoc: set })
+                                        }}
+                                        title='Título de Eleitor'
+                                        text='Faça o upload do seu título, depois clique em salvar.'
+                                        textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
+                                        fileData={filesUser?.filter((file) => file.campo === 'titulo')}
+                                        usuarioId={id}
+                                        campo='titulo'
+                                        tipo='documento usuario'
+                                        callback={(file: FilePreview) => {
+                                            if (file.status === 201 || file.status === 200) {
+                                                if (!newUser) { fetchData() }
+                                                else {
+                                                    handleChangeFilesUser('titulo', file.fileId, file.filePreview)
+                                                }
+                                            }
+                                        }}
+                                    />
+
+                                </FileInput>
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Zona' name='zona' onChange={handleChange} value={userData?.zona || ''} label='Zona' sx={{ flex: 1, }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Seção' name='secao' onChange={handleChange} value={userData?.secao || ''} label='Seção' sx={{ flex: 1, }} />
+                            </Box>
+
+                            <Box sx={styles.inputSection}>
+
+                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupData.racaCor} valueSelection={userData.cor_raca || ''} onSelect={(value: string) => setUserData({ ...userData, cor_raca: value })}
+                                    title="Cor/raça *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+
+                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupData.gender} valueSelection={userData?.genero || ''} onSelect={(value: string) => setUserData({ ...userData, genero: value })}
+                                    title="Gênero *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+
+                                <SelectList disabled={!isPermissionEdit && true} fullWidth data={groupData.userDisability} valueSelection={userData?.deficiencia || ''} onSelect={(value: string) => setUserData({ ...userData, deficiencia: value })}
+                                    title="Deficiência Física/Necessidade especial educacional*" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
+                                    inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                                />
+
+                            </Box>
+
+                            {userData?.deficiencia?.includes('Sim') &&
+                                <>
+                                    <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                        valueChecked={userData?.tipo_deficiencia || ''}
+                                        boxGroup={groupData.deficiencyTypes}
+                                        title="Tipo de deficiência"
+                                        horizontal={mobile ? false : true}
+                                        onSelect={(value: string) => setUserData({
+                                            ...userData,
+                                            tipo_deficiencia: value
+                                        })}
+                                        sx={{ width: 1 }}
+                                    />
+
+                                    <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                        valueChecked={userData?.autista || ''}
+                                        boxGroup={groupData.autismTypes}
+                                        title="Transtorno global do desenvolvimento/Transtorno do espectro autista"
+                                        horizontal={mobile ? false : true}
+                                        onSelect={(value: number | null) => setUserData({
+                                            ...userData,
+                                            autista: value
+                                        })}
+                                        sx={{ width: 1 }}
+                                    />
+
+                                    <CheckBoxComponent disabled={!isPermissionEdit && true}
+                                        valueChecked={userData?.superdotado || ''}
+                                        boxGroup={groupData.superGifted}
+                                        title="Altas habilidades/superdotação"
+                                        horizontal={mobile ? false : true}
+                                        onSelect={(value: string | null) => setUserData({
+                                            ...userData,
+                                            superdotado: value
+                                        })}
+                                        sx={{ width: 1 }}
+                                    />
+                                </>
+                            }
+
+                            <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.estado_civil} group={groupData.userCivil} title="Estado Cívil *" horizontal={mobile ? false : true} onSelect={(value: string) => setUserData({ ...userData, estado_civil: value })} />
+                            <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                <TextInput fullWidth disabled={!isPermissionEdit && true} placeholder='E-mail Méliès' name='email_melies' onChange={handleChange} value={userData?.email_melies || ''} label='E-mail Méliès' />
+                                <TextInput fullWidth disabled={!isPermissionEdit && true} placeholder='E-mail Pessoal' name='email_pessoal' onChange={handleChange} value={userData?.email_pessoal || ''} label='E-mail Pessoal' />
+                            </Box>
+                            <Box sx={{ maxWidth: '580px', margin: '10px 0px 10px 0px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Text bold style={{ padding: '0px 0px 0px 10px' }}>Dependentes</Text>
+                                {arrayDependent && arrayDependent.length > 0 && arrayDependent.map((dep, index) => (
+                                    <>
+
+                                        <Box key={index} sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                            <FileInput left onClick={() => setShowEditFiles({ ...showEditFile, cpf_dependente: true })}
+                                                existsFiles={filesUser?.filter((file) => file.campo === 'cpf_dependente').length > 0}>
+                                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente-${index}`} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangeDependentArray(e, 'nome_dependente', dep?.id_dependente)} value={dep.nome_dependente} sx={{ flex: 1 }} />
+                                                <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente-${index}`} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangeDependentArray(e, 'cpf_dependente', dep?.id_dependente)} value={dep.cpf_dependente} sx={{ flex: 1 }} />
+                                                <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente-${index}`} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangeDependentArray(e, 'dt_nasc_dependente', dep?.id_dependente)} type="date" value={(dep.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
+                                            </FileInput>
+                                            <EditFile
+                                                setFilesUser={setFilesUser}
+                                                filesUser={filesUser}
+                                                isPermissionEdit={isPermissionEdit}
+                                                columnId="id_doc_usuario"
+                                                open={showEditFile.cpf_dependente}
+                                                newUser={newUser}
+                                                onSet={(set: boolean) => {
+                                                    setShowEditFiles({ ...showEditFile, cpf_dependente: set })
+                                                }}
+                                                title='CPF Dependente - Frente e verso'
+                                                text='Faça o upload do documento do Dependente frente e verso, depois clique em salvar.'
+                                                textDropzone='Arraste ou clique para selecionar a Foto ou Arquivo que deseja'
+                                                fileData={filesUser?.filter((file) => file.campo === 'cpf_dependente')}
+                                                usuarioId={id}
+                                                campo='cpf_dependente'
+                                                tipo='documento usuario'
+                                                callback={(file: FilePreview) => {
+                                                    if (file.status === 201 || file.status === 200) {
+                                                        if (!newUser) { fetchData() }
+                                                        else {
+                                                            handleChangeFilesUser('cpf_dependente', file.fileId, file.filePreview)
+                                                        }
+                                                    }
+                                                }}
+                                            />
+
+                                            {isPermissionEdit && <Box sx={{
+                                                backgroundSize: 'cover',
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'center',
+                                                width: 25,
+                                                height: 25,
+                                                backgroundImage: `url(/icons/remove_icon.png)`,
+                                                transition: '.3s',
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
+                                                }
+                                            }} onClick={() => {
+                                                newUser ? deleteDependent(index) : handleDeleteDependent(dep?.id_dependente)
+                                            }} />}
+
+                                        </Box>
+                                    </>
+                                ))}
+                                {isPermissionEdit &&
+                                    <Box sx={{ ...styles.inputSection, alignItems: 'center' }}>
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name={`nome_dependente`} onChange={handleChangeDependent} value={dependent?.nome_dependente} sx={{ flex: 1 }} />
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='CPF' name={`cpf_dependente`} onChange={handleChangeDependent} value={dependent?.cpf_dependente} sx={{ flex: 1 }} />
+                                        <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Nascimento' name={`dt_nasc_dependente`} onChange={handleChangeDependent} type="date" value={(dependent?.dt_nasc_dependente)?.split('T')[0] || ''} sx={{ flex: 1 }} />
+                                        <Box sx={{
+                                            backgroundSize: 'cover',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center',
+                                            width: 25,
+                                            height: 25,
+                                            borderRadius: '50%',
+                                            backgroundImage: `url(/icons/include_icon.png)`,
+                                            transition: '.3s',
+                                            "&:hover": {
+                                                opacity: 0.8,
+                                                cursor: 'pointer'
+                                            }
+                                        }} onClick={() => {
+                                            newUser ? addDependent() : handleAddDependent()
+                                        }} />
+                                    </Box>}
+                            </Box>
+
+                            <Box sx={styles.inputSection}>
+                                {userData?.estado_civil === 'Casado' && <TextInput disabled={!isPermissionEdit && true} placeholder='Conjuge' name='conjuge' onChange={handleChange} value={userData?.conjuge || ''} label='Conjuge' sx={{ flex: 1, }} />}
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nome do Pai' name='nome_pai' onChange={handleChange} value={userData?.nome_pai || ''} label='Nome do Pai' sx={{ flex: 1, }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nome da Mãe' name='nome_mae' onChange={handleChange} value={userData?.nome_mae || ''} label='Nome da Mãe *' sx={{ flex: 1, }} />
+
+                            </Box>
+                            <ContentContainer>
+                                <Text large bold >Contato de Emergência</Text>
+                                <Box sx={styles.inputSection}>
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nome' name='nome_emergencia' onChange={handleChange} value={userData?.nome_emergencia || ''} label='Nome' sx={{ flex: 1, }} />
+                                    <PhoneInputField
+                                        disabled={!isPermissionEdit && true}
+                                        label='Telefone de emergência'
+                                        placeholder='(11) 91234-6789'
+                                        name='telefone_emergencia'
+                                        onChange={(phone: string) => setUserData({ ...userData, telefone_emergencia: phone })}
+                                        value={userData?.telefone_emergencia}
+                                        sx={{ flex: 1, }}
+                                    />
+                                </Box>
+                            </ContentContainer>
+                            <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, schoolRecord: value })}
+                                existsFiles={filesUser?.filter((file) => file.campo === 'historico/diploma').length > 0}>
+                                <RadioItem disabled={!isPermissionEdit && true} valueRadio={userData?.escolaridade} group={groupData.userEscolaridade} title="Escolaridade *" horizontal={mobile ? false : true}
+                                    onSelect={(value: string) => {
+                                        if (value !== 'Ensino médio') {
+                                            setUserData({ ...userData, escolaridade: value, tipo_origem_ensi_med: '' })
+                                        } else {
+                                            setUserData({ ...userData, escolaridade: value })
+                                        }
+                                    }
+                                    } />
+                                <EditFile
+                                    setFilesUser={setFilesUser}
+                                    filesUser={filesUser}
+                                    isPermissionEdit={isPermissionEdit}
+                                    columnId="id_doc_usuario"
+                                    open={showEditFile.schoolRecord}
+                                    newUser={newUser}
+                                    onSet={(set: boolean) => {
+                                        setShowEditFiles({ ...showEditFile, schoolRecord: set })
+                                    }}
+                                    title='Historico Escolar/Diploma/Certificado de conclusão'
+                                    text='Por favor, faça o upload do seu certificado, diploma ou histórico escolar. Caso você tenha mais de um diploma ou certificado de conclusão,
+                                 faça também o upload do mesmo.'
+                                    textDropzone='Arraste ou clique para selecionar a Foto ou arquivo desejado.'
+                                    fileData={filesUser?.filter((file) => file.campo === 'historico/diploma')}
+                                    usuarioId={id}
+                                    campo='historico/diploma'
+                                    tipo='documento usuario'
+                                    callback={(file: FilePreview) => {
+                                        if (file.status === 201 || file.status === 200) {
+                                            if (!newUser) { fetchData() }
+                                            else {
+                                                handleChangeFilesUser('historico/diploma', file.fileId, file.filePreview)
                                             }
                                         }
                                     }}
                                 />
                             </FileInput>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Nº' name='numero' onChange={handleChange} value={userData?.numero || ''} label='Nº *' sx={{ flex: 1, }} />
-                        </Box>
-                        <Box sx={styles.inputSection}>
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade *' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='UF' name='uf' onChange={handleChange} value={userData?.uf || ''} label='UF *' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Bairro' name='bairro' onChange={handleChange} value={userData?.bairro || ''} label='Bairro *' sx={{ flex: 1, }} />
-                            <TextInput disabled={!isPermissionEdit && true} placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' sx={{ flex: 1, }} />
-                        </Box>
-                    </>
-                </Box>
+                            {userData?.escolaridade === 'Ensino médio' &&
+                                <RadioItem disabled={!isPermissionEdit && true}
+                                    valueRadio={userData?.tipo_origem_ensi_med}
+                                    group={groupData.origemEnsinoMedio}
+                                    title="Origem Ensino Médio *"
+                                    horizontal={mobile ? false : true}
+                                    onSelect={(value: string) => setUserData({ ...userData, tipo_origem_ensi_med: value })}
+                                />}
 
-                <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', padding: '20px 20px' }}>
-                    <Button cancel style={{ borderRadius: 2 }} text="Cancelar" onClick={() => { if (newUser) { router.push('/administrative/users/list') } else { fetchData() } }} />
-                    <ButtonIcon text="Salvar Alterações" style={{ borderRadius: 2 }} color="#fff" onClick={() => {
-                        if (newUser) { handleCreateUser() } else { handleEditUserData() }
-                    }} />
+                            <Box sx={styles.inputSection}>
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='CEP' name='cep' onChange={handleChange} value={userData?.cep || ''} label='CEP *'
+                                    onBlur={handleBlurCEP}
+                                    sx={{ flex: 1, }} />
+                                <FileInput onClick={(value: boolean) => setShowEditFiles({ ...showEditFile, address: value })}
+                                    existsFiles={filesUser?.filter((file) => file.campo === 'comprovante_residencia').length > 0}>
+                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Endereço' name='rua' onChange={handleChange} value={userData?.rua || ''} label='Endereço *' sx={{ flex: 1, }} />
+                                    <EditFile
+                                        setFilesUser={setFilesUser}
+                                        filesUser={filesUser}
+                                        isPermissionEdit={isPermissionEdit}
+                                        columnId="id_doc_usuario"
+                                        open={showEditFile.address}
+                                        newUser={newUser}
+                                        onSet={(set: boolean) => {
+                                            setShowEditFiles({ ...showEditFile, address: set })
+                                        }}
+                                        title='Comprovante de residencia'
+                                        text='Faça o upload do seu comprovante de residencia, precisa ser uma conta em seu nome ou comprovar que mora com o titular da conta.'
+                                        textDropzone='Arraste ou clique para selecionar o arquivo desejado.'
+                                        fileData={filesUser?.filter((file) => file.campo === 'comprovante_residencia')}
+                                        usuarioId={id}
+                                        campo='comprovante_residencia'
+                                        tipo='documento usuario'
+                                        callback={(file: FilePreview) => {
+                                            if (file.status === 201 || file.status === 200) {
+                                                if (!newUser) { fetchData() }
+                                                else {
+                                                    handleChangeFilesUser('comprovante_residencia', file.fileId, file.filePreview)
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </FileInput>
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Nº' name='numero' onChange={handleChange} value={userData?.numero || ''} label='Nº *' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={styles.inputSection}>
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Cidade' name='cidade' onChange={handleChange} value={userData?.cidade || ''} label='Cidade *' sx={{ flex: 1, }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='UF' name='uf' onChange={handleChange} value={userData?.uf || ''} label='UF *' sx={{ flex: 1, }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Bairro' name='bairro' onChange={handleChange} value={userData?.bairro || ''} label='Bairro *' sx={{ flex: 1, }} />
+                                <TextInput disabled={!isPermissionEdit && true} placeholder='Complemento' name='complemento' onChange={handleChange} value={userData?.complemento || ''} label='Complemento' sx={{ flex: 1, }} />
+                            </Box>
+                        </>
+                    }
                 </Box>
+            </Box>
+
+
+            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', padding: '20px 20px' }}>
+                <Button cancel style={{ borderRadius: 2 }} text="Cancelar" onClick={() => { if (newUser) { router.push('/administrative/users/list') } else { fetchData() } }} />
+                <ButtonIcon text="Salvar Alterações" style={{ borderRadius: 2 }} color="#fff" onClick={() => {
+                    if (newUser) { handleCreateUser() } else { handleEditUserData() }
+                }} />
             </Box>
 
 

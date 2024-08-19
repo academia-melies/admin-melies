@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { Box, Text, ContentContainer, Button, Divider, TextInput } from "../../../../../atoms";
+import { Box, Text, ContentContainer, Button, Divider, TextInput, ButtonIcon } from "../../../../../atoms";
 import { Backdrop, CircularProgress, Tooltip } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
 import { CheckBoxComponent, RadioItem, SelectList } from "../../../../../organisms";
@@ -42,6 +42,8 @@ interface InterestSubscriptionProps {
 }
 
 interface Subscription {
+    id_inscricao?: string | number | null
+    id_redacao?: string | number | null
     interesse_id: string | number | null,
     usuario_id: string | number | null,
     turma_id: string | number | null,
@@ -264,6 +266,10 @@ const InterestAndSubscription = ({
 
         if (!userData?.nome) {
             alert.error('Preencha o campo nome para seguirmos com a matrícula.')
+            return false
+        }
+        if (!userData?.email) {
+            alert.error('Preencha o campo e-mail para seguirmos com a matrícula.')
             return false
         }
         if (!userData?.cpf) {
@@ -626,6 +632,54 @@ const InterestAndSubscription = ({
             setLoading(false)
         }
     }
+
+    const handleSubscription = async () => {
+        setLoading(true)
+        try {
+            let success = true
+            if (arrayInterests?.length > 0) {
+                for (let interest of arrayInterests) {
+                    const subscription = { ...interest?.inscricao, id_redacao: interest?.id_redacao || null };
+                    if (subscription) {
+                        if (subscription?.id_inscricao) {
+                            const response = await api.patch(`/subscription/update/${subscription?.id_inscricao}`, { subscriptionData: subscription, userResp: user?.id })
+                            if (response.status !== 200) {
+                                success = false
+                            }
+                        } else if (subscription?.forma_ingresso) {
+                            const createSub = await api.post(`/subscription/create`, {
+                                subscriptionData: {
+                                    ...subscription,
+                                    turma_id: interest?.turma_id,
+                                    usuario_id: id,
+                                    interesse_id: interest?.id_interesse
+                                }
+                            })
+
+                            if (createSub.status !== 201) {
+                                success = false
+                            }
+                        }
+
+                    }
+                }
+            }
+            if (success) {
+                alert.success('Interesses e inscrições atualizados com sucesso.');
+                await getInterest()
+                return
+            }
+            alert.error('Tivemos um problema ao atualizar Interesses e inscrições.');
+        } catch (error) {
+            console.log(error)
+            alert.error('Tivemos um problema ao atualizar Interesses e inscrições.');
+            return error;
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
 
     return (
         <Box>
@@ -1291,7 +1345,13 @@ const InterestAndSubscription = ({
                         </ContentContainer>
                     </ContentContainer>
                 }
-            </Backdrop >
+            </Backdrop>
+
+
+            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', padding: '20px 20px' }}>
+                <Button cancel style={{ borderRadius: 2 }} text="Cancelar" onClick={() => { if (newUser) { router.push('/administrative/users/list') } else { getInterest() } }} />
+                <ButtonIcon text="Salvar Alterações" style={{ borderRadius: 2 }} color="#fff" onClick={() => handleSubscription()} />
+            </Box>
         </Box>
     )
 }

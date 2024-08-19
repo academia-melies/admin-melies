@@ -67,27 +67,21 @@ const PaymentsPreference = ({ id }: PaymentsPreferenceProps) => {
     const [loadingData, setLoadingData] = useState<boolean>(false)
     const { colorPalette, theme } = useAppContext()
 
-
-    const handleResponsible = async () => {
+    const fecthData = async () => {
+        setLoadingData(true)
         try {
-            const response = await api.get(`/responsible/${id}`)
-            const { data } = response
-            if (data) {
-                setResponsiblePayerData(data)
-            }
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
 
+            const [responsibleResponse, paymentProfileResponse] = await Promise.all([
+                api.get(`/responsible/${id}`),
+                api.get<{ success: boolean; crediCards: ApiCreditCard[] }>(`/order/paymentProfile/list/${id}`)
+            ])
 
-    const handlePaymentsProfile = async () => {
-        try {
-            const response = await api.get<{ success: boolean; crediCards: ApiCreditCard[] }>(`/order/paymentProfile/list/${id}`)
-            const { success, crediCards } = response?.data
+            const responsibleGet = responsibleResponse.data
+            setResponsiblePayerData(responsibleGet)
+
+            const paymentProfileGet = paymentProfileResponse.data
+            const { success, crediCards } = paymentProfileGet
             if (success && crediCards && crediCards?.length > 0) {
-                const { crediCards } = response?.data
                 const groupPaymentsPerfil = crediCards?.map(item => ({
                     numero_cartao: `${item?.primeiros_numeros} XXXX XXXX ${item?.ultimos_numeros}`,
                     nome_cartao: item?.nome_cartao,
@@ -106,15 +100,16 @@ const PaymentsPreference = ({ id }: PaymentsPreferenceProps) => {
                 const uniqueCreditCards = removeDuplicateCards(groupPaymentsPerfil);
                 setCreditCards(uniqueCreditCards);
             }
+
         } catch (error) {
             console.log(error)
-            return error
+        } finally{
+            setLoadingData(false)
         }
     }
 
     useEffect(() => {
-        handleResponsible()
-        handlePaymentsProfile()
+        fecthData()
     }, [id])
 
     return (

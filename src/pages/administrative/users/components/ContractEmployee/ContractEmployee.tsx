@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react"
-import { Box, Button, ContentContainer, FileInput, Text, TextInput } from "../../../../../atoms"
+import { Box, Button, ButtonIcon, ContentContainer, FileInput, Text, TextInput } from "../../../../../atoms"
 import { SelectList, TableOfficeHours } from "../../../../../organisms"
 import { icons } from "../../../../../organisms/layout/Colors"
 import { EditFile } from "../../[id]"
@@ -8,6 +8,8 @@ import { useAppContext } from "../../../../../context/AppContext"
 import { api } from "../../../../../api/api"
 import { FilePreview, FileUser } from "../UserData/UserData"
 import { CircularProgress } from "@mui/material"
+import { useRouter } from "next/router"
+import { createContract, editContract } from "../../../../../validators/api-requests"
 
 interface ContractEmployeeProps {
     id: string | number
@@ -107,7 +109,8 @@ const ContractEmployee = ({
     const [filesUser, setFilesUser] = useState<FileUser[]>([])
     const [loadingData, setLoadingData] = useState<boolean>(false)
 
-    const { colorPalette } = useAppContext()
+    const { alert, setLoading, colorPalette } = useAppContext()
+    const router = useRouter()
 
 
     const getContract = async () => {
@@ -117,6 +120,7 @@ const ContractEmployee = ({
             const { data } = response
             if (data) {
                 await listUserByArea()
+                await getOfficeHours()
                 setContract(data)
             }
         } catch (error) {
@@ -143,7 +147,6 @@ const ContractEmployee = ({
 
     useEffect(() => {
         getContract()
-        getOfficeHours()
     }, [id])
     async function listUserByArea() {
         try {
@@ -202,6 +205,30 @@ const ContractEmployee = ({
         }
     }
 
+    const handleContract = async () => {
+        setLoading(true)
+        try {
+            let response;
+            if (newUser) {
+                response = await createContract(id, contract)
+            } else {
+                response = await editContract({ id, contract })
+            }
+
+            if (response?.status === 201 || response?.status === 200) {
+                alert.success('Dados do Contrato atualizados.');
+                await getContract()
+            } else {
+                alert.error('Tivemos um problema ao cadastrar dados do contrato.');
+            }
+        } catch (error) {
+            alert.error('Tivemos um problema ao cadastrar dados do contrato.');
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
     return (
         <Box>
@@ -209,7 +236,7 @@ const ContractEmployee = ({
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', heigth: '100%', position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}>
                     <CircularProgress />
                 </Box>}
-            <ContentContainer style={{ ...styles.containerContract,opacity: loadingData ? .6 : 1, padding: '25px' }}>
+            <ContentContainer style={{ ...styles.containerContract, opacity: loadingData ? .6 : 1, padding: '25px' }}>
                 <Box sx={{
                     display: 'flex', alignItems: 'center', gap: 1, "&:hover": {
                         opacity: 0.8,
@@ -367,6 +394,12 @@ const ContractEmployee = ({
 
                 </>
             </ContentContainer>
+
+
+            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'flex-end', padding: '20px 20px' }}>
+                <Button cancel style={{ borderRadius: 2 }} text="Cancelar" onClick={() => { if (newUser) { router.push('/administrative/users/list') } else { getContract() } }} />
+                <ButtonIcon text="Salvar Alterações" style={{ borderRadius: 2 }} color="#fff" onClick={() => handleContract()} />
+            </Box>
 
         </Box>
     )
