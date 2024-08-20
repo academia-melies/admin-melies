@@ -46,6 +46,8 @@ export default function Editaccount(props) {
     const [costCenterList, setCostCenterList] = useState([])
     const [accountTypesList, setAccountTypesList] = useState([])
     const [statmentSelected, setStatmentSelected] = useState([])
+    const [statmentMark, setStatmentMark] = useState([])
+
     const [accountList, setAccountList] = useState([])
     const [valorFormatado, setValorFormatado] = useState('');
     const [saldAccount, setSaldAccount] = useState({});
@@ -768,7 +770,10 @@ export default function Editaccount(props) {
                                     handleDeleteAccountExtract={handleDeleteAccountExtract} setShowExclude={setShowExclude}
                                     accountDetails={saldAccount} saldoAtual={saldoAtual}
                                     setStatmentSelected={setStatmentSelected}
-                                    statmentSelected={statmentSelected} />
+                                    statmentSelected={statmentSelected}
+                                    setStatmentMark={setStatmentMark}
+                                    statmentMark={statmentMark}
+                                />
                                 :
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}>
                                     <Text large light>Não foi possível encontrar movimentações na conta.</Text>
@@ -1025,6 +1030,8 @@ export default function Editaccount(props) {
 const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAccount,
     handleDeleteAccountExtract, setShowExclude, accountDetails = {}, saldoAtual,
     setStatmentSelected,
+    setStatmentMark,
+    statmentMark,
     statmentSelected }) => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
 
@@ -1064,6 +1071,16 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
         // } else if (alreadySelected) {
         //     setAllSelected(false);
         // }
+    };
+
+    const selectedMarkStatmentAccount = (value) => {
+
+        const alreadySelected = statmentMark.some(statment => statment.statmentId === value);
+        const updatedSelected = alreadySelected ? statmentMark.filter(statment => statment.statmentId !== value)
+            : [...statmentMark, { statmentId: value }];
+
+            setStatmentMark(updatedSelected)
+            
     };
 
     const openPayment = async (item) => {
@@ -1108,7 +1125,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                 <Table sx={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto' }}>
                     <TableHead>
                         <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
-                            <TableCell sx={{ padding: '10px 6px' }}>Excluir</TableCell>
+                        <TableCell sx={{ padding: '10px 6px' }}>Marcar Linha</TableCell>
                             <TableCell sx={{ padding: '10px 6px' }}>
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
                                     <Text bold style={{ textAlign: 'center' }}>Descrição</Text>
@@ -1154,6 +1171,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                     <Text bold style={{ textAlign: 'center' }}></Text>
                                 </Box>
                             </TableCell>
+                            <TableCell sx={{ padding: '10px 6px' }}>Excluir</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody sx={{ padding: 5, backgroundColor: colorPalette.secondary }}>
@@ -1161,6 +1179,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                             data?.map((item, index) => {
                                 const statmentId = item?.id_extrato
                                 const selected = statmentSelected.some(statment => statment.statmentId === statmentId);
+                                const marked = statmentMark.some(statment => statment.statmentId === statmentId);
 
                                 const saldoAcumulado = accountDetails.saldo + data.slice(0, index + 1)
                                     .reduce((acc, currentItem) => {
@@ -1171,10 +1190,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
 
                                 return (
                                     <TableRow key={`${item}-${index}`} sx={{
-                                        backgroundColor: item?.transferido === 1 && colorPalette?.buttonColor + '44',
-                                        "&:hover": {
-                                            backgroundColor: item?.transferido === 1 ? colorPalette?.buttonColor + '22' : colorPalette.primary + '88'
-                                        },
+                                        backgroundColor: selected ? '#ffcccc' :  marked ? colorPalette?.buttonColor + '22' : item?.transferido === 1 && colorPalette?.buttonColor + '44',
                                     }}>
                                         <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1186,8 +1202,8 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                                         opacity: 0.8,
                                                         cursor: 'pointer'
                                                     }
-                                                }} onClick={() => selectedStatmentAccount(statmentId)}>
-                                                    {selected &&
+                                                }} onClick={() => selectedMarkStatmentAccount(statmentId)}>
+                                                    {marked &&
                                                         <Box sx={{
                                                             ...styles.menuIcon,
                                                             width: 13, height: 13,
@@ -1198,6 +1214,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                                 </Box>
                                             </Box>
                                         </TableCell>
+
                                         <TableCell sx={{
                                             padding: '8px 5px', textAlign: 'center',
                                             whiteSpace: 'wrap',
@@ -1280,6 +1297,28 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                                         <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 2 }}>
                                                 <Button small text="Editar" style={{ height: 30, borderRadius: 2 }} onClick={() => openPayment(item)} />
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                                <Box sx={{
+                                                    display: 'flex', gap: 1, width: 13, height: 13, border: '1px solid', borderRadius: '2px',
+                                                    backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                                    "&:hover": {
+                                                        opacity: 0.8,
+                                                        cursor: 'pointer'
+                                                    }
+                                                }} onClick={() => selectedStatmentAccount(statmentId)}>
+                                                    {selected &&
+                                                        <Box sx={{
+                                                            ...styles.menuIcon,
+                                                            width: 13, height: 13,
+                                                            backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                                            transition: '.3s',
+                                                        }} />
+                                                    }
+                                                </Box>
                                             </Box>
                                         </TableCell>
                                     </TableRow>
