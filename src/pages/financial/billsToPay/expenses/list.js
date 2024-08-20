@@ -9,7 +9,7 @@ import { Backdrop, Tooltip } from "@mui/material"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 import { icons } from "../../../../organisms/layout/Colors"
 import Link from "next/link"
-import { CompensationRecurrencyDetails } from "./components/compensationRecurrency"
+import CompensationRecurrencyDetails from "./components/compensationRecurrency"
 
 
 export default function ListBillsToPay() {

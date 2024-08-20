@@ -10,8 +10,7 @@ import { formatTimeStamp } from "../../../../../helpers"
 import { checkUserPermissions } from "../../../../../validators/checkPermissionUser"
 
 
-
-export const CompensationRecurrencyDetails = ({
+ const CompensationRecurrencyDetails = ({
     compensationRecurrency, setCompensationRecurrency
 }) => {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList } = useAppContext()
@@ -288,3 +287,5 @@ const styles = {
         flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
     }
 }
+
+export default CompensationRecurrencyDetails
