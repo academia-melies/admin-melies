@@ -101,11 +101,10 @@ export default function ListBillsToPay(props) {
         try {
             const response = await api.get('/expenses/allList')
             const { data } = response;
-            const Values = await mapExpenseData(data?.expenses, 'dt_vencimento');
-            const personalValues = await mapExpenseData(data?.personal, 'dt_pagamento');
+            const expenses = await mapExpenseData(data?.expenses, 'dt_vencimento');
 
-            setBillstToPayData({ expenses: Values, personal: personalValues })
-            return { expenses: Values, personal: personalValues }
+            setBillstToPayData(expenses)
+            return expenses
 
         } catch (error) {
             console.log(error)
@@ -149,21 +148,14 @@ export default function ListBillsToPay(props) {
         const localStart = new Date(start.getTime() + start.getTimezoneOffset() * 60000);
         const localEnd = new Date(end.getTime() + end.getTimezoneOffset() * 60000);
 
-        let billsExpenses = billstPay?.expenses?.filter(filter);
-        let billsPersonal = billstPay?.personal?.filter(filter);
-
+        let billsExpenses = billstPay?.filter(filter);
         let fixed = billsExpenses?.length > 0 ? billsExpenses?.filter(item => new Date(item?.vencimento) <= currentDate)?.map(item => item.valor_desp) : []
-        let personal = billsPersonal?.length > 0 ? billsPersonal?.filter(item => new Date(item?.vencimento) <= currentDate)?.map(item => item.vl_pagamento) : []
         const filteredFixed = fixed?.length > 0 ? fixed?.reduce((acc, curr) => acc + curr, 0) : 0
-        const filteredPersonal = personal?.length > 0 ? personal?.reduce((acc, curr) => acc + curr, 0) : 0
-
         let fixedFuture = billsExpenses?.length > 0 ? billsExpenses?.filter(item => new Date(item?.vencimento) > currentDate)?.map(item => item.valor_desp) : []
-        let personalFuture = billsPersonal?.length > 0 ? billsPersonal?.filter(item => new Date(item?.vencimento) > currentDate)?.map(item => item.vl_pagamento) : []
         const filteredFixedFuture = fixedFuture?.length > 0 ? fixed?.reduce((acc, curr) => acc + curr, 0) : 0
-        const filteredPersonalFuture = personalFuture?.length > 0 ? personal?.reduce((acc, curr) => acc + curr, 0) : 0
 
-        setTotalPays(filteredFixed + filteredPersonal)
-        setTotalFuturePays(filteredFixedFuture + filteredPersonalFuture)
+        setTotalPays(filteredFixed)
+        setTotalFuturePays(filteredFixedFuture)
 
 
         let data = billstReceive?.filter(filter);
@@ -188,26 +180,13 @@ export default function ListBillsToPay(props) {
         const { series, labels } = processChartData(dataGraphReceivedAndFuture);
         setFormPaymentGraph({ series, labels });
 
-        let expenseData = [];
-        let totalExpenses = 0;
-        if (billstPay?.expenses) {
-            expenseData = billstPay?.expenses?.filter(filter);
-            totalExpenses = expenseData?.reduce((acc, expense) => acc + expense?.valor_desp, 0);
+        if (billsExpenses?.length > 0) {
+            const { series: seriesCategory, labels: labelsCategory } = processChartTypeData(billsExpenses)
+            setCategoryExpenseGraph({
+                labels: labelsCategory,
+                series: seriesCategory
+            });
         }
-
-        let personalData = [];
-        let totalPersonal = 0;
-        if (billstPay?.personal) {
-            personalData = billstPay?.personal?.filter(filter);
-            totalPersonal = personalData?.reduce((acc, expense) => acc + expense?.vl_pagamento, 0);
-        }
-
-
-        setCategoryExpenseGraph({
-            labels: ['Despesas', 'Folha de pagamento'],
-            series: [totalExpenses, totalPersonal]
-        });
-
 
         const monthlyData = processMonthlyData(dataGraphReceivedAndFuture);
         const formattedSeries = monthlyData?.series?.map(valor => (valor).toFixed(2));
@@ -298,6 +277,25 @@ export default function ListBillsToPay(props) {
         const labels = Object.keys(paymentMethods);
 
         return { series, labels };
+    };
+
+    const processChartTypeData = (data) => {
+        if (data?.length > 0) {
+            const paymentType = {};
+
+            data.forEach(item => {
+                const { nome_tipo, valor_desp } = item;
+                if (!paymentType[nome_tipo]) {
+                    paymentType[nome_tipo] = 0;
+                }
+                paymentType[nome_tipo] += valor_desp;
+            });
+
+            const series = Object.values(paymentType);
+            const labels = Object.keys(paymentType);
+
+            return { series, labels };
+        }
     };
 
     const processMonthlyData = (data) => {

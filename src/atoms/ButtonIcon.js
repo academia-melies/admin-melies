@@ -28,14 +28,14 @@ export const ButtonIcon = (props) => {
                     backgroundColor: colorPalette.buttonColor + 'dd',
                     cursor: !disabled && 'pointer'
                 },
-                ...(small && { width: '100%', maxWidth: 130 }),
+                ...(small && { width: '100%', maxWidth: 130, height: 30 }),
                 ...style,
                 ...disabled && { opacity: 0.3 }
             }}
             onClick={!disabled ? onClick : () => { }}
         >
              <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icon})` }} />
-            <Text small={small} bold style={{ color: 'inherit' }}>{text}</Text>
+            <Text xsmall={small} bold style={{ color: 'inherit' }}>{text}</Text>
         </Box>
     )
 }
