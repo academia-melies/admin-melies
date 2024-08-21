@@ -19,11 +19,11 @@ export const getDialogPosition = (event, maxDialogWidth) => {
 }
 export const formatTimeStamp = (timestamp, time) => {
    try {
-      
+
       if (timestamp) {
          const date = new Date(timestamp);
          date.setHours(date.getHours());
-         
+
          if (timestamp && time) {
             const options = {
                year: 'numeric',
@@ -38,7 +38,7 @@ export const formatTimeStamp = (timestamp, time) => {
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = String(date.getFullYear());
-       
+
             return `${day}/${month}/${year}`;
          }
       }
@@ -49,11 +49,11 @@ export const formatTimeStamp = (timestamp, time) => {
 
 export const formatTimeStampTimezone = (timestamp, time) => {
    try {
-      
+
       if (timestamp) {
          const date = new Date(timestamp);
          date.setHours(date.getHours() + 3);
-         
+
          if (timestamp && time) {
             const options = {
                year: 'numeric',
@@ -68,7 +68,7 @@ export const formatTimeStampTimezone = (timestamp, time) => {
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = String(date.getFullYear());
-       
+
             return `${day}/${month}/${year}`;
          }
       }
@@ -283,4 +283,23 @@ export const formatTimeAgo = (timestamp, includeTime = false) => {
    return `${diffInMonths} ${diffInMonths === 1 ? 'mês' : 'meses'} atrás`;
 };
 
+export const formatTelephone = (telephone) => {
+   if (telephone) {
+
+
+      // Remove qualquer caractere que não seja número
+      const cleaned = ('' + telephone).replace(/\D/g, '');
+
+      // Verifica se o número começa com o código do país +55
+      const match = cleaned.match(/^(\d{2})(\d{2})(\d{5})(\d{4})$/);
+
+      if (match) {
+         return `+${match[1]} (${match[2]}) ${match[3]}-${match[4]}`;
+      }
+
+      return telephone;
+   } else {
+      return telephone
+   }
+};
 
