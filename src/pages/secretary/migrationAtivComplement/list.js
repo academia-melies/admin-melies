@@ -1,14 +1,12 @@
-import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
-import { CheckBoxComponent, ConfirmModal, PaginationTable, SectionHeader } from "../../../organisms"
-import { api } from "../../../api/api"
-import { useAppContext } from "../../../context/AppContext"
-import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms";
+import { CheckBoxComponent, ConfirmModal, PaginationTable, SectionHeader } from "../../../organisms";
+import { api } from "../../../api/api";
+import { useAppContext } from "../../../context/AppContext";
+import { checkUserPermissions } from "../../../validators/checkPermissionUser";
 
-
-export default function ListActivityComplement() {
-    const [activityData, setActivityData] = useState([]);
+export default function ListActivityComplement() {   
     const [filters, setFilters] = useState({
         status: 'todos',
         startDate: '',
@@ -19,31 +17,38 @@ export default function ListActivityComplement() {
     });
     const [filterData, setFilterData] = useState('');
     const [data, setData] = useState([]);
-    const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const router = useRouter()
-    const { setLoading, colorPalette, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext()
+    const [isPermissionEdit, setIsPermissionEdit] = useState(false);
+    const [page, setPage] = useState(1); 
+    const [limit, setLimit] = useState(20);
+    const [totalPages, setTotalPages] = useState(1);
+    const router = useRouter();
+    const { setLoading, colorPalette, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext();
+
     const fetchPermissions = async () => {
         try {
-            const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-            setIsPermissionEdit(actions)
-        } catch (error) {
-            console.log(error)
-            return error
-        }
-    }
-    useEffect(() => {
-        fetchPermissions();
-        getComplementarActivity();
-    }, []);
-
-    async function getComplementarActivity() {
-        try {
-            const response = await api.get(`/enrollment/list/students/complementary-activity`);
-            const { data } = response;
-            setData(data);
+            const actions = await checkUserPermissions(router, userPermissions, menuItemsList);
+            setIsPermissionEdit(actions);
         } catch (error) {
             console.log(error);
             return error;
+        }
+    };
+
+    useEffect(() => {
+        fetchPermissions();
+        getComplementarActivity();
+    }, [page, limit]);
+
+    async function getComplementarActivity() {
+        try {
+            const response = await api.get(`/enrollment/list/students/complementary-activity?page=${page}&limit=${limit}`);
+            const { data, totalPages } = response.data;           
+            setData(data);
+            setTotalPages(totalPages);
+            setLoading(false);
+        } catch (error) {
+            console.error(error);
+            setLoading(false);
         }
     }
 
@@ -68,7 +73,8 @@ export default function ListActivityComplement() {
 
         return sortedUsers;
     };
-    const handleChangeActivityData = (usuarioId,filed, value) => {
+
+    const handleChangeActivityData = (usuarioId, field, value) => {
         setData(data =>
             data.map(aluno =>
                 aluno.usuario_id === usuarioId.usuario_id
@@ -77,10 +83,11 @@ export default function ListActivityComplement() {
             )
         );
     };
+
     const handlerSend = async (item) => {
         const currentDate = new Date();
         const formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
-    
+
         const activityPayload = {
             nome: item.nome,
             turma: item.nome_turma,
@@ -89,14 +96,14 @@ export default function ListActivityComplement() {
             turma_id: item.turma_id,
             usuario_id: item.usuario_id,
             titulo: 'Migração portal antigo para novo',
-            carga_hr: item.carga_hr_total, 
+            carga_hr: item.carga_hr_total,
             aprovado: 1,
             dt_atividade: formattedDate,
         };
-    
+
         try {
             const response = await api.post(`/enrollment/list/students/complementary-activity/create`, { activityData: activityPayload });
-    
+
             if (response?.status === 201) {
                 alert.success('Atividade inserida com sucesso.');
                 setData(data =>
@@ -114,6 +121,13 @@ export default function ListActivityComplement() {
             setLoading(false);
         }
     };
+
+    const handlePageChange = (newPage) => {
+        setLoading(true);
+        setPage(newPage);
+        getComplementarActivity();
+    };
+
     return (
         <>
             <SectionHeader title="Migração de Atividades Complementares" />
@@ -194,7 +208,6 @@ export default function ListActivityComplement() {
                                                 name='carga_hr_total'
                                                 value={item.carga_hr_total}
                                                 onChange={(e) => handleChangeActivityData(item, e.target.name, e.target.value)}
-                                             
                                                 InputProps={{
                                                     style: {
                                                         fontSize: '11px',
@@ -243,21 +256,20 @@ export default function ListActivityComplement() {
                         </Box>
                     )}
                 </div>
+                <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+                    <Button
+                        text="Anterior"
+                        onClick={() => page > 1 && handlePageChange(page - 1)}
+                        disabled={page === 1}
+                    />
+                    <Text sx={{ margin: '0 1rem' }}>Page {page} of {totalPages}</Text>
+                    <Button
+                        text="Proximo"
+                        onClick={() => page < totalPages && handlePageChange(page + 1)}
+                        disabled={page === totalPages}
+                    />
+                </Box>
             </Box>
         </>
-    )
+    );
 }
-
-
-
-
-const styles = {
-    menuIcon: {
-        backgroundSize: 'contain',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-        width: 20,
-        height: 20,
-    },
-}
-
