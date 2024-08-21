@@ -16,6 +16,8 @@ export interface FiltersField {
     forma_pagamento: string | null
     classId: string | number | null
     course: string | number | null
+    startDate: string | null
+    endDate: string | null
 }
 
 export interface Installments {
@@ -76,6 +78,8 @@ export default function BillingCourses() {
         forma_pagamento: '',
         classId: '',
         course: '',
+        startDate: '',
+        endDate: ''
     })
 
     const { colorPalette, alert } = useAppContext()
@@ -88,6 +92,10 @@ export default function BillingCourses() {
                     classId: filtersField.classId,
                     course: filtersField.course,
                     paymentForm: filtersField.forma_pagamento,
+                    date: {
+                        startDate: filtersField.startDate,
+                        endDate: filtersField.endDate
+                    },
                     page: 1,
                     limit: 100,
                 }

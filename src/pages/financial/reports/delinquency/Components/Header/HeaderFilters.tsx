@@ -55,6 +55,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
     }, []);
 
     const fields: Fields[] = [
+        { label: 'Data', value: 'data' },
         { label: 'Curso', value: 'curso' },
         { label: 'Turma', value: 'turma' },
         { label: 'Forma de Pagamento', value: 'forma_pagamento' }
@@ -148,6 +149,26 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     clean={false}
                                 />
                             }
+
+                            {field === 'data' &&
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                    <TextInput
+                                        label="De:"
+                                        name='startDate'
+                                        onChange={(e: ChangeEvent<HTMLInputElement>) => setFiltersField({ ...filtersField, startDate: e.target.value })}
+                                        type="date"
+                                        value={(filtersField?.startDate)?.split('T')[0] || ''}
+                                        InputProps={{ style: { backgroundColor: colorPalette?.secondary } }}
+                                    />
+                                    <TextInput
+                                        label="Até:"
+                                        name='endDate'
+                                        onChange={(e: ChangeEvent<HTMLInputElement>) => setFiltersField({ ...filtersField, endDate: e.target.value })}
+                                        type="date"
+                                        value={(filtersField?.endDate)?.split('T')[0] || ''}
+                                        InputProps={{ style: { backgroundColor: colorPalette?.secondary } }}
+                                    />
+                                </Box>}
                         </Box>
                     ))}
 
@@ -159,7 +180,9 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                     setFiltersField({
                         forma_pagamento: '',
                         classId: '',
-                        course: ''
+                        course: '',
+                        startDate: '',
+                        endDate: ''
                     })
                     setReportData([]);
                     setReportCourse([])
