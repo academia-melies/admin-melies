@@ -1,12 +1,12 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms";
-import { CheckBoxComponent, ConfirmModal, PaginationTable, SectionHeader } from "../../../organisms";
+import { CheckBoxComponent, ConfirmModal, PaginationTable, SectionHeader, SelectList } from "../../../organisms";
 import { api } from "../../../api/api";
 import { useAppContext } from "../../../context/AppContext";
 import { checkUserPermissions } from "../../../validators/checkPermissionUser";
 
-export default function ListActivityComplement() {   
+export default function ListActivityComplement() {
     const [filters, setFilters] = useState({
         status: 'todos',
         startDate: '',
@@ -16,10 +16,13 @@ export default function ListActivityComplement() {
         search: ''
     });
     const [filterData, setFilterData] = useState('');
+    const [classesSelected, setClassesSelected] = useState(null);
     const [data, setData] = useState([]);
     const [isPermissionEdit, setIsPermissionEdit] = useState(false);
-    const [page, setPage] = useState(1); 
+    const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
+    const [classes, setClasses] = useState([]);
+
     const [totalPages, setTotalPages] = useState(1);
     const router = useRouter();
     const { setLoading, colorPalette, alert, setShowConfirmationDialog, userPermissions, menuItemsList, user } = useAppContext();
@@ -42,8 +45,19 @@ export default function ListActivityComplement() {
     async function getComplementarActivity() {
         try {
             const response = await api.get(`/enrollment/list/students/complementary-activity?page=${page}&limit=${limit}`);
-            const { data, totalPages } = response.data;           
+            const { data, totalPages } = response.data;
             setData(data);
+
+            const groupClasses = Array.from(
+                new Set(data.map(classes => classes.turma_id))
+            ).map(turma_id => {
+                const turma = data.find(classes => classes.turma_id === turma_id);
+                return {
+                    label: turma.nome_turma,
+                    value: turma.turma_id
+                };
+            });
+            setClasses(groupClasses);
             setTotalPages(totalPages);
             setLoading(false);
         } catch (error) {
@@ -55,10 +69,10 @@ export default function ListActivityComplement() {
     const sortUsers = () => {
         const { filterName, filterOrder } = filters;
         const filteredUsers = data.filter((user) => {
-            return (
-                user.nome.toLowerCase().includes(filterData.toLowerCase()) ||
-                String(user.id).includes(filterData)
-            );
+            const matchNameOrId = user.nome.toLowerCase().includes(filterData.toLowerCase()) || String(user.id).includes(filterData);
+            const matchClass = !classesSelected || user.turma_id === classesSelected;
+
+            return matchNameOrId && matchClass;
         });
         const sortedUsers = filteredUsers.sort((a, b) => {
             const valueA = filterName === 'id' ? Number(a[filterName]) : (a[filterName] || '').toLowerCase();
@@ -150,6 +164,23 @@ export default function ListActivityComplement() {
                     value={filterData}
                     InputProps={{ style: { backgroundColor: colorPalette?.secondary } }}
                 />
+                <SelectList
+                    fullWidth
+                    data={classes}
+                    valueSelection={classesSelected}
+                    onSelect={(value) => setClassesSelected(value)}
+                    title="Turma"
+                    filterOpition="value"
+                    style={{ backgroundColor: colorPalette?.secondary }}
+                    clean={false}
+                />
+                <Box sx={{ ...styles.filterButton, backgroundColor: colorPalette?.secondary, gap: .5 }} onClick={() => {
+                    setFilterData('')
+                    setClassesSelected(null)
+                }}>
+                    <Box sx={{ ...styles.iconFilter, backgroundImage: `url(/icons/clear-filter.png)` }} />
+                    <Text light bold={(classesSelected || filterData)} style={{ color: (classesSelected || filterData) > 0 && colorPalette?.buttonColor }}>Limpar</Text>
+                </Box>
             </Box>
 
             <Box
@@ -191,16 +222,16 @@ export default function ListActivityComplement() {
                                 {sortUsers()?.map((item, index) => (
                                     <tr key={index}>
                                         <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                            {item.nome}
+                                            <Text>{item.nome}</Text>
                                         </td>
                                         <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                            {item.nome_turma}
+                                            <Text>{item.nome_turma}</Text>
                                         </td>
                                         <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                            {item.nome_curso}
+                                            <Text> {item.nome_curso}</Text>
                                         </td>
                                         <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                            {item.modulo}
+                                            <Text>{item.modulo}</Text>
                                         </td>
                                         <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                             <TextInput
@@ -262,7 +293,7 @@ export default function ListActivityComplement() {
                         onClick={() => page > 1 && handlePageChange(page - 1)}
                         disabled={page === 1}
                     />
-                    <Text sx={{ margin: '0 1rem' }}>Page {page} of {totalPages}</Text>
+                    <Text sx={{ margin: '0 1rem' }}>Pagina {page} de {totalPages}</Text>
                     <Button
                         text="Proximo"
                         onClick={() => page < totalPages && handlePageChange(page + 1)}
@@ -272,4 +303,29 @@ export default function ListActivityComplement() {
             </Box>
         </>
     );
+}
+
+const styles = {
+    filterButton: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        padding: '8px 15px',
+        borderRadius: 2,
+        border: '1px solid lightgray',
+        transition: '.3s',
+        "&:hover": {
+            opacity: 0.8,
+            cursor: 'pointer'
+        }
+    },
+    iconFilter: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        ascpectRatio: '1/1',
+        width: 16,
+        height: 16,
+        backgroundImage: `url(/icons/filter.png)`,
+    },
 }
