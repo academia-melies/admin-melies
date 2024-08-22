@@ -408,7 +408,6 @@ export default function ListUsers(props) {
     )
 }
 
-
 const styles = {
     containerRegister: {
         display: 'flex',
