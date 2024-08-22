@@ -30,7 +30,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
 
     const { colorPalette } = useAppContext()
     const [showFieldsFilter, setShowFieldsFilter] = useState<boolean>(false)
-    const [fieldersSelected, setFieldersSelected] = useState<string[]>([]);
+    const [fieldersSelected, setFieldersSelected] = useState<string[]>(['status', 'curso']);
     const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -174,9 +174,9 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
                 <Box sx={{ ...styles.filterButton, backgroundColor: colorPalette?.secondary, gap: .5 }} onClick={() => {
-                    setFieldersSelected([])
+                    setFieldersSelected(['status', 'curso'])
                     setFiltersField({
-                        status: '',
+                        status: 'Aguardando validação',
                         tipo_data: '',
                         data: '',
                         startDate: '',

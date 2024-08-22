@@ -72,7 +72,7 @@ export default function BillingCourses() {
     const [classesList, setClasses] = useState<DataFilters[]>([])
 
     const [filtersField, setFiltersField] = useState<FiltersField>({
-        status: '',
+        status: 'Aguardando validação',
         tipo_data: '',
         data: '',
         startDate: '',
@@ -84,34 +84,31 @@ export default function BillingCourses() {
     const { colorPalette, alert } = useAppContext()
 
     const fetchReportData: () => Promise<void> = async () => {
-        if (filtersField.startDate && filtersField.endDate) {
-            setLoadingData(true)
-            try {
-                const response = await api.get('/atividade-complementar/professor/avaliable', {
-                    params: {
-                        date: {
-                            startDate: filtersField.startDate,
-                            endDate: filtersField.endDate
-                        },
-                        classId: filtersField.classId,
-                        course: filtersField.course,
-                        status: filtersField.status,
-                        page: 1, // exemplo
-                        limit: 100,    // exemplo
-                        dateType: filtersField.tipo_data
-                    }
-                });
 
-                console.log(response)
+        setLoadingData(true)
+        try {
+            const response = await api.get('/atividade-complementar/professor/avaliable', {
+                params: {
+                    date: {
+                        startDate: filtersField.startDate,
+                        endDate: filtersField.endDate
+                    },
+                    classId: filtersField.classId,
+                    course: filtersField.course,
+                    status: filtersField.status,
+                    page: 1, // exemplo
+                    limit: 100,    // exemplo
+                    dateType: filtersField.tipo_data
+                }
+            });
 
-                setReportData(response.data);
-            } catch (error) {
-                console.error('Erro ao buscar dados do relatório:', error);
-            } finally {
-                setLoadingData(false)
-            }
-        } else {
-            alert.info('Antes de avançar, preencha as datas.')
+            console.log(response)
+
+            setReportData(response.data);
+        } catch (error) {
+            console.error('Erro ao buscar dados do relatório:', error);
+        } finally {
+            setLoadingData(false)
         }
     };
 
@@ -184,7 +181,7 @@ export default function BillingCourses() {
                                 </Box>
                             </Box>
                         </Box>
-                        {filterAbaData === 'relatorio_geral' && <TableReport data={reportData} setData={setReportData}/>}
+                        {filterAbaData === 'relatorio_geral' && <TableReport data={reportData} setData={setReportData} />}
                         <Box sx={styles.boxValueTotally}>
                             <Text title light>Total de Horas {filtersField.status}: </Text>
                             <Text title bold>{calculationTotal(reportData)}</Text>
