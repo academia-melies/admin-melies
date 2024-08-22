@@ -96,5 +96,11 @@ export const groupData = {
         { label: 'Estornada', value: 'Estornada' },
         { label: 'Não Autorizado', value: 'Não Autorizado' },
         { label: 'Erro com o pagamento', value: 'Erro com o pagamento' }
+    ],
+    statusActivityComplementary: [
+        { label: 'Todos', value: 'todos' },
+        { label: 'Aprovado', value: 'Aprovado' },
+        { label: 'Reprovado', value: 'Reprovado' },
+        { label: 'Aguardando validação', value: 'Aguardando validação' }
     ]
 }
