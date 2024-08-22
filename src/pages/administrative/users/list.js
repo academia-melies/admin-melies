@@ -408,15 +408,6 @@ export default function ListUsers(props) {
     )
 }
 
-const fetchPermissions = async () => {
-    try {
-        const actions = await checkUserPermissions(router, userPermissions, menuItemsList)
-        setIsPermissionEdit(actions)
-    } catch (error) {
-        console.log(error)
-        return error
-    }
-}
 const styles = {
     containerRegister: {
         display: 'flex',
