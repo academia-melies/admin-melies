@@ -26,7 +26,7 @@ export interface ActivityComplementaryArq {
 }
 
 export interface ActivityComplementary {
-    id_ativ_complementar: string | number | null,
+    id_ativ_complementar: string | number,
     usuario_id: string | number | null
     atividade: string | null
     tipo_atv: string | null

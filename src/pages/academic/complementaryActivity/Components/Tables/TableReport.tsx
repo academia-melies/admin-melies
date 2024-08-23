@@ -44,6 +44,7 @@ const TableReport: React.FC<TableReportProps> = ({ data = [], setData }) => {
     const [showFiles, setShowFiles] = useState<ShowFiles>({ active: false, item: [] })
     const [showDescription, setShowDescription] = useState<ShowDescription>({ active: false, description: '' })
     const [showComentaryReprovved, setShowComentaryReprovved] = useState<ShowComentary>({ active: false, item: null, commentary: '', onlyRead: false })
+    const [activityMarked, setActivityMarked] = useState<(string | number)[]>([])
 
     const statusColor = (data: string | null) => (
         (data === 'Reprovado' && 'red') ||
@@ -86,6 +87,13 @@ const TableReport: React.FC<TableReportProps> = ({ data = [], setData }) => {
         }
     }
 
+    const handleMark = (value: string | number) => {
+        const alreadySelected = activityMarked.some(m => m === value);
+        const updatedSelected = alreadySelected ? activityMarked.filter(activity => activity !== value)
+            : [...activityMarked, value];
+        setActivityMarked(updatedSelected)
+    };
+
     return (
         <Box>
             <div style={{
@@ -95,6 +103,7 @@ const TableReport: React.FC<TableReportProps> = ({ data = [], setData }) => {
                 <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                     <thead>
                         <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
+                            <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}><Text bold></Text></th>
                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}><Text bold>Aluno</Text></th>
                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}><Text bold>Atividade</Text></th>
                             <th style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisBold' }}><Text bold>Título</Text></th>
@@ -111,8 +120,33 @@ const TableReport: React.FC<TableReportProps> = ({ data = [], setData }) => {
                     <tbody style={{ flex: 1, }}>
                         {data.map((item: ActivityComplementary, index: number) => {
                             const status = item?.aprovado === null && 'Aguardando Aprovação' || item.aprovado === 1 && 'Aprovado' || item.aprovado === 0 && 'Reprovado' || null
+                            const selected = activityMarked && activityMarked.includes(item.id_ativ_complementar)
                             return (
-                                <tr key={`${item}-${index}`}>
+                                <tr key={`${item}-${index}`} style={{
+                                    backgroundColor: selected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary
+                                }}>
+                                    <td style={{ textAlign: 'center', padding: '5px 5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                            <Box sx={{
+                                                display: 'flex', gap: 1, width: 15, height: 15, border: '1px solid', borderRadius: '2px',
+                                                backgroundColor: 'lightgray', alignItems: 'center', justifyContent: 'center',
+                                                "&:hover": {
+                                                    opacity: 0.8,
+                                                    cursor: 'pointer'
+                                                }
+                                            }} onClick={() => handleMark(item.id_ativ_complementar)}>
+                                                {selected &&
+                                                    <Box sx={{
+                                                        ...styles.menuIcon,
+                                                        width: 15, height: 15,
+                                                        backgroundImage: `url('/icons/checkbox-icon.png')`,
+                                                        transition: '.3s',
+                                                    }} />
+                                                }
+                                            </Box>
+                                        </Box>
+                                    </td>
                                     <td style={{ fontSize: '13px', padding: '8px 10px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: '1px solid lightgray' }}>
                                         {item.aluno || '-'}
                                     </td>
@@ -335,7 +369,7 @@ const TableReport: React.FC<TableReportProps> = ({ data = [], setData }) => {
                         <Text bold title>Descrição</Text>
                         <Box sx={styles.menuIcon} onClick={() => setShowDescription({ active: false, description: '' })} />
                     </Box>
-                    <Divider/>
+                    <Divider />
                     <Box sx={styles.containerDescription}>
                         <Text light style={{ whiteSpace: 'pre-line' }} >{showDescription?.description}</Text>
                     </Box>
