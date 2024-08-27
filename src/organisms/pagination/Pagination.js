@@ -5,10 +5,10 @@ import { useAppContext } from "../../context/AppContext";
 
 export const PaginationTable = (props) => {
     const {
-        data = [], page, setPage, rowsPerPage, setRowsPerPage
+        data = [], page, setPage, rowsPerPage, setRowsPerPage, count
     } = props;
     const { colorPalette, theme } = useAppContext();
-    const filteredAndSorted = data?.length;
+    const filteredAndSorted = count || data?.length;
     const totalPages = Math.ceil(filteredAndSorted / rowsPerPage);
 
     const handlePrevPage = () => {

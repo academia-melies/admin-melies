@@ -449,16 +449,6 @@ export default function ListReceipts(props) {
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
 
-    const column = [
-        { key: 'id_parcela_matr', label: 'ID' },
-        { key: 'nivel_curso', label: '' },
-        { key: 'curso', label: 'Curso' },
-        { key: 'valor_total_curso', label: 'Valor Total', price: true },
-        { key: 'n_parcelas', label: 'Parcelas' },
-        { key: 'valor_parcelado_curso', label: 'Valor parcelado', price: true },
-        { key: 'valor_avista_curso', label: 'á vista (desconto 5%)', price: true }
-    ];
-
     const listAtivo = [
         { label: 'Todos', value: 'todos' },
         { label: 'Pendente', value: 'Pendente' },
@@ -488,11 +478,6 @@ export default function ListReceipts(props) {
         {
             value: id?.toString()
         },
-    ]
-
-    const groupProstated = [
-        { label: 'sim', value: 1 },
-        { label: 'não', value: 0 },
     ]
 
     const formatter = new Intl.NumberFormat('pt-BR', {
@@ -652,20 +637,6 @@ export default function ListReceipts(props) {
                 scrollbarColor: 'transparent transparent',
             }}>
 
-                {/* <Box sx={{
-                    width: '180px', height: '35px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: '.3s',
-                    cursor: 'pointer',
-                    "&:hover": {
-                        transform: 'scale(1.1, 1.1)',
-                        opacity: .8,
-
-                    }
-                }} onClick={() => setShowNewParcel(true)}>
-                    <Text bold small style={{ color: '#fff' }}>Lançar nova parcela</Text>
-                </Box> */}
-
                 <Box sx={{
                     display: 'flex',
                     backgroundColor: colorPalette.secondary,
@@ -737,25 +708,6 @@ export default function ListReceipts(props) {
 
             </Box>
 
-            {/* <Box sx={{
-                display: 'flex',
-                display: 'flex', gap: 2, flexWrap: 'wrap'
-            }}>
-                <Box sx={{
-                    width: '180px', height: '35px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: '.3s',
-                    cursor: 'pointer',
-                    "&:hover": {
-                        transform: 'scale(1.1, 1.1)',
-                        opacity: .8,
-
-                    }
-                }} onClick={() => setShowNewParcel(true)}>
-                    <Text bold small style={{ color: '#fff' }}>Lançar nova parcela</Text>
-                </Box>
-            </Box> */}
-
             <Box sx={{
                 display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', padding: '8px 12px', borderRadius: 2,
                 backgroundColor: colorPalette?.buttonColor, width: 180, transition: '.3s',
@@ -815,8 +767,6 @@ export default function ListReceipts(props) {
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>C. Custo</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Forma</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Conta</Text></th>
-                                {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Obs</Text></th> */}
-                                {/* <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Status BemPaggo</Text></th> */}
                                 <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Status</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>ID BemP</Text></th>
                                 {!showEditFields && <th style={{ padding: '8px 0px', minWidth: '80px' }}><Text bold></Text></th>}
