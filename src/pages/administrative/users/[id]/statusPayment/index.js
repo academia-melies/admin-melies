@@ -11,6 +11,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Backdrop, Tooltip } from "@mui/material";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
+import { groupData } from "../../../../../helpers/groupData";
 
 export default function StuatusPayment() {
     const router = useRouter();
@@ -29,7 +30,9 @@ export default function StuatusPayment() {
         c_custo: '',
         forma_pagamento: '',
         conta: '',
-        responsavel_financeiro: 0
+        responsavel_financeiro: 0,
+        qnt_parcelas: 1,
+        mais_parcelas: 0
     })
     const [showNewParcel, setShowNewParcel] = useState(false)
     const [showDeclatation, setShowDeclaration] = useState({
@@ -311,26 +314,46 @@ export default function StuatusPayment() {
                     userDataPayment = userData
                 }
 
+                const installments = []
+                let vencimentoDate = new Date(newInstallment?.vencimento);
 
-                const installmentData = {
-                    usuario_id: id,
-                    matricula_id: enrollmentId,
-                    cartao_credito_id: '',
-                    resp_pagante_id: newInstallment?.responsavel_financeiro !== 0 ? responsiblePayerData?.id_resp_pag : null,
-                    aluno: userData?.nome,
-                    vencimento: newInstallment?.vencimento,
-                    valor_parcela: newInstallment?.valor_parcela,
-                    n_parcela: newInstallment?.n_parcela,
-                    c_custo: 178,
-                    forma_pagamento: newInstallment?.forma_pagamento,
-                    conta: newInstallment?.conta,
-                    obs_pagamento: newInstallment?.obs_pagamento || 'Nova parcela lançada.',
-                    status_parcela: 'Pendente',
-                    usuario_resp: user?.id
+
+                for (let i = 0; i < newInstallment?.qnt_parcelas; i++) {
+
+                    const installmentData = {
+                        usuario_id: id,
+                        matricula_id: enrollmentId,
+                        cartao_credito_id: '',
+                        resp_pagante_id: newInstallment?.responsavel_financeiro !== 0 ? responsiblePayerData?.id_resp_pag : null,
+                        aluno: userData?.nome,
+                        vencimento: vencimentoDate,
+                        valor_parcela: newInstallment?.valor_parcela,
+                        n_parcela: parseInt(newInstallment?.n_parcela) + i,
+                        c_custo: 178,
+                        forma_pagamento: newInstallment?.forma_pagamento,
+                        conta: newInstallment?.conta,
+                        obs_pagamento: newInstallment?.obs_pagamento || '',
+                        status_parcela: 'Pendente',
+                        usuario_resp: user?.id
+                    }
+
+                    installments.push(installmentData);
+
+                    // Incrementa o mês da data de vencimento para a próxima parcela
+                    const nextMonthDate = new Date(vencimentoDate);
+                    nextMonthDate.setMonth(vencimentoDate.getMonth() + 1);
+    
+                    // Ajuste se necessário para evitar datas duplicadas no final do mês
+                    if (vencimentoDate.getDate() !== nextMonthDate.getDate()) {
+                        nextMonthDate.setDate(0); // Vai para o último dia do mês anterior
+                    }
+    
+                    vencimentoDate = nextMonthDate;
                 }
 
-                const response = await api.post(`/student/installment/add/new`, { installmentData, userData: userDataPayment })
-                if (response.status === 201) {
+                const response = await api.post(`/student/installment/add/new`, { installments, userData: userDataPayment })
+                const { success } = response.data
+                if (success) {
                     alert.success('Parcela lançada.')
                     setShowNewParcel(false)
                     setNewInstallment({
@@ -396,7 +419,7 @@ export default function StuatusPayment() {
 
     const contractValue = installmentsData?.length > 0 ? installmentsData?.filter(item => item?.status_parcela === 'Aprovado' ||
         item?.status_parcela === 'Pago' ||
-        item?.status_parcela === 'Pendente' )?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) : 0;
+        item?.status_parcela === 'Pendente')?.map(item => item?.valor_parcela)?.reduce((acc, curr) => acc += curr, 0) : 0;
 
     return (
         <>
@@ -412,6 +435,7 @@ export default function StuatusPayment() {
                         <TextLine label="Curso:" data={enrollmentData?.nome_curso} />
                         <Box sx={styles.containerValues}>
                             <TextLine label="Turma:" data={enrollmentData?.nome_turma} />
+                            <TextLine label="Módulo:" data={`${enrollmentData?.modulo}º_Módulo`} />
                             <TextLine label="Periodo:" data={enrollmentData?.periodo} />
                             <TextLine label="Inicio:" data={formatTimeStamp(enrollmentData?.dt_inicio)} />
                             <TextLine label="Final:" data={formatTimeStamp(enrollmentData?.dt_final)} />
@@ -616,6 +640,10 @@ export default function StuatusPayment() {
                             <Divider />
                             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'end' }}>
                                 <Text bold>Valor do contrato: </Text>
+                                <Text large>{formatter.format(enrollmentData?.valor_matricula)}</Text>
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'start', alignItems: 'end' }}>
+                                <Text bold>Valor Atual: </Text>
                                 <Text large>{formatter.format(contractValue)}</Text>
                             </Box>
                             <Divider />
@@ -745,10 +773,6 @@ export default function StuatusPayment() {
                             <Text bold={newInstallment?.responsavel_financeiro !== 0}
                                 light style={{ color: newInstallment?.responsavel_financeiro !== 0 ? 'green' : colorPalette?.textColor, }}>Responsável Financeiro</Text>
                         </Box>}
-                        {/* <SelectList fullWidth data={costCenterList} valueSelection={newInstallment?.c_custo} onSelect={(value) => setNewInstallment({ ...newInstallment, c_custo: value })}
-                            title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
-                            inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                        /> */}
                         <SelectList fullWidth data={listPayment} valueSelection={newInstallment?.forma_pagamento || ''} onSelect={(value) => setNewInstallment({ ...newInstallment, forma_pagamento: value })}
                             filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                             title="Selecione a forma de pagamento *"
@@ -765,6 +789,28 @@ export default function StuatusPayment() {
                             maxRows={5}
                             rows={3}
                             label='Observações' sx={{ flex: 1, }} />
+
+                        <RadioItem
+                            valueRadio={newInstallment?.mais_parcelas}
+                            group={groupData.typeYesOrNo}
+                            horizontal={true}
+                            title="Lançar mais de uma parcela?"
+                            onSelect={(value) => setNewInstallment({ ...newInstallment, mais_parcelas: parseInt(value) })}
+                        />
+                        {newInstallment.mais_parcelas ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: 500 }}>
+                                <TextInput name='qnt_parcelas' onChange={handleChange}
+                                    value={newInstallment?.qnt_parcelas || ''}
+                                    type='number'
+                                    label='Quantas Parcelas?' sx={{ flex: 1, }}
+                                />
+                                <Text light xsmall>* O sistema ira calcular as próximas parcelas, com base no "Nº Parcela" acima, ou seja, se Nº parcela for "6", e a quantidade selecionada for 3, então o sistema lançara a parcela 6, 7 e 8.</Text>
+                            </Box>
+
+                        ) : (
+                            <></>
+                        )
+                        }
                     </Box>
                     <Divider />
                     <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', alignItems: 'center' }}>

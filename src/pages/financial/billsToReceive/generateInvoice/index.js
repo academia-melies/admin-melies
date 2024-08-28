@@ -82,7 +82,6 @@ export default function ListInvoices(props) {
         try {
             const response = await api.get('/student/installments/invoices')
             const { data } = response;
-            console.log(data)
             const groupIds = data?.map(ids => ids?.id_parcela_matr).join(',');
             const formatData = data?.map((item) => {
                 return {
@@ -127,13 +126,13 @@ export default function ListInvoices(props) {
                 const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
                 let installmentData = invoicesList?.filter(item => selectedIds?.includes(item?.id_parcela_matr));
                 const response = await api.post(`/nfse/create/${user?.id}`, { installmentData })
-                const { data } = response;
+                const { msg, pagante } = response.data;
                 if (response?.status === 201) {
                     alert.success('Notas enviadas para processamento.')
                     await getInstallments()
                     setInvoicesSelected(null)
                 } else {
-                    alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
+                    alert.error(`Ocorreu um erro ao processar a Nota Fiscal de ${pagante}, erro: ${msg}`)
                     return
                 }
             } catch (error) {
