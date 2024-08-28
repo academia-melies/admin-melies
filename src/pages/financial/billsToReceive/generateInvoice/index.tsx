@@ -7,7 +7,7 @@ import { api } from "../../../../api/api";
 import { formatReal } from "../../../../helpers";
 import { CircularProgress } from "@mui/material";
 import HeaderFilters from "./Components/Header/HeaderFilters";
-import TableInstallments from "./Components/Tables/TableInstallments";
+import TableInstallments from "./Components/Tables/TableInvoices";
 
 export interface DataFilters {
     label: string | null
@@ -15,7 +15,6 @@ export interface DataFilters {
 }
 
 export interface FiltersField {
-    forma_pagamento: string | null
     tipo_data: string | null
     data: string | null
     startDate: string | null
@@ -51,7 +50,8 @@ export interface Users {
 export interface Installments {
     id_parcela_matr: string | null,
     usuario_id: string | number | null
-    responsavel_pagante: string | number | null
+    pagante: string | number | null
+    cpf: string | null
     vencimento: string | null
     dt_pagamento: string | null
     dt_baixa: string | null
@@ -61,14 +61,17 @@ export interface Installments {
     referenceId: string | null
     valor_liquido: number | null
     status_parcela: string | null
+    status_nfse: string | null
+    url_nfse_pdf: string | null
     conta: string | null
     conta_id: string | number | null
-    c_custo: string | null
-    nome_curso: string | null
+    nome_cc: string | null
+    nf_emitida: number
     nome_turma: string | null
     modulo: number | null
     aluno: string | null
     cobranca_emitida: string
+
 }
 
 export interface FetcherData {
@@ -76,34 +79,28 @@ export interface FetcherData {
     limit?: number
 }
 
-export interface InstallmentsDetails {
+export interface InvoicesDetails {
     total: number,
     totalPages: number,
     currentPage: number
 }
 
 export default function Installments() {
-    const [installmentsList, setInstallments] = useState<Installments[]>([])
-    const [installmentsDetails, setInstallmentsDetails] = useState<InstallmentsDetails>({
+    const [invoicesList, setInvoicesList] = useState<Installments[]>([])
+    const [invoicesDetails, setInvoicesDetails] = useState<InvoicesDetails>({
         total: 0,
         totalPages: 0,
         currentPage: 1
     })
     const [loadingData, setLoadingData] = useState<boolean>(false)
-    const [accountList, setAccountList] = useState<DataFilters[]>([])
-    const [typesList, setTypesList] = useState<DataFilters[]>([])
-    const [costCenterList, setCostCenterList] = useState<DataFilters[]>([])
-    const [coursesList, setUsersList] = useState<DataFilters[]>([])
     const [filtersField, setFiltersField] = useState<FiltersField>({
-        forma_pagamento: '',
         tipo_data: '',
         data: '',
         startDate: '',
         endDate: '',
         search: ''
     })
-    const [installmentsSelected, setInstallmentsSelected] = useState<string | null>(null);
-    const [installmentsSelectedExclude, setInstallmentsSelectedExclude] = useState<string | null>(null);
+    const [invoicesSelected, setInvoicesSelected] = useState<string | null>(null);
     const [limit, setLimit] = useState(20);
     const [page, setPage] = useState(0);
 
@@ -113,13 +110,12 @@ export default function Installments() {
         if (filtersField.startDate && filtersField.endDate) {
             setLoadingData(true)
             try {
-                const response = await api.get('/student/installments/filters', {
+                const response = await api.get('/student/installments/invoices/filters', {
                     params: {
                         date: {
                             startDate: filtersField.startDate,
                             endDate: filtersField.endDate
                         },
-                        paymentForm: filtersField.forma_pagamento,
                         search: filtersField.search,
                         page: page || 0, // exemplo
                         limit: limit || 20,    // exemplo
@@ -128,17 +124,8 @@ export default function Installments() {
                 });
 
                 const { data, total, totalPages, currentPage } = response.data
-                if (data.length > 0) {
-                    setInstallments(data.map((item: Installments) => {
-                        const value = typeof item.valor_liquido === 'string' ? parseFloat(item.valor_liquido) : item.valor_liquido
-                        return {
-                            ...item,
-                            valor_liquido: value ? formatterLiquidValue(item.valor_liquido) : value
-                        }
-                    }))
-
-                    setInstallmentsDetails({ total, totalPages, currentPage })
-                }
+                setInvoicesList(data)
+                setInvoicesDetails({ total, totalPages, currentPage })
 
             } catch (error) {
                 console.error('Erro ao buscar dados do relatório:', error);
@@ -150,94 +137,6 @@ export default function Installments() {
         }
     };
 
-    const formatterLiquidValue = (value: number | null) => {
-        if (value) {
-            let formattedValue = value.toString()
-
-            const rawValue = formattedValue.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
-
-            if (rawValue === '') {
-                formattedValue = '';
-            } else {
-                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
-                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
-
-                if (intValue === '0' && rawValue.length > 2) {
-                    intValue = '';
-                }
-
-                const formattedValueCoin = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
-                formattedValue = formattedValueCoin;
-            }
-            return formattedValue
-        } else {
-            return value
-        }
-
-    }
-
-    const exportToExcel = async (installments: Installments[]): Promise<void> => {
-        // Cria uma nova planilha de trabalho
-        const workbook = XLSX.utils.book_new();
-
-        // Converte os dados para o formato de planilha
-        const installmentsSheet = XLSX.utils.json_to_sheet(installments);
-
-        // Adiciona as planilhas ao livro
-        XLSX.utils.book_append_sheet(workbook, installmentsSheet, 'Installments');
-        // Gera o arquivo Excel
-        XLSX.writeFile(workbook, 'report.xlsx');
-
-        alert.info('Relatórios exportados.')
-    };
-
-
-    const fetchFilters = async () => {
-        const [costCenterResponse, accountsResponse, typesResponse, usesResponse] = await Promise.all([
-            api.get<CostCenter[]>(`/costCenters`),
-            api.get<Account[]>(`/accounts`),
-            api.get<TypesAccount[]>(`/account/types`),
-            api.get<Users[]>(`/users`),
-        ])
-
-        const costCenterData = costCenterResponse.data
-        const groupCostCenter = costCenterData?.filter(item => item.ativo === 1)?.map(cc => ({
-            label: cc.nome_cc,
-            value: cc?.id_centro_custo
-        }));
-
-        setCostCenterList(groupCostCenter)
-
-        const accountsData = accountsResponse.data
-        const groupAccounts = accountsData?.filter(item => item.ativo === 1)?.map(cc => ({
-            label: cc.nome_conta,
-            value: cc?.id_conta
-        }));
-
-        setAccountList(groupAccounts)
-
-        const typesData = typesResponse.data
-        const groupTypes = typesData?.filter(item => item.ativo === 1)?.map(cc => ({
-            label: cc.nome_tipo || '',
-            value: cc?.id_tipo
-        }));
-        setTypesList(groupTypes)
-
-
-        const usersData = usesResponse.data
-        const groupUserBy = usersData?.filter(item => item.perfil?.includes('aluno'))?.map(responsible => ({
-            label: responsible.nome,
-            value: responsible?.id,
-            area: responsible?.area
-        }));
-
-        setUsersList(groupUserBy)
-    }
-
-    useEffect(() => {
-        fetchFilters()
-    }, [])
-
     const calculationTotal = (data: Installments[]): number => {
         const total = data
             .map(item => {
@@ -247,96 +146,78 @@ export default function Installments() {
         return total
     }
 
-    const handleUpdateInstallments = async () => {
-        if (installmentsSelected || installmentsSelectedExclude) {
+    const handleGenerateInvoice = async () => {
+        if (verifyExistsNfse()) {
             try {
                 setLoading(true)
-                let statusOk = false
-
-                const isToUpdate = installmentsSelected && installmentsSelected.split(',').map(id => parseInt(id.trim(), 10));
-                const installmentSelect = isToUpdate && installmentsList?.filter(item => item.id_parcela_matr && isToUpdate.includes(parseInt(item.id_parcela_matr)))
-
-                const isToCancel = installmentsSelectedExclude && installmentsSelectedExclude.split(',').map(id => parseInt(id.trim(), 10));
-
-                if (isToCancel && isToCancel?.length > 0) {
-
-                    const response = await api.post(`/student/installment/cancel`, { isToUpdate })
-                    const { status } = response?.data
-                    if (status) {
-                        statusOk = true
-                    }
-                }
-
-                if (installmentSelect && installmentSelect.length > 0) {
-                    for (let installment of installmentSelect) {
-                        const response = await api.patch(`/student/installment/updateProcess`, { installment, userRespId: user.id })
-                        const { success } = response?.data
-                        if (success) {
-                            statusOk = true
-                        }
-                    }
-                }
-
-                if (statusOk) {
-                    alert.success('Todas as parcelas foram atualizadas.');
-                    setInstallmentsSelected(null);
-                    setInstallmentsSelectedExclude(null)
-                    fetchReportData({ page, limit })
+                const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
+                let installmentData = invoicesList?.filter(item => item?.id_parcela_matr && selectedIds?.includes(parseInt(item.id_parcela_matr)));
+                const response = await api.post(`/nfse/create/${user?.id}`, { installmentData })
+                const { msg, pagante } = response.data;
+                if (response?.status === 201) {
+                    alert.success('Notas enviadas para processamento.')
+                    await fetchReportData({ page, limit })
+                    setInvoicesSelected(null)
+                } else {
+                    alert.error(`Ocorreu um erro ao processar a Nota Fiscal de ${pagante}, erro: ${msg}`)
                     return
                 }
-                alert.error('Tivemos um problema ao atualizar parcelas.');
             } catch (error) {
-                alert.error('Tivemos um problema ao atualizar parcelas.');
                 console.log(error)
+                alert.error('Ocorreu um erro ao enviar notas para processamento. Tente novamente mais tarde.')
                 return error
-
             } finally {
                 setLoading(false)
             }
-            setLoading(false)
-        } else {
-            alert.info('Selecione as parcelas que desejam atualizar.')
         }
+    }
+
+    const verifyExistsNfse = () => {
+        const selectedIds = invoicesSelected?.split(',').map(id => parseInt(id.trim(), 10));
+        let installmentData = invoicesList?.filter(item => item?.id_parcela_matr && selectedIds?.includes(parseInt(item.id_parcela_matr)));
+        let [verifyNfseExists] = installmentData?.map(item => item.nf_emitida)
+        if (verifyNfseExists) {
+            alert.error('Você selecionou alguma nota que já possui NFSe gerada. Selecione apenas notas que ainda não foram emitidas. ')
+            return false
+        }
+        return true
     }
 
     return (
         <>
-            <SectionHeader title="Contas a Receber - Curso" />
+            <SectionHeader title="Emissão de NF-e" />
             <Box sx={{ ...styles.sectionContainer, backgroundColor: colorPalette.secondary, }}>
                 <HeaderFilters
                     filtersField={filtersField}
                     setFiltersField={setFiltersField}
                     fetchReportData={fetchReportData}
-                    setInstallments={setInstallments}
+                    setInvoicesList={setInvoicesList}
                 />
                 <Divider distance={0} />
                 {loadingData &&
                     <Box sx={styles.loadingContainer}>
                         <CircularProgress />
                     </Box>}
-                {installmentsList.length > 0 ?
+                {invoicesList.length > 0 ?
                     <Box sx={{ opacity: loadingData ? .6 : 1 }}>
                         <TableInstallments
-                            data={installmentsList}
-                            installmentsSelected={installmentsSelected}
-                            installmentsSelectedExclude={installmentsSelectedExclude}
-                            setInstallmentsSelected={setInstallmentsSelected}
-                            setInstallmentsSelectedExclude={setInstallmentsSelectedExclude}
-                            setData={setInstallments}
+                            data={invoicesList}
+                            invoicesSelected={invoicesSelected}
+                            setInvoicesSelected={setInvoicesSelected}
+                            setData={setInvoicesList}
                             setLimit={setLimit}
                             limit={limit}
                             page={page}
                             setPage={setPage}
                             fetchReportData={fetchReportData}
-                            installmentsDetails={installmentsDetails}
-                            accountList={accountList}
+                            invoicesDetails={invoicesDetails}
                         />
 
                         <Box sx={styles.boxValueTotally}>
-                            <ButtonIcon text="Processar" icon={'/icons/process.png'} color="#fff" onClick={() => handleUpdateInstallments()} />
+                            <ButtonIcon text="Processar" icon={'/icons/process.png'} color="#fff" onClick={() => handleGenerateInvoice()} />
                             <Box>
                                 <Text title light>Total Pendente: </Text>
-                                <Text title bold>{formatReal(calculationTotal(installmentsList))}</Text>
+                                <Text title bold>{formatReal(calculationTotal(invoicesList))}</Text>
                             </Box>
                         </Box>
                     </Box>
