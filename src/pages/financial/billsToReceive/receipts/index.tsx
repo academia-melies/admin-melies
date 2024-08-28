@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
-import { Box, Divider, Text } from "../../../../atoms";
+import { Box, ButtonIcon, Divider, Text } from "../../../../atoms";
 import * as XLSX from 'xlsx';
 import { useAppContext } from "../../../../context/AppContext";
 import { SectionHeader } from "../../../../organisms";
@@ -20,6 +20,7 @@ export interface FiltersField {
     data: string | null
     startDate: string | null
     endDate: string | null
+    search: string | null
 }
 
 export interface Account {
@@ -61,6 +62,7 @@ export interface Installments {
     valor_liquido: number | null
     status_parcela: string | null
     conta: string | null
+    conta_id: string | number | null
     c_custo: string | null
     nome_curso: string | null
     nome_turma: string | null
@@ -98,14 +100,15 @@ export default function Installments() {
         tipo_data: '',
         data: '',
         startDate: '',
-        endDate: ''
+        endDate: '',
+        search: ''
     })
     const [installmentsSelected, setInstallmentsSelected] = useState<string | null>(null);
-    const [allSelected, setAllSelected] = useState(null);
+    const [installmentsSelectedExclude, setInstallmentsSelectedExclude] = useState<string | null>(null);
     const [limit, setLimit] = useState(20);
     const [page, setPage] = useState(0);
 
-    const { colorPalette, alert } = useAppContext()
+    const { colorPalette, alert, setLoading, user } = useAppContext()
 
     const fetchReportData: ({ page, limit }: FetcherData) => Promise<void> = async ({ page = 0, limit = 20 }: FetcherData) => {
         if (filtersField.startDate && filtersField.endDate) {
@@ -118,28 +121,24 @@ export default function Installments() {
                             endDate: filtersField.endDate
                         },
                         paymentForm: filtersField.forma_pagamento,
+                        search: filtersField.search,
                         page: page || 0, // exemplo
                         limit: limit || 20,    // exemplo
                         dateType: filtersField.tipo_data
                     }
                 });
 
-                console.log(response)
                 const { data, total, totalPages, currentPage } = response.data
                 if (data.length > 0) {
-
-
-                    const groupIds = data.map((ids: Installments) => ids?.id_parcela_matr).join(',');
-                    setAllSelected(groupIds)
                     setInstallments(data.map((item: Installments) => {
-                        const valorDesp = typeof item.valor_liquido === 'string' ? parseFloat(item.valor_liquido) : item.valor_liquido
+                        const value = typeof item.valor_liquido === 'string' ? parseFloat(item.valor_liquido) : item.valor_liquido
                         return {
                             ...item,
-                            valor_liquido: valorDesp ? item.valor_liquido : valorDesp
+                            valor_liquido: value ? formatterLiquidValue(item.valor_liquido) : value
                         }
                     }))
 
-                    setInstallmentsDetails({total, totalPages, currentPage})
+                    setInstallmentsDetails({ total, totalPages, currentPage })
                 }
 
             } catch (error) {
@@ -151,6 +150,32 @@ export default function Installments() {
             alert.info('Antes de avançar, preencha as datas.')
         }
     };
+
+    const formatterLiquidValue = (value: number | null) => {
+        if (value) {
+            let formattedValue = value.toString()
+
+            const rawValue = formattedValue.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                formattedValue = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValueCoin = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                formattedValue = formattedValueCoin;
+            }
+            return formattedValue
+        } else {
+            return value
+        }
+
+    }
 
     const exportToExcel = async (installments: Installments[]): Promise<void> => {
         // Cria uma nova planilha de trabalho
@@ -223,7 +248,57 @@ export default function Installments() {
         return total
     }
 
+    const handleUpdateInstallments = async () => {
+        if (installmentsSelected || installmentsSelectedExclude) {
+            try {
+                setLoading(true)
+                let statusOk = false
 
+                const isToUpdate = installmentsSelected && installmentsSelected.split(',').map(id => parseInt(id.trim(), 10));
+                const installmentSelect = isToUpdate && installmentsList?.filter(item => item.id_parcela_matr && isToUpdate.includes(parseInt(item.id_parcela_matr)))
+
+                const isToCancel = installmentsSelectedExclude && installmentsSelectedExclude.split(',').map(id => parseInt(id.trim(), 10));
+
+                if (isToCancel && isToCancel?.length > 0) {
+
+                    const response = await api.post(`/student/installment/cancel`, { isToUpdate })
+                    const { status } = response?.data
+                    if (status) {
+                        statusOk = true
+                    }
+                }
+
+                if (installmentSelect && installmentSelect.length > 0) {
+                    for (let installment of installmentSelect) {
+                        const response = await api.patch(`/student/installment/updateProcess`, { installment, userRespId: user.id })
+                        const { success } = response?.data
+                        if (success) {
+                            statusOk = true
+                        }
+                    }
+                }
+
+                if (statusOk) {
+                    alert.success('Todas as parcelas foram atualizadas.');
+                    setInstallmentsSelected(null);
+                    setInstallmentsSelectedExclude(null)
+                    fetchReportData({ page, limit })
+                    return
+                }
+                alert.error('Tivemos um problema ao atualizar parcelas.');
+            } catch (error) {
+                alert.error('Tivemos um problema ao atualizar parcelas.');
+                console.log(error)
+                return error
+
+            } finally {
+                setLoading(false)
+            }
+            setLoading(false)
+        } else {
+            alert.info('Selecione as parcelas que desejam atualizar.')
+        }
+    }
 
     return (
         <>
@@ -249,27 +324,14 @@ export default function Installments() {
                                     <Text bold={filterAbaData === 'relatorio_geral'}>Relatório Geral</Text>
                                 </Box>
                             </Box>
-                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                <Text bold>Exportar relatório: </Text>
-                                <Box sx={{
-                                    ...styles.menuIcon,
-                                    width: 20,
-                                    height: 20,
-                                    backgroundImage: `url('/icons/sheet.png')`,
-                                    transition: '.3s',
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    }
-                                }} onClick={() => exportToExcel(installmentsList)} />
-                            </Box>
                         </Box>
                         {filterAbaData === 'relatorio_geral' &&
                             <TableInstallments
                                 data={installmentsList}
                                 installmentsSelected={installmentsSelected}
-                                allSelected={allSelected}
+                                installmentsSelectedExclude={installmentsSelectedExclude}
                                 setInstallmentsSelected={setInstallmentsSelected}
+                                setInstallmentsSelectedExclude={setInstallmentsSelectedExclude}
                                 setData={setInstallments}
                                 setLimit={setLimit}
                                 limit={limit}
@@ -277,11 +339,16 @@ export default function Installments() {
                                 setPage={setPage}
                                 fetchReportData={fetchReportData}
                                 installmentsDetails={installmentsDetails}
+                                accountList={accountList}
                             />
                         }
+
                         <Box sx={styles.boxValueTotally}>
-                            <Text title light>Total Pendente: </Text>
-                            <Text title bold>{formatReal(calculationTotal(installmentsList))}</Text>
+                            <ButtonIcon text="Processar" icon={'/icons/process.png'} color="#fff" onClick={() => handleUpdateInstallments()} />
+                            <Box>
+                                <Text title light>Total Pendente: </Text>
+                                <Text title bold>{formatReal(calculationTotal(installmentsList))}</Text>
+                            </Box>
                         </Box>
                     </Box>
                     :
@@ -371,9 +438,10 @@ const styles = {
     boxValueTotally: {
         display: 'flex',
         width: '100%',
-        justifyContent: 'center',
-        gap: 2,
-        minHeight: 50,
+        justifyContent: 'space-between',
+        gap: 3,
+        minHeight: 60,
+        padding: '15px 20px',
         alignItems: 'center'
     },
     headerFilterTwo: {

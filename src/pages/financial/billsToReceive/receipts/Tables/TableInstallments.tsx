@@ -1,10 +1,10 @@
 
 import { ChangeEvent, Dispatch, InputHTMLAttributes, SetStateAction } from "react";
-import { FetcherData, Installments, InstallmentsDetails } from "..";
+import { DataFilters, FetcherData, Installments, InstallmentsDetails } from "..";
 import { Box, Button, Text, TextInput } from "../../../../../atoms";
 import { useAppContext } from "../../../../../context/AppContext";
 import { formatReal, formatTimeStampTimezone } from "../../../../../helpers";
-import { CheckBoxComponent, PaginationTable } from "../../../../../organisms";
+import { CheckBoxComponent, PaginationTable, RadioItem, SelectList } from "../../../../../organisms";
 import { TablePagination, Tooltip } from "@mui/material";
 import Link from "next/link";
 
@@ -12,7 +12,6 @@ interface TableInstallmentsProps {
     data: Installments[];
     setData: Dispatch<SetStateAction<Installments[]>>
     installmentsSelected: string | null
-    allSelected: string | null
     setInstallmentsSelected: Dispatch<SetStateAction<string | null>>
     limit: number
     setLimit: Dispatch<SetStateAction<number>>
@@ -20,11 +19,14 @@ interface TableInstallmentsProps {
     page: number
     fetchReportData: ({ page, limit }: FetcherData) => Promise<void>
     installmentsDetails: InstallmentsDetails
+    accountList: DataFilters[]
+    installmentsSelectedExclude: string | null
+    setInstallmentsSelectedExclude:  Dispatch<SetStateAction<string | null>>
 }
 
-const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setData, installmentsSelected, allSelected, setInstallmentsSelected,
+const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setData, installmentsSelected, setInstallmentsSelected,
     limit, page, setPage, setLimit, fetchReportData,
-    installmentsDetails
+    installmentsDetails, accountList, installmentsSelectedExclude, setInstallmentsSelectedExclude
 }) => {
     const { colorPalette, theme } = useAppContext()
 
@@ -101,8 +103,8 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                 <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                     <thead>
                         <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
-                            <th style={{ padding: '8px 10px'}}><Text bold>Excluir</Text></th>
-                            <th style={{ padding: '8px 10px'}}><Text bold>Efetivar</Text></th>
+                            <th style={{ padding: '8px 10px' }}><Text bold>Excluir</Text></th>
+                            <th style={{ padding: '8px 10px' }}><Text bold>Efetivar</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Pagante</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Aluno</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
@@ -114,8 +116,7 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>C.Custo</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Forma</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Conta</Text></th>
-                            <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Status</Text></th>
-                            <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>ID BemP</Text></th>
+                            <th style={{ padding: '8px 0px', minWidth: '120px' }}><Text bold>Paga?</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '80px' }}><Text bold></Text></th>
                         </tr>
                     </thead>
@@ -132,11 +133,11 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                     <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                         <CheckBoxComponent
                                             boxGroup={groupSelect(item?.id_parcela_matr)}
-                                            valueChecked={installmentsSelected}
+                                            valueChecked={installmentsSelectedExclude}
                                             horizontal={true}
                                             onSelect={(value: string) => {
                                                 if (item?.id_parcela_matr) {
-                                                    setInstallmentsSelected(value);
+                                                    setInstallmentsSelectedExclude(value);
                                                 }
                                             }}
                                             padding={0}
@@ -225,8 +226,19 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                         {/* <TextInput disabled={!isPermissionEdit && true} name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>
-                                            {item?.dt_baixa ? formatTimeStampTimezone(item?.dt_baixa) : '-'}</Text>
+                                        <TextInput
+                                            name='dt_baixa'
+                                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                                handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)}
+                                            value={(item?.dt_baixa)?.split('T')[0] || ''}
+                                            small type="date"
+                                            sx={{ padding: '0px 8px' }}
+                                            InputProps={{
+                                                style: {
+                                                    fontSize: '11px', height: 30
+                                                }
+                                            }}
+                                        />
                                         {/* <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
@@ -254,11 +266,31 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                         <Text light small>{item?.forma_pagamento || '-'}</Text>
                                     </td>
-                                    <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{item?.conta || '-'}</Text>
+                                    <td style={{ textAlign: 'center', padding: '0px 8px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                        <SelectList
+                                            clean={false}
+                                            data={accountList}
+                                            valueSelection={item?.conta_id}
+                                            onSelect={(value: string) => handleChangeInstallmentDate(item?.id_parcela_matr, 'conta_id', value)}
+                                            filterOpition="value" sx={{ color: colorPalette.textColor }}
+                                            inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold', height: 30 }}
+                                            style={{ fontSize: '11px', height: 30 }}
+                                        />
                                     </td>
-                                    <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                        <Box
+                                    <td style={{ textAlign: 'center', minWidth: 130, borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                        <RadioItem
+                                            small
+                                            valueRadio={item.status_parcela}
+                                            horizontal={true}
+                                            sx={{ gap: 0, flexDirection: 'row', width: '100%' }}
+                                            group={[
+                                                { label: 'Não', value: 'Pendente' },
+                                                { label: 'Sim', value: 'Pago' }
+                                            ]}
+                                            onSelect={(value: string) => handleChangeInstallmentDate(item?.id_parcela_matr, 'status_parcela', value)}
+                                        />
+
+                                        {/* <Box
                                             sx={{
                                                 display: 'flex',
                                                 height: 35,
@@ -271,10 +303,7 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                         >
                                             <Box sx={{ display: 'flex', backgroundColor: priorityColor(item.status_parcela), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
                                             <Text small bold style={{ textAlign: 'center', flex: 1 }}>{item.status_parcela || ''}</Text>
-                                        </Box>
-                                    </td>
-                                    <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{item?.referenceId || '-'}</Text>
+                                        </Box> */}
                                     </td>
                                     <td style={{
                                         fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`,

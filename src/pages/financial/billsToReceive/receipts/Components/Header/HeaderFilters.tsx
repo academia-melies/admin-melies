@@ -152,6 +152,17 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                 </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
+
+                <TextInput
+                    placeholder="Buscar aluno ou pagante"
+                    name='search'
+                    type="search"
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setFiltersField({ ...filtersField, search: e.target.value })}
+                    value={filtersField?.search}
+                    InputProps={{ style: { backgroundColor: colorPalette?.secondary, width: 270 } }}
+                />
+
                 <Box sx={{ ...styles.filterButton, backgroundColor: colorPalette?.secondary, gap: .5 }} onClick={() => {
                     setFieldersSelected([])
                     setFiltersField({
@@ -159,7 +170,8 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                         tipo_data: '',
                         data: '',
                         startDate: '',
-                        endDate: ''
+                        endDate: '',
+                        search: ''
                     })
                     setInstallments([]);
                 }}>
