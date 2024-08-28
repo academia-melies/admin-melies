@@ -22,11 +22,10 @@ export const CheckBoxComponent = (props) => {
     const [selectedValues, setSelectedValues] = useState([]);
 
     useEffect(() => {
-        if (valueChecked !== '' && valueChecked !== null) {
-            const cleanedValue = valueChecked.replace(/null/g, ''); // Remover todas as ocorrências de 'null'
-            const initialValues = cleanedValue !== '' ? cleanedValue.split(',').map((value) => value.trim()) : [];
+        if (valueChecked) {
+            const initialValues = valueChecked.split(',').map(value => value.trim());
             setSelectedValues(initialValues);
-        } else if (valueChecked === null) {
+        } else {
             setSelectedValues([]);
         }
     }, [valueChecked]);
