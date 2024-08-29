@@ -2462,7 +2462,7 @@ export default function EditUser() {
 
                                 <Box sx={{ ...styles.inputSection, justifyContent: 'start', alignItems: 'center', gap: 25 }}>
                                     <CheckBoxComponent disabled={!isPermissionEdit && true}
-                                        valueChecked={userData?.perfil}
+                                        valueChecked={userData?.perfil ? userData?.perfil : null}
                                         boxGroup={groupPerfil}
                                         title="Perfil *"
                                         horizontal={mobile ? false : true}

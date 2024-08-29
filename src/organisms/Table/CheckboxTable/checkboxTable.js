@@ -1,8 +1,8 @@
-import { Checkbox, FormLabel, FormGroup, FormControlLabel, FormControl } from "@mui/material";
-import { useAppContext } from "../../context/AppContext";
+import { Checkbox, FormLabel, FormGroup, FormControlLabel, FormHelperText, FormControl } from "@mui/material";
 import { useState, useEffect } from "react";
+import { useAppContext } from "../../../context/AppContext";
 
-export const CheckBoxComponent = (props) => {
+export const CheckBoxTable = (props) => {
     const { title = '',
         style = {},
         onSelect = () => { },
@@ -21,20 +21,18 @@ export const CheckBoxComponent = (props) => {
     const [selectedValues, setSelectedValues] = useState([]);
 
     useEffect(() => {
-        if (valueChecked !== '' && valueChecked !== null) {
-            const cleanedValue = valueChecked.replace(/null/g, ''); // Remover todas as ocorrências de 'null'
-            const initialValues = cleanedValue !== '' ? cleanedValue.split(',').map((value) => value.trim()) : [];
+        if (valueChecked) {
+            const initialValues = valueChecked.split(',').map(value => value.trim());
             setSelectedValues(initialValues);
-        } else if (valueChecked === null) {
+        } else {
             setSelectedValues([]);
         }
     }, [valueChecked]);
 
     useEffect(() => {
+
         const formattedValue = selectedValues.join(', ');
-        if(selectedValues != formattedValue){
-            onSelect(formattedValue);
-        }
+        onSelect(formattedValue);
     }, [selectedValues]);
 
     const handleCheckboxChange = (value) => {
@@ -79,7 +77,4 @@ export const CheckBoxComponent = (props) => {
             </FormGroup>
         </FormControl>
     )
-}
-
-const styles = {
 }

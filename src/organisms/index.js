@@ -24,6 +24,7 @@ export { MenuHomeList } from './menuHomeList/menuHomeList'
 export { PaginationTable } from './pagination/Pagination'
 export { ConfirmModal } from './modalConfirm/modalConfirm'
 export { News } from './notices/News'
+export { CheckBoxTable } from './Table/CheckboxTable/checkboxTable'
 
 
 

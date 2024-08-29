@@ -3,7 +3,7 @@ import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { Box, Button, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
 import { formatTimeStampTimezone } from "../../../../../../helpers";
-import { CheckBoxComponent, PaginationTable } from "../../../../../../organisms";
+import { CheckBoxComponent, CheckBoxTable, PaginationTable } from "../../../../../../organisms";
 import Link from "next/link";
 import { DataFilters, FetcherData, Installments, InvoicesDetails } from "../..";
 
@@ -124,7 +124,7 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                 }}>
                                     <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
 
-                                        <CheckBoxComponent
+                                        <CheckBoxTable
                                             boxGroup={groupSelect(item?.id_parcela_matr)}
                                             valueChecked={invoicesSelected}
                                             horizontal={true}

@@ -4,7 +4,7 @@ import { DataFilters, FetcherData, Installments, InstallmentsDetails } from "../
 import { Box, Button, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
 import { formatReal, formatTimeStampTimezone } from "../../../../../../helpers";
-import { CheckBoxComponent, PaginationTable, RadioItem, SelectList } from "../../../../../../organisms";
+import { CheckBoxTable, PaginationTable, RadioItem, SelectList } from "../../../../../../organisms";
 import { TablePagination, Tooltip } from "@mui/material";
 import Link from "next/link";
 
@@ -131,7 +131,7 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                     opacity: 1,
                                 }}>
                                     <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                        <CheckBoxComponent
+                                        <CheckBoxTable
                                             boxGroup={groupSelect(item?.id_parcela_matr)}
                                             valueChecked={installmentsSelectedExclude}
                                             horizontal={true}
@@ -149,7 +149,7 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                         />
                                     </td>
                                     <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                        <CheckBoxComponent
+                                        <CheckBoxTable
                                             boxGroup={groupSelect(item?.id_parcela_matr)}
                                             valueChecked={installmentsSelected}
                                             horizontal={true}
