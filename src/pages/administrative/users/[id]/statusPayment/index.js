@@ -342,12 +342,12 @@ export default function StuatusPayment() {
                     // Incrementa o mês da data de vencimento para a próxima parcela
                     const nextMonthDate = new Date(vencimentoDate);
                     nextMonthDate.setMonth(vencimentoDate.getMonth() + 1);
-    
+
                     // Ajuste se necessário para evitar datas duplicadas no final do mês
                     if (vencimentoDate.getDate() !== nextMonthDate.getDate()) {
                         nextMonthDate.setDate(0); // Vai para o último dia do mês anterior
                     }
-    
+
                     vencimentoDate = nextMonthDate;
                 }
 
@@ -797,20 +797,17 @@ export default function StuatusPayment() {
                             title="Lançar mais de uma parcela?"
                             onSelect={(value) => setNewInstallment({ ...newInstallment, mais_parcelas: parseInt(value) })}
                         />
-                        {newInstallment.mais_parcelas ? (
+                        {newInstallment.mais_parcelas > 0 && (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxWidth: 500 }}>
                                 <TextInput name='qnt_parcelas' onChange={handleChange}
                                     value={newInstallment?.qnt_parcelas || ''}
                                     type='number'
                                     label='Quantas Parcelas?' sx={{ flex: 1, }}
                                 />
-                                <Text light xsmall>* O sistema ira calcular as próximas parcelas, com base no "Nº Parcela" acima, ou seja, se Nº parcela for "6", e a quantidade selecionada for 3, então o sistema lançara a parcela 6, 7 e 8.</Text>
+                                <Text light xsmall>{`* O sistema ira calcular as próximas parcelas, com base no "Nº Parcela" acima, ou seja, se Nº parcela for "6", e a quantidade selecionada for 3, então o sistema lançara a parcela 6, 7 e 8.`}</Text>
                             </Box>
 
-                        ) : (
-                            <></>
-                        )
-                        }
+                        )}
                     </Box>
                     <Divider />
                     <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', alignItems: 'center' }}>
