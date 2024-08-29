@@ -46,7 +46,8 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
     }, []);
 
     const fields: Fields[] = [
-        { label: 'Filtrar por Data', value: 'tipo_data' }
+        { label: 'Filtrar por Data', value: 'tipo_data' },
+        { label: 'Status da NF', value: 'status_nf' }
     ]
 
     const handleFieldClick = (fieldValue: string) => {
@@ -85,6 +86,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     }} onClick={() => {
                                         if (isSelected) {
                                             handleFieldClick(item?.value)
+                                            setFiltersField({ ...filtersField, [item?.value]: '' })
                                         } else {
                                             handleFieldClick(item?.value)
                                         }
@@ -109,6 +111,18 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     valueSelection={filtersField?.tipo_data}
                                     onSelect={(value: string) => setFiltersField({ ...filtersField, tipo_data: value })}
                                     title="Filtrar Data por:"
+                                    filterOpition="value"
+                                    style={{ backgroundColor: colorPalette?.secondary }}
+                                    clean={false}
+                                />
+                            }
+
+                            {field === 'status_nf' &&
+                                <SelectList
+                                    data={groupData.statusNf}
+                                    valueSelection={filtersField?.status_nf}
+                                    onSelect={(value: string) => setFiltersField({ ...filtersField, status_nf: value })}
+                                    title="Status da Nota:"
                                     filterOpition="value"
                                     style={{ backgroundColor: colorPalette?.secondary }}
                                     clean={false}
@@ -158,7 +172,8 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                         data: '',
                         startDate: '',
                         endDate: '',
-                        search: ''
+                        search: '',
+                        status_nf: ''
                     })
                     setInvoicesList([]);
                 }}>

@@ -102,5 +102,12 @@ export const groupData = {
         { label: 'Aprovado', value: 'Aprovado' },
         { label: 'Reprovado', value: 'Reprovado' },
         { label: 'Aguardando validação', value: 'Aguardando validação' }
+    ],
+    statusNf: [
+        { label: 'Emitida/Autorizada', value: 'Emitida/Autorizada' },
+        { label: 'Não Emitida', value: 'Não Emitida' },
+        { label: 'Cancelada', value: 'Cancelada' },
+        { label: 'Em processamento', value: 'Em processamento' },
+        { label: 'Não Autorizada', value: 'Não Autorizada' }
     ]
 }

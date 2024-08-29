@@ -73,9 +73,9 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
     const priorityColor = (data: string | null) => (
         ((data === 'Pendente' || data === 'Em processamento') && 'yellow') ||
         ((data === 'Cancelada' || data === 'Cancelado' || data === 'Pagamento reprovado' || data === 'Não Autorizado' || data === 'Estornada') && 'red') ||
-        (data === 'Pago' && 'green') ||
+        ((data === 'Pago' || data === 'Emitida/Autorizada') && 'green') ||
         (data === 'Aprovado' && 'blue') ||
-        (data === 'Inativa' && '#f0f0f0') ||
+        (data === 'Não emitida' && 'gray') ||
         (data === 'Erro com o pagamento' && 'red') ||
         (data === 'Estornada' && '#f0f0f0'))
 
@@ -116,6 +116,7 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                     <tbody style={{ flex: 1, }}>
                         {data?.map((item, index) => {
                             const isSelected = item?.id_parcela_matr && invoicesSelected?.includes(item?.id_parcela_matr) || null;
+                            const statusNf = item.status_nfse ? item.status_nfse : 'Não emitida'
                             return (
                                 <tr key={index} style={{
                                     backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary,
@@ -190,8 +191,8 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                                 justifyContent: 'start',
                                             }}
                                         >
-                                            <Box sx={{ display: 'flex', backgroundColor: priorityColor(item?.status_nfse || 'Não emitida'), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                            <Text small bold style={{ textAlign: 'center', flex: 1 }}>{item?.status_nfse || 'Não emitida'}</Text>
+                                            <Box sx={{ display: 'flex', backgroundColor: priorityColor(statusNf), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
+                                            <Text small bold style={{ textAlign: 'center', flex: 1 }}>{statusNf}</Text>
                                         </Box>
                                     </td>
 

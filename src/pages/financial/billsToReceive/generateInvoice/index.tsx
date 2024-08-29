@@ -20,6 +20,7 @@ export interface FiltersField {
     startDate: string | null
     endDate: string | null
     search: string | null
+    status_nf:string | null
 }
 
 export interface Account {
@@ -98,7 +99,8 @@ export default function Installments() {
         data: '',
         startDate: '',
         endDate: '',
-        search: ''
+        search: '',
+        status_nf: ''
     })
     const [invoicesSelected, setInvoicesSelected] = useState<string | null>(null);
     const [limit, setLimit] = useState(20);
@@ -119,7 +121,8 @@ export default function Installments() {
                         search: filtersField.search,
                         page: page || 0, // exemplo
                         limit: limit || 20,    // exemplo
-                        dateType: filtersField.tipo_data
+                        dateType: filtersField.tipo_data,
+                        status_nf: filtersField.status_nf
                     }
                 });
 
@@ -198,7 +201,7 @@ export default function Installments() {
                     <Box sx={styles.loadingContainer}>
                         <CircularProgress />
                     </Box>}
-                {invoicesList.length > 0 ?
+                {invoicesList && invoicesList.length > 0 ?
                     <Box sx={{ opacity: loadingData ? .6 : 1 }}>
                         <TableInstallments
                             data={invoicesList}
