@@ -110,43 +110,43 @@ export default function Installments() {
     const { colorPalette, alert, setLoading, user } = useAppContext()
 
     const fetchReportData: ({ page, limit }: FetcherData) => Promise<void> = async ({ page = 0, limit = 20 }: FetcherData) => {
-        if (filtersField.startDate && filtersField.endDate) {
-            setLoadingData(true)
-            try {
-                const response = await api.get('/student/installments/filters', {
-                    params: {
-                        date: {
-                            startDate: filtersField.startDate,
-                            endDate: filtersField.endDate
-                        },
-                        paymentForm: filtersField.forma_pagamento,
-                        search: filtersField.search,
-                        page: page || 0, // exemplo
-                        limit: limit || 20,    // exemplo
-                        dateType: filtersField.tipo_data
-                    }
-                });
 
-                const { data, total, totalPages, currentPage } = response.data
-                if (data.length > 0) {
-                    setInstallments(data.map((item: Installments) => {
-                        const value = typeof item.valor_liquido === 'string' ? parseFloat(item.valor_liquido) : item.valor_liquido
-                        return {
-                            ...item,
-                            valor_liquido: value ? formatterLiquidValue(item.valor_liquido) : value
-                        }
-                    }))
-
-                    setInstallmentsDetails({ total, totalPages, currentPage })
+        setLoadingData(true)
+        try {
+            const response = await api.get('/student/installments/filters', {
+                params: {
+                    date: {
+                        startDate: filtersField.startDate,
+                        endDate: filtersField.endDate
+                    },
+                    paymentForm: filtersField.forma_pagamento,
+                    search: filtersField.search,
+                    page: page || 0, // exemplo
+                    limit: limit || 20,    // exemplo
+                    dateType: filtersField.tipo_data
                 }
+            });
 
-            } catch (error) {
-                console.error('Erro ao buscar dados do relatório:', error);
-            } finally {
-                setLoadingData(false)
+            const { data, total, totalPages, currentPage } = response.data
+            if (data.length > 0) {
+                setInstallments(data.map((item: Installments) => {
+                    const value = typeof item.valor_liquido === 'string' ? parseFloat(item.valor_liquido) : item.valor_liquido
+                    return {
+                        ...item,
+                        valor_liquido: value ? formatterLiquidValue(item.valor_liquido) : value
+                    }
+                }))
+
+                setInstallmentsDetails({ total, totalPages, currentPage })
+            } else {
+                setInstallments(data)
+                setInstallmentsDetails({ total, totalPages, currentPage })
             }
-        } else {
-            alert.info('Antes de avançar, preencha as datas.')
+
+        } catch (error) {
+            console.error('Erro ao buscar dados do relatório:', error);
+        } finally {
+            setLoadingData(false)
         }
     };
 

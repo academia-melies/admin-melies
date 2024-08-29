@@ -440,13 +440,6 @@ export default function Editaccount(props) {
 
     }
     const handleEditAccountExtract = async () => {
-        if (accountExtractData?.data.creditoFormat != null) {
-            accountExtractData.data.credito = await formatNumber(accountExtractData.data.creditoFormat)
-        }
-
-        if (accountExtractData?.data.debitoFormat != null) {
-            accountExtractData.data.debito = await formatNumber(accountExtractData.data.debitoFormat)
-        }
 
         setLoading(true)
         try {
@@ -751,9 +744,9 @@ export default function Editaccount(props) {
                         {/* <Button disabled={!isPermissionEdit && true} small secondary text="Novo lançamento" style={{ height: '30px', borderRadius: '6px' }} /> */}
                     </Box>
 
-                    <Box sx={{ ...styles.inputSection, gap: 1, maxWidth: 400 }}>
-                        <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
-                        <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} sx={{ flex: 1, }} />
+                    <Box sx={{ ...styles.inputSection, gap: 1, maxWidth: 600 }}>
+                        <TextInput label="De:" name='startDate' onChange={(e) => setFilters({ ...filters, startDate: e.target.value })} type="date" value={(filters?.startDate)?.split('T')[0] || ''} />
+                        <TextInput label="Até:" name='endDate' onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} type="date" value={(filters?.endDate)?.split('T')[0] || ''} />
                         <Button text="Buscar" style={{ borderRadius: 2, width: 130 }} onClick={() => handleSearchExtractAccounts()} />
                     </Box>
                     {startSearch &&
@@ -832,13 +825,13 @@ export default function Editaccount(props) {
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
                                         name='credito'
                                         onChange={handleChangeEditExtractAccount}
-                                        value={accountExtractData?.data?.credito}
+                                        value={accountExtractData?.data?.credito || ''}
                                         label={`Valor do ${'Crédito'}:`} sx={{ width: '100%', }} />
                                     :
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
                                         name='debito'
                                         onChange={handleChangeEditExtractAccount}
-                                        value={accountExtractData?.data?.debito}
+                                        value={accountExtractData?.data?.debito || ''}
                                         label={`Valor do ${'Débito'}:`} sx={{ width: '100%', }} />
                             }
 
@@ -1079,14 +1072,46 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
         const updatedSelected = alreadySelected ? statmentMark.filter(statment => statment.statmentId !== value)
             : [...statmentMark, { statmentId: value }];
 
-            setStatmentMark(updatedSelected)
-            
+        setStatmentMark(updatedSelected)
+
     };
 
     const openPayment = async (item) => {
-        const formattedValueData = item;
+        const formattedValueData = item
+        const formattedValue = item?.credito ? formatterLiquidValue(item?.credito) : formatterLiquidValue(item?.debito)
+        await setEditAccount({
+            active: true, data: {
+                ...formattedValueData,
+                credito: item?.credito ? formattedValue : 0,
+                debito: item?.debito ? formattedValue : 0
+            }
+        })
+    }
 
-        await setEditAccount({ active: true, data: formattedValueData })
+    const formatterLiquidValue = (value) => {
+        if (value) {
+            let formattedValue = value.toString()
+
+            const rawValue = formattedValue.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
+
+            if (rawValue === '') {
+                formattedValue = '';
+            } else {
+                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
+                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
+
+                if (intValue === '0' && rawValue.length > 2) {
+                    intValue = '';
+                }
+
+                const formattedValueCoin = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
+                formattedValue = formattedValueCoin;
+            }
+            return formattedValue
+        } else {
+            return value
+        }
+
     }
 
     const columns = [
@@ -1125,7 +1150,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
                 <Table sx={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto' }}>
                     <TableHead>
                         <TableRow sx={{ borderBottom: `2px solid ${colorPalette.buttonColor}` }}>
-                        <TableCell sx={{ padding: '10px 6px' }}>Marcar Linha</TableCell>
+                            <TableCell sx={{ padding: '10px 6px' }}>Marcar Linha</TableCell>
                             <TableCell sx={{ padding: '10px 6px' }}>
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
                                     <Text bold style={{ textAlign: 'center' }}>Descrição</Text>
@@ -1190,7 +1215,7 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
 
                                 return (
                                     <TableRow key={`${item}-${index}`} sx={{
-                                        backgroundColor: selected ? '#ffcccc' :  marked ? colorPalette?.buttonColor + '22' : item?.transferido === 1 && colorPalette?.buttonColor + '44',
+                                        backgroundColor: selected ? '#ffcccc' : marked ? colorPalette?.buttonColor + '22' : item?.transferido === 1 && colorPalette?.buttonColor + '44',
                                     }}>
                                         <TableCell sx={{ padding: '8px 5px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

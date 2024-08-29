@@ -20,7 +20,7 @@ export interface FiltersField {
     startDate: string | null
     endDate: string | null
     search: string | null
-    status_nf:string | null
+    status_nf: string | null
 }
 
 export interface Account {
@@ -109,34 +109,30 @@ export default function Installments() {
     const { colorPalette, alert, setLoading, user } = useAppContext()
 
     const fetchReportData: ({ page, limit }: FetcherData) => Promise<void> = async ({ page = 0, limit = 20 }: FetcherData) => {
-        if (filtersField.startDate && filtersField.endDate) {
-            setLoadingData(true)
-            try {
-                const response = await api.get('/student/installments/invoices/filters', {
-                    params: {
-                        date: {
-                            startDate: filtersField.startDate,
-                            endDate: filtersField.endDate
-                        },
-                        search: filtersField.search,
-                        page: page || 0, // exemplo
-                        limit: limit || 20,    // exemplo
-                        dateType: filtersField.tipo_data,
-                        status_nf: filtersField.status_nf
-                    }
-                });
+        setLoadingData(true)
+        try {
+            const response = await api.get('/student/installments/invoices/filters', {
+                params: {
+                    date: {
+                        startDate: filtersField.startDate,
+                        endDate: filtersField.endDate
+                    },
+                    search: filtersField.search,
+                    page: page || 0, // exemplo
+                    limit: limit || 20,    // exemplo
+                    dateType: filtersField.tipo_data,
+                    status_nf: filtersField.status_nf
+                }
+            });
 
-                const { data, total, totalPages, currentPage } = response.data
-                setInvoicesList(data)
-                setInvoicesDetails({ total, totalPages, currentPage })
+            const { data, total, totalPages, currentPage } = response.data
+            setInvoicesList(data)
+            setInvoicesDetails({ total, totalPages, currentPage })
 
-            } catch (error) {
-                console.error('Erro ao buscar dados do relatório:', error);
-            } finally {
-                setLoadingData(false)
-            }
-        } else {
-            alert.info('Antes de avançar, preencha as datas.')
+        } catch (error) {
+            console.error('Erro ao buscar dados do relatório:', error);
+        } finally {
+            setLoadingData(false)
         }
     };
 
