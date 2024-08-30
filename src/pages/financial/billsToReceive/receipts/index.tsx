@@ -255,12 +255,9 @@ export default function Installments() {
 
                 const isToUpdate = installmentsSelected && installmentsSelected.split(',').map(id => parseInt(id.trim(), 10));
                 const installmentSelect = isToUpdate && installmentsList?.filter(item => item.id_parcela_matr && isToUpdate.includes(parseInt(item.id_parcela_matr)))
-
                 const isToCancel = installmentsSelectedExclude && installmentsSelectedExclude.split(',').map(id => parseInt(id.trim(), 10));
-
                 if (isToCancel && isToCancel?.length > 0) {
-
-                    const response = await api.post(`/student/installment/cancel`, { isToUpdate })
+                    const response = await api.post(`/student/installment/cancel`, { isToCancel })
                     const { status } = response?.data
                     if (status) {
                         statusOk = true
