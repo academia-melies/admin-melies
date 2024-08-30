@@ -1,85 +1,98 @@
-import { Checkbox, FormLabel, FormGroup, FormControlLabel, FormControl } from "@mui/material";
-import { useAppContext } from "../../context/AppContext";
 import { useState, useEffect } from "react";
+import { Box, Text } from "../../atoms";
+import { useAppContext } from "../../context/AppContext";
+import Image from "next/image";
+import { Tooltip, darken } from "@mui/material";
 
 export const CheckBoxComponent = (props) => {
-    const { title = '',
-        style = {},
+    const {
+        title = '',
         onSelect = () => { },
-        sx = {},
         horizontal = false,
-        label,
         boxGroup = [],
         valueChecked = '',
-        padding = true,
-        gap = true,
         disabled = false,
-        onClick = () => { }
+        padding = '5px'
     } = props;
 
-    const { colorPalette, theme } = useAppContext()
-    const [selectedValues, setSelectedValues] = useState([]);
+    const { colorPalette } = useAppContext();
+    const [selectedValues, setSelectedValues] = useState('');
 
     useEffect(() => {
-        if (valueChecked !== '' && valueChecked !== null) {
-            const cleanedValue = valueChecked.replace(/null/g, ''); // Remover todas as ocorrências de 'null'
-            const initialValues = cleanedValue !== '' ? cleanedValue.split(',').map((value) => value.trim()) : [];
-            setSelectedValues(initialValues);
-        } else if (valueChecked === null) {
-            setSelectedValues([]);
-        }
+        setSelectedValues(valueChecked);
     }, [valueChecked]);
 
-    useEffect(() => {
-        const formattedValue = selectedValues.join(', ');
-        if(selectedValues != formattedValue){
-            onSelect(formattedValue);
-        }
-    }, [selectedValues]);
-
     const handleCheckboxChange = (value) => {
-        setSelectedValues((prevSelectedValues) => {
-            if (prevSelectedValues.includes(value)) {
-                return prevSelectedValues.filter((val) => val !== value);
-            } else {
-                return [...prevSelectedValues, value];
-            }
-        });
-    };
+        const valuesArray = selectedValues ? selectedValues.split(', ').filter(v => v) : [];
+        const alreadySelected = valuesArray.includes(value);
+        const updatedValues = alreadySelected
+            ? valuesArray.filter(v => v !== value)
+            : [...valuesArray, value];
 
-    const getChecked = (value) => {
-        return selectedValues.includes(value);
+        const updatedString = updatedValues.join(', ');
+        setSelectedValues(updatedString);
+        onSelect(updatedString);
     };
 
     return (
-        <FormControl sx={{ padding: padding ? '5px 13px' : '', gap: gap && 0 }}>
-            <FormLabel sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}>{title}</FormLabel>
-            <FormGroup sx={{ ...style, ...sx }} row={horizontal} onClick={onClick}>
-                {boxGroup?.map((item) => (
-                    <FormControlLabel
-                        key={item.value}
-                        value={item?.value}
-                        control={
-                            <Checkbox
-                                sx={{ fontFamily: 'MetropolisBold', color: colorPalette.textColor, fontSize: '12px' }}
-                                onChange={disabled ? () => { } : () => handleCheckboxChange(item.value)}
-                                checked={getChecked(item.value)}
-                            />
-                        }
-                        label={item?.label}
-                        sx={{
-                            '& .MuiTypography-root': {
-                                fontFamily: 'MetropolisRegular',
-                                color: colorPalette.textColor,
-                                fontSize: '13px'
-                            }
-                        }} />
-                ))
-                }
-            </FormGroup>
-        </FormControl>
-    )
-}
+        <Box>
+            <Box sx={{ display: 'flex', gap: 1.5, flexDirection: 'column', padding: padding}}>
+                {title && <Text bold>{title}</Text>}
+                <Box sx={{
+                    display: 'flex', alignItems: horizontal ? 'center' : 'start', justifyContent: 'start', gap: 2,
+                    flexDirection: horizontal ? 'row' : 'column'
+                }}>
+                    {boxGroup.map((item) => {
+                        const selected = selectedValues ? selectedValues.split(', ').includes(item.value) : false;
+                        const baseColor = colorPalette.buttonColor;
+                        const hoverColor = selected ? darken(baseColor, 0.2) : darken(baseColor, 0.1);
+                        return (
+                            <Box key={item.value} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'start', gap: 1 }}>
+                                <Tooltip title={disabled && 'Você não possúi permissão.'}>
+                                    <Box
+                                        sx={{
+                                            opacity: disabled ? .7 : 1,
+                                            display: 'flex', gap: 1, width: 19, height: 19, border: !selected && `1.5px solid #d1d5db`, borderRadius: '3px',
+                                            alignItems: 'center', justifyContent: 'center',
+                                            backgroundColor: selected && colorPalette.buttonColor, position: 'relative',
+                                            "&:hover": {
+                                                transition: '.1s',
+                                                opacity: 0.8,
+                                                cursor: 'pointer',
+                                                border: (!selected && !disabled) && `2px solid ${colorPalette.buttonColor}`,
+                                                backgroundColor: (selected && !disabled) ? hoverColor : 'transparent',
+                                            }
+                                        }}
+                                        onClick={() => {
+                                            if (!disabled) {
+                                                handleCheckboxChange(item.value)
+                                            }
+                                        }}
+                                    >
+                                        {selected &&
+                                            <Box sx={styles.checkBox}>
+                                                <Image src={`/icons/check-icon.png`} width={12} height={12} />
+                                            </Box>
+                                        }
+                                    </Box>
+                                </Tooltip>
+                                <Text light>{item.label}</Text>
+                            </Box>
+                        );
+                    })}
+                </Box>
+            </Box>
+        </Box>
+    );
+};
 
 const styles = {
+    checkBox: {
+        width: '100%', height: '100%',
+        borderRadius: '3px',
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
+        bottom: 0, top: 0, right: 0, left: 0,
+        position: 'absolute',
+        transition: '.1s',
+    }
 }
