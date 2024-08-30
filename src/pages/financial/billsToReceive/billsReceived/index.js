@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
-import { CheckBoxComponent, PaginationTable, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
+import { CheckBoxComponent, CheckBoxTable, PaginationTable, RadioItem, SearchBar, SectionHeader, Table_V1 } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
@@ -347,7 +347,7 @@ export default function ListBillsReceived(props) {
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <CheckBoxComponent disabled={!isPermissionEdit && true}
+                    <CheckBoxTable disabled={!isPermissionEdit && true}
                         boxGroup={groupStatus}
                         valueChecked={filters?.status}
                         horizontal={true}
@@ -391,7 +391,7 @@ export default function ListBillsReceived(props) {
                             <thead>
                                 <tr style={{ backgroundColor: colorPalette.secondary, borderBottom: `1px solid ${colorPalette?.primary}` }}>
                                     <th style={{ display: 'flex', color: colorPalette.textColor, backgroundColor: colorPalette.primary, fontSize: '9px', flexDirection: 'column', fontFamily: 'MetropolisBold', alignItems: 'center', justifyContent: 'center', padding: '5px', }}>
-                                        <CheckBoxComponent
+                                        <CheckBoxTable
                                             disabled={!isPermissionEdit && true}
                                             boxGroup={[{ value: 'allSelect' }]}
                                             valueChecked={'select'}
@@ -422,7 +422,7 @@ export default function ListBillsReceived(props) {
                                     return (
                                         <tr key={index} style={{ backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary, }}>
                                             <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                                <CheckBoxComponent
+                                                <CheckBoxTable
                                                     disabled={!isPermissionEdit && true}
                                                     boxGroup={
                                                         groupSelect(itemId)
@@ -430,9 +430,7 @@ export default function ListBillsReceived(props) {
                                                     valueChecked={receivedSelected}
                                                     horizontal={true}
                                                     onSelect={(value) => {
-                                                        if (itemId) {
-                                                            setReceivedSelected(value);
-                                                        }
+                                                        setReceivedSelected(value);
                                                     }}
                                                     padding={0}
                                                     gap={0}

@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../../atoms"
-import { CheckBoxComponent, ConfirmModal, PaginationTable, SectionHeader } from "../../../../organisms"
+import { CheckBoxComponent, CheckBoxTable, ConfirmModal, PaginationTable, SectionHeader } from "../../../../organisms"
 import { api } from "../../../../api/api"
 import { useAppContext } from "../../../../context/AppContext"
 import { SelectList } from "../../../../organisms/select/SelectList"
@@ -657,7 +657,7 @@ export default function ListBillsToPay() {
 
 
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <CheckBoxComponent disabled={!isPermissionEdit && true}
+                            <CheckBoxTable disabled={!isPermissionEdit && true}
                                 boxGroup={groupStatus}
                                 valueChecked={filters?.status}
                                 horizontal={true}
