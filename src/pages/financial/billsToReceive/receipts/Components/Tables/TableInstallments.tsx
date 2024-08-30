@@ -1,11 +1,11 @@
 
-import { ChangeEvent, Dispatch, InputHTMLAttributes, SetStateAction } from "react";
+import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { DataFilters, FetcherData, Installments, InstallmentsDetails } from "../..";
 import { Box, Button, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
-import { formatReal, formatTimeStampTimezone } from "../../../../../../helpers";
+import { formatTimeStampTimezone } from "../../../../../../helpers";
 import { CheckBoxTable, PaginationTable, RadioItem, SelectList } from "../../../../../../organisms";
-import { TablePagination, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import Link from "next/link";
 
 interface TableInstallmentsProps {
@@ -21,7 +21,7 @@ interface TableInstallmentsProps {
     installmentsDetails: InstallmentsDetails
     accountList: DataFilters[]
     installmentsSelectedExclude: string | null
-    setInstallmentsSelectedExclude:  Dispatch<SetStateAction<string | null>>
+    setInstallmentsSelectedExclude: Dispatch<SetStateAction<string | null>>
 }
 
 const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setData, installmentsSelected, setInstallmentsSelected,
@@ -223,7 +223,6 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                         <Text light small>{item?.dt_pagamento ? formatTimeStampTimezone(item?.dt_pagamento) : '-'}</Text>
-                                        {/* <TextInput disabled={!isPermissionEdit && true} name='dt_pagamento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.dt_pagamento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                         <TextInput
@@ -239,7 +238,6 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                                 }
                                             }}
                                         />
-                                        {/* <TextInput disabled={!isPermissionEdit && true} name='vencimento' onChange={(e) => handleChangeInstallmentDate(item?.id_parcela_matr, e.target.name, e.target.value)} value={(item?.vencimento)?.split('T')[0] || ''} small type="date" sx={{ padding: '0px 8px' }} /> */}
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                         <Text light small>{item.valor_parcela ? formatter.format(item.valor_parcela) : item.valor_parcela}</Text>
@@ -289,25 +287,10 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                             ]}
                                             onSelect={(value: string) => handleChangeInstallmentDate(item?.id_parcela_matr, 'status_parcela', value)}
                                         />
-
-                                        {/* <Box
-                                            sx={{
-                                                display: 'flex',
-                                                height: 35,
-                                                backgroundColor: colorPalette.primary,
-                                                gap: 1,
-                                                alignItems: 'center',
-                                                borderRadius: 2,
-                                                justifyContent: 'start',
-                                            }}
-                                        >
-                                            <Box sx={{ display: 'flex', backgroundColor: priorityColor(item.status_parcela), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
-                                            <Text small bold style={{ textAlign: 'center', flex: 1 }}>{item.status_parcela || ''}</Text>
-                                        </Box> */}
                                     </td>
                                     <td style={{
                                         fontSize: '13px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`,
-                                        padding: '5px 12px'
+                                        padding: '0px 12px'
                                     }}>
                                         <Link href={`/financial/billsToReceive/receipts/${item?.id_parcela_matr}`} target="_blank">
                                             <Button text="Ver" small style={{ borderRadius: 2 }} />

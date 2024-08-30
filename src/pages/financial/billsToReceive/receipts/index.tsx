@@ -129,6 +129,7 @@ export default function Installments() {
 
             const { data, total, totalPages, currentPage } = response.data
             if (data.length > 0) {
+                console.log(data)
                 setInstallments(data.map((item: Installments) => {
                     const value = typeof item.valor_liquido === 'string' ? parseFloat(item.valor_liquido) : item.valor_liquido
                     return {
@@ -151,29 +152,28 @@ export default function Installments() {
     };
 
     const formatterLiquidValue = (value: number | null) => {
-        if (value) {
-            let formattedValue = value.toString()
 
-            const rawValue = formattedValue.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
-
-            if (rawValue === '') {
-                formattedValue = '';
-            } else {
-                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
-                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
-
-                if (intValue === '0' && rawValue.length > 2) {
-                    intValue = '';
-                }
-
-                const formattedValueCoin = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
-                formattedValue = formattedValueCoin;
-            }
-            return formattedValue
-        } else {
-            return value
-        }
-
+        console.log(value)
+        if (value === null) return '';
+    
+        // Converte o valor para número com precisão suficiente
+        const numberValue = typeof value === 'string' ? parseFloat(value) : value;
+    
+        if (isNaN(numberValue)) return '';
+    
+        // Converte o valor para string com 2 casas decimais
+        const valueString = numberValue.toFixed(2);
+    
+        // Separa a parte inteira e a parte decimal
+        const [integerPart, decimalPart] = valueString.split('.');
+    
+        // Adiciona o separador de milhares
+        const formattedIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    
+        // Formata o valor com a parte decimal
+        const formattedValue = `${formattedIntegerPart},${decimalPart}`;
+    
+        return formattedValue;
     }
 
     const exportToExcel = async (installments: Installments[]): Promise<void> => {
