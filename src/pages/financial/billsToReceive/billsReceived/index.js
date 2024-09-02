@@ -347,7 +347,7 @@ export default function ListBillsReceived(props) {
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <CheckBoxTable disabled={!isPermissionEdit && true}
+                    <CheckBoxComponent disabled={!isPermissionEdit && true}
                         boxGroup={groupStatus}
                         valueChecked={filters?.status}
                         horizontal={true}
