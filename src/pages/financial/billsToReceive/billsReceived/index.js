@@ -60,16 +60,8 @@ export default function ListBillsReceived(props) {
     }
 
     const filter = (item) => {
-        let dateFilter = item?.dt_pagamento;
-        let date = new Date(dateFilter);
-        let monthSelect = date.getMonth();
-        let yearSelect = date.getFullYear();
-        let filterYearNumber = parseInt(filterYear, 10);
-        let filterData = filterMonth === 'todos' ? item : monthSelect === filterMonth;
         let filterStatus = filters?.status.includes('todos') ? item : filters?.status.includes(item?.status)
-
-
-        return (filterData && yearSelect === filterYearNumber && filterStatus);
+        return filterStatus;
     }
 
     useEffect(() => {
