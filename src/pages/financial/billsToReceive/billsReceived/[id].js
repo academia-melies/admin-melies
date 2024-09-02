@@ -1,14 +1,11 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../../api/api"
-import { Box, ContentContainer, TextInput, Text, Button } from "../../../../atoms"
-import { CheckBoxComponent, RadioItem, SectionHeader, Table_V1 } from "../../../../organisms"
+import { Box, ContentContainer, TextInput, Text } from "../../../../atoms"
+import { SectionHeader } from "../../../../organisms"
 import { useAppContext } from "../../../../context/AppContext"
-import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../../validators/api-requests"
 import { SelectList } from "../../../../organisms/select/SelectList"
 import { formatTimeStamp } from "../../../../helpers"
-import { icons } from "../../../../organisms/layout/Colors"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 
 export default function EditBillsReceived(props) {
@@ -18,15 +15,10 @@ export default function EditBillsReceived(props) {
     const { id, bill } = router.query;
     const newReceived = id === 'new';
     const [receivedData, setReceivedData] = useState({})
-    const [newReadjustment, setNewReadjustment] = useState(0)
-    const [showHistoric, setShowHistoric] = useState(false)
-    const [listHistoric, setListHistoric] = useState([])
     const [usersList, setUsers] = useState([])
     const [costCenterList, setCostCenterList] = useState([])
     const [accountTypesList, setAccountTypesList] = useState([])
     const [accountList, setAccountList] = useState([])
-    const themeApp = useTheme()
-    const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const fetchPermissions = async () => {
         try {
@@ -56,33 +48,6 @@ export default function EditBillsReceived(props) {
             setLoading(false);
         }
     }
-
-
-    // const handleHistoric = async () => {
-    //     try {
-    //         let query = '/expense'
-    //         if (typeMenu === 'personal') { query = query += `/${typeMenu}` }
-    //         if (bill === '01' || bill === '03') {
-    //             const historic = await api.get(`${query}/historic/${id}`);
-    //             if (historic?.data) {
-    //                 setListHistoric(historic?.data)
-    //             }
-    //         }
-    //     } catch (error) {
-    //         console.log(error)
-    //         return error
-    //     }
-    // }
-
-
-    // const formatValue = (value) => {
-    //     const rawValue = String(value);
-    //     let intValue = rawValue.split('.')[0] || '0'; // Parte inteira
-    //     const decimalValue = rawValue.split('.')[1]?.padEnd(2, '0') || '00'; // Parte decimal
-    //     const formattedValue = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
-    //     return formattedValue;
-    // }
-
 
     useEffect(() => {
         (async () => {
@@ -273,104 +238,6 @@ export default function EditBillsReceived(props) {
         { label: 'Boleto', value: 'Boleto' },
         { label: 'Outros', value: 'Outros' }
     ]
-
-
-    const groupType = [
-        { label: 'Roupas e acessórios', value: 'Roupas e acessórios' },
-        { label: 'Taxas de documentos', value: 'Taxas de documentos' },
-        { label: 'Outros', value: 'Outros' }
-    ]
-
-    const groupRecorrency = [
-        { label: 'Não recorrente', value: 1 },
-        { label: 'Semanal', value: 7 },
-        { label: 'Quinzenal', value: 15 },
-        { label: 'Mensal', value: 30 },
-        { label: 'Trismestral', value: 90 },
-        { label: 'Semestral', value: 182 },
-        { label: 'Anual', value: 365 }
-    ]
-
-
-    const groupRecurrency = [
-        {
-            label: 'Recorrência mensal',
-            value: 'Sim'
-        },
-    ]
-
-
-    const groupReadjustment = [
-        { label: 'Sim', value: 1 },
-        { label: 'Não', value: 0 },
-    ]
-
-    const formatter = new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
-
-    const holidays = [
-        new Date(2023, 0, 1),  // Ano Novo
-        new Date(2023, 1, 25), // Carnaval
-        new Date(2023, 1, 26), // Carnaval
-        new Date(2023, 3, 7),  // Sexta-feira Santa
-        new Date(2023, 3, 21), // Tiradentes
-        new Date(2023, 4, 1),  // Dia do Trabalhador
-        new Date(2023, 5, 15), // Corpus Christi
-        new Date(2023, 8, 7),  // Independência do Brasil
-        new Date(2023, 9, 12), // Nossa Senhora Aparecida
-        new Date(2023, 10, 2), // Dia de Finados
-        new Date(2023, 10, 15),// Proclamação da República
-        new Date(2023, 11, 25)  // Natal
-    ];
-
-
-    // const calculateNextDate = (dt_vencimento) => {
-
-    //     const paymentDate = new Date(dt_vencimento);
-    //     paymentDate.setMonth(paymentDate.getMonth() + 1);
-
-    //     const lastDayOfMonth = new Date(paymentDate.getFullYear(), paymentDate.getMonth() + 1, 0).getDate();
-
-    //     if (paymentDate.getDay() === 6) {
-    //         if (paymentDate.getDate() + 2 > lastDayOfMonth) {
-    //             paymentDate.setDate(paymentDate.getDate() - 1);
-    //         } else {
-    //             paymentDate.setDate(paymentDate.getDate() + 2);
-    //         }
-    //     }
-
-    //     if (paymentDate.getDay() === 0) {
-    //         if (paymentDate.getDate() + 1 > lastDayOfMonth) {
-    //             paymentDate.setDate(paymentDate.getDate() - 2);
-    //         } else {
-    //             paymentDate.setDate(paymentDate.getDate() + 1);
-    //         }
-    //     }
-
-    //     while (holidays.some(holiday => holiday.getDate() === paymentDate.getDate() && holiday.getMonth() === paymentDate.getMonth())) {
-    //         paymentDate.setDate(paymentDate.getDate() + 1); // Adicionar 1 dia
-    //     }
-
-    //     const year = paymentDate.getFullYear();
-    //     const month = String(paymentDate.getMonth() + 1).padStart(2, '0');
-    //     const day = String(paymentDate.getDate()).padStart(2, '0');
-    //     const formattedPaymentDate = `${year}-${month}-${day}`;
-
-    //     setReceivedData({ ...receivedData, dt_prox_pagamento: formattedPaymentDate })
-
-    //     return formattedPaymentDate;
-
-    // }
-
-
-    // const columnExpense = [
-    //     { key: 'id_historico_desp', label: 'ID' },
-    //     { key: 'vl_reajuste_desp', label: 'R$ Reajuste', price: true },
-    //     { key: 'dt_reajuste', label: 'Data do reajuste', date: true },
-    //     { key: 'obs_reajuste_desp', label: 'Observações' },
-    // ];
 
 
     return (
