@@ -6,6 +6,7 @@ import { groupData } from "../../../../../../helpers/groupData";
 import { Box, ButtonIcon, Text, TextInput } from "../../../../../../atoms";
 import { FetcherData, FiltersField, Expenses, DataFilters } from "../..";
 import Link from "next/link";
+import { icons } from "../../../../../../organisms/layout/Colors";
 
 interface Fields {
     label: string
@@ -33,6 +34,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
 
     const { colorPalette } = useAppContext()
     const [showFieldsFilter, setShowFieldsFilter] = useState<boolean>(false)
+    const [showAddNew, setShowAddNew] = useState<boolean>(false)
     const [fieldersSelected, setFieldersSelected] = useState<string[]>(['baixado', 'tipo_data']);
     const containerRef = useRef<HTMLDivElement>(null)
 
@@ -235,15 +237,88 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                 </Box>
                 <ButtonIcon text="Buscar" icon={'/icons/search_button.png'} color="#fff" onClick={() => fetchReportData({})} />
                 {isPermissionEdit &&
-                    <Link href={'/financial/billsToPay/expenses/new'} target="_blank" style={{ display: 'flex' }}>
+                    <Box sx={{ display: 'flex', gap: .3, position: 'relative' }} onClick={() => setShowAddNew(!showAddNew)}>
                         <ButtonIcon
                             text="Novo"
                             icon={'/icons/wallet_add.png'}
                             color="#fff"
-                        >
+                            style={{ borderRadius: '12px 0px 0px 12px' }}
+                        />
+                        <Box sx={{
+                            display: 'flex', width: '100%', heigth: '100%', backgroundColor: colorPalette.buttonColor, alignItems: 'center', justifyContent: 'center',
+                            padding: '5px 8px', transition: '.3s', borderRadius: '0px 12px 12px 0px', "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} >
+                            <Box sx={{
+                                ...styles.menuIcon,
+                                backgroundImage: `url(${icons.gray_arrow_down})`,
+                                filter: 'brightness(0) invert(1)',
+                            }} />
+                        </Box>
 
-                        </ButtonIcon>
-                    </Link>
+
+                        <Box sx={{
+                            display: showAddNew ? 'flex' : 'none',
+                            gap: 1,
+                            position: 'absolute',
+                            top: 45,
+                            backgroundColor: colorPalette.secondary,
+                            right: 0,
+                            flexDirection: 'column',
+                            padding: '10px 0px',
+                            boxShadow: `rgba(149, 157, 165, 0.27) 0px 6px 24px`,
+                        }}>
+
+
+
+                            <Box sx={{
+                                ...styles.containerDropDown, "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer',
+                                    backgroundColor: colorPalette.primary,
+                                }
+                            }}>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(/icons/new_expense.png)`,
+                                }} />
+
+                                <Text light style={{whiteSpace: 'nowrap'}}>Nova Despesa</Text>
+                            </Box>
+
+                            <Box sx={{
+                                ...styles.containerDropDown, "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer',
+                                    backgroundColor: colorPalette.primary,
+                                }
+                            }}>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(/icons/expense_recurrency.png)`,
+                                }} />
+
+                                <Text light style={{whiteSpace: 'nowrap'}}>Despesas Recorrentes</Text>
+                            </Box>
+
+                            <Box sx={{
+                                ...styles.containerDropDown, "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer',
+                                    backgroundColor: colorPalette.primary,
+                                }
+                            }}>
+                                <Box sx={{
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(/icons/subscription-model.png)`,
+                                }} />
+
+                                <Text light style={{whiteSpace: 'nowrap'}}>Salário Recorrentes</Text>
+                            </Box>
+                        </Box>
+                    </Box>
                 }
             </Box>
         </Box>
@@ -269,8 +344,9 @@ const styles = {
         backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
-        width: 15,
-        height: 15,
+        aspectRatio: '1/1',
+        width: 20,
+        height: 20,
     },
     iconFilter: {
         backgroundSize: 'cover',
@@ -364,6 +440,11 @@ const styles = {
         left: 0,
         bottom: 0,
         right: 0
+    },
+    containerDropDown: {
+        gap: 2,
+        display: 'flex', width: '100%', heigth: '100%', alignItems: 'center', justifyContent: 'flex-start',
+        padding: '10px 15px', transition: '.3s',
     }
 }
 

@@ -96,7 +96,6 @@ export default function Expenses() {
     const [accountList, setAccountList] = useState<DataFilters[]>([])
     const [typesList, setTypesList] = useState<DataFilters[]>([])
     const [costCenterList, setCostCenterList] = useState<DataFilters[]>([])
-    const [coursesList, setUsersList] = useState<DataFilters[]>([])
     const [filtersField, setFiltersField] = useState<FiltersField>({
         forma_pagamento: '',
         tipo_data: 'dt_vencimento',
@@ -202,11 +201,10 @@ export default function Expenses() {
     }
 
     const fetchFilters = async () => {
-        const [costCenterResponse, accountsResponse, typesResponse, usesResponse] = await Promise.all([
+        const [costCenterResponse, accountsResponse, typesResponse] = await Promise.all([
             api.get<CostCenter[]>(`/costCenters`),
             api.get<Account[]>(`/accounts`),
-            api.get<TypesAccount[]>(`/account/types`),
-            api.get<Users[]>(`/users`),
+            api.get<TypesAccount[]>(`/account/types`)
         ])
 
         const costCenterData = costCenterResponse.data
@@ -231,16 +229,6 @@ export default function Expenses() {
             value: cc?.id_tipo
         }));
         setTypesList(groupTypes)
-
-
-        const usersData = usesResponse.data
-        const groupUserBy = usersData?.filter(item => item.perfil?.includes('aluno'))?.map(responsible => ({
-            label: responsible.nome,
-            value: responsible?.id,
-            area: responsible?.area
-        }));
-
-        setUsersList(groupUserBy)
     }
 
     useEffect(() => {
