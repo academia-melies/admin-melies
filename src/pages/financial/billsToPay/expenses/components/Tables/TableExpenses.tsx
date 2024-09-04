@@ -128,9 +128,10 @@ const TableExpenses: React.FC<TableExpensesProps> = React.memo(({
                             const expenseId = item?.id_despesa
                             const selected = (expenseId && expensesSelected) && expensesSelected.includes(expenseId);
                             const baixado = item?.dt_pagamento && item?.nome_conta
+                            const selectedExclude = (expenseId && expensesSelectedExclude) && expensesSelectedExclude.includes(expenseId);
                             return (
                                 <tr key={index} style={{
-                                    backgroundColor: selected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary
+                                    backgroundColor: selected ? colorPalette?.buttonColor + '66' : selectedExclude ? '#FFCCCC' : colorPalette?.secondary
                                 }}>
                                     <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                         <CheckBoxTable
@@ -232,7 +233,7 @@ const TableExpenses: React.FC<TableExpensesProps> = React.memo(({
                                             }}
                                         />
                                             :
-                                            <Text light small>{formatTimeStampTimezone(item?.dt_vencimento)}</Text>}
+                                            <Text light small>{item?.dt_pagamento ? formatTimeStampTimezone(item?.dt_pagamento) : '-'}</Text>}
                                     </td>
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                         {selected ?
@@ -245,7 +246,7 @@ const TableExpenses: React.FC<TableExpensesProps> = React.memo(({
                                                 inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                                 style={{ fontSize: '11px', height: 30, width: 120 }}
                                             />
-                                            : <Text light small>{item?.nome_tipo}</Text>}
+                                            : <Text light small>{item?.nome_tipo || '-'}</Text>}
                                     </td>
 
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
@@ -259,7 +260,7 @@ const TableExpenses: React.FC<TableExpensesProps> = React.memo(({
                                                 height: 30
                                             }}
                                             style={{ fontSize: '11px', height: 30, width: 120 }}
-                                        /> : <Text light small>{item?.nome_cc}</Text>}
+                                        /> : <Text light small>{item?.nome_cc || '-'}</Text>}
                                     </td>
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                         {selected ? <SelectList
@@ -272,7 +273,7 @@ const TableExpenses: React.FC<TableExpensesProps> = React.memo(({
                                             inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold', height: 30 }}
                                             style={{ fontSize: '11px', height: 30, width: 120 }}
                                         />
-                                            : <Text light small>{item?.nome_conta}</Text>}
+                                            : <Text light small>{item?.nome_conta || '-'}</Text>}
                                     </td>
 
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>

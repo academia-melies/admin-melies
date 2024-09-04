@@ -3,7 +3,7 @@ import React, { ChangeEvent, Dispatch, SetStateAction, useCallback } from "react
 import { Box, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
 import { CheckBoxTable, PaginationTable } from "../../../../../../organisms";
-import { RecurrencyExpenses } from "../Modal/RecurrencyExpenses";
+import { RecurrencyExpenses } from "../../RecurrencyExpense/RecurrencyExpenses";
 
 interface TableRecurrencyExpensesProps {
     data: RecurrencyExpenses[];

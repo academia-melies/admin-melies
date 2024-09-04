@@ -1,10 +1,12 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Box, ContentContainer, Divider, Text } from "../../../../../../atoms";
-import { useAppContext } from "../../../../../../context/AppContext";
-import { api } from "../../../../../../api/api";
-import { CircularProgress } from "@mui/material";
-import { icons } from "../../../../../../organisms/layout/Colors";
-import TableRecurrencyCompensation from "../Tables/TableRecurrencyCompensation";
+import { Box, Button, ContentContainer, Divider, Text } from "../../../../../atoms";
+import { useAppContext } from "../../../../../context/AppContext";
+import { api } from "../../../../../api/api";
+import { Backdrop, CircularProgress } from "@mui/material";
+import { icons } from "../../../../../organisms/layout/Colors";
+import TableRecurrencyCompensation from "../Components/Tables/TableRecurrencyCompensation";
+import MonthsSelect from "../Components/Modal/Months";
+import Compensation from "./[id]";
 
 export interface RecurrencyCompensationProps {
     setShow: Dispatch<SetStateAction<boolean>>
@@ -22,13 +24,22 @@ const RecurrencyCompensation = ({ setShow }: RecurrencyCompensationProps) => {
     const [recurrencyCompensation, setRecurrencyCompensation] = useState<RecurrencyCompensation[]>([])
     const [loadingData, setLoadingData] = useState<boolean>(false);
     const [compensationSelected, setCompensationSelected] = useState<string | null>(null);
+    const [showNewRecurrencyCompensation, setShowNewRecurrencyCompensation] = useState<boolean>(false);
+    const [editRecurrency, setEditRecurrency] = useState<boolean>(false);
+    const [showMonths, setShowMonths] = useState<boolean>(false);
+    const [monthReleaseSelected, setMonthReleaseSelected] = useState<string | null>(null)
     const [compensationSelectedExclude, setCompensationSelectedExclude] = useState<string | null>(null);
+    const { alert, user } = useAppContext()
     const [limit, setLimit] = useState<number>(15);
     const [page, setPage] = useState<number>(0);
 
     const fetchRecurrency = async () => {
         try {
             setLoadingData(true)
+            setEditRecurrency(false)
+            setCompensationSelected(null)
+            setCompensationSelectedExclude(null)
+
             const recurrencyCompensation = await api.get<RecurrencyCompensation[]>(`/expenses/compensation/recurrency/list`)
             const { data } = recurrencyCompensation
 
@@ -90,6 +101,100 @@ const RecurrencyCompensation = ({ setShow }: RecurrencyCompensationProps) => {
         fetchRecurrency()
     }, []);
 
+
+    const handleUpdateCompensations = async () => {
+        try {
+            setLoadingData(true)
+
+            let success = true
+            const isToCancel = compensationSelectedExclude ? compensationSelectedExclude.split(",").map((id) => parseInt(id.trim(), 10)) : []
+            if (isToCancel && isToCancel.length > 0) {
+                for (const idDelte of isToCancel) {
+                    const response = await api.delete(`/expense/compensation/recurrency/delete/${idDelte}`);
+                    if (response.status !== 200) {
+                        success = false;
+                    }
+                }
+            }
+
+            const filteredCompensations = recurrencyCompensation.filter((compensation) => {
+                const compensationId = compensation?.id_salario ? parseInt(compensation.id_salario, 10) : null;
+                return compensationId !== null && !isToCancel.includes(compensationId);
+            });
+
+            if (filteredCompensations && filteredCompensations.length > 0) {
+                for (let compensation of filteredCompensations) {
+                    if (compensation?.valor_liquido) {
+                        const updateCompensations = await api.patch(`/expense/compensation/recurrency/update/${compensation?.id_salario}`,
+                            { compensationData: compensation })
+                        if (updateCompensations?.status !== 200) {
+                            success = false
+                        }
+                    }
+                }
+            }
+
+            if (success) {
+                alert.success(`Salários atualizados.`)
+                setShow(false)
+                setEditRecurrency(false)
+                setCompensationSelected(null)
+                setCompensationSelectedExclude(null)
+                setShowMonths(false)
+                setMonthReleaseSelected(null)
+                await fetchRecurrency()
+            } else {
+                alert.success(`Ocorreu um erro ao atualizar salários.`)
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoadingData(false)
+        }
+    }
+
+    const handleCreateRecurrencyPayroll = async () => {
+        try {
+            setLoadingData(true)
+            let successStatus = true;
+
+            const isToUpdate = compensationSelected && compensationSelected.split(",").map((id) => parseInt(id.trim(), 10));
+
+            if (isToUpdate && isToUpdate.length > 0) {
+                for (let recurrencyId of isToUpdate) {
+
+                    const response = await api.post(`/expense/compensation/recurrency/release/padronizado/create`,
+                        { recurrencyId, monthSelected: monthReleaseSelected, userResp: user?.id })
+
+                        console.log(response)
+                    const { success } = response.data
+                    if (!success) { successStatus = false }
+                }
+
+                if (successStatus) {
+                    alert.success('Despesas recorrentes cadastradas.');
+                    setShow(false)
+                    setCompensationSelected(null)
+                    setCompensationSelectedExclude(null)
+                    setShowMonths(false)
+                    setMonthReleaseSelected(null)
+                    setEditRecurrency(false)
+                    await fetchRecurrency()
+                } else {
+                    alert.error('Erro ao lançar despesas recorrentes.');
+                }
+            } else {
+                alert.error('Erro ao lançar despesas recorrentes.');
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoadingData(false)
+        }
+    }
+
     return (
         <>
             <ContentContainer sx={{ zIndex: 9999 }}>
@@ -128,6 +233,7 @@ const RecurrencyCompensation = ({ setShow }: RecurrencyCompensationProps) => {
                             limit={limit}
                             page={page}
                             setPage={setPage}
+                            editRecurrency={editRecurrency}
                         />
                     </Box>
                 ) : (
@@ -141,6 +247,47 @@ const RecurrencyCompensation = ({ setShow }: RecurrencyCompensationProps) => {
                         <Box sx={styles.noResultsImage} />
                     </Box>
                 )}
+                <Divider />
+                <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                    {compensationSelected && compensationSelected?.length > 0 &&
+                        <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text>Selecione o mês de lancamento:</Text>
+                            <Button secondary text="Selecionar" style={{ height: '30px', borderRadius: '6px' }}
+                                onClick={() => setShowMonths(true)} />
+                        </Box>}
+                    {(monthReleaseSelected && monthReleaseSelected?.length > 0 && compensationSelected && compensationSelected?.length > 0) &&
+                        <Button text="Lançar"
+                            style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() =>
+                                handleCreateRecurrencyPayroll()} />
+                    }
+                    {!compensationSelected && <Box sx={{ display: 'flex', gap: 1 }}>
+                        {(!editRecurrency) ? <Button secondary text="Editar Salários" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => setEditRecurrency(true)} />
+                            :
+                            <Button cancel text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
+                                onClick={() => setEditRecurrency(false)} />
+                        }
+                        {editRecurrency && <Button text="Processar" style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() => handleUpdateCompensations()} />}
+                    </Box>}
+                    <Button text="Novo" style={{ height: '30px', borderRadius: '6px' }}
+                        onClick={() => setShowNewRecurrencyCompensation(true)}
+                    />
+                </Box>
+
+                <Backdrop open={showMonths} sx={{ zIndex: 999, paddingTop: 5 }}>
+                    <MonthsSelect
+                        setShow={setShowMonths}
+                        setMonthSelected={setMonthReleaseSelected}
+                        monthSelected={monthReleaseSelected}
+                        show={showMonths}
+                    />
+                </Backdrop>
+
+                <Backdrop open={showNewRecurrencyCompensation} sx={{ zIndex: 9999, paddingTop: 5 }}>
+                    <Compensation setShow={setShowNewRecurrencyCompensation} fetchData={fetchRecurrency} />
+                </Backdrop>
             </ContentContainer>
         </>
     );

@@ -1,10 +1,10 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Box, ContentContainer, Divider, Text } from "../../../../../../atoms";
-import { useAppContext } from "../../../../../../context/AppContext";
-import { api } from "../../../../../../api/api";
+import { Box, Button, ContentContainer, Divider, Text } from "../../../../../atoms";
+import { useAppContext } from "../../../../../context/AppContext";
+import { api } from "../../../../../api/api";
 import { CircularProgress } from "@mui/material";
-import { icons } from "../../../../../../organisms/layout/Colors";
-import TableRecurrencyExpenses from "../Tables/TableRecurrencyExpense";
+import { icons } from "../../../../../organisms/layout/Colors";
+import TableRecurrencyExpenses from "../Components/Tables/TableRecurrencyExpense";
 
 export interface RecurrencyExpensesProps {
     setShow: Dispatch<SetStateAction<boolean>>
@@ -83,6 +83,9 @@ const RecurrencyExpenses = ({ setShow }: RecurrencyExpensesProps) => {
     useEffect(() => {
         fetchRecurrency()
     }, []);
+
+
+
 
     return (
         <>

@@ -5,12 +5,12 @@ import { SectionHeader } from "../../../../organisms";
 import { api } from "../../../../api/api";
 import { formatReal } from "../../../../helpers";
 import { Backdrop, CircularProgress } from "@mui/material";
-import HeaderFilters from "./components/Header/HeaderFilters";
+import HeaderFilters from "./Components/Header/HeaderFilters";
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser";
 import { useRouter } from "next/router";
-import TableExpenses from "./components/Tables/TableExpenses";
-import RecurrencyCompensation from "./components/Modal/RecurrencyCompensation";
-import RecurrencyExpenses from "./components/Modal/RecurrencyExpenses";
+import TableExpenses from "./Components/Tables/TableExpenses";
+import RecurrencyCompensation from "./Compensation/RecurrencyCompensation";
+import RecurrencyExpenses from "./RecurrencyExpense/RecurrencyExpenses";
 
 export interface DataFilters {
   label: string | null;
@@ -285,25 +285,22 @@ export default function Expenses() {
         setLoading(true);
         let statusOk = false;
 
-        const isToUpdate =
-          expensesSelected &&
-          expensesSelected.split(",").map((id) => parseInt(id.trim(), 10));
-        const expensesSelect =
-          isToUpdate &&
-          expensesList?.filter(
-            (item) =>
-              item.id_despesa && isToUpdate.includes(parseInt(item.id_despesa))
-          );
-        const isToCancel =
-          expensesSelectedExclude &&
-          expensesSelectedExclude
-            .split(",")
-            .map((id) => parseInt(id.trim(), 10));
-        if (isToCancel) {
+        const isToCancel = expensesSelectedExclude ? expensesSelectedExclude
+          .split(",")
+          .map((id) => parseInt(id.trim(), 10)) : []
+
+        const isToUpdate = expensesSelected && expensesSelected.split(",").map((id) => parseInt(id.trim(), 10));
+        const expensesSelect = isToUpdate && expensesList
+          ?.filter((item) => item.id_despesa &&
+            (isToUpdate.includes(parseInt(item.id_despesa)) && !isToCancel.includes(parseInt(item.id_despesa))))
+
+        if (isToCancel && isToCancel.length > 0) {
           for (const idDelte of isToCancel) {
             const response = await api.delete(`/expense/delete/${idDelte}`);
             if (response.status !== 200) {
               statusOk = false;
+            } else {
+              statusOk = true
             }
           }
         }
@@ -317,6 +314,8 @@ export default function Expenses() {
             const { success } = response?.data;
             if (!success) {
               statusOk = false;
+            } else {
+              statusOk = true
             }
           }
         }
@@ -328,9 +327,10 @@ export default function Expenses() {
           fetchReportData({ page, limit });
           return;
         }
+
         alert.error("Tivemos um problema ao atualizar despesas.");
       } catch (error) {
-        alert.error("Tivemos um problema ao atualizar despesas.");
+        alert.error("Tivemos um problema no servidor.");
         console.log(error);
         return error;
       } finally {
@@ -360,6 +360,7 @@ export default function Expenses() {
           accountList={accountList}
           typesList={typesList}
           costCenterList={costCenterList}
+          setShowCompensation={setShowCompensation}
         />
         <Divider distance={0} />
         {loadingData && (
@@ -404,6 +405,7 @@ export default function Expenses() {
 
             <Box sx={styles.boxValueTotally}>
               <ButtonIcon
+              disabled={(expensesSelected || expensesSelectedExclude) ? false : true}
                 text="Processar"
                 icon={"/icons/process.png"}
                 color="#fff"

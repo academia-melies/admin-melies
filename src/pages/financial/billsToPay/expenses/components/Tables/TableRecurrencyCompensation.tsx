@@ -3,7 +3,7 @@ import React, { ChangeEvent, Dispatch, SetStateAction, useCallback } from "react
 import { Box, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
 import { CheckBoxTable, PaginationTable } from "../../../../../../organisms";
-import { RecurrencyCompensation } from "../Modal/RecurrencyCompensation";
+import { RecurrencyCompensation } from "../../Compensation/RecurrencyCompensation";
 
 interface TableRecurrencyCompensationProps {
     data: RecurrencyCompensation[];
@@ -16,6 +16,7 @@ interface TableRecurrencyCompensationProps {
     page: number
     compensationSelectedExclude: string | null
     setCompensationSelectedExclude: Dispatch<SetStateAction<string | null>>
+    editRecurrency: boolean
 }
 
 const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = React.memo(({
@@ -29,6 +30,7 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
     setLimit,
     compensationSelectedExclude,
     setCompensationSelectedExclude,
+    editRecurrency
 }) => {
     const { colorPalette, theme } = useAppContext()
 
@@ -42,7 +44,7 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
     const handleChangeExpenseData = useCallback((compensationId: string | null, field: string, value: string) => {
 
         let formattedValue = value
-        if (field === 'valor_desp') {
+        if (field === 'valor_liquido') {
             const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
 
             if (rawValue === '') {
@@ -88,8 +90,8 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
                 <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                     <thead>
                         <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
-                            <th style={{ padding: '8px 5px' }}><Text bold small>Excluir</Text></th>
-                            <th style={{ padding: '8px 5px' }}><Text bold small>Efetivar</Text></th>
+                            {editRecurrency && <th style={{ padding: '8px 5px' }}><Text bold small>Excluir</Text></th>}
+                            {!editRecurrency && <th style={{ padding: '8px 5px' }}><Text bold small>Efetivar</Text></th>}
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Funcionário</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '60px' }}><Text bold small>Dia de Pagamento</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Valor Líq</Text></th>
@@ -99,11 +101,12 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
                         {data?.map((item, index) => {
                             const compensationId = item?.id_salario
                             const selected = (compensationId && compensationSelected) && compensationSelected.includes(compensationId);
+                            const selectedExclude = (compensationId && compensationSelectedExclude) && compensationSelectedExclude.includes(compensationId);
                             return (
                                 <tr key={index} style={{
-                                    backgroundColor: selected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary
+                                    backgroundColor: selected ? colorPalette?.buttonColor + '66' : selectedExclude ? '#FFCCCC' : colorPalette?.secondary
                                 }}>
-                                    <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                    {editRecurrency && <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                         <CheckBoxTable
                                             boxGroup={groupSelect(compensationId)}
                                             valueChecked={compensationSelectedExclude}
@@ -120,8 +123,8 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
                                                 e.stopPropagation(); // Impede a propagação do evento de clique
                                             }}
                                         />
-                                    </td>
-                                    <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                    </td>}
+                                    {!editRecurrency && <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                         <CheckBoxTable
                                             boxGroup={groupSelect(compensationId)}
                                             valueChecked={compensationSelected}
@@ -138,7 +141,7 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
                                                 e.stopPropagation(); // Impede a propagação do evento de clique
                                             }}
                                         />
-                                    </td>
+                                    </td>}
 
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                         <Text light small>{item?.funcionario}</Text>
@@ -148,7 +151,7 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
                                     </td>
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
 
-                                        {selected ? <TextInput
+                                        {(selected || editRecurrency) ? <TextInput
                                             name='valor_liquido'
                                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                                 handleChangeExpenseData(compensationId, e.target.name, e.target.value)}

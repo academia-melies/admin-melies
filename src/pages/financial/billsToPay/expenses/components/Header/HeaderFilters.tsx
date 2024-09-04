@@ -22,6 +22,7 @@ interface HeaderFiltersProps {
     accountList: DataFilters[]
     costCenterList: DataFilters[]
     typesList: DataFilters[]
+    setShowCompensation: Dispatch<SetStateAction<boolean>>
 }
 
 const HeaderFilters: React.FC<HeaderFiltersProps> = ({
@@ -29,7 +30,8 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
     setExpenses, isPermissionEdit,
     accountList,
     costCenterList,
-    typesList
+    typesList,
+    setShowCompensation
 }) => {
 
     const { colorPalette } = useAppContext()
@@ -272,21 +274,22 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                         }}>
 
 
-
-                            <Box sx={{
-                                ...styles.containerDropDown, "&:hover": {
-                                    opacity: 0.8,
-                                    cursor: 'pointer',
-                                    backgroundColor: colorPalette.primary,
-                                }
-                            }}>
+                            <Link href={'/financial/billsToPay/expenses/new'} target="_blank">
                                 <Box sx={{
-                                    ...styles.menuIcon,
-                                    backgroundImage: `url(/icons/new_expense.png)`,
-                                }} />
+                                    ...styles.containerDropDown, "&:hover": {
+                                        opacity: 0.8,
+                                        cursor: 'pointer',
+                                        backgroundColor: colorPalette.primary,
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        ...styles.menuIcon,
+                                        backgroundImage: `url(/icons/new_expense.png)`,
+                                    }} />
 
-                                <Text light style={{whiteSpace: 'nowrap'}}>Nova Despesa</Text>
-                            </Box>
+                                    <Text light style={{ whiteSpace: 'nowrap' }}>Nova Despesa</Text>
+                                </Box>
+                            </Link>
 
                             <Box sx={{
                                 ...styles.containerDropDown, "&:hover": {
@@ -300,7 +303,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     backgroundImage: `url(/icons/expense_recurrency.png)`,
                                 }} />
 
-                                <Text light style={{whiteSpace: 'nowrap'}}>Despesa Recorrente</Text>
+                                <Text light style={{ whiteSpace: 'nowrap' }}>Despesa Recorrente</Text>
                             </Box>
 
                             <Box sx={{
@@ -309,13 +312,13 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     cursor: 'pointer',
                                     backgroundColor: colorPalette.primary,
                                 }
-                            }}>
+                            }} onClick={() => setShowCompensation(true)}>
                                 <Box sx={{
                                     ...styles.menuIcon,
                                     backgroundImage: `url(/icons/subscription-model.png)`,
                                 }} />
 
-                                <Text light style={{whiteSpace: 'nowrap'}}>Salário Recorrente</Text>
+                                <Text light style={{ whiteSpace: 'nowrap' }}>Salários</Text>
                             </Box>
                         </Box>
                     </Box>
