@@ -13,6 +13,7 @@ export const ButtonIcon = (props) => {
         text = '',
         style = {},
         icon = '',
+        filter = false,
         disabled = false,
         color = colorPalette?.textColor
     } = props;
@@ -34,7 +35,8 @@ export const ButtonIcon = (props) => {
             }}
             onClick={!disabled ? onClick : () => { }}
         >
-             <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icon})` }} />
+             <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icon})`,
+            ...(filter && { filter: 'brightness(0) invert(1)', }), }} />
             <Text xsmall={small} bold style={{ color: 'inherit' }}>{text}</Text>
         </Box>
     )

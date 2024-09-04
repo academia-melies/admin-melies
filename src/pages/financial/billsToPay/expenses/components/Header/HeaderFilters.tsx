@@ -300,7 +300,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     backgroundImage: `url(/icons/expense_recurrency.png)`,
                                 }} />
 
-                                <Text light style={{whiteSpace: 'nowrap'}}>Despesas Recorrentes</Text>
+                                <Text light style={{whiteSpace: 'nowrap'}}>Despesa Recorrente</Text>
                             </Box>
 
                             <Box sx={{
@@ -315,7 +315,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     backgroundImage: `url(/icons/subscription-model.png)`,
                                 }} />
 
-                                <Text light style={{whiteSpace: 'nowrap'}}>Salário Recorrentes</Text>
+                                <Text light style={{whiteSpace: 'nowrap'}}>Salário Recorrente</Text>
                             </Box>
                         </Box>
                     </Box>
