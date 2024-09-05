@@ -2,9 +2,11 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Box, Button, ContentContainer, Divider, Text } from "../../../../../atoms";
 import { useAppContext } from "../../../../../context/AppContext";
 import { api } from "../../../../../api/api";
-import { CircularProgress } from "@mui/material";
+import { Backdrop, CircularProgress } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
 import TableRecurrencyExpenses from "../Components/Tables/TableRecurrencyExpense";
+import MonthsSelect from "../Components/Modal/Months";
+import RecurrencyExpenseDetails from "./[id]";
 
 export interface RecurrencyExpensesProps {
     setShow: Dispatch<SetStateAction<boolean>>
@@ -17,14 +19,23 @@ export interface RecurrencyExpenses {
     valor: string | number | null;
 }
 
+export interface EditRecurrency {
+    active: boolean
+    data: string | null
+}
+
 const RecurrencyExpenses = ({ setShow }: RecurrencyExpensesProps) => {
     const [recurrencyExpenses, setRecurrencyExpenses] = useState<RecurrencyExpenses[]>([])
     const [loadingData, setLoadingData] = useState<boolean>(false);
     const [expensesSelected, setExpensesSelected] = useState<string | null>(null);
     const [expensesSelectedExclude, setExpensesSelectedExclude] = useState<string | null>(null);
+    const [showMonths, setShowMonths] = useState<boolean>(false);
+    const [editRecurrency, setEditRecurrency] = useState<EditRecurrency>({ active: false, data: null });
+    const [showRecurrencyDetails, setShowRecurrencyDetails] = useState<boolean>(false);
+    const [monthReleaseSelected, setMonthReleaseSelected] = useState<string | null>(null)
     const [limit, setLimit] = useState<number>(15);
     const [page, setPage] = useState<number>(0);
-    const { colorPalette } = useAppContext();
+    const { user, alert } = useAppContext();
 
     const fetchRecurrency = async () => {
         try {
@@ -42,8 +53,7 @@ const RecurrencyExpenses = ({ setShow }: RecurrencyExpensesProps) => {
                         ...item,
                         valor: value,
                     };
-                })
-                );
+                }));
             }
             else {
                 setRecurrencyExpenses([])
@@ -84,14 +94,92 @@ const RecurrencyExpenses = ({ setShow }: RecurrencyExpensesProps) => {
         fetchRecurrency()
     }, []);
 
+    const handleCreateRecurrencyExpense = async () => {
+        try {
+            setLoadingData(true)
+            let successStatus = true;
 
+            const isToUpdate = expensesSelected && expensesSelected.split(",").map((id) => parseInt(id.trim(), 10));
+
+            if (isToUpdate && isToUpdate.length > 0) {
+                for (let recurrencyId of isToUpdate) {
+
+                    const response = await api.post(`/expense/recurrency/release/padronizado/create`,
+                        { recurrencyId, monthSelected: monthReleaseSelected, userResp: user?.id })
+
+                    const { success } = response.data
+                    if (!success) { successStatus = false }
+                }
+
+                if (successStatus) {
+                    alert.success('Despesas recorrentes cadastradas.');
+                    setShow(false)
+                    setExpensesSelected(null)
+                    setExpensesSelectedExclude(null)
+                    setShowMonths(false)
+                    setMonthReleaseSelected(null)
+                    setEditRecurrency({ active: false, data: null })
+                    await fetchRecurrency()
+                } else {
+                    alert.error('Erro ao lançar despesas recorrentes.');
+                }
+            } else {
+                alert.error('Erro ao lançar despesas recorrentes.');
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoadingData(false)
+        }
+    }
+
+    const handleDelete = async () => {
+        setLoadingData(true)
+        try {
+            let success = true
+            const isToCancel = expensesSelectedExclude ? expensesSelectedExclude.split(",").map((id) => parseInt(id.trim(), 10)) : []
+            if (isToCancel && isToCancel.length > 0) {
+                for (const idDelte of isToCancel) {
+                    const response = await api.delete(`/expense/recurrency/delete/${idDelte}`)
+                    if (response.status !== 200) {
+                        success = false;
+                    }
+                }
+            }
+
+            if (success) {
+                alert.success('Recorrência excluída com sucesso.');
+                setExpensesSelected(null)
+                setExpensesSelectedExclude(null)
+                setShowMonths(false)
+                setMonthReleaseSelected(null)
+                setEditRecurrency({ active: false, data: null })
+                await fetchRecurrency()
+            } else {
+                alert.error('Tivemos um problema ao excluir a Recorrência.');
+            }
+
+        } catch (error) {
+            alert.error('Tivemos um problema ao excluir a Recorrência.');
+            console.log(error)
+        } finally {
+            setLoadingData(false)
+        }
+    }
+
+    useEffect(() => {
+        if (editRecurrency.active) {
+            setShowRecurrencyDetails(true)
+        }
+    }, [editRecurrency])
 
 
     return (
         <>
             <ContentContainer sx={{ zIndex: 9999 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center' }}>
-                    <Text bold large>Folha de Pagamento</Text>
+                    <Text bold large>Despesas Recorrentes</Text>
                     <Box sx={{
                         ...styles.menuIcon,
                         backgroundImage: `url(${icons.gray_close})`,
@@ -125,6 +213,7 @@ const RecurrencyExpenses = ({ setShow }: RecurrencyExpensesProps) => {
                             limit={limit}
                             page={page}
                             setPage={setPage}
+                            setEditRecurrency={setEditRecurrency}
                         />
                     </Box>
                 ) : (
@@ -138,6 +227,45 @@ const RecurrencyExpenses = ({ setShow }: RecurrencyExpensesProps) => {
                         <Box sx={styles.noResultsImage} />
                     </Box>
                 )}
+
+                <Divider />
+                <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                    {expensesSelected && expensesSelected?.length > 0 &&
+                        <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text>Selecione o mês de lancamento:</Text>
+                            <Button secondary text="Selecionar" style={{ height: '30px', borderRadius: '6px' }}
+                                onClick={() => setShowMonths(true)} />
+                        </Box>}
+
+                    {expensesSelectedExclude && expensesSelectedExclude?.length > 0 &&
+                        <Button cancel text="Processar" style={{ height: '30px', borderRadius: '6px' }} onClick={() => {
+                            handleDelete()
+                        }} />
+                    }
+                    {(monthReleaseSelected && monthReleaseSelected?.length > 0 && expensesSelected && expensesSelected?.length > 0) &&
+                        <Button text="Lançar"
+                            style={{ height: '30px', borderRadius: '6px' }}
+                            onClick={() =>
+                                handleCreateRecurrencyExpense()} />
+                    }
+                    <Button text="Novo" style={{ height: '30px', borderRadius: '6px' }} onClick={() => setShowRecurrencyDetails(true)} />
+                </Box>
+
+                <Backdrop open={showMonths} sx={{ zIndex: 999, paddingTop: 5 }}>
+                    <MonthsSelect
+                        setShow={setShowMonths}
+                        setMonthSelected={setMonthReleaseSelected}
+                        monthSelected={monthReleaseSelected}
+                        show={showMonths}
+                    />
+                </Backdrop>
+
+                <Backdrop open={showRecurrencyDetails} sx={{ zIndex: 9999, paddingTop: 5 }}>
+                    <RecurrencyExpenseDetails setShow={setShowRecurrencyDetails} fetchData={fetchRecurrency} id={editRecurrency.data}
+                        setEditRecurrency={setEditRecurrency}
+                        show={showRecurrencyDetails} />
+                </Backdrop>
+
             </ContentContainer>
         </>
     );

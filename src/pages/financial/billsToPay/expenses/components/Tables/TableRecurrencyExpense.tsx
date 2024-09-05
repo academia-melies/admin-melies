@@ -1,9 +1,9 @@
 
 import React, { ChangeEvent, Dispatch, SetStateAction, useCallback } from "react";
-import { Box, Text, TextInput } from "../../../../../../atoms";
+import { Box, Button, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
 import { CheckBoxTable, PaginationTable } from "../../../../../../organisms";
-import { RecurrencyExpenses } from "../../RecurrencyExpense/RecurrencyExpenses";
+import { EditRecurrency, RecurrencyExpenses } from "../../RecurrencyExpense/RecurrencyExpenses";
 
 interface TableRecurrencyExpensesProps {
     data: RecurrencyExpenses[];
@@ -16,6 +16,7 @@ interface TableRecurrencyExpensesProps {
     page: number
     expensesSelectedExclude: string | null
     setExpensesSelectedExclude: Dispatch<SetStateAction<string | null>>
+    setEditRecurrency: Dispatch<SetStateAction<EditRecurrency>>
 }
 
 const TableRecurrencyExpenses: React.FC<TableRecurrencyExpensesProps> = React.memo(({
@@ -29,6 +30,7 @@ const TableRecurrencyExpenses: React.FC<TableRecurrencyExpensesProps> = React.me
     setLimit,
     expensesSelectedExclude,
     setExpensesSelectedExclude,
+    setEditRecurrency
 }) => {
     const { colorPalette, theme } = useAppContext()
 
@@ -98,15 +100,17 @@ const TableRecurrencyExpenses: React.FC<TableRecurrencyExpensesProps> = React.me
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Descrição</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '60px' }}><Text bold small>Dia de Vencimento</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Valor</Text></th>
+                                <th style={{ padding: '8px 0px' }}><Text bold small></Text></th>
                             </tr>
                         </thead>
                         <tbody style={{ flex: 1, }}>
                             {data?.map((item, index) => {
                                 const expensesId = item?.id_desp_recorrente
                                 const selected = (expensesId && expensesSelected) && expensesSelected.includes(expensesId);
+                                const selectedExclude = (expensesId && expensesSelectedExclude) && expensesSelectedExclude.includes(expensesId);
                                 return (
                                     <tr key={index} style={{
-                                        backgroundColor: selected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary
+                                        backgroundColor: selected ? colorPalette?.buttonColor + '66' : selectedExclude ? '#FFCCCC' : colorPalette?.secondary
                                     }}>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                             <CheckBoxTable
@@ -152,21 +156,11 @@ const TableRecurrencyExpenses: React.FC<TableRecurrencyExpensesProps> = React.me
                                             <Text light small>{item?.dia_vencimento}</Text>
                                         </td>
                                         <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{item?.valor}</Text>
+                                        </td>
 
-                                            {selected ? <TextInput
-                                                name='valor'
-                                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                                    handleChangeExpenseData(expensesId, e.target.name, e.target.value)}
-                                                value={item?.valor || ''}
-                                                small
-                                                sx={{ padding: '0px 8px', width: 120 }}
-                                                InputProps={{
-                                                    style: {
-                                                        fontSize: '11px', height: 30
-                                                    }
-                                                }}
-                                            /> :
-                                                <Text light small>{item?.valor}</Text>}
+                                        <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                            <Button text="Editar" small style={{ borderRadius: 2 }} onClick={() => setEditRecurrency({ active: true, data: item.id_desp_recorrente })} />
                                         </td>
 
                                     </tr>
@@ -176,16 +170,6 @@ const TableRecurrencyExpenses: React.FC<TableRecurrencyExpensesProps> = React.me
                     </table>
 
                 </div>
-            </Box>
-            <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-                <PaginationTable
-                    data={data}
-                    count={data.length}
-                    page={page}
-                    setPage={handleChangePage}
-                    rowsPerPage={limit}
-                    setRowsPerPage={handleChangeRowsPerPage}
-                />
             </Box>
         </Box >
     )

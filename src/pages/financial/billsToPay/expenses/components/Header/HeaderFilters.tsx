@@ -23,6 +23,9 @@ interface HeaderFiltersProps {
     costCenterList: DataFilters[]
     typesList: DataFilters[]
     setShowCompensation: Dispatch<SetStateAction<boolean>>
+    setShowRecurrencyExpense: Dispatch<SetStateAction<boolean>>
+    setShowExpenseDetails: Dispatch<SetStateAction<boolean>>
+
 }
 
 const HeaderFilters: React.FC<HeaderFiltersProps> = ({
@@ -31,7 +34,9 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
     accountList,
     costCenterList,
     typesList,
-    setShowCompensation
+    setShowCompensation,
+    setShowRecurrencyExpense,
+    setShowExpenseDetails
 }) => {
 
     const { colorPalette } = useAppContext()
@@ -273,23 +278,20 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                             boxShadow: `rgba(149, 157, 165, 0.27) 0px 6px 24px`,
                         }}>
 
-
-                            <Link href={'/financial/billsToPay/expenses/new'} target="_blank">
+                            <Box sx={{
+                                ...styles.containerDropDown, "&:hover": {
+                                    opacity: 0.8,
+                                    cursor: 'pointer',
+                                    backgroundColor: colorPalette.primary,
+                                }
+                            }} onClick={() => setShowExpenseDetails(true)}>
                                 <Box sx={{
-                                    ...styles.containerDropDown, "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer',
-                                        backgroundColor: colorPalette.primary,
-                                    }
-                                }}>
-                                    <Box sx={{
-                                        ...styles.menuIcon,
-                                        backgroundImage: `url(/icons/new_expense.png)`,
-                                    }} />
+                                    ...styles.menuIcon,
+                                    backgroundImage: `url(/icons/new_expense.png)`,
+                                }} />
 
-                                    <Text light style={{ whiteSpace: 'nowrap' }}>Nova Despesa</Text>
-                                </Box>
-                            </Link>
+                                <Text light style={{ whiteSpace: 'nowrap' }}>Nova Despesa</Text>
+                            </Box>
 
                             <Box sx={{
                                 ...styles.containerDropDown, "&:hover": {
@@ -297,7 +299,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     cursor: 'pointer',
                                     backgroundColor: colorPalette.primary,
                                 }
-                            }}>
+                            }} onClick={() => setShowRecurrencyExpense(true)}>
                                 <Box sx={{
                                     ...styles.menuIcon,
                                     backgroundImage: `url(/icons/expense_recurrency.png)`,

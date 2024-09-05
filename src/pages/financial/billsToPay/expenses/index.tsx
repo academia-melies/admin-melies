@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import TableExpenses from "./Components/Tables/TableExpenses";
 import RecurrencyCompensation from "./Compensation/RecurrencyCompensation";
 import RecurrencyExpenses from "./RecurrencyExpense/RecurrencyExpenses";
+import ExpenseDetails from "./expenseDetails";
 
 export interface DataFilters {
   label: string | null;
@@ -115,6 +116,8 @@ export default function Expenses() {
   const [expensesSelectedExclude, setExpensesSelectedExclude] = useState<string | null>(null);
   const [showCompensation, setShowCompensation] = useState<boolean>(false);
   const [showExpenses, setShowExpenses] = useState<boolean>(false);
+  const [showExpenseDetails, setShowExpenseDetails] = useState<boolean>(false);
+
   const [limit, setLimit] = useState<number>(15);
   const [page, setPage] = useState<number>(0);
   const [isPermissionEdit, setIsPermissionEdit] = useState<boolean>(false);
@@ -361,6 +364,8 @@ export default function Expenses() {
           typesList={typesList}
           costCenterList={costCenterList}
           setShowCompensation={setShowCompensation}
+          setShowRecurrencyExpense={setShowExpenses}
+          setShowExpenseDetails={setShowExpenseDetails}
         />
         <Divider distance={0} />
         {loadingData && (
@@ -381,6 +386,10 @@ export default function Expenses() {
 
         <Backdrop open={showExpenses} sx={{ zIndex: 999, paddingTop: 5 }}>
           <RecurrencyExpenses setShow={setShowExpenses} />
+        </Backdrop>
+
+        <Backdrop open={showExpenseDetails} sx={{ zIndex: 999, paddingTop: 5 }}>
+          <ExpenseDetails setShow={setShowExpenseDetails} fetchData={fetchReportData} />
         </Backdrop>
 
         {expensesList.length > 0 ? (
@@ -405,7 +414,7 @@ export default function Expenses() {
 
             <Box sx={styles.boxValueTotally}>
               <ButtonIcon
-              disabled={(expensesSelected || expensesSelectedExclude) ? false : true}
+                disabled={(expensesSelected || expensesSelectedExclude) ? false : true}
                 text="Processar"
                 icon={"/icons/process.png"}
                 color="#fff"
