@@ -4,7 +4,7 @@ import { useAppContext } from "../../../../../context/AppContext";
 import { api } from "../../../../../api/api";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
-import MonthsSelect from "../components/Modal/Months";
+import { MonthsSelect } from "../../../../../organisms/ModalFinancial/Months";
 import RecurrencyExpenseDetails from "./[id]";
 import TableRecurrencyExpense from "../components/Tables/TableRecurrencyExpense";
 
