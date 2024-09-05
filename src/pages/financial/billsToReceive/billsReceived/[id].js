@@ -257,7 +257,7 @@ export default function EditBillsReceived(props) {
                 </Box>
                 <Box sx={styles.inputSection}>
                     <TextInput disabled={!isPermissionEdit && true} placeholder='Descrição' name='descricao' onChange={handleChange} value={receivedData?.descricao || ''} label='Descrição:' sx={{ flex: 1, }} />
-                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data do Pagamento' name='dt_pagamento' onChange={handleChange} value={(receivedData?.dt_pagamento)?.split('T')[0] || ''} type="date" label='Data do Pagamento:' />
+                    <TextInput disabled={!isPermissionEdit && true} placeholder='Data de Vencimento' name='dt_pagamento' onChange={handleChange} value={(receivedData?.dt_pagamento)?.split('T')[0] || ''} type="date" label='Data de Vencimento:' />
                 </Box>
                 <TextInput disabled={!isPermissionEdit && true} placeholder='Observação' name='observacao' onChange={handleChange} value={receivedData?.observacao || ''} label='Observação:' sx={{ flex: 1, }} multiline rows={4} />
                 <Box sx={styles.inputSection}>
@@ -271,10 +271,6 @@ export default function EditBillsReceived(props) {
                     />
                     <SelectList fullWidth disabled={!isPermissionEdit && true} data={accountTypesList} valueSelection={receivedData?.tipo} onSelect={(value) => setReceivedData({ ...receivedData, tipo: value })}
                         title="Tipo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
-                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
-                    />
-                    <SelectList fullWidth disabled={!isPermissionEdit && true} data={costCenterList} valueSelection={receivedData?.centro_custo} onSelect={(value) => setReceivedData({ ...receivedData, centro_custo: value })}
-                        title="Centro de Custo: " filterOpition="value" sx={{ color: colorPalette.textColor }}
                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                     />
                 </Box>
