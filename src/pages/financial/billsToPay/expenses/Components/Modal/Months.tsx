@@ -9,7 +9,7 @@ interface MonthSelectProps {
     show: boolean
 }
 
-const MonthsSelect = ({ setShow, setMonthSelected, monthSelected, show }: MonthSelectProps) => {
+const MonthsSelect: React.FC <MonthSelectProps> = ({ setShow, setMonthSelected, monthSelected, show }) => {
     const [monthReleaseSelected, setMonthReleaseSelected] = useState<string | null>(null)
 
     const groupMonths = [
