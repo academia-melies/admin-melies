@@ -26,7 +26,7 @@ interface TableExpensesProps {
     setExpensesSelectedExclude: Dispatch<SetStateAction<string | null>>
 }
 
-const TableExpenses: React.FC<TableExpensesProps> = React.memo(({
+export function TableExpenses({
     data = [],
     setData,
     expensesSelected,
@@ -42,7 +42,7 @@ const TableExpenses: React.FC<TableExpensesProps> = React.memo(({
     setExpensesSelectedExclude,
     costCenterList,
     typesList
-}) => {
+}: TableExpensesProps) {
     const { colorPalette, theme } = useAppContext()
 
 
@@ -324,7 +324,7 @@ const TableExpenses: React.FC<TableExpensesProps> = React.memo(({
             </div>
         </Box >
     )
-})
+}
 
 const styles = {
     containerRegister: {
@@ -342,6 +342,3 @@ const styles = {
         height: 15,
     },
 }
-
-TableExpenses.displayName = "TableExpenses";
-export default TableExpenses

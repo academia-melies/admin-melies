@@ -8,7 +8,7 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import HeaderFilters from "./Components/Header/HeaderFilters";
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser";
 import { useRouter } from "next/router";
-import TableExpenses from "./Components/Tables/TableExpenses";
+import { TableExpenses } from "./Components/Tables";
 import RecurrencyCompensation from "./Compensation/RecurrencyCompensation";
 import RecurrencyExpenses from "./RecurrencyExpense/RecurrencyExpenses";
 import ExpenseDetails from "./expenseDetails";

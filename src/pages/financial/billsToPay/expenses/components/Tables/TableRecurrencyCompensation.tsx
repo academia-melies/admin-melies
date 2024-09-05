@@ -19,7 +19,7 @@ interface TableRecurrencyCompensationProps {
     editRecurrency: boolean
 }
 
-const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = React.memo(({
+export function TableRecurrencyCompensation({
     data = [],
     setData,
     compensationSelected,
@@ -31,7 +31,7 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
     compensationSelectedExclude,
     setCompensationSelectedExclude,
     editRecurrency
-}) => {
+}: TableRecurrencyCompensationProps) {
     const { colorPalette, theme } = useAppContext()
 
 
@@ -186,7 +186,7 @@ const TableRecurrencyCompensation: React.FC<TableRecurrencyCompensationProps> = 
             </div>
         </Box >
     )
-})
+}
 
 const styles = {
     containerRegister: {
@@ -204,6 +204,3 @@ const styles = {
         height: 15,
     },
 }
-
-TableRecurrencyCompensation.displayName = "TableRecurrencyCompensation";
-export default TableRecurrencyCompensation

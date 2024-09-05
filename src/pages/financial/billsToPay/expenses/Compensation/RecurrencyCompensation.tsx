@@ -4,9 +4,9 @@ import { useAppContext } from "../../../../../context/AppContext";
 import { api } from "../../../../../api/api";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
-import TableRecurrencyCompensation from "../Components/Tables/TableRecurrencyCompensation";
 import MonthsSelect from "../Components/Modal/Months";
 import Compensation from "./[id]";
+import { TableRecurrencyCompensation } from "../Components/Tables";
 
 export interface RecurrencyCompensationProps {
     setShow: Dispatch<SetStateAction<boolean>>

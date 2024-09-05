@@ -4,9 +4,9 @@ import { useAppContext } from "../../../../../context/AppContext";
 import { api } from "../../../../../api/api";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
-import TableRecurrencyExpenses from "../Components/Tables/TableRecurrencyExpense";
 import MonthsSelect from "../Components/Modal/Months";
 import RecurrencyExpenseDetails from "./[id]";
+import { TableRecurrencyExpense } from "../Components/Tables";
 
 export interface RecurrencyExpensesProps {
     setShow: Dispatch<SetStateAction<boolean>>
@@ -202,7 +202,7 @@ const RecurrencyExpenses = ({ setShow }: RecurrencyExpensesProps) => {
                 {recurrencyExpenses.length > 0 ? (
                     <Box sx={{ opacity: loadingData ? 0.6 : 1 }}>
 
-                        <TableRecurrencyExpenses
+                        <TableRecurrencyExpense
                             data={recurrencyExpenses}
                             expensesSelected={expensesSelected}
                             expensesSelectedExclude={expensesSelectedExclude}

@@ -19,7 +19,7 @@ interface TableRecurrencyExpensesProps {
     setEditRecurrency: Dispatch<SetStateAction<EditRecurrency>>
 }
 
-const TableRecurrencyExpenses: React.FC<TableRecurrencyExpensesProps> = React.memo(({
+export function TableRecurrencyExpense({
     data = [],
     setData,
     expensesSelected,
@@ -31,7 +31,7 @@ const TableRecurrencyExpenses: React.FC<TableRecurrencyExpensesProps> = React.me
     expensesSelectedExclude,
     setExpensesSelectedExclude,
     setEditRecurrency
-}) => {
+}: TableRecurrencyExpensesProps) {
     const { colorPalette, theme } = useAppContext()
 
 
@@ -173,7 +173,7 @@ const TableRecurrencyExpenses: React.FC<TableRecurrencyExpensesProps> = React.me
             </Box>
         </Box >
     )
-})
+}
 
 const styles = {
     containerRegister: {
@@ -191,6 +191,3 @@ const styles = {
         height: 15,
     },
 }
-
-TableRecurrencyExpenses.displayName = "TableRecurrencyExpenses";
-export default TableRecurrencyExpenses
