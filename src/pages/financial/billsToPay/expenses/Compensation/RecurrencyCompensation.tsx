@@ -6,7 +6,7 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
 import MonthsSelect from "../Components/Modal/Months";
 import Compensation from "./[id]";
-import TableCompensation from "./../Components/Tables/TableRecurrencyCompensation";
+import TableCompensation from "../Components/Tables/TableRecurrencyCompensation";
 
 export interface RecurrencyCompensationProps {
     setShow: Dispatch<SetStateAction<boolean>>

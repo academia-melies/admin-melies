@@ -19,7 +19,7 @@ interface TableRecurrencyCompensationProps {
     editRecurrency: boolean
 }
 
-function TableCompensation({
+const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
     data = [],
     setData,
     compensationSelected,
@@ -31,7 +31,7 @@ function TableCompensation({
     compensationSelectedExclude,
     setCompensationSelectedExclude,
     editRecurrency
-}: TableRecurrencyCompensationProps) {
+}) => {
     const { colorPalette, theme } = useAppContext()
 
 

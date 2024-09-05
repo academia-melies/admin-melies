@@ -19,7 +19,7 @@ interface TableRecurrencyExpensesProps {
     setEditRecurrency: Dispatch<SetStateAction<EditRecurrency>>
 }
 
- function TableRecurrencyExpense({
+ const TableRecurrencyExpense: React.FC <TableRecurrencyExpensesProps> = ({
     data = [],
     setData,
     expensesSelected,
@@ -31,7 +31,7 @@ interface TableRecurrencyExpensesProps {
     expensesSelectedExclude,
     setExpensesSelectedExclude,
     setEditRecurrency
-}: TableRecurrencyExpensesProps) {
+}) => {
     const { colorPalette, theme } = useAppContext()
 
 
