@@ -6,7 +6,7 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
 import MonthsSelect from "../Components/Modal/Months";
 import Compensation from "./[id]";
-import TableRecurrencyCompensation from "../Components/Tables/TableRecurrencyCompensation";
+import TableCompensation from "../Components/Tables/TableRecurrencyCompensation";
 
 export interface RecurrencyCompensationProps {
     setShow: Dispatch<SetStateAction<boolean>>
@@ -222,7 +222,7 @@ const RecurrencyCompensation = ({ setShow }: RecurrencyCompensationProps) => {
                 {recurrencyCompensation.length > 0 ? (
                     <Box sx={{ opacity: loadingData ? 0.6 : 1 }}>
 
-                        <TableRecurrencyCompensation
+                        <TableCompensation
                             data={recurrencyCompensation}
                             compensationSelected={compensationSelected}
                             compensationSelectedExclude={compensationSelectedExclude}
