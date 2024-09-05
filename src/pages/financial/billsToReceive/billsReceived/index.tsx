@@ -231,7 +231,7 @@ export default function Receiveds() {
 
                 if (receivedsSelected && receivedsSelected.length > 0) {
                     for (let received of receivedsSelected) {
-                        const response = await api.patch(`received/update-process`, { received, userRespId: user.id })
+                        const response = await api.patch(`/received/update-process`, { received, userRespId: user.id })
                         const { success } = response?.data
                         if (success) {
                             statusOk = true
@@ -249,7 +249,7 @@ export default function Receiveds() {
                     alert.error('Tivemos um problema ao atualizar recebimentos.');
                 }
             } catch (error) {
-                alert.error('Tivemos um problema ao atualizar recebimentos.');
+                alert.error('Tivemos um problema no servidor.');
                 console.log(error)
                 return error
 

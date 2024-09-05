@@ -109,5 +109,11 @@ export const groupData = {
         { label: 'Cancelada', value: 'Cancelada' },
         { label: 'Em processamento', value: 'Em processamento' },
         { label: 'Não Autorizada', value: 'Não Autorizada' }
+    ],
+    statusExpense: [
+        { label: 'Todos', value: 'todos' },
+        { label: 'Pago', value: 'Pago' },
+        { label: 'Pendente', value: 'Pendente' },
+        { label: 'Cancelado', value: 'Cancelado' }
     ]
 }

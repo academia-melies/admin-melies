@@ -90,9 +90,8 @@ const TableReceiveds: React.FC<TableReceivedsProps> = ({ data = [], setData, rec
                             <th style={{ padding: '8px 10px' }}><Text bold>Efetivar</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Descrição</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
-                            <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dt Pagamento</Text></th>
+                            <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dt Vencimento</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Dt Baixa</Text></th>
-                            <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Centro de Custo</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Conta</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Pago?</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '80px' }}><Text bold></Text></th>
@@ -101,10 +100,10 @@ const TableReceiveds: React.FC<TableReceivedsProps> = ({ data = [], setData, rec
                     <tbody style={{ flex: 1, }}>
                         {data?.map((item, index) => {
                             const isSelected = item.id_recebiveis && receivedSelected?.includes(item.id_recebiveis) || null;
+                            const selectedExclude = (item.id_recebiveis && receivedSelectedExclude) && receivedSelectedExclude.includes(item.id_recebiveis);
                             return (
                                 <tr key={index} style={{
-                                    backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : colorPalette?.secondary,
-                                    opacity: 1,
+                                    backgroundColor: isSelected ? colorPalette?.buttonColor + '66' : selectedExclude ? '#FFCCCC' : colorPalette?.secondary
                                 }}>
                                     <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                         <CheckBoxTable
@@ -188,17 +187,6 @@ const TableReceiveds: React.FC<TableReceivedsProps> = ({ data = [], setData, rec
                                                     fontSize: '11px', height: 30
                                                 }
                                             }}
-                                        />
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '0px 8px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                        <SelectList
-                                            clean={false}
-                                            data={costCentersList}
-                                            valueSelection={item?.centro_custo_id}
-                                            onSelect={(value: string) => handleChangeReceivedData(item?.id_recebiveis, 'centro_custo_id', value)}
-                                            filterOpition="value" sx={{ color: colorPalette.textColor }}
-                                            inputStyle={{ color: colorPalette.textColor, fontSize: '11px', fontFamily: 'MetropolisBold', height: 30 }}
-                                            style={{ fontSize: '11px', height: 30 }}
                                         />
                                     </td>
                                     <td style={{ textAlign: 'center', padding: '0px 8px', borderBottom: `1px solid ${colorPalette.primary}` }}>
