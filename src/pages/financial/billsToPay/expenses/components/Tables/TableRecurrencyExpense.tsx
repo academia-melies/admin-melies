@@ -1,5 +1,5 @@
 
-import React, { ChangeEvent, Dispatch, SetStateAction, useCallback } from "react";
+import React, { ChangeEvent, Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Box, Button, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
 import { CheckBoxTable, PaginationTable } from "../../../../../../organisms";
@@ -19,7 +19,7 @@ interface TableRecurrencyExpensesProps {
     setEditRecurrency: Dispatch<SetStateAction<EditRecurrency>>
 }
 
- const TableRecurrencyExpense: React.FC <TableRecurrencyExpensesProps> = ({
+const TableRecurrencyExpense: React.FC<TableRecurrencyExpensesProps> = ({
     data = [],
     setData,
     expensesSelected,
@@ -33,6 +33,8 @@ interface TableRecurrencyExpensesProps {
     setEditRecurrency
 }) => {
     const { colorPalette, theme } = useAppContext()
+    const [selectAll, setSelectAll] = useState<boolean>(false);
+    const [selectExcludeAll, setSelectExcludeAll] = useState<boolean>(false);
 
 
     const groupSelect = useCallback((id: string | number | null) => [
@@ -41,45 +43,31 @@ interface TableRecurrencyExpensesProps {
         },
     ], []);
 
-    const handleChangeExpenseData = useCallback((expensesId: string | null, field: string, value: string) => {
 
-        let formattedValue = value
-        if (field === 'valor_desp') {
-            const rawValue = value.replace(/[^\d]/g, ''); // Remove todos os caracteres não numéricos
-
-            if (rawValue === '') {
-                formattedValue = '';
-            } else {
-                let intValue = rawValue.slice(0, -2) || '0'; // Parte inteira
-                const decimalValue = rawValue.slice(-2).padStart(2, '0');; // Parte decimal
-
-                if (intValue === '0' && rawValue.length > 2) {
-                    intValue = '';
-                }
-
-                const formattedValueCoin = `${parseInt(intValue, 10).toLocaleString()},${decimalValue}`; // Adicionando o separador de milhares
-                formattedValue = formattedValueCoin;
-
-            }
+    const toggleSelectAll = () => {
+        if (selectAll) {
+            setExpensesSelected(null);
+            setSelectAll(false)
+        } else {
+            const initialValues = data.map(item => item.id_desp_recorrente)
+            const concat = initialValues && initialValues.join(', ');
+            setExpensesSelected(concat);
+            setSelectAll(true)
         }
+    };
 
-        setData(prevExpenses => {
-            return prevExpenses?.map(compensation => {
-                if (compensation.id_desp_recorrente === expensesId) {
-                    return { ...compensation, [field]: formattedValue };
-                }
-                return compensation;
-            });
-        });
-    }, [setData]);
 
-    const handleChangePage = useCallback((newPage: number) => {
-        setPage(newPage);
-    }, [setPage]);
-
-    const handleChangeRowsPerPage = useCallback((newLimit: number) => {
-        setLimit(newLimit);
-    }, [setPage]);
+    const toggleExcludeAll = () => {
+        if (selectExcludeAll) {
+            setExpensesSelectedExclude(null);
+            setSelectExcludeAll(false)
+        } else {
+            const initialValues = data.map(item => item.id_desp_recorrente)
+            const concat = initialValues && initialValues.join(', ');
+            setExpensesSelectedExclude(concat);
+            setSelectExcludeAll(true)
+        }
+    };
 
     return (
         <Box>
@@ -95,8 +83,40 @@ interface TableRecurrencyExpensesProps {
                     <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                         <thead>
                             <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                <th style={{ padding: '8px 5px' }}><Text bold small>Excluir</Text></th>
-                                <th style={{ padding: '8px 5px' }}><Text bold small>Efetivar</Text></th>
+                                <th style={{ padding: '8px 5px' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                                        <Text bold xsmall>Excluir</Text>
+                                        <CheckBoxTable
+                                            boxGroup={[{ value: 'allSelect' }]}
+                                            valueChecked={'select'}
+                                            horizontal={true}
+                                            onSelect={() => toggleExcludeAll()}
+                                            padding={0}
+                                            gap={0}
+                                            sx={{ display: 'flex', maxWidth: 25 }}
+                                            onClick={(e: ChangeEvent<HTMLInputElement>) => {
+                                                e.stopPropagation(); // Impede a propagação do evento de clique
+                                            }}
+                                        />
+                                    </Box>
+                                </th>
+                                <th style={{ padding: '8px 5px' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                                        <Text bold xsmall>Efetivar</Text>
+                                        <CheckBoxTable
+                                            boxGroup={[{ value: 'allSelect' }]}
+                                            valueChecked={'select'}
+                                            horizontal={true}
+                                            onSelect={() => toggleSelectAll()}
+                                            padding={0}
+                                            gap={0}
+                                            sx={{ display: 'flex', maxWidth: 25 }}
+                                            onClick={(e: ChangeEvent<HTMLInputElement>) => {
+                                                e.stopPropagation(); // Impede a propagação do evento de clique
+                                            }}
+                                        />
+                                    </Box>
+                                </th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Descrição</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '60px' }}><Text bold small>Dia de Vencimento</Text></th>
                                 <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Valor</Text></th>

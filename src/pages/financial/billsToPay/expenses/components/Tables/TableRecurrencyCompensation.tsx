@@ -1,5 +1,5 @@
 
-import React, { ChangeEvent, Dispatch, SetStateAction, useCallback } from "react";
+import React, { ChangeEvent, Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Box, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
 import { CheckBoxTable, PaginationTable } from "../../../../../../organisms";
@@ -33,7 +33,8 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
     editRecurrency
 }) => {
     const { colorPalette, theme } = useAppContext()
-
+    const [selectAll, setSelectAll] = useState<boolean>(false);
+    const [selectExcludeAll, setSelectExcludeAll] = useState<boolean>(false);
 
     const groupSelect = useCallback((id: string | number | null) => [
         {
@@ -73,6 +74,31 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
         });
     }, [setData]);
 
+    const toggleSelectAll = () => {
+        if (selectAll) {
+            setCompensationSelected(null);
+            setSelectAll(false)
+        } else {
+            const initialValues = data.map(item => item.id_salario)
+            const concat = initialValues && initialValues.join(', ');
+            setCompensationSelected(concat);
+            setSelectAll(true)
+        }
+    };
+
+
+    const toggleExcludeAll = () => {
+        if (selectExcludeAll) {
+            setCompensationSelectedExclude(null);
+            setSelectExcludeAll(false)
+        } else {
+            const initialValues = data.map(item => item.id_salario)
+            const concat = initialValues && initialValues.join(', ');
+            setCompensationSelectedExclude(concat);
+            setSelectExcludeAll(true)
+        }
+    };
+
     const handleChangePage = useCallback((newPage: number) => {
         setPage(newPage);
     }, [setPage]);
@@ -90,8 +116,40 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                 <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                     <thead>
                         <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
-                            {editRecurrency && <th style={{ padding: '8px 5px' }}><Text bold small>Excluir</Text></th>}
-                            {!editRecurrency && <th style={{ padding: '8px 5px' }}><Text bold small>Efetivar</Text></th>}
+                            {editRecurrency && <th style={{ padding: '8px 5px' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                                    <Text bold xsmall>Excluir</Text>
+                                    <CheckBoxTable
+                                        boxGroup={[{ value: 'allSelect' }]}
+                                        valueChecked={'select'}
+                                        horizontal={true}
+                                        onSelect={() => toggleExcludeAll()}
+                                        padding={0}
+                                        gap={0}
+                                        sx={{ display: 'flex', maxWidth: 25 }}
+                                        onClick={(e: ChangeEvent<HTMLInputElement>) => {
+                                            e.stopPropagation(); // Impede a propagação do evento de clique
+                                        }}
+                                    />
+                                </Box>
+                            </th>}
+                            {!editRecurrency && <th style={{ padding: '8px 5px' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                                    <Text bold xsmall>Efetivar</Text>
+                                    <CheckBoxTable
+                                        boxGroup={[{ value: 'allSelect' }]}
+                                        valueChecked={'select'}
+                                        horizontal={true}
+                                        onSelect={() => toggleSelectAll()}
+                                        padding={0}
+                                        gap={0}
+                                        sx={{ display: 'flex', maxWidth: 25 }}
+                                        onClick={(e: ChangeEvent<HTMLInputElement>) => {
+                                            e.stopPropagation(); // Impede a propagação do evento de clique
+                                        }}
+                                    />
+                                </Box>
+                            </th>}
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Funcionário</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '60px' }}><Text bold small>Dia de Pagamento</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Valor Líq</Text></th>
