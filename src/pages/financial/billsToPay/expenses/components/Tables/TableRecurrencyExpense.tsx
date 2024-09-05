@@ -19,7 +19,7 @@ interface TableRecurrencyExpensesProps {
     setEditRecurrency: Dispatch<SetStateAction<EditRecurrency>>
 }
 
-export function TableRecurrencyExpense({
+ function TableRecurrencyExpense({
     data = [],
     setData,
     expensesSelected,
@@ -175,6 +175,7 @@ export function TableRecurrencyExpense({
     )
 }
 
+export default TableRecurrencyExpense
 const styles = {
     containerRegister: {
         display: 'flex',
