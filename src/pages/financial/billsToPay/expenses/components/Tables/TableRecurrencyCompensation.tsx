@@ -205,4 +205,5 @@ const styles = {
     },
 }
 
+TableRecurrencyCompensation.displayName = "TableRecurrencyCompensation";
 export default TableRecurrencyCompensation

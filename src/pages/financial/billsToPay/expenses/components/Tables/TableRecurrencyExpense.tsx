@@ -192,4 +192,5 @@ const styles = {
     },
 }
 
+TableRecurrencyExpenses.displayName = "TableRecurrencyExpenses";
 export default TableRecurrencyExpenses

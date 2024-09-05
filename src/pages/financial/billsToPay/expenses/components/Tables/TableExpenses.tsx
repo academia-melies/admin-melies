@@ -343,4 +343,5 @@ const styles = {
     },
 }
 
+TableExpenses.displayName = "TableExpenses";
 export default TableExpenses
