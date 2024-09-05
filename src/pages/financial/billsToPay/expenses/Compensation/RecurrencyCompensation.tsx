@@ -4,9 +4,9 @@ import { useAppContext } from "../../../../../context/AppContext";
 import { api } from "../../../../../api/api";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
-import MonthsSelect from "../Components/Modal/Months";
+import MonthsSelect from "../components/Modal/Months";
 import Compensation from "./[id]";
-// import TableCompensation from "../Components/Tables/TableRecurrencyCompensation";
+import TableCompensation from "../components/Tables/TableRecurrencyCompensation";
 
 export interface RecurrencyCompensationProps {
     setShow: Dispatch<SetStateAction<boolean>>
@@ -222,7 +222,7 @@ const RecurrencyCompensation = ({ setShow }: RecurrencyCompensationProps) => {
                 {recurrencyCompensation.length > 0 ? (
                     <Box sx={{ opacity: loadingData ? 0.6 : 1 }}>
 
-                        {/* <TableCompensation
+                        <TableCompensation
                             data={recurrencyCompensation}
                             compensationSelected={compensationSelected}
                             compensationSelectedExclude={compensationSelectedExclude}
@@ -234,7 +234,7 @@ const RecurrencyCompensation = ({ setShow }: RecurrencyCompensationProps) => {
                             page={page}
                             setPage={setPage}
                             editRecurrency={editRecurrency}
-                        /> */}
+                        />
                     </Box>
                 ) : (
                     <Box sx={{ ...styles.emptyData, opacity: loadingData ? 0.6 : 1 }}>
