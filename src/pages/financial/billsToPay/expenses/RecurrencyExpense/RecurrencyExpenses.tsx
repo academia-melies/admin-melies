@@ -6,7 +6,7 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import { icons } from "../../../../../organisms/layout/Colors";
 import MonthsSelect from "../Components/Modal/Months";
 import RecurrencyExpenseDetails from "./[id]";
-import TableRecurrencyExpense from "../Components/Tables/TableRecurrencyExpense";
+import TableRecurrencyExpense from "./../Components/Tables/TableRecurrencyExpense";
 
 export interface RecurrencyExpensesProps {
     setShow: Dispatch<SetStateAction<boolean>>
