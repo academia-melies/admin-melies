@@ -26,7 +26,7 @@ interface TableExpensesProps {
     setExpensesSelectedExclude: Dispatch<SetStateAction<string | null>>
 }
 
-export function TableExpenses({
+function TableExpenses({
     data = [],
     setData,
     expensesSelected,
@@ -325,6 +325,8 @@ export function TableExpenses({
         </Box >
     )
 }
+
+export default TableExpenses
 
 const styles = {
     containerRegister: {

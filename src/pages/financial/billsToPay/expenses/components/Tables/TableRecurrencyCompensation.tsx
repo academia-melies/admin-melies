@@ -19,7 +19,7 @@ interface TableRecurrencyCompensationProps {
     editRecurrency: boolean
 }
 
-export function TableRecurrencyCompensation({
+function TableRecurrencyCompensation({
     data = [],
     setData,
     compensationSelected,
@@ -187,6 +187,8 @@ export function TableRecurrencyCompensation({
         </Box >
     )
 }
+
+export default TableRecurrencyCompensation
 
 const styles = {
     containerRegister: {
