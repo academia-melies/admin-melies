@@ -23,7 +23,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "src/organisms/Table/CheckboxTable/checkboxTable.js", "src/pages/financial/billsToPay/expenses/[id].js"  ],
+  ],
   "exclude": [
     "node_modules"
   ]

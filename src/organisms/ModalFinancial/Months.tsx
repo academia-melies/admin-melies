@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Box, Button, ContentContainer, Divider, Text } from "../../../../../../atoms";
-import { icons } from "../../../../../../organisms/layout/Colors";
+import { Box, Button, ContentContainer, Divider, Text } from "../../atoms";
+import { icons } from "../layout/Colors";
 
 interface MonthSelectProps {
     setShow: Dispatch<SetStateAction<boolean>>
@@ -9,7 +9,7 @@ interface MonthSelectProps {
     show: boolean
 }
 
-const MonthsSelect = ({ setShow, setMonthSelected, monthSelected, show }: MonthSelectProps) => {
+export const MonthsSelect: React.FC <MonthSelectProps> = ({ setShow, setMonthSelected, monthSelected, show }) => {
     const [monthReleaseSelected, setMonthReleaseSelected] = useState<string | null>(null)
 
     const groupMonths = [
@@ -121,5 +121,3 @@ const styles = {
         height: 20,
     },
 }
-
-export default MonthsSelect
