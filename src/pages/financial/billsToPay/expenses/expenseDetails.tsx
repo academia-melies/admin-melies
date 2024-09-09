@@ -109,12 +109,12 @@ const ExpenseDetails = ({ setShow, fetchData }: expenseDataProps) => {
     const handleCreate = async () => {
         try {
             setLoadingData(true)
-            const response = await api.post(`/expense/recurrency/create/${user?.id}`, { expenseData });
+            const response = await api.post(`/expense/create/${user?.id}`, { billToPayData: expenseData });
 
             const { success } = response.data
 
-            if (success) {
-                alert.success('Recorrência cadastrada.');
+            if (success?.expense) {
+                alert.success('Despesa cadastrada.');
                 setShow(false)
                 setExpenseData({
                     recorrencia: '',
@@ -131,7 +131,7 @@ const ExpenseDetails = ({ setShow, fetchData }: expenseDataProps) => {
                 })
                 await fetchData({})
             } else {
-                alert.error('Erro ao cadastrar despesa recorrente.');
+                alert.error('Erro ao cadastrar despesa.');
             }
         } catch (error) {
             console.log(error)
@@ -143,7 +143,7 @@ const ExpenseDetails = ({ setShow, fetchData }: expenseDataProps) => {
 
     const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
 
-        if (event.target.name === 'valor') {
+        if (event.target.name === 'valor_desp') {
             const rawValue = event.target.value.replace(/[^\d]/g, '');
 
             if (rawValue === '') {
@@ -177,6 +177,7 @@ const ExpenseDetails = ({ setShow, fetchData }: expenseDataProps) => {
 
 
     const groupRecorrency = [
+        { label: 'Não recorrente', value: 1 },
         { label: 'Semanal', value: 7 },
         { label: 'Mensal', value: 31 },
         { label: 'Anual', value: 365 }
@@ -187,7 +188,7 @@ const ExpenseDetails = ({ setShow, fetchData }: expenseDataProps) => {
             <Box sx={{
                 display: 'flex', justifyContent: 'space-between', zIndex: 9999, gap: 4, alignItems: 'center',
             }}>
-                <Text bold large>Nova Despesa Recorrente</Text>
+                <Text bold large>Nova Despesa</Text>
                 <Box sx={{
                     ...styles.menuIcon,
                     backgroundImage: `url(${icons.gray_close})`,
