@@ -220,7 +220,7 @@ const RecurrencyCompensation = ({ setShow }: RecurrencyCompensationProps) => {
                     </Box>
                 )}
                 {recurrencyCompensation.length > 0 ? (
-                    <Box sx={{ opacity: loadingData ? 0.6 : 1 }}>
+                    <Box sx={{ opacity: loadingData ? 0.6 : 1, maxHeight: '400px', overflowY: 'auto' }}>
 
                         <TableCompensation
                             data={recurrencyCompensation}
