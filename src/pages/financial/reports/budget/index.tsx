@@ -42,6 +42,7 @@ export interface TableData {
     real_nov: number
     previsto_dez: number
     real_dez: number
+    centro_custos?: TableData[]
 }
 
 

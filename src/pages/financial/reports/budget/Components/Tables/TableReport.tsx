@@ -1,4 +1,5 @@
 
+import React from "react";
 import { TableData } from "../..";
 import { Box, Text } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
@@ -78,91 +79,182 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                     <tbody style={{ flex: 1, }}>
                         {data.map((item: TableData, index: number) => {
                             const isTitle = item.categoria ? true : false
+                            const subCategoryArray = item?.centro_custos || []
                             return (
-                                <tr key={index} style={{
-                                    backgroundColor: colorPalette?.secondary,
-                                    opacity: 1,
-                                }}>
-                                    <td style={{ padding: '5px 20px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: isTitle ? 'start' : 'center', }}>
-                                            <Text bold={isTitle} light={!isTitle} small>
-                                                {item?.categoria || item.subCategoria || '-'}
-                                            </Text>
-                                            {isTitle && <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icons.gray_arrow_down})` }} />}
-                                        </Box>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_jan)}</Text></td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_jan)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_fev)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_fev)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_mar)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_mar)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_abr)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_abr)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_mai)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_mai)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_jun)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_jun)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_jul)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_jul)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_ago)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_ago)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_set)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_set)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_out)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_out)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_nov)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_nov)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small>{formatReal(item.previsto_dez)}</Text>
-                                    </td>
-                                    <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
-                                        <Text light small> {formatReal(item.real_dez)}</Text>
-                                    </td>
-                                </tr>
+                                <React.Fragment>
+                                    <tr key={index} style={{
+                                        backgroundColor: colorPalette?.secondary,
+                                        opacity: 1,
+                                    }}>
+                                        <td style={{ padding: '5px 20px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: isTitle ? 'start' : 'center', }}>
+                                                <Text bold={isTitle} light={!isTitle} small>
+                                                    {item?.categoria || item.subCategoria || '-'}
+                                                </Text>
+                                                {isTitle && <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icons.gray_arrow_down})` }} />}
+                                            </Box>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_jan)}</Text></td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_jan)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_fev)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_fev)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_mar)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_mar)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_abr)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_abr)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_mai)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_mai)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_jun)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_jun)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_jul)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_jul)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_ago)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_ago)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_set)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_set)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_out)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_out)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_nov)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_nov)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.previsto_dez)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.real_dez)}</Text>
+                                        </td>
+                                    </tr>
+                                    {subCategoryArray.length > 0 &&
+                                        subCategoryArray.map((subItem, subIndex) => (
+                                            <tr key={subIndex} style={{
+                                                backgroundColor: colorPalette?.secondary,
+                                                opacity: 1,
+                                            }}>
+                                                <td style={{ padding: '5px 20px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: isTitle ? 'start' : 'center', }}>
+                                                        <Text bold={subItem?.categoria} light={!subItem?.categoria} small>
+                                                            {subItem?.categoria || subItem.subCategoria || '-'}
+                                                        </Text>
+                                                        {subItem?.categoria && <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icons.gray_arrow_down})` }} />}
+                                                    </Box>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_jan)}</Text></td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_jan)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_fev)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_fev)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_mar)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_mar)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_abr)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_abr)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_mai)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_mai)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_jun)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_jun)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_jul)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_jul)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_ago)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_ago)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_set)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_set)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_out)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_out)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_nov)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_nov)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(subItem.previsto_dez)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(subItem.real_dez)}</Text>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
+                                </React.Fragment>
                             );
                         })}
                     </tbody>
