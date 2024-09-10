@@ -81,8 +81,8 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                             const isTitle = item.categoria ? true : false
                             const subCategoryArray = item?.centro_custos || []
                             return (
-                                <React.Fragment>
-                                    <tr key={index} style={{
+                                <React.Fragment key={index}>
+                                    <tr style={{
                                         backgroundColor: colorPalette?.secondary,
                                         opacity: 1,
                                     }}>
