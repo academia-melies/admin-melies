@@ -1,22 +1,19 @@
 
 import React, { ChangeEvent, Dispatch, SetStateAction, useCallback, useState } from "react";
-import { Box, Text, TextInput } from "../../../../../../atoms";
+import { Box, Button, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
-import { CheckBoxTable, PaginationTable } from "../../../../../../organisms";
+import { CheckBoxTable } from "../../../../../../organisms";
 import { RecurrencyCompensation } from "../../Compensation/RecurrencyCompensation";
+import { EditRecurrency } from "../../RecurrencyExpense/RecurrencyExpenses";
 
 interface TableRecurrencyCompensationProps {
     data: RecurrencyCompensation[];
     setData: Dispatch<SetStateAction<RecurrencyCompensation[]>>
     compensationSelected: string | null
     setCompensationSelected: Dispatch<SetStateAction<string | null>>
-    limit: number
-    setLimit: Dispatch<SetStateAction<number>>
-    setPage: Dispatch<SetStateAction<number>>
-    page: number
     compensationSelectedExclude: string | null
     setCompensationSelectedExclude: Dispatch<SetStateAction<string | null>>
-    editRecurrency: boolean
+    setEditRecurrency: Dispatch<SetStateAction<EditRecurrency>>
 }
 
 const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
@@ -24,13 +21,9 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
     setData,
     compensationSelected,
     setCompensationSelected,
-    limit,
-    page,
-    setPage,
-    setLimit,
     compensationSelectedExclude,
     setCompensationSelectedExclude,
-    editRecurrency
+    setEditRecurrency
 }) => {
     const { colorPalette, theme } = useAppContext()
     const [selectAll, setSelectAll] = useState<boolean>(false);
@@ -99,13 +92,6 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
         }
     };
 
-    const handleChangePage = useCallback((newPage: number) => {
-        setPage(newPage);
-    }, [setPage]);
-
-    const handleChangeRowsPerPage = useCallback((newLimit: number) => {
-        setLimit(newLimit);
-    }, [setPage]);
 
     return (
         <Box>
@@ -116,7 +102,7 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                 <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                     <thead>
                         <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
-                            {editRecurrency && <th style={{ padding: '8px 5px' }}>
+                           <th style={{ padding: '8px 5px' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
                                     <Text bold xsmall>Excluir</Text>
                                     <CheckBoxTable
@@ -132,8 +118,8 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                                         }}
                                     />
                                 </Box>
-                            </th>}
-                            {!editRecurrency && <th style={{ padding: '8px 5px' }}>
+                            </th>
+                            {<th style={{ padding: '8px 5px' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
                                     <Text bold xsmall>Efetivar</Text>
                                     <CheckBoxTable
@@ -153,6 +139,7 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Funcionário</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '60px' }}><Text bold small>Dia de Pagamento</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Valor Líq</Text></th>
+                            <th style={{ padding: '8px 0px', minWidth: '100px' }}></th>
                         </tr>
                     </thead>
                     <tbody style={{ flex: 1, }}>
@@ -164,7 +151,7 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                                 <tr key={index} style={{
                                     backgroundColor: selected ? colorPalette?.buttonColor + '66' : selectedExclude ? '#FFCCCC' : colorPalette?.secondary
                                 }}>
-                                    {editRecurrency && <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                    <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                         <CheckBoxTable
                                             boxGroup={groupSelect(compensationId)}
                                             valueChecked={compensationSelectedExclude}
@@ -181,8 +168,8 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                                                 e.stopPropagation(); // Impede a propagação do evento de clique
                                             }}
                                         />
-                                    </td>}
-                                    {!editRecurrency && <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+                                    </td>
+                                    {<td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
                                         <CheckBoxTable
                                             boxGroup={groupSelect(compensationId)}
                                             valueChecked={compensationSelected}
@@ -209,7 +196,7 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                                     </td>
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
 
-                                        {(selected || editRecurrency) ? <TextInput
+                                        {(selected) ? <TextInput
                                             name='valor_liquido'
                                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                                 handleChangeExpenseData(compensationId, e.target.name, e.target.value)}
@@ -224,23 +211,14 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                                         /> :
                                             <Text light small>{item?.valor_liquido}</Text>}
                                     </td>
-
+                                    <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Button text="Editar" small style={{ borderRadius: 2 }} onClick={() => setEditRecurrency({ active: true, data: compensationId })} />
+                                    </td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
-
-                <Box sx={{ marginTop: 5, alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-                    <PaginationTable
-                        data={data}
-                        count={data.length}
-                        page={page}
-                        setPage={handleChangePage}
-                        rowsPerPage={limit}
-                        setRowsPerPage={handleChangeRowsPerPage}
-                    />
-                </Box>
             </div>
         </Box >
     )

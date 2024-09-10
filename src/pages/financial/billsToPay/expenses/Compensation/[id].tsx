@@ -8,10 +8,14 @@ import { TextInput } from "../../../../../atoms";
 import { formatTimeStamp } from "../../../../../helpers";
 import { DataFilters } from "..";
 import { CircularProgress } from "@mui/material";
+import { EditRecurrency } from "../RecurrencyExpense/RecurrencyExpenses";
 
 interface CompensationProps {
     setShow: Dispatch<SetStateAction<boolean>>
+    show: boolean
     fetchData: () => void
+    id?: string | null
+    setEditRecurrency: Dispatch<SetStateAction<EditRecurrency>>
 }
 
 
@@ -47,7 +51,7 @@ export interface CompensationDataProps {
     dt_atualizacao: string | null
 }
 
-const Compensation = ({ setShow, fetchData }: CompensationProps) => {
+const Compensation = ({ setShow, fetchData, id, show, setEditRecurrency }: CompensationProps) => {
     const [compensationData, setCompensationData] = useState<CompensationDataProps>({
         usuario_id: '',
         dia_pagamento: '',
@@ -64,7 +68,7 @@ const Compensation = ({ setShow, fetchData }: CompensationProps) => {
     const [accountTypesList, setAccountTypesList] = useState<DataFilters[]>([])
     const [usersList, setUsers] = useState<DataFilters[]>([])
     const [costCenterList, setCostCenterList] = useState<DataFilters[]>([])
-
+    const newCompensaton = id ? false : true;
 
     const fetchFilters = async () => {
         const [costCenterResponse, typesResponse, usersReponse] =
@@ -102,11 +106,71 @@ const Compensation = ({ setShow, fetchData }: CompensationProps) => {
         setUsers(groupEmployee)
     };
 
+    const getRecurrencyCompensation = async () => {
+        setLoadingData(true);
+        try {
+            const response = await api.get(`/expense/compensation/recurrency/from-id/${id}`);
+            const { data } = response;
+
+            console.log(response)
+
+            if (data) {
+                const value =
+                    typeof data.valor_liquido === "string"
+                        ? formatterLiquidValue(parseFloat(data.valor_bruto))
+                        : formatterLiquidValue(data.valor_bruto);
+
+                const liquidValue =
+                    typeof data.valor_liquido === "string"
+                        ? formatterLiquidValue(parseFloat(data.valor_liquido))
+                        : formatterLiquidValue(data.valor_liquido);
+                setCompensationData({ ...data, valor_liquido: liquidValue, valor_bruto: value })
+            }
+
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoadingData(false);
+        }
+    }
+
+    const formatterLiquidValue = (value: number | null) => {
+        if (value === null) return "";
+        // Converte o valor para número com precisão suficiente
+        const numberValue = typeof value === "string" ? parseFloat(value) : value;
+
+        if (isNaN(numberValue)) return "";
+
+        // Converte o valor para string com 2 casas decimais
+        const valueString = numberValue.toFixed(2);
+
+        // Separa a parte inteira e a parte decimal
+        const [integerPart, decimalPart] = valueString.split(".");
+
+        // Adiciona o separador de milhares
+        const formattedIntegerPart = integerPart.replace(
+            /\B(?=(\d{3})+(?!\d))/g,
+            "."
+        );
+
+        // Formata o valor com a parte decimal
+        const formattedValue = `${formattedIntegerPart},${decimalPart}`;
+
+        return formattedValue;
+    };
+
+    useEffect(() => {
+        fetchFilters()
+        if (!newCompensaton) {
+            getRecurrencyCompensation()
+        }
+    }, [show])
+
     useEffect(() => {
         fetchFilters()
     }, [])
 
-    const handleCreateRecurrencyCompensation = async () => {
+    const handleCreate = async () => {
         try {
             setLoadingData(true)
             const response = await api.post(`/expense/compensation/recurrency/create`,
@@ -128,6 +192,7 @@ const Compensation = ({ setShow, fetchData }: CompensationProps) => {
                     dt_criacao: '',
                     dt_atualizacao: ''
                 })
+                setEditRecurrency({ active: false, data: null })
                 await fetchData()
             } else {
                 alert.error('Erro ao cadastrar salário recorrente.');
@@ -135,6 +200,37 @@ const Compensation = ({ setShow, fetchData }: CompensationProps) => {
         } catch (error) {
             console.log(error)
             return error
+        } finally {
+            setLoadingData(false)
+        }
+    }
+
+    const handleEdit = async () => {
+        setLoadingData(true)
+        try {
+            const response = await api.patch(`/expense/compensation/recurrency/update/${id}`, { compensationData })
+            if (response?.status === 200) {
+                alert.success('Recorrência atualizada com sucesso.');
+                setShow(false)
+                setEditRecurrency({ active: false, data: null })
+                setCompensationData({
+                    usuario_id: '',
+                    dia_pagamento: '',
+                    valor_bruto: '',
+                    valor_liquido: '',
+                    tipo: '',
+                    centro_custo: '',
+                    usuario_resp: '',
+                    dt_criacao: '',
+                    dt_atualizacao: ''
+                })
+                setEditRecurrency({ active: false, data: null })
+                await fetchData()
+                return
+            }
+            alert.error('Tivemos um problema ao atualizar Recorrência.');
+        } catch (error) {
+            alert.error('Tivemos um problema ao atualizar Recorrência.');
         } finally {
             setLoadingData(false)
         }
@@ -200,6 +296,7 @@ const Compensation = ({ setShow, fetchData }: CompensationProps) => {
                         dt_criacao: '',
                         dt_atualizacao: ''
                     })
+                    setEditRecurrency({ active: false, data: null })
                 }} />
             </Box>
             <Divider distance={0} />
@@ -210,7 +307,7 @@ const Compensation = ({ setShow, fetchData }: CompensationProps) => {
                 </Box>
             )}
 
-            {<Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
+            {<Box sx={{ opacity: loadingData ? 0.6 : 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 1.8, padding: 5, }}>
                 <Box sx={styles.inputSection}>
                     <SelectList onFilter filterValue="label" fullWidth data={usersList} valueSelection={compensationData?.usuario_id} onSelect={(value: string) => setCompensationData({ ...compensationData, usuario_id: value })}
                         title="Funcionário(a)" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
@@ -274,7 +371,13 @@ const Compensation = ({ setShow, fetchData }: CompensationProps) => {
             <Divider />
             <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'center', justifyContent: 'flex-end' }}>
                 <Button text="Salvar" style={{ height: '30px', borderRadius: '6px' }}
-                    onClick={() => handleCreateRecurrencyCompensation()} />
+                    onClick={() => {
+                        if (newCompensaton) {
+                            handleCreate()
+                        } else {
+                            handleEdit()
+                        }
+                    }} />
 
                 <Button cancel text="Cancelar" style={{ height: '30px', borderRadius: '6px' }}
                     onClick={() => {
@@ -290,6 +393,7 @@ const Compensation = ({ setShow, fetchData }: CompensationProps) => {
                             dt_criacao: '',
                             dt_atualizacao: ''
                         })
+                        setEditRecurrency({ active: false, data: null })
                     }} />
             </Box>
         </ContentContainer>

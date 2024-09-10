@@ -68,9 +68,6 @@ const RecurrencyExpenseDetails = ({ setShow, show, fetchData, id, setEditRecurre
     const [costCenterList, setCostCenterList] = useState<DataFilters[]>([])
     const newBill = id ? false : true;
 
-    console.log(id)
-    console.log(newBill)
-
     const fetchFilters = async () => {
         const [costCenterResponse, typesResponse, accountResponse] =
             await Promise.all([
