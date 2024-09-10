@@ -410,7 +410,7 @@ const styles = {
         display: 'flex', gap: 1, flexDirection: 'column', marginTop: 3, maxWidth: 500
     },
     containerDescription: {
-        display: 'flex', maxWidth: 500
+        display: 'flex', maxWidth: 500, maxHeight: 500, overflowY: 'auto'
     },
     inputBox: {
         display: 'flex', gap: .5, alignItems: 'center'
