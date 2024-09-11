@@ -1144,44 +1144,51 @@ export default function EditUser() {
             setLoading(true)
             try {
                 const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
-                const { data } = response
-                if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
-                if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
-                    await api.post(`/enrollment/student/register/${data?.userId}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
-                }
-                // if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
-                if (fileCallback) {
-                    const formData = new FormData();
-                    formData.append('file', fileCallback?.file, encodeURIComponent(fileCallback?.name));
-                    let query = `?usuario_id=${data?.userId}`;
-                    if (fileCallback?.campo) query += `&campo=${fileCallback?.campo}`;
-                    if (fileCallback?.tipo) query += `&tipo=${fileCallback?.tipo}`;
-                    await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
-                }
-                if (filesUser?.length > 0) {
-                    for (const uploadedFile of filesUser) {
+                const { success } = response?.data
+
+                if (success) {
+
+
+                    if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
+                    if (userData?.perfil?.includes('aluno') && arrayEnrollmentRegisterData?.length > 0) {
+                        await api.post(`/enrollment/student/register/${data?.userId}`, { enrollmentRegisterData: arrayEnrollmentRegisterData, userResp: user?.id })
+                    }
+                    // if (fileCallback) { await api.patch(`/file/edit/${fileCallback?.id_foto_perfil}/${data?.userId}`) }
+                    if (fileCallback) {
                         const formData = new FormData();
-                        formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
+                        formData.append('file', fileCallback?.file, encodeURIComponent(fileCallback?.name));
                         let query = `?usuario_id=${data?.userId}`;
-                        if (uploadedFile?.campo) query += `&campo=${uploadedFile?.campo}`;
-                        if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
-                        if (uploadedFile?.matricula_id) query += `&matricula_id=${uploadedFile?.matricula_id}`;
-                        const documents = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+                        if (fileCallback?.campo) query += `&campo=${fileCallback?.campo}`;
+                        if (fileCallback?.tipo) query += `&tipo=${fileCallback?.tipo}`;
+                        await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
                     }
-                }
-                if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
-                if (newUser && filesUser) { await api.patch(`/file/editFiles/${data?.userId}`, { filesUser }); }
-                if (permissionPerfil) {
-                    const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
-                    if (permissionsToAdd.length > 0) {
-                        await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
+                    if (filesUser?.length > 0) {
+                        for (const uploadedFile of filesUser) {
+                            const formData = new FormData();
+                            formData.append('file', uploadedFile?.file, encodeURIComponent(uploadedFile?.name));
+                            let query = `?usuario_id=${data?.userId}`;
+                            if (uploadedFile?.campo) query += `&campo=${uploadedFile?.campo}`;
+                            if (uploadedFile?.tipo) query += `&tipo=${uploadedFile?.tipo}`;
+                            if (uploadedFile?.matricula_id) query += `&matricula_id=${uploadedFile?.matricula_id}`;
+                            const documents = await api.post(`/file/upload${query}`, formData, { headers: { 'Authorization': "bearer " + 'token' } })
+                        }
                     }
-                }
-                if (response?.status === 201) {
-                    alert.success('Usuário cadastrado com sucesso.');
-                    router.push(`/administrative/users/list`)
-                }
-                if (response?.status === 200) {
+                    if (officeHours) { await api.post(`/officeHours/create/${data?.userId}`, { officeHours }) }
+                    if (newUser && filesUser) { await api.patch(`/file/editFiles/${data?.userId}`, { filesUser }); }
+                    if (permissionPerfil) {
+                        const permissionsToAdd = permissionPerfil.split(',').map(id => parseInt(id));
+                        if (permissionsToAdd.length > 0) {
+                            await api.post(`/permissionPerfil/create/${data?.userId}`, { permissionsToAdd })
+                        }
+                    }
+                    if (response?.status === 201) {
+                        alert.success('Usuário cadastrado com sucesso.');
+                        router.push(`/administrative/users/${data?.userId}`)
+                    }
+                    if (response?.status === 200) {
+                        return alert.error(response?.data?.msg);
+                    }
+                } else {
                     return alert.error(response?.data?.msg);
                 }
             } catch (error) {
