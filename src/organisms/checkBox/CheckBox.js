@@ -53,7 +53,7 @@ export const CheckBoxComponent = (props) => {
                                     <Box
                                         sx={{
                                             opacity: disabled ? .7 : 1,
-                                            display: 'flex', gap: 1, width: 19, height: 19, border: !selected && `1.5px solid #d1d5db`, borderRadius: '3px',
+                                            display: 'flex', gap: 1, width: 19, height: 19, border: !selected && `1.5px solid #9ca3af`, borderRadius: '3px',
                                             alignItems: 'center', justifyContent: 'center',
                                             backgroundColor: selected && colorPalette.buttonColor, position: 'relative',
                                             "&:hover": {
