@@ -7,7 +7,7 @@ import { CheckBoxComponent, PaginationTable, RadioItem, SectionHeader, Table_V1 
 import { useAppContext } from "../../../../context/AppContext"
 import { createDiscipline, deleteDiscipline, editDiscipline } from "../../../../validators/api-requests"
 import { SelectList } from "../../../../organisms/select/SelectList"
-import { formatTimeStamp } from "../../../../helpers"
+import { formatTimeStamp, formatTimeStampTimezone } from "../../../../helpers"
 import { icons } from "../../../../organisms/layout/Colors"
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser"
 import { PaymentDetailsBox, PaymentDetailsContainer, PaymentDetailsInfo, PaymentDetailsStatus, PaymentDetailsTitle } from "../../../../organisms/paymentDetails"
@@ -191,8 +191,8 @@ export default function EditBillsReceived(props) {
                         <Button text="Nova Parcela" small style={{ borderRadius: 2, }}
                         />
                     </Link>
-                    <Button text="Dar Baixa" small secondary style={{ borderRadius: 2, }} />
-                    <Button text="Excluir" cancel small style={{ borderRadius: 2, }} />
+                    {/* <Button text="Dar Baixa" small secondary style={{ borderRadius: 2, }} /> */}
+                    {/* <Button text="Excluir" cancel small style={{ borderRadius: 2, }} /> */}
                 </Box>
 
             </SectionHeader>
@@ -204,13 +204,15 @@ export default function EditBillsReceived(props) {
                         <PaymentDetailsTitle title="Informações" />
                         <PaymentDetailsBox>
                             <PaymentDetailsInfo header="ID BemPaggo" value={installmentData?.id_cobranca || '-'} />
+                            <PaymentDetailsInfo header="ID Parcela" value={installmentData?.id_parcela_matr || '-'} />
                             <PaymentDetailsInfo header="Nº Parcela" value={installmentData?.n_parcela || '-'} />
                             <PaymentDetailsInfo header="Resp.pagante" value={installmentData?.pagante || '-'} />
                         </PaymentDetailsBox>
                         <PaymentDetailsBox>
-                            <PaymentDetailsInfo header="Centro de Custo" value={installmentData?.nome_cc || '-'} />
+                            <PaymentDetailsInfo header="ReferenciaId" value={installmentData?.referenceId || '-'} />
+                            <PaymentDetailsInfo header="Data Baixa: " value={formatTimeStampTimezone(installmentData?.dt_baixa) || '-'} />
+                            <PaymentDetailsInfo header="Data Pagamento: " value={formatTimeStampTimezone(installmentData?.dt_pagamento, true) || '-'} />
                             <PaymentDetailsInfo header="Conta Bancária" value={installmentData?.nome_conta || '-'} />
-                            <PaymentDetailsInfo header="Protestada" value={installmentData?.parc_protestada || '-'} />
                         </PaymentDetailsBox>
                     </PaymentDetailsContainer>
 
@@ -223,10 +225,21 @@ export default function EditBillsReceived(props) {
                             </Box>
                             <PaymentDetailsInfo flexDirection="row" align="center" header="ID Usuário:" value={installmentData?.usuario_id || '-'} />
                             <PaymentDetailsInfo gap={3} flexDirection="row" icon link={`/administrative/users/${installmentData?.usuario_id}`} location="/icons/user_avatar.png" value={installmentData?.aluno || '-'} />
-                            <PaymentDetailsInfo gap={3} flexDirection="row" icon location="/icons/calendar_icon_home.png" value={formatTimeStamp(installmentData?.vencimento) || '-'} />
-                            <PaymentDetailsInfo gap={3} flexDirection="row" icon
-                                location={`/icons/${installmentData?.forma_pagamento === 'Boleto' ? 'barcode_icon' : 'creditCard_icon'}.png`}
-                                value={installmentData?.forma_pagamento || '-'} />
+                            <Box sx={{ display: 'flex', gap: .5, width: '100%', flexDirection: 'column' }}>
+                                <Text bold>Vencimento</Text>
+                                <PaymentDetailsInfo gap={1} flexDirection="row" icon location="/icons/calendar_icon_home.png" value={formatTimeStamp(installmentData?.vencimento) || '-'} />
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: .5, width: '100%', flexDirection: 'column' }}>
+                                <Text bold>Pagamento</Text>
+                                <PaymentDetailsInfo gap={1} flexDirection="row" icon location="/icons/check_around_icon.png" value={formatTimeStamp(installmentData?.dt_pagamento) || '-'} />
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: .5, width: '100%', flexDirection: 'column' }}>
+                                <Text bold>Forma de Pagamento</Text>
+                                <PaymentDetailsInfo gap={3} flexDirection="row" icon
+                                    location={`/icons/${installmentData?.forma_pagamento === 'Boleto' ? 'barcode_icon' : 'creditCard_icon'}.png`}
+                                    value={installmentData?.forma_pagamento || '-'} />
+                            </Box>
+
                         </PaymentDetailsBox>
                     </PaymentDetailsContainer>
                 </Box>
