@@ -12,7 +12,8 @@ export const CheckBoxComponent = (props) => {
         boxGroup = [],
         valueChecked = '',
         disabled = false,
-        padding = '5px'
+        padding = '5px',
+        sx = {}
     } = props;
 
     const { colorPalette } = useAppContext();
@@ -36,7 +37,7 @@ export const CheckBoxComponent = (props) => {
 
     return (
         <Box>
-            <Box sx={{ display: 'flex', gap: 1.5, flexDirection: 'column', padding: padding}}>
+            <Box sx={{ display: 'flex', gap: 1.5, flexDirection: 'column', padding: padding, ...sx}}>
                 {title && <Text bold>{title}</Text>}
                 <Box sx={{
                     display: 'flex', alignItems: horizontal ? 'center' : 'start', justifyContent: 'start', gap: 2,

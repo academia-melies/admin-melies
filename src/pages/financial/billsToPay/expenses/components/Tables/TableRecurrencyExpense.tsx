@@ -2,7 +2,7 @@
 import React, { ChangeEvent, Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Box, Button, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
-import { CheckBoxTable, PaginationTable } from "../../../../../../organisms";
+import { CheckBoxComponent, CheckBoxTable, PaginationTable } from "../../../../../../organisms";
 import { EditRecurrency, RecurrencyExpenses } from "../../RecurrencyExpense/RecurrencyExpenses";
 
 interface TableRecurrencyExpensesProps {
@@ -86,34 +86,29 @@ const TableRecurrencyExpense: React.FC<TableRecurrencyExpensesProps> = ({
                                 <th style={{ padding: '8px 5px' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
                                         <Text bold xsmall>Excluir</Text>
-                                        <CheckBoxTable
+
+                                        <CheckBoxComponent
                                             boxGroup={[{ value: 'allSelect' }]}
                                             valueChecked={'select'}
                                             horizontal={true}
                                             onSelect={() => toggleExcludeAll()}
                                             padding={0}
                                             gap={0}
-                                            sx={{ display: 'flex', maxWidth: 25 }}
-                                            onClick={(e: ChangeEvent<HTMLInputElement>) => {
-                                                e.stopPropagation(); // Impede a propagação do evento de clique
-                                            }}
+                                            sx={{ display: 'flex', maxWidth: 20 }}
                                         />
                                     </Box>
                                 </th>
                                 <th style={{ padding: '8px 5px' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
                                         <Text bold xsmall>Efetivar</Text>
-                                        <CheckBoxTable
+                                        <CheckBoxComponent
                                             boxGroup={[{ value: 'allSelect' }]}
                                             valueChecked={'select'}
                                             horizontal={true}
                                             onSelect={() => toggleSelectAll()}
                                             padding={0}
                                             gap={0}
-                                            sx={{ display: 'flex', maxWidth: 25 }}
-                                            onClick={(e: ChangeEvent<HTMLInputElement>) => {
-                                                e.stopPropagation(); // Impede a propagação do evento de clique
-                                            }}
+                                            sx={{ display: 'flex', maxWidth: 20 }}
                                         />
                                     </Box>
                                 </th>
@@ -133,40 +128,36 @@ const TableRecurrencyExpense: React.FC<TableRecurrencyExpensesProps> = ({
                                         backgroundColor: selected ? colorPalette?.buttonColor + '66' : selectedExclude ? '#FFCCCC' : colorPalette?.secondary
                                     }}>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            <CheckBoxTable
-                                                boxGroup={groupSelect(expensesId)}
-                                                valueChecked={expensesSelectedExclude}
-                                                horizontal={true}
-                                                onSelect={(value: string) => {
-                                                    if (expensesId) {
-                                                        setExpensesSelectedExclude(value);
-                                                    }
-                                                }}
-                                                padding={0}
-                                                gap={0}
-                                                sx={{ display: 'flex', maxWidth: 25 }}
-                                                onClick={(e: ChangeEvent<HTMLInputElement>) => {
-                                                    e.stopPropagation(); // Impede a propagação do evento de clique
-                                                }}
-                                            />
+                                            <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', }}>
+                                                <CheckBoxComponent
+                                                    boxGroup={groupSelect(expensesId)}
+                                                    valueChecked={expensesSelectedExclude}
+                                                    onSelect={(value: string) => {
+                                                        if (expensesId) {
+                                                            setExpensesSelectedExclude(value);
+                                                        }
+                                                    }}
+                                                    padding={0}
+                                                    gap={0}
+                                                    sx={{ display: 'flex', maxWidth: 20 }}
+                                                />
+                                            </Box>
                                         </td>
                                         <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                            <CheckBoxTable
-                                                boxGroup={groupSelect(expensesId)}
-                                                valueChecked={expensesSelected}
-                                                horizontal={true}
-                                                onSelect={(value: string) => {
-                                                    if (expensesId) {
-                                                        setExpensesSelected(value);
-                                                    }
-                                                }}
-                                                padding={0}
-                                                gap={0}
-                                                sx={{ display: 'flex', maxWidth: 25 }}
-                                                onClick={(e: ChangeEvent<HTMLInputElement>) => {
-                                                    e.stopPropagation(); // Impede a propagação do evento de clique
-                                                }}
-                                            />
+                                            <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', }}>
+                                                <CheckBoxComponent
+                                                    boxGroup={groupSelect(expensesId)}
+                                                    valueChecked={expensesSelected}
+                                                    onSelect={(value: string) => {
+                                                        if (expensesId) {
+                                                            setExpensesSelected(value);
+                                                        }
+                                                    }}
+                                                    padding={0}
+                                                    gap={0}
+                                                    sx={{ display: 'flex', maxWidth: 20 }}
+                                                />
+                                            </Box>
                                         </td>
 
                                         <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>

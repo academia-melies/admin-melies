@@ -2,7 +2,7 @@
 import React, { ChangeEvent, Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Box, Button, Text, TextInput } from "../../../../../../atoms";
 import { useAppContext } from "../../../../../../context/AppContext";
-import { CheckBoxTable } from "../../../../../../organisms";
+import { CheckBoxComponent, CheckBoxTable } from "../../../../../../organisms";
 import { RecurrencyCompensation } from "../../Compensation/RecurrencyCompensation";
 import { EditRecurrency } from "../../RecurrencyExpense/RecurrencyExpenses";
 
@@ -102,37 +102,31 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                 <table style={{ borderCollapse: 'collapse', width: '100%', overflow: 'auto', }}>
                     <thead>
                         <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
-                           <th style={{ padding: '8px 5px' }}>
+                            <th style={{ padding: '8px 5px' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
                                     <Text bold xsmall>Excluir</Text>
-                                    <CheckBoxTable
+
+                                    <CheckBoxComponent
                                         boxGroup={[{ value: 'allSelect' }]}
                                         valueChecked={'select'}
-                                        horizontal={true}
                                         onSelect={() => toggleExcludeAll()}
                                         padding={0}
                                         gap={0}
-                                        sx={{ display: 'flex', maxWidth: 25 }}
-                                        onClick={(e: ChangeEvent<HTMLInputElement>) => {
-                                            e.stopPropagation(); // Impede a propagação do evento de clique
-                                        }}
+                                        sx={{ display: 'flex', maxWidth: 20 }}
                                     />
                                 </Box>
                             </th>
                             {<th style={{ padding: '8px 5px' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
                                     <Text bold xsmall>Efetivar</Text>
-                                    <CheckBoxTable
+
+                                    <CheckBoxComponent
                                         boxGroup={[{ value: 'allSelect' }]}
                                         valueChecked={'select'}
-                                        horizontal={true}
                                         onSelect={() => toggleSelectAll()}
                                         padding={0}
                                         gap={0}
-                                        sx={{ display: 'flex', maxWidth: 25 }}
-                                        onClick={(e: ChangeEvent<HTMLInputElement>) => {
-                                            e.stopPropagation(); // Impede a propagação do evento de clique
-                                        }}
+                                        sx={{ display: 'flex', maxWidth: 20 }}
                                     />
                                 </Box>
                             </th>}
@@ -152,40 +146,37 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                                     backgroundColor: selected ? colorPalette?.buttonColor + '66' : selectedExclude ? '#FFCCCC' : colorPalette?.secondary
                                 }}>
                                     <td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                        <CheckBoxTable
-                                            boxGroup={groupSelect(compensationId)}
-                                            valueChecked={compensationSelectedExclude}
-                                            horizontal={true}
-                                            onSelect={(value: string) => {
-                                                if (compensationId) {
-                                                    setCompensationSelectedExclude(value);
-                                                }
-                                            }}
-                                            padding={0}
-                                            gap={0}
-                                            sx={{ display: 'flex', maxWidth: 25 }}
-                                            onClick={(e: ChangeEvent<HTMLInputElement>) => {
-                                                e.stopPropagation(); // Impede a propagação do evento de clique
-                                            }}
-                                        />
+                                        <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', }}>
+                                            <CheckBoxComponent
+                                                valueChecked={compensationSelectedExclude}
+                                                boxGroup={groupSelect(compensationId)}
+                                                onSelect={(value: string) => {
+                                                    if (compensationId) {
+                                                        setCompensationSelectedExclude(value);
+                                                    }
+                                                }}
+                                                padding={0}
+                                                gap={0}
+                                                sx={{ display: 'flex', maxWidth: 20 }}
+                                            />
+                                        </Box>
                                     </td>
-                                    {<td style={{ fontSize: '13px', padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                        <CheckBoxTable
-                                            boxGroup={groupSelect(compensationId)}
-                                            valueChecked={compensationSelected}
-                                            horizontal={true}
-                                            onSelect={(value: string) => {
-                                                if (compensationId) {
-                                                    setCompensationSelected(value);
-                                                }
-                                            }}
-                                            padding={0}
-                                            gap={0}
-                                            sx={{ display: 'flex', maxWidth: 25 }}
-                                            onClick={(e: ChangeEvent<HTMLInputElement>) => {
-                                                e.stopPropagation(); // Impede a propagação do evento de clique
-                                            }}
-                                        />
+                                    {<td style={{ fontSize: '13px', maxWidth: 25, padding: '0px 5px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
+
+                                        <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', }}>
+                                            <CheckBoxComponent
+                                                boxGroup={groupSelect(compensationId)}
+                                                valueChecked={compensationSelected}
+                                                onSelect={(value: string) => {
+                                                    if (compensationId) {
+                                                        setCompensationSelected(value);
+                                                    }
+                                                }}
+                                                padding={0}
+                                                gap={0}
+                                                sx={{ display: 'flex', maxWidth: 20 }}
+                                            />
+                                        </Box>
                                     </td>}
 
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
@@ -212,7 +203,7 @@ const TableCompensation: React.FC<TableRecurrencyCompensationProps> = ({
                                             <Text light small>{item?.valor_liquido}</Text>}
                                     </td>
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
-                                    <Button text="Editar" small style={{ borderRadius: 2 }} onClick={() => setEditRecurrency({ active: true, data: compensationId })} />
+                                        <Button text="Editar" small style={{ borderRadius: 2 }} onClick={() => setEditRecurrency({ active: true, data: compensationId })} />
                                     </td>
                                 </tr>
                             );
