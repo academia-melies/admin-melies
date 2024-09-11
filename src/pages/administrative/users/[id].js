@@ -1144,9 +1144,9 @@ export default function EditUser() {
             setLoading(true)
             try {
                 const response = await createUser(userData, arrayInterests, arrayHistoric, arrayDisciplinesProfessor, usuario_id)
-                const { success } = response?.data
+                const { data } = response
 
-                if (success) {
+                if (data?.success) {
 
 
                     if (userData?.perfil?.includes('funcionario')) { await createContract(data?.userId, contract) }
