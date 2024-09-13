@@ -216,7 +216,7 @@ export default function ListAccountType(props) {
             </Backdrop>
             {accountTypesList?.length > 0 ?
                 <div ref={componentPDF}>
-                    <Table_V1 data={accountTypesList?.filter(filter)} columns={column} columnId={'id_centro_custo'} columnActive={true} />
+                    <Table_V1 data={accountTypesList?.filter(filter)} columns={column} columnId={'id_tipo'} columnActive={true} />
                 </div>
                 :
                 <Box sx={{ alignItems: 'center', justifyContent: 'center', display: 'flex', padding: '80px 40px 0px 0px' }}>

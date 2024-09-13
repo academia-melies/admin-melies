@@ -80,6 +80,7 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                         {data.map((item: TableData, index: number) => {
                             const isTitle = item.categoria ? true : false
                             const subCategoryArray = item?.centro_custos || []
+                            const destac = isTitle && subCategoryArray.length === 0
                             return (
                                 <React.Fragment key={index}>
                                     <tr style={{
@@ -91,7 +92,7 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                                                 <Text bold={isTitle} light={!isTitle} small>
                                                     {item?.categoria || item.subCategoria || '-'}
                                                 </Text>
-                                                {isTitle && <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icons.gray_arrow_down})` }} />}
+                                                {(isTitle && subCategoryArray.length > 0) && <Box sx={{ ...styles.iconFilter, backgroundImage: `url(${icons.gray_arrow_down})` }} />}
                                             </Box>
                                         </td>
                                         <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
