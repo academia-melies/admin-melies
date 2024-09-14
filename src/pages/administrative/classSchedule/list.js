@@ -96,6 +96,7 @@ export default function ClassSheduleList(props) {
     async function listProfessor() {
         const response = await api.get(`/classSchedule/disciplines/professor`)
         const { data } = response
+        console.log('aqui',data)
         const groupProfessor = data?.map(professor => ({
             label: professor.nome,
             value: professor?.id
@@ -190,6 +191,7 @@ export default function ClassSheduleList(props) {
 
             {dateClass?.length > 0 ? (
                 dateClass.filter(filter).map((item, index) => {
+                    
                     const classScheduleData = item.aulas;
                     const name = item.nome_cronograma;
                     const idCronograma = item.id_cronograma
@@ -218,7 +220,7 @@ export default function ClassSheduleList(props) {
                                     }}
                                     onClick={() => toggleClassTable(index)}
                                 >
-                                    <Text bold>{name}</Text>
+                                    <Text bold>{name} </Text>
                                     <Box
                                         sx={{
                                             ...styles.menuIcon,
@@ -275,6 +277,7 @@ export default function ClassSheduleList(props) {
                                                         }}
                                                         >
                                                             {aulasNoDia.map((classData, index) => {
+                                                             
                                                                 const obsClassDay = classData.observacao_dia;
                                                                 const isNotClassDay = (obsClassDay === 'Feriado' || obsClassDay === 'Não existe aula agendada para esse dia.') ? true : false;
                                                                 const optative = parseInt(classData?.optativa) > 0;
