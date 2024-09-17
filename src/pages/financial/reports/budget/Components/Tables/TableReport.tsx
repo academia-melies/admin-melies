@@ -47,6 +47,9 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                             <th style={{ backgroundColor: 'lightgray' }}><Text bold></Text></th>
                             <th style={{ padding: '12px 8px', border: `1px solid ${colorPalette.primary}`, backgroundColor: 'lightgray' }}><Text bold>Dez</Text></th>
                             <th style={{ backgroundColor: 'lightgray' }}><Text bold></Text></th>
+                            <th style={{ padding: '12px 8px', minWidth: 120, border: `1px solid ${colorPalette.primary}`, backgroundColor: 'lightgray' }}><Text bold>Total Prev FY</Text></th>
+                            <th style={{ padding: '12px 8px', minWidth: 120, border: `1px solid ${colorPalette.primary}`, backgroundColor: 'lightgray' }}><Text bold>Total Real YTD</Text></th>
+
                         </tr>
                         <tr style={{ border: `1px solid ${colorPalette.primary}` }}>
                             <th style={{ padding: '12px 20px', border: `1px solid ${colorPalette.primary}`, textAlign: 'start' }}><Text bold>Receita</Text></th>
@@ -74,6 +77,8 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                             <th style={{ padding: '12px 8px', border: `1px solid ${colorPalette.primary}` }}><Text bold>Real</Text></th>
                             <th style={{ padding: '12px 8px', border: `1px solid ${colorPalette.primary}` }}><Text bold>Previsto</Text></th>
                             <th style={{ padding: '12px 8px', border: `1px solid ${colorPalette.primary}` }}><Text bold>Real</Text></th>
+                            <th style={{ padding: '12px 8px', border: `1px solid ${colorPalette.primary}`, backgroundColor: 'lightgray' }}><Text bold></Text></th>
+                            <th style={{ padding: '12px 8px', border: `1px solid ${colorPalette.primary}`, backgroundColor: 'lightgray' }}><Text bold></Text></th>
                         </tr>
                     </thead>
                     <tbody style={{ flex: 1, }}>
@@ -166,6 +171,12 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                                         <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
                                             <Text light small> {formatReal(item.real_dez)}</Text>
                                         </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small>{formatReal(item.total_prev_fy)}</Text>
+                                        </td>
+                                        <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                            <Text light small> {formatReal(item.total_real_ytd)}</Text>
+                                        </td>
                                     </tr>
                                     {subCategoryArray.length > 0 &&
                                         subCategoryArray.map((subItem, subIndex) => (
@@ -251,6 +262,12 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                                                 </td>
                                                 <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
                                                     <Text light small> {formatReal(subItem.real_dez)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small>{formatReal(item.total_prev_fy)}</Text>
+                                                </td>
+                                                <td style={{ textAlign: 'center', padding: '5px', border: `1px solid ${colorPalette.primary}` }}>
+                                                    <Text light small> {formatReal(item.total_real_ytd)}</Text>
                                                 </td>
                                             </tr>
                                         ))
