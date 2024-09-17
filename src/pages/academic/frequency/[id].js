@@ -221,6 +221,29 @@ export default function EditFrequency(props) {
         });
         setStudentData(updatedStudents);
     };
+    
+
+    const handleChangeObservation = (userId, field, value, aulaId) => {
+        const updatedStudents = studentData.map(day => {
+            const turmaCopy = [...day.turma];
+
+            const studentToUpdate = turmaCopy.find(item => item.usuario_id === userId);
+
+            if (studentToUpdate && studentToUpdate.aula_id === aulaId) {
+
+                studentToUpdate[field] = value;
+                studentToUpdate.disciplina_id = frequencyData?.disciplina_id;
+                studentToUpdate.turma_id = parseInt(id);
+
+               
+            }
+            return {
+                ...day,
+                turma: turmaCopy,
+            };
+        });
+        setStudentData(updatedStudents);
+    };
 
     const handleCreateFrequency = async () => {
         setLoading(true)
@@ -569,7 +592,7 @@ export default function EditFrequency(props) {
                                                                                 </td>
                                                                                 <td style={{ padding: '8px 10px', textAlign: 'center', border: '1px solid lightgray' }}>
                                                                                     <TextInput disabled={!isPermissionEdit && true}
-                                                                                        fullWidth name='obs_freq' value={item?.obs_freq || ''} sx={{ flex: 1, }} />
+                                                                                        fullWidth name='obs_freq' value={item?.obs_freq || ''} onChange={(e) => handleChangeObservation(item?.usuario_id,'obs_freq', e.target.value,aulaId)} sx={{ flex: 1, }} />
                                                                                 </td>
                                                                             </tr>
                                                                         );

@@ -218,7 +218,7 @@ export default function ClassSheduleList(props) {
                                     }}
                                     onClick={() => toggleClassTable(index)}
                                 >
-                                    <Text bold>{name}</Text>
+                                    <Text bold>{name} </Text>
                                     <Box
                                         sx={{
                                             ...styles.menuIcon,
@@ -275,6 +275,7 @@ export default function ClassSheduleList(props) {
                                                         }}
                                                         >
                                                             {aulasNoDia.map((classData, index) => {
+                                                             
                                                                 const obsClassDay = classData.observacao_dia;
                                                                 const isNotClassDay = (obsClassDay === 'Feriado' || obsClassDay === 'Não existe aula agendada para esse dia.') ? true : false;
                                                                 const optative = parseInt(classData?.optativa) > 0;
