@@ -13,7 +13,7 @@ interface HamalFormProps {
 }
 
 interface HamalData {
-    seto: string;
+    setor: string;
     hamal: string;
     nome: string;
     usuario_resp: any;
@@ -21,7 +21,7 @@ interface HamalData {
 
 const HamalModal = ({ setShow, fetchHamaisData, editHamal }: HamalFormProps) => {
     const [hamalData, setHamalData] = useState<HamalData>({
-        seto: '',
+        setor: '',
         hamal: '',
         nome: '',
         usuario_resp: 0
@@ -38,11 +38,11 @@ const HamalModal = ({ setShow, fetchHamaisData, editHamal }: HamalFormProps) => 
         }));
     };
     useEffect(() => {      
-        if (editHamal) {
+        if (editHamal.length !== 0) {
             setHamalData(editHamal);
         } else {          
             setHamalData({
-                seto: '',
+                setor: '',
                 hamal: '',
                 nome: '',
                 usuario_resp: 0,
@@ -59,7 +59,7 @@ const HamalModal = ({ setShow, fetchHamaisData, editHamal }: HamalFormProps) => 
                 alert.success('Hamal editado com sucesso!');
                 setShow(false);
                 setHamalData({
-                    seto: '',
+                    setor: '',
                     hamal: '',
                     nome: '',
                     usuario_resp: 0,
@@ -87,7 +87,7 @@ const HamalModal = ({ setShow, fetchHamaisData, editHamal }: HamalFormProps) => 
                 alert.success('Hamal criado com sucesso!');
                 setShow(false);
                 setHamalData({
-                    seto: '',
+                    setor: '',
                     hamal: '',
                     nome: '',
                     usuario_resp: 0,
@@ -137,8 +137,8 @@ const HamalModal = ({ setShow, fetchHamaisData, editHamal }: HamalFormProps) => 
             <Box sx={{ display: loading ? 'none' : 'block', padding: 5 }}>
                 <TextInput                    
                     placeholder="Setor"
-                    name="seto"
-                    value={hamalData.seto}
+                    name="setor"
+                    value={hamalData.setor}
                     onChange={handleChange}
                     label="Setor:"
                 />

@@ -17,7 +17,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 export interface Hama {
   id: string;
   nome: string;
-  seto: string;
+  setor: string;
   hamal: string;
 }
 interface HamalProps {
@@ -92,7 +92,7 @@ export default function TableHamal({hamal, edit,deleteHamal}:HamalProps) {
                     overflow: 'hidden',
                     maxWidth: '160px',
                   }} onClick={()=> edit(hamal)}>
-                    <Text>{hamal.seto || '-'}</Text>
+                    <Text>{hamal.setor || '-'}</Text>
                   </TableCell>
                   <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }} onClick={()=> edit(hamal)}>
                     <Text>{hamal.hamal || '-'}</Text>

@@ -7,7 +7,7 @@ import TableHamal from "./component/tableHamal";
 export interface Hamal {
   id: string;
   nome: string;
-  seto: string;
+  setor: string;
   hamal: string;
 }
 
@@ -67,11 +67,9 @@ export default function ListagemHamais() {
           onClick={() => opemModal()}
         />
       </Box>
-      {show &&
-        <Box sx={styles.containerModal}>
+      <Backdrop open={show} sx={{ zIndex: 99999, }}>
           <HamalModal setShow={() => setShow(false)} fetchHamaisData={fetchHamaisData} editHamal={editHamal}/>
-        </Box>
-      }
+        </Backdrop>
 
       <Divider />
       {loadingData ? (
@@ -116,14 +114,7 @@ const styles = {
     flexDirection: "column" as const,
     gap: "10px",
   },
-  containerModal: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "absolute",
-    top: "50%",
-    left: "28%"
-  },
+  
   itemContainer: {
     padding: "10px",
     borderBottom: "1px solid lightgray",
