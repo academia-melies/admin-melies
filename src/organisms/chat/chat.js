@@ -815,75 +815,76 @@ const ChatUser = ({ conversationChat, messagesContainerRef, setConversationChat,
                         </Box>
                     ) : (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, padding: '8px 12px', backgroundColor: colorPalette.primary, }}>
-                            {conversationData?.messages && conversationData?.messages?.map((item, index, array) => {
-                                const isOwner = item.de_usuario_id === user.id;
-                                const senderName = isOwner ? user.nome : item.de_usuario_nome;
-                                const senderAvatar = isOwner ? fotoPerfil : item.de_usuario_foto;
-                                const isNewMessage = !isOwner && parseInt(item.vizualizada) === 0;
+                            {conversationData?.messages && conversationData?.messages.length > 0 ?
+                                conversationData?.messages?.map((item, index, array) => {
+                                    const isOwner = item.de_usuario_id === user.id;
+                                    const senderName = isOwner ? user.nome : item.de_usuario_nome;
+                                    const senderAvatar = isOwner ? fotoPerfil : item.de_usuario_foto;
+                                    const isNewMessage = !isOwner && parseInt(item.vizualizada) === 0;
 
-                                const messageDate = new Date(item.dt_criacao).toLocaleDateString();
-                                const previousMessage = array[index - 1];
-                                const previousMessageDate = previousMessage ? new Date(previousMessage.dt_criacao).toLocaleDateString() : null;
+                                    const messageDate = new Date(item.dt_criacao).toLocaleDateString();
+                                    const previousMessage = array[index - 1];
+                                    const previousMessageDate = previousMessage ? new Date(previousMessage.dt_criacao).toLocaleDateString() : null;
 
-                                // Verifica se a data da mensagem é diferente da data da mensagem anterior
-                                const showDateHeader = previousMessageDate !== messageDate;
-                                const currentDay = new Date()
+                                    // Verifica se a data da mensagem é diferente da data da mensagem anterior
+                                    const showDateHeader = previousMessageDate !== messageDate;
+                                    const currentDay = new Date()
 
-                                const isToday = (dateString) => {
+                                    const isToday = (dateString) => {
 
-                                    if (dateString) {
+                                        if (dateString) {
 
-                                        const today = new Date();
-                                        const messageDate = new Date(dateString);
-                                        return (
-                                            today.getDate() === messageDate.getDate() &&
-                                            today.getMonth() === messageDate.getMonth() &&
-                                            today.getFullYear() === messageDate.getFullYear()
-                                        );
-                                    } else {
-                                        return ''
-                                    }
-                                };
+                                            const today = new Date();
+                                            const messageDate = new Date(dateString);
+                                            return (
+                                                today.getDate() === messageDate.getDate() &&
+                                                today.getMonth() === messageDate.getMonth() &&
+                                                today.getFullYear() === messageDate.getFullYear()
+                                            );
+                                        } else {
+                                            return ''
+                                        }
+                                    };
 
 
-                                return (
-                                    <Box key={index}>
-                                        {showDateHeader && (
-                                            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                <Box sx={{
-                                                    display: 'flex', padding: '8px 12px', borderRadius: 2, backgroundColor: colorPalette?.secondary,
-                                                    boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
-                                                    alignItems: 'center', justifyContent: 'center',
-                                                    marginTop: 2, marginBottom: 2
-                                                }}>
-                                                    <Text bold style={{ textAlign: 'center' }}>
-                                                        {isToday(item.dt_criacao) ? 'Hoje' : formatTimeStamp(item.dt_criacao)}
-                                                    </Text>
-                                                </Box>
-                                            </Box>
-                                        )}
-
-                                        <Box sx={{ width: '90%', justifyContent: isOwner ? 'flex-end' : 'flex-start', display: 'flex', gap: 1 }}>
-                                            {!isOwner && <Avatar sx={{ width: '35px', height: '35px', border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }} src={senderAvatar} />}
-                                            <Box sx={{
-                                                display: 'flex', gap: 1, justifyContent: 'flex-start', alignItems: 'flex-start', width: '90%', padding: '5px 12px',
-                                                border: isNewMessage && `1px solid ${colorPalette?.buttonColor}`,
-                                                borderBottom: !isNewMessage && `1px solid ${theme ? '#eaeaea' : '#404040'}`, boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`, borderRadius: 2, backgroundColor: isOwner ? colorPalette?.buttonColor + '33' : colorPalette?.secondary
-                                            }}>
-                                                <Box sx={{ display: 'flex', gap: .5, justifyContent: 'flex-start', alignItems: 'start', width: '100%', flexDirection: 'column' }}>
-                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                        <Text small bold>{senderName}</Text>
-                                                        {isNewMessage && <Box sx={{ display: 'flex', width: 8, height: 8, borderRadius: 8, backgroundColor: colorPalette?.buttonColor }} />}
+                                    return (
+                                        <Box key={index}>
+                                            {showDateHeader && (
+                                                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                    <Box sx={{
+                                                        display: 'flex', padding: '8px 12px', borderRadius: 2, backgroundColor: colorPalette?.secondary,
+                                                        boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                                                        alignItems: 'center', justifyContent: 'center',
+                                                        marginTop: 2, marginBottom: 2
+                                                    }}>
+                                                        <Text bold style={{ textAlign: 'center' }}>
+                                                            {isToday(item.dt_criacao) ? 'Hoje' : formatTimeStamp(item.dt_criacao)}
+                                                        </Text>
                                                     </Box>
-                                                    <Text small light>{item?.texto}</Text>
-                                                    <Text xsmall light style={{ color: 'gray' }}>{formatTimeStamp(item?.dt_criacao, true)}</Text>
                                                 </Box>
+                                            )}
+
+                                            <Box sx={{ width: '90%', justifyContent: isOwner ? 'flex-end' : 'flex-start', display: 'flex', gap: 1 }}>
+                                                {!isOwner && <Avatar sx={{ width: '35px', height: '35px', border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }} src={senderAvatar} />}
+                                                <Box sx={{
+                                                    display: 'flex', gap: 1, justifyContent: 'flex-start', alignItems: 'flex-start', width: '90%', padding: '5px 12px',
+                                                    border: isNewMessage && `1px solid ${colorPalette?.buttonColor}`,
+                                                    borderBottom: !isNewMessage && `1px solid ${theme ? '#eaeaea' : '#404040'}`, boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`, borderRadius: 2, backgroundColor: isOwner ? colorPalette?.buttonColor + '33' : colorPalette?.secondary
+                                                }}>
+                                                    <Box sx={{ display: 'flex', gap: .5, justifyContent: 'flex-start', alignItems: 'start', width: '100%', flexDirection: 'column' }}>
+                                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                            <Text small bold>{senderName}</Text>
+                                                            {isNewMessage && <Box sx={{ display: 'flex', width: 8, height: 8, borderRadius: 8, backgroundColor: colorPalette?.buttonColor }} />}
+                                                        </Box>
+                                                        <Text small light>{item?.texto}</Text>
+                                                        <Text xsmall light style={{ color: 'gray' }}>{formatTimeStamp(item?.dt_criacao, true)}</Text>
+                                                    </Box>
+                                                </Box>
+                                                {isOwner && <Avatar sx={{ width: '35px', height: '35px', border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }} src={senderAvatar} />}
                                             </Box>
-                                            {isOwner && <Avatar sx={{ width: '35px', height: '35px', border: `1px solid #fff`, cursor: 'pointer', '&hover': { opacity: 0.5 } }} src={senderAvatar} />}
                                         </Box>
-                                    </Box>
-                                );
-                            })}
+                                    );
+                                }) : <Text light>Sem mensagens</Text>}
 
                             {(writing?.active && writing.userWriting !== user?.id) &&
                                 <Box sx={{ display: 'flex', gap: .5, justifyContent: 'flex-start', alignItems: 'end', width: '100%', flexDirection: 'column' }}>
