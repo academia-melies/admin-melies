@@ -25,7 +25,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
 
     const { colorPalette } = useAppContext()
     const [showFieldsFilter, setShowFieldsFilter] = useState<boolean>(false)
-    const [fieldersSelected, setFieldersSelected] = useState<string[]>([]);
+    const [fieldersSelected, setFieldersSelected] = useState<string[]>(['baixado']);
     const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -47,6 +47,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
 
     const fields: Fields[] = [
         { label: 'Filtrar por Data', value: 'tipo_data' },
+        { label: 'Status da Baixa', value: 'baixado' },
         { label: 'Forma de Pagamento', value: 'forma_pagamento' }
     ]
 
@@ -115,6 +116,22 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                                     clean={false}
                                 />
                             }
+
+                            {field === 'baixado' &&
+                                <SelectList
+                                    data={[
+                                        { label: 'Sem Baixa', value: 'Sem Baixa' },
+                                        { label: 'Com Baixa', value: 'Com Baixa' },
+                                    ]}
+                                    valueSelection={filtersField?.baixado}
+                                    onSelect={(value: string) => setFiltersField({ ...filtersField, baixado: value })}
+                                    title="Status da Baixa:"
+                                    filterOpition="value"
+                                    style={{ backgroundColor: colorPalette?.secondary }}
+                                    clean={false}
+                                />
+                            }
+
                             {field === 'forma_pagamento' &&
                                 <SelectList
                                     data={groupData.paymentForm}
@@ -171,7 +188,8 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                         data: '',
                         startDate: '',
                         endDate: '',
-                        search: ''
+                        search: '',
+                        baixado: 'Sem Baixa'
                     })
                     setInstallments([]);
                 }}>

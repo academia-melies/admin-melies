@@ -64,7 +64,7 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
 
     const fields: Fields[] = [
         { label: 'Filtrar por Data', value: 'tipo_data' },
-        { label: 'Status da Baixa', value: 'baixado' },
+        { label: 'Status da Baixa', value: 'baixado' }, 
         { label: 'Centro de Custo', value: 'costCenter' },
         { label: 'Conta', value: 'account' },
         { label: 'Tipo de Conta', value: 'typeAccount' },

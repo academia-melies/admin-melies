@@ -37,7 +37,7 @@ export default function Editaccount(props) {
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
     const [saldoAccount, setSaldoAccount] = useState({ credit: 0, debit: 0, saldoAccount: 0 })
     const [extractAccount, setSextractAccount] = useState([])
-    const [accountExtractData, setEditAccount] = useState({ active: false, data: {} })
+    const [accountExtractData, setEditAccount] = useState({ active: false, data: {}, typeValue: '' })
     const [newBalance, setNewBalance] = useState(false)
     const [showTransfer, setShowTransfer] = useState(false)
     const [filterData, setFilterData] = useState('')
@@ -448,7 +448,7 @@ export default function Editaccount(props) {
 
             if (data?.success) {
                 alert.success('Conta atualizada.');
-                setEditAccount({ active: false, data: {} })
+                setEditAccount({ active: false, data: {}, typeValue: '' })
                 await getExtract()
                 await handleItems()
             } else {
@@ -796,7 +796,7 @@ export default function Editaccount(props) {
                                 opacity: 0.8,
                                 cursor: 'pointer'
                             }
-                        }} onClick={() => setEditAccount({ active: false, data: {} })} />
+                        }} onClick={() => setEditAccount({ active: false, data: {}, typeValue: '' })} />
                     </Box>
                     <Divider distance={0} />
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
@@ -807,6 +807,34 @@ export default function Editaccount(props) {
                         <TextInput disabled={!isPermissionEdit && true} type="date" name='dt_baixa'
                             onChange={handleChangeEditExtractAccount} value={(accountExtractData?.data?.dt_baixa)?.split('T')[0] || ''}
                             label='Dt Pagamento:' sx={{ width: '100%', }} />
+
+
+                        <RadioItem disabled={!isPermissionEdit && true} valueRadio={accountExtractData?.typeValue} group={[
+                            { label: 'Crédito', value: 'credito' },
+                            { label: 'Dédito', value: 'debito' },
+                        ]} title="Tipo de valor"
+                            horizontal={true}
+                            onSelect={(value) => {
+
+                                let newDebito = accountExtractData?.data?.debito
+                                let newCredito = accountExtractData?.data?.credito
+                                if (value === 'credito') {
+                                    newCredito = accountExtractData?.data?.credito || accountExtractData?.data?.debito
+                                    newDebito = 0
+                                } else {
+                                    newCredito = 0
+                                    newDebito = accountExtractData?.data?.credito || accountExtractData?.data?.debito
+                                }
+                                setEditAccount({
+                                    ...accountExtractData, typeValue: value,
+                                    data: {
+                                        ...accountExtractData?.data,
+                                        credito: newCredito,
+                                        debito: newDebito
+                                    }
+                                })
+
+                            }} />
 
                         <Box sx={{ display: 'flex', gap: .5, width: '100%' }}>
                             <Box sx={{
@@ -820,8 +848,9 @@ export default function Editaccount(props) {
                             {/*formatter.format(accountExtractData?.data?.credito).replace("R$","") */}
                             {/*formatter.format(accountExtractData?.data?.debito).replace("R$","")     item.debitFormat = formatter.format(item.debito)
                                item.creditFormat = formatter.format(item.credito) */}
+
                             {
-                                accountExtractData?.data?.credito ?
+                                accountExtractData?.typeValue === 'credito' ?
                                     <TextInput disabled={!isPermissionEdit && true} placeholder='R$ 5,00'
                                         name='credito'
                                         onChange={handleChangeEditExtractAccount}
@@ -1079,12 +1108,14 @@ const TableExtract = ({ data = [], filters = [], onPress = () => { }, setEditAcc
     const openPayment = async (item) => {
         const formattedValueData = item
         const formattedValue = item?.credito ? formatterLiquidValue(item?.credito) : formatterLiquidValue(item?.debito)
+        const paymentType = item?.credito ? 'credito' : 'debito'
         await setEditAccount({
             active: true, data: {
                 ...formattedValueData,
                 credito: item?.credito ? formattedValue : 0,
                 debito: item?.debito ? formattedValue : 0
-            }
+            },
+            typeValue: paymentType
         })
     }
 

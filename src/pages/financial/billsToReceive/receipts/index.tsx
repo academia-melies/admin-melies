@@ -21,6 +21,7 @@ export interface FiltersField {
     startDate: string | null
     endDate: string | null
     search: string | null
+    baixado: string
 }
 
 export interface Account {
@@ -100,7 +101,8 @@ export default function Installments() {
         data: '',
         startDate: '',
         endDate: '',
-        search: ''
+        search: '',
+        baixado: 'Sem Baixa'
     })
     const [installmentsSelected, setInstallmentsSelected] = useState<string | null>(null);
     const [installmentsSelectedExclude, setInstallmentsSelectedExclude] = useState<string | null>(null);
@@ -123,7 +125,8 @@ export default function Installments() {
                     search: filtersField.search,
                     page: page || 0, // exemplo
                     limit: limit || 20,    // exemplo
-                    dateType: filtersField.tipo_data
+                    dateType: filtersField.tipo_data,
+                    baixado: filtersField.baixado,
                 }
             });
 
