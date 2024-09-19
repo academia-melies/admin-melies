@@ -14,10 +14,10 @@ export const News = () => {
 
     const newsData = [
         {
-            imagem: '/background/chat-image.jpg', area: 'Suporte', title: 'Novo Chat Interno!',
-            date: '2024-08-16',
+            imagem: '/background/chat-image.jpg', area: 'Suporte', title: 'WorkChat fora do ar temporáriamente!',
+            date: '2024-09-19',
             new: true,
-            description: 'Agora, temos nosso prórpio chat interno! É isso mesmo, agora no Painel Administrativo, você pode interagir com qualquer funcionário. Está em fase de implementação e testes, caso tenham sugestões, correções, nos dê seu feedback através no chamado!'
+            description: 'Workchat fora do ar! O workchat está dora do ar temporáriamente, para realizar eventuais correções. Agradeçemos e pedirmos para que continue nos dando dê seu feedback através no chamado ou via Teams, para continuarmos melhorando!'
         },
         {
             imagem: '/background/aviso-4.jpg', area: 'Suporte', title: 'Atualizações Painel Administrativo',
