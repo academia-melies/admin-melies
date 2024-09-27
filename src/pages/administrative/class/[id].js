@@ -167,12 +167,14 @@ export default function EditClass(props) {
         try {
             const response = await api.get(`/courses`)
             const { data } = response
-            const groupCourses = data.map(course => ({
-                label: `${course.nome_curso}_${course?.modalidade_curso}`,
-                value: course?.id_curso
-            }));
-
-            setCourses(groupCourses);
+            if(data.length > 0){
+                const groupCourses = data?.filter(a => a.ativo == 1)?.map(course => ({
+                    label: `${course.nome_curso}_${course?.modalidade_curso}`,
+                    value: course?.id_curso
+                }));
+                
+                setCourses(groupCourses);
+            }
         } catch (error) {
         }
     }
