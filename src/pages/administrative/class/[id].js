@@ -182,12 +182,13 @@ export default function EditClass(props) {
         try {
             const response = await api.get(`/grid/course/${courseId}`)
             const { data } = response
-            const groupGrids = data.map(grid => ({
-                label: grid.nome_grade,
-                value: grid?.id_grade
-            }));
-
-            setGrids(groupGrids);
+            if (data.length > 0) {
+                const groupGrids = data?.filter(grid => grid.ativo == 1)?.map(grid => ({
+                    label: grid.nome_grade,
+                    value: grid?.id_grade
+                }));
+                setGrids(groupGrids);
+            }
         } catch (error) {
             return error
         }
@@ -338,7 +339,7 @@ export default function EditClass(props) {
                                             return (
                                                 <tr key={`${item}-${index}`}>
                                                     <td style={{ display: 'flex', padding: '8px 0px', alignItems: 'center', justifyContent: 'center', flex: 1, fontSize: '14px', fontFamily: 'MetropolisRegular', color: colorPalette.textColor, textAlign: 'center', border: `1px solid ${colorPalette.primary}` }}>
-                                                        <Box sx={{display: 'flex', position: 'relative'}}>
+                                                        <Box sx={{ display: 'flex', position: 'relative' }}>
                                                             {parseInt(item?.cursando_dp) > 0 &&
                                                                 <Box sx={{
                                                                     backgroundColor: 'red',
