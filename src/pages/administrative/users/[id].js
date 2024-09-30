@@ -277,6 +277,7 @@ export default function EditUser() {
             const response = await api.get(`/user/${id}`)
             const { data } = response
             setUserData(data)
+            return data
         } catch (error) {
             console.log(error)
             return error
@@ -630,7 +631,7 @@ export default function EditUser() {
     }
 
 
-    async function autoEmailMelies(email) {
+    async function autoEmailMelies() {
         try {
             const name = userData?.nome?.split(' ');
             const firstName = name[0];
@@ -645,7 +646,7 @@ export default function EditUser() {
     }
 
 
-    async function listUserByArea(userArea) {
+    async function listUserByArea() {
         try {
             const response = await api.get(`/users`)
             const { data } = response
@@ -689,21 +690,26 @@ export default function EditUser() {
     const handleItems = async () => {
         setLoading(true)
         try {
-            await getUserData()
-            await getEnrollment()
-            await getContract()
-            await getInterest()
+            const userDetails = await getUserData()
+            if(userDetails.perfil.includes('aluno')){
+                await getEnrollment()
+                await getInterest()
+                await getContractStudent()
+                await handleEnrollments()
+                await handleResponsible()
+                await handlePaymentsProfile()
+            }
+
+            if(userDetails.perfil.includes('funcionario')){
+                await getContract()
+                await getOfficeHours()
+                await getDisciplineProfessor()
+            }
             await getHistoric()
             await getFileUser()
-            await getContractStudent()
-            await getOfficeHours()
             await getPermissionUser()
             await getDependent()
-            await getDisciplineProfessor()
             await listClass()
-            await handleEnrollments()
-            await handleResponsible()
-            await handlePaymentsProfile()
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar Usuarios')
         } finally {
@@ -1220,7 +1226,7 @@ export default function EditUser() {
     const handleEditUser = async () => {
         if (checkRequiredFields()) {
             setLoading(true)
-            try {
+            try { 
                 const response = await editeUser({ id, userData })
                 if (response.status === 422) return alert.error('CPF já cadastrado.')
                 if (contract) {
