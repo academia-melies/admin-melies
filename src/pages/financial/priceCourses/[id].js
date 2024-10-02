@@ -256,14 +256,18 @@ export default function EditPricesCourse(props) {
     }, [ajustmentAplicateClass])
 
 
+    function parseFormattedNumber(value) {
+        return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+    }
+
+    function formatToCurrency(value) {
+        return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    }
 
     async function calculationValues({ porcent, remove, ajustmentAplicated }) {
         setLoading(true)
         try {
-            let valueTotal = pricesCourseData?.valor_total_curso;
-            let formattValue = valueTotal.replace(/\./g, '').replace(',', '.');
-            valueTotal = parseFloat(formattValue)
-
+            let valueTotal = parseFloat(parseFormattedNumber(pricesCourseData?.valor_total_curso))
 
             let alertMsg = ''
             if (remove) {
@@ -278,20 +282,19 @@ export default function EditPricesCourse(props) {
                     return;
                 }
                 const discountValue = (valueTotal * (discountPercentage / 100)).toFixed(2);
-                const updatedTotal = (parseFloat((valueTotal)) + parseFloat(discountValue)).toFixed(2);
-                valueTotal = updatedTotal;
+                valueTotal = valueTotal + discountValue
 
             }
             const valueParcels = (valueTotal / pricesCourseData?.n_parcelas).toFixed(2);
 
             const valueDiscount = (valueTotal - (valueTotal * 0.05)).toFixed(2)
-            const formattedParcels = formatValueReal(valueParcels);
-            const formattedDiscount = formatValueReal(valueDiscount);
+            const formattedParcels = formatToCurrency(valueParcels);
+            const formattedDiscount = formatToCurrency(valueDiscount);
 
 
             setPricesCourseData((prevValues) => ({
                 ...prevValues,
-                valor_total_curso: formatValueReal(valueTotal),
+                valor_total_curso: formatToCurrency(valueTotal),
                 valor_parcelado_curso: formattedParcels,
                 valor_avista_curso: formattedDiscount
             }));
@@ -312,10 +315,11 @@ export default function EditPricesCourse(props) {
         setLoading(true)
         try {
 
-            let [valueTotal] = classesList?.filter(item => item.id_turma === classId)?.map(item => item.valor_total);
-            let [numberParcels] = classesList?.filter(item => item.id_turma === classId)?.map(item => item.n_parcelas);
-            let formattValue = valueTotal.replace(/\./g, '').replace(',', '.');
-            valueTotal = parseFloat(formattValue)
+            const classFinded = classesList?.filter(item => item.id_turma === classId)
+            let valueTotal = parseFloat(parseFormattedNumber(classFinded[0]?.valor_total))
+            let numberParcels = parseInt(classFinded[0]?.n_parcelas)
+
+
             let alertMsg = ''
             if (remove) {
                 valueTotal = beforeValueCourse;
@@ -329,14 +333,15 @@ export default function EditPricesCourse(props) {
                     return;
                 }
                 const discountValue = (valueTotal * (discountPercentage / 100)).toFixed(2);
-                const updatedTotal = (parseFloat((valueTotal)) + parseFloat(discountValue)).toFixed(2);
+                const updatedTotal = valueTotal + discountValue
                 valueTotal = updatedTotal;
 
             }
+
             const valueParcels = (valueTotal / numberParcels).toFixed(2);
             const valueDiscount = (valueTotal - (valueTotal * 0.05)).toFixed(2)
-            const formattedParcels = formatValueReal(valueParcels);
-            const formattedDiscount = formatValueReal(valueDiscount);
+            const formattedParcels = formatToCurrency(valueParcels);
+            const formattedDiscount = formatToCurrency(valueDiscount);
             let now = new Date()
             const nextDate = await calculateNextDate(now)
 
@@ -345,7 +350,7 @@ export default function EditPricesCourse(props) {
                     if (classValue?.id_turma === classId) {
                         return {
                             ...classValue,
-                            valor_total: formatValueReal(valueTotal),
+                            valor_total: formatToCurrency(valueTotal),
                             valor_parcelado: formattedParcels,
                             valor_avista: formattedDiscount,
                             dt_prox_renovacao: nextDate

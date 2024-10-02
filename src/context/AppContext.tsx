@@ -167,6 +167,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             }
             return response
         } catch (error) {
+            console.log(error)
             return false
         } finally {
             setLoading(false)
