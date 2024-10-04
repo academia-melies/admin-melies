@@ -4199,7 +4199,7 @@ export default function EditUser() {
                                                                     </>
                                                                 }
 
-                                                                <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
+                                                                {/* <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
                                                                     <Text bold>Prova - Redação:</Text>
                                                                     {interest?.id_redacao &&
                                                                         <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
@@ -4218,7 +4218,7 @@ export default function EditUser() {
                                                                     }
 
                                                                 </Box>
-                                                                <Divider padding={0} />
+                                                                <Divider padding={0} /> */}
                                                                 <Box sx={styles.inputSection}>
                                                                     <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_redacao' onBlur={(e) => handleBlurNota(e, subscription)}
                                                                         type="number" onChange={(e) =>
