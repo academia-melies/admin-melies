@@ -71,6 +71,8 @@ export const formatTimeStampTimezone = (timestamp, time) => {
 
             return `${day}/${month}/${year}`;
          }
+      } else {
+         return null
       }
    } catch (error) {
       return null;

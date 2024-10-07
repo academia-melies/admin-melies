@@ -8,7 +8,7 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import HeaderFilters from "./components/Header/HeaderFilters";
 import { checkUserPermissions } from "../../../../validators/checkPermissionUser";
 import { useRouter } from "next/router";
-import TableExpenses  from "./components/Tables/TableExpenses";
+import TableExpenses from "./components/Tables/TableExpenses";
 import RecurrencyCompensation from "./Compensation/RecurrencyCompensation";
 import RecurrencyExpenses from "./RecurrencyExpense/RecurrencyExpenses";
 import ExpenseDetails from "./expenseDetails";
@@ -75,6 +75,8 @@ export interface Expenses {
   nome_tipo: string | null;
   nome_conta: string | null;
   nome_cc: string | null;
+  n_nfe: string | null
+  dt_nfe: string | null
 }
 
 

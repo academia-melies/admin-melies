@@ -119,6 +119,8 @@ function TableExpenses({
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Tipo</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>C.Custo</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '55px' }}><Text bold small>Conta.</Text></th>
+                            <th style={{ padding: '8px 0px', minWidth: '80px' }}><Text bold small>Nº Nf</Text></th>
+                            <th style={{ padding: '8px 0px', minWidth: '55px' }}><Text bold small>Dt Nf</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold small>Status</Text></th>
                             <th style={{ padding: '8px 0px', minWidth: '65px' }}><Text bold small>Baixado</Text></th>
                         </tr>
@@ -274,6 +276,39 @@ function TableExpenses({
                                             style={{ fontSize: '11px', height: 30, width: 120 }}
                                         />
                                             : <Text light small>{item?.nome_conta || '-'}</Text>}
+                                    </td>
+
+                                    <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                        {selected ? <TextInput
+                                            name='n_nfe'
+                                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                                handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
+                                            value={item?.n_nfe || ''}
+                                            small
+                                            InputProps={{
+                                                style: {
+                                                    fontSize: '11px', height: 30
+                                                }
+                                            }}
+                                        /> :
+                                            <Text light small>{item?.n_nfe || '-'}</Text>}
+                                    </td>
+
+                                    <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                        {selected ? <TextInput
+                                            name='dt_nfe'
+                                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                                handleChangeExpenseData(expenseId, e.target.name, e.target.value)}
+                                            value={(item?.dt_nfe)?.split('T')[0] || ''}
+                                            small type="date"
+
+                                            InputProps={{
+                                                style: {
+                                                    fontSize: '11px', height: 30
+                                                }
+                                            }}
+                                        /> :
+                                            <Text light small>{item?.dt_nfe ? formatTimeStampTimezone(item?.dt_nfe) : '-'}</Text>}
                                     </td>
 
                                     <td style={{ textAlign: 'center', padding: '5px', borderBottom: `1px solid ${colorPalette.primary}` }}>
