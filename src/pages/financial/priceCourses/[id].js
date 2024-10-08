@@ -319,6 +319,8 @@ export default function EditPricesCourse(props) {
             let valueTotal = parseFloat(parseFormattedNumber(classFinded[0]?.valor_total))
             let numberParcels = parseInt(classFinded[0]?.n_parcelas)
 
+            console.log('valueTotal: ', valueTotal)
+
 
             let alertMsg = ''
             if (remove) {
@@ -344,6 +346,9 @@ export default function EditPricesCourse(props) {
             const formattedDiscount = formatToCurrency(valueDiscount);
             let now = new Date()
             const nextDate = await calculateNextDate(now)
+
+            console.log('valor_total: ', formatToCurrency(valueTotal))
+
 
             setClassesList((prevValues) => {
                 return prevValues?.map(classValue => {
