@@ -21,7 +21,7 @@ const TableReport: React.FC<TableReportProps> = ({ data = [] }) => {
                         <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
                             <th style={{ padding: '12px 8px', minWidth: '100px' }}><Text bold>Descrição</Text></th>
                             <th style={{ padding: '12px 8px', minWidth: '100px' }}><Text bold>Dt Vencimento</Text></th>
-                            <th style={{ padding: '12px 8px', minWidth: '100px' }}><Text bold>Dt Pagamento</Text></th>
+                            <th style={{ padding: '12px 8px', minWidth: '100px' }}><Text bold>Dt Baixa</Text></th>
                             <th style={{ padding: '12px 8px', minWidth: '100px' }}><Text bold>Débito</Text></th>
                             <th style={{ padding: '12px 8px', minWidth: '100px' }}><Text bold>Baixa efetuada?</Text></th>
                             <th style={{ padding: '12px 8px', minWidth: '100px' }}><Text bold>Dt Baixa</Text></th>

@@ -127,8 +127,10 @@ const HeaderFilters: React.FC<HeaderFiltersProps> = ({
                             }
                             {field === 'tipo_data' &&
                                 <SelectList
-                                    data={[{ label: 'Vencimento', value: 'dt_vencimento' },
-                                    { label: 'Pagamento', value: 'dt_pagamento' },]}
+                                    data={[
+                                        { label: 'Vencimento', value: 'dt_vencimento' },
+                                        { label: 'Baixa', value: 'dt_pagamento' }
+                                    ]}
                                     valueSelection={filtersField?.tipo_data}
                                     onSelect={(value: string) => setFiltersField({ ...filtersField, tipo_data: value })}
                                     title="Filtrar Data por:"

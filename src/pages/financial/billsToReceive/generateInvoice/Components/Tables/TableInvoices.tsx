@@ -106,6 +106,7 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                             <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Pagamento</Text></th>
+                            <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Dt Baixa</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '55px' }}><Text bold>Nº parc.</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '55px' }}><Text bold>Pagamento.</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>C. Custo</Text></th>
@@ -156,6 +157,9 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`, padding: '0px 5px', }}>
                                         <Text small light>{item?.dt_pagamento ? formatTimeStampTimezone(item?.dt_pagamento) : '-'}</Text>
+                                    </td>
+                                    <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`, padding: '0px 5px', }}>
+                                        <Text small light>{item?.dt_baixa ? formatTimeStampTimezone(item?.dt_baixa) : '-'}</Text>
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`, padding: '0px 5px', }}>
                                         <Text small>{item?.n_parcela || '-'}</Text>

@@ -126,6 +126,8 @@ export default function Installments() {
             });
 
             const { data, total, totalPages, currentPage } = response.data
+
+            console.log(data)
             setInvoicesList(data)
             setInvoicesDetails({ total, totalPages, currentPage })
 
