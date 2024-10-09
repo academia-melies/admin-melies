@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Button, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
+import { Box, Button, ButtonIcon, ContentContainer, Divider, Text, TextInput } from "../../../atoms"
 import { SearchBar, SectionHeader, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
@@ -8,6 +8,7 @@ import { icons } from "../../../organisms/layout/Colors"
 import { api } from "../../../api/api"
 import { Backdrop, TablePagination } from "@mui/material"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
+import Link from "next/link"
 
 export default function ListGrid(props) {
     const [gridList, setGrid] = useState([])
@@ -200,9 +201,9 @@ export default function ListGrid(props) {
                         </Box>
                         <Box sx={{ flex: 1, display: 'flex', position: 'absolute', bottom: 50, width: '100%' }}>
                             <Button secondary text="Limpar filtros" small style={{ width: '100%', height: '40px' }} onClick={() => {
-                    setFilterAtive('todos')
-                    setFilterData('')
-                }} />
+                                setFilterAtive('todos')
+                                setFilterData('')
+                            }} />
                         </Box>
                     </Box>
                 </ContentContainer>
@@ -225,31 +226,37 @@ export default function ListGrid(props) {
                         <ContentContainer key={`${item}-${index}`} sx={{
                             padding: { xs: '0px', sm: '10px', md: '30px', lg: '30px', xl: '30px' }
                         }}>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    "&:hover": {
-                                        opacity: 0.8,
-                                        cursor: 'pointer'
-                                    },
-                                    padding: { xs: '30px', sm: '30px', md: '0px', lg: '0px', xl: '0px' }
-                                }}
-                                onClick={() => toggleGridTable(index)}
-                            >
-                                <Text bold>{name}</Text>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'space-between' }}>
                                 <Box
                                     sx={{
-                                        ...styles.menuIcon,
-                                        backgroundImage: `url(${icons.gray_arrow_down})`,
-                                        transform: showGridTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
-                                        transition: '.3s',
-                                        width: 17,
-                                        height: 17
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 4,
+                                        "&:hover": {
+                                            opacity: 0.8,
+                                            cursor: 'pointer'
+                                        },
+                                        padding: { xs: '30px', sm: '30px', md: '0px', lg: '0px', xl: '0px' }
                                     }}
-                                />
+                                    onClick={() => toggleGridTable(index)}
+                                >
+                                    <Text bold>{name}</Text>
+                                    <Box
+                                        sx={{
+                                            ...styles.menuIcon,
+                                            backgroundImage: `url(${icons.gray_arrow_down})`,
+                                            transform: showGridTable[index] ? 'rotate(0)' : 'rotate(-90deg)',
+                                            transition: '.3s',
+                                            width: 17,
+                                            height: 17
+                                        }}
+                                    />
+                                </Box>
+                                {isPermissionEdit && <Link href={`/administrative/grid/${item?.id_grade}`} target="_blank">
+                                    <Button text="Editar" />
+                                </Link>}
                             </Box>
+
                             {showGridTable[index] && (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     {Object.entries(disciplinesByModule).map(([modulo, disciplinas]) => (
