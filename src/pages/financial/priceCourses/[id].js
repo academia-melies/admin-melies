@@ -415,10 +415,7 @@ export default function EditPricesCourse(props) {
     const handleChange = (event) => {
 
         if (event.target.name === 'valor_total_curso' || event.target.name === 'valor_parcelado_curso' || event.target.name === 'valor_avista_curso') {
-            let rawValue = value.replace(/[^\d,]/g, '');
-
-            // Remove os separadores de milhares (pontos)
-            rawValue = rawValue.replace(/\./g, '');
+            const rawValue = event.target.value.replace(/[^\d]/g, '');
 
             if (rawValue === '') {
                 event.target.value = '';
