@@ -699,6 +699,7 @@ export default function EditUser() {
                 await handleEnrollments()
                 await handleResponsible()
                 await handlePaymentsProfile()
+                
             }
 
             if(userDetails.perfil.includes('funcionario')){
