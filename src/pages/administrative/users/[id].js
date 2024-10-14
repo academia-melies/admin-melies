@@ -345,6 +345,7 @@ export default function EditUser() {
         try {
             const response = await api.get(`/user/interests/${id}`)
             const { data } = response
+            console.log(data)
             setArrayInterests(data)
         } catch (error) {
             console.log(error)
@@ -691,7 +692,7 @@ export default function EditUser() {
         setLoading(true)
         try {
             const userDetails = await getUserData()
-            if(userDetails.perfil.includes('aluno')){
+            if(userDetails.perfil.includes('aluno') || userDetails.perfil.includes('interessado')){
                 await getEnrollment()
                 await getInterest()
                 await getContractStudent()
