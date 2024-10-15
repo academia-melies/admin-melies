@@ -55,6 +55,7 @@ export default function StudentData(props) {
             console.log(error)
             return error
         }
+        
     }
 
     const getPhoto = async () => {
