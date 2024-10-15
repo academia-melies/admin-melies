@@ -692,17 +692,17 @@ export default function EditUser() {
         setLoading(true)
         try {
             const userDetails = await getUserData()
-            if(userDetails.perfil.includes('aluno') || userDetails.perfil.includes('interessado')){
+            if (userDetails.perfil.includes('aluno') || userDetails.perfil.includes('interessado')) {
                 await getEnrollment()
                 await getInterest()
                 await getContractStudent()
                 await handleEnrollments()
                 await handleResponsible()
                 await handlePaymentsProfile()
-                
+
             }
 
-            if(userDetails.perfil.includes('funcionario')){
+            if (userDetails.perfil.includes('funcionario')) {
                 await getContract()
                 await getOfficeHours()
                 await getDisciplineProfessor()
@@ -1228,7 +1228,7 @@ export default function EditUser() {
     const handleEditUser = async () => {
         if (checkRequiredFields()) {
             setLoading(true)
-            try { 
+            try {
                 const response = await editeUser({ id, userData })
                 if (response.status === 422) return alert.error('CPF já cadastrado.')
                 if (contract) {
@@ -4200,34 +4200,17 @@ export default function EditUser() {
                                                                         <Divider padding={0} />
                                                                     </>
                                                                 }
-
-                                                                {/* <Box sx={{ display: 'flex', justifyContent: 'start', gap: 2, alignItems: 'center', flex: 1, padding: '0px 0px 0px 5px' }}>
-                                                                    <Text bold>Prova - Redação:</Text>
-                                                                    {interest?.id_redacao &&
-                                                                        <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
-                                                                            <Link href={`${process.env.NEXT_PUBLIC_REDACAO_URL}?key_writing_user=${interest?.id_redacao}`} target="_blank">
-                                                                                <Box sx={{
-                                                                                    ...styles.menuIcon,
-                                                                                    backgroundImage: `url('${icons.file}')`,
-                                                                                    transition: '.3s',
-                                                                                    "&:hover": {
-                                                                                        opacity: 0.8,
-                                                                                        cursor: 'pointer'
-                                                                                    }
-                                                                                }} />
-                                                                            </Link>
-                                                                        </Box>
-                                                                    }
-
-                                                                </Box>
-                                                                <Divider padding={0} /> */}
-                                                                <Box sx={styles.inputSection}>
-                                                                    <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_redacao' onBlur={(e) => handleBlurNota(e, subscription)}
+                                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
+                                                                    {/* <TextInput disabled={!isPermissionEdit && true} placeholder='Nota da prova' name='nt_redacao' onBlur={(e) => handleBlurNota(e, subscription)}
                                                                         type="number" onChange={(e) =>
                                                                             handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: e.target.name, value: e.target.value })}
-                                                                        value={subscription?.nt_redacao || ''} label='Nota da prova' sx={{ flex: 1, }} />
+                                                                        value={subscription?.nt_redacao || ''} label='Nota da prova' sx={{ flex: 1, }} /> */}
+                                                                    <Text bold>Nota da Redação: </Text>
+                                                                    <Text light>{subscription?.nt_redacao || ''}</Text>
                                                                 </Box>
-                                                            </>}
+
+                                                            </>
+                                                        }
                                                         <>
                                                             {subscription?.forma_ingresso === 'Nota do Enem'
                                                                 && <Box sx={styles.inputSection}>
@@ -4249,13 +4232,15 @@ export default function EditUser() {
                                                                     transition: '.3s',
                                                                     backgroundColor: subscription?.status_processo_sel === 'Classificado' ? 'green' : 'trasnparent', borderRadius: 2,
                                                                     "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer',
-                                                                        transform: 'scale(1.03, 1.03)'
+                                                                        opacity: !subscription?.forma_ingresso === 'Redação Online' && 0.8,
+                                                                        cursor: !subscription?.forma_ingresso === 'Redação Online' && 'pointer',
+                                                                        transform: !subscription?.forma_ingresso === 'Redação Online' && 'scale(1.03, 1.03)'
                                                                     },
                                                                 }} onClick={() => {
-                                                                    if (subscription?.status_processo_sel !== 'Classificado') {
-                                                                        handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value: 'Classificado' })
+                                                                    if (!subscription?.forma_ingresso === 'Redação Online') {
+                                                                        if (subscription?.status_processo_sel !== 'Classificado') {
+                                                                            handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value: 'Classificado' })
+                                                                        }
                                                                     }
                                                                 }}>
                                                                     {subscription?.status_processo_sel !== 'Classificado' && <CheckCircleIcon style={{ color: 'green', fontSize: 13 }} />}
@@ -4269,13 +4254,15 @@ export default function EditUser() {
                                                                     backgroundColor: subscription?.status_processo_sel === 'Desclassificado' ? 'red' : 'trasnparent', borderRadius: 2,
                                                                     transition: '.3s',
                                                                     "&:hover": {
-                                                                        opacity: 0.8,
-                                                                        cursor: 'pointer',
-                                                                        transform: 'scale(1.03, 1.03)'
+                                                                        opacity: !subscription?.forma_ingresso === 'Redação Online' && 0.8,
+                                                                        cursor: !subscription?.forma_ingresso === 'Redação Online' && 'pointer',
+                                                                        transform: !subscription?.forma_ingresso === 'Redação Online' && 'scale(1.03, 1.03)'
                                                                     },
                                                                 }} onClick={() => {
-                                                                    if (subscription?.status_processo_sel !== 'Desclassificado') {
-                                                                        handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value: 'Desclassificado' })
+                                                                    if (!subscription?.forma_ingresso === 'Redação Online') {
+                                                                        if (subscription?.status_processo_sel !== 'Desclassificado') {
+                                                                            handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value: 'Desclassificado' })
+                                                                        }
                                                                     }
                                                                 }}>
                                                                     {subscription?.status_processo_sel !== 'Desclassificado' && <CancelIcon style={{ color: 'red', fontSize: 13 }} />}

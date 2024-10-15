@@ -194,7 +194,7 @@ export default function EssayWritingList(props) {
             </Box>
 
             {writings?.filter(filter)?.length > 0 ?
-                <TableEssayWritings data={writings?.filter(filter)} setShowEditWritingGrade={setShowEditWritingGrade} showEditWritingGrade={showEditWritingGrade} />
+                <TableEssayWritings data={writings?.filter(filter)?.sort((a, b) => new Date(b.dt_realizacao) - new Date(a.dt_realizacao))} setShowEditWritingGrade={setShowEditWritingGrade} showEditWritingGrade={showEditWritingGrade} />
                 :
                 <Text light>Não foi possível encontrar Redações cadastradas.</Text>}
 
@@ -268,7 +268,7 @@ export default function EssayWritingList(props) {
 
 const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
     setShowEditWritingGrade, showEditWritingGrade }) => {
-    const { setLoading, colorPalette, theme, user } = useAppContext()
+    const { colorPalette, user } = useAppContext()
 
     const columns = [
         { key: 'id_redacao', label: '#ID' },
@@ -373,7 +373,7 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 2, }}>
 
-                                                <Link href={`${process.env.NEXT_PUBLIC_REDACAO_URL}?key_writing_user=${item?.id_redacao}`} target="_blank">
+                                                <Link href={`${process.env.NEXT_PUBLIC_REDACAO_URL}?key_writing_user=${item?.id_redacao}&user_resp_avaliation=${user?.id}`} target="_blank">
                                                     <Box sx={{
                                                         display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
                                                         padding: '6px 12px', borderRadius: 2, border: `1px solid ${colorPalette?.buttonColor}`,
