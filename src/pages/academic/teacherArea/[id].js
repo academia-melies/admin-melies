@@ -50,8 +50,7 @@ export default function StudentData(props) {
     const getStudent = async () => {
         try {
             const userResponse = await api.get(`/user/${id}`)
-            const { response } = userResponse.data
-            setStudentData(response)
+            setStudentData(userResponse.data)
         } catch (error) {
             console.log(error)
             return error
@@ -110,9 +109,9 @@ export default function StudentData(props) {
     };
 
 
-    const getFrequency = async (turma_id) => {
+    const getFrequency = async (turma_id, moduleStudent) => {
         try {
-            const response = await api.get(`/frequency/student/${id}/${turma_id}`)
+            const response = await api.get(`/frequency/student/${id}/${turma_id}/${moduleStudent}`)
             const { data } = response
             setFrequency(data)
         } catch (error) {
@@ -213,7 +212,7 @@ export default function StudentData(props) {
             await getPhoto()
             const enrollment = await getEnrollment(enrollmentData)
             await handleSelectModule(showClass?.turma_id, moduleStudent)
-            await getFrequency(showClass?.turma_id)
+            await getFrequency(showClass?.turma_id, moduleStudent)
             await getGrades(moduleStudent, showClass?.turma_id)
             await getComplementaryActivities(moduleStudent, showClass?.turma_id)
         } catch (error) {
@@ -347,7 +346,7 @@ export default function StudentData(props) {
         <>
             <SectionHeader
                 perfil={'dados da faculdade'}
-                title={studentData?.nome}
+                title={studentData?.nome || studentData?.nome_social}
             />
 
             {/* usuario */}
