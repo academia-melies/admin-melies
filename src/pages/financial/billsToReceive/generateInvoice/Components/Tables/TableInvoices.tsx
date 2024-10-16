@@ -100,9 +100,9 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                     <thead>
                         <tr style={{ borderBottom: `1px solid ${colorPalette.primary}` }}>
                             <th style={{ padding: '8px 10px' }}><Text bold>Efetivar</Text></th>
-                            <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Resp. Pagante</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Aluno</Text></th>
-                            <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>CPF</Text></th>
+                            <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Resp. Pagante</Text></th>
+                            <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>CPF Pagante</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Valor</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Vencimento</Text></th>
                             <th style={{ padding: '4px 0px', minWidth: '100px' }}><Text bold>Pagamento</Text></th>
@@ -141,10 +141,10 @@ const TableInstallments: React.FC<TableInstallmentsProps> = ({ data = [], setDat
                                         />
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`, padding: '0px 5px', }}>
-                                        <Text small>{item?.pagante || item?.aluno || '-'}</Text>
+                                        <Text small>{item?.aluno || '-'}</Text>
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`, padding: '0px 5px', }}>
-                                        <Text small>{item?.aluno || '-'}</Text>
+                                        <Text small>{item?.pagante || item?.aluno || '-'}</Text>
                                     </td>
                                     <td style={{ textAlign: 'center', borderBottom: `1px solid ${colorPalette.primary}`, padding: '0px 5px', }}>
                                         <Text small>{item?.cpf}</Text>
