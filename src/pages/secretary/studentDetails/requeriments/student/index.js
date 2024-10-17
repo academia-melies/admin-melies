@@ -1,67 +1,62 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { Box, Text, TextInput } from "../../../../../atoms"
-import { SectionHeader } from "../../../../../organisms"
+import { Box, Button, Text, TextInput } from "../../../../../atoms"
+import { SectionHeader, SelectList } from "../../../../../organisms"
 import { api } from "../../../../../api/api"
 import { useAppContext } from "../../../../../context/AppContext"
 import { formatTimeStamp } from "../../../../../helpers"
+import { CircularProgress } from "@mui/material"
 
 
 export default function RequerimentList(props) {
     const [requeriments, setRequeriments] = useState([])
     const [filterData, setFilterData] = useState('')
     const [menuSelected, setMenuSelected] = useState('Em andamento')
-    const { setLoading, colorPalette, user, theme } = useAppContext()
+    const { setLoading, colorPalette, alert, theme } = useAppContext()
     const [filters, setFilters] = useState({
-        status: 'Finalizado',
-        startDate: '',
-        endDate: '',
-        avaliation: 'com avaliacao'
+        year: 2025,
+        semestre: '1º Semestre',
+        classId: 'todos',
+        status: 'todos',
+        name: ''
     })
+    const [limit, setLimit] = useState(20);
+    const [page, setPage] = useState(0);
     const router = useRouter()
-    const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
-    const filterFunctions = {
-        requerimentsVizualization: (item) => {
-            if (menuSelected === 'Em andamento') {
-                const isData = item?.aprovado === null
-                return isData;
-            } else if (menuSelected === 'Aprovados') {
-                return item?.aprovado === 1
+    const [loadingData, setLoadingData] = useState(false)
+
+    const handleFiltered = async () => {
+        if (filters?.year && filters?.semestre) {
+            try {
+                setLoadingData(true)
+                await getRequeriments()
+            } catch (error) {
+                console.log(error)
+                return error
+            } finally {
+                setLoadingData(false)
             }
-            else if (menuSelected === 'Reprovados') {
-                return parseInt(item?.aprovado) < 1
-            } else {
-                return true
-            }
+        } else {
+            alert.info('Preencha o Ano e Semestre, antes de buscar.')
         }
     }
 
 
-    const filter = (item) => {
-        const normalizeString = (str) => {
-            return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        };
-
-        const normalizedFilterData = normalizeString(filterData);
-        const normalizedTituloChamado = normalizeString(item?.nome);
-
-        return (
-            normalizedTituloChamado?.toLowerCase().includes(normalizedFilterData?.toLowerCase())
-        ) && Object.values(filterFunctions).every(filterFunction => filterFunction(item));
-    };
-
-
-
-
-    useEffect(() => {
-        getRequeriments();
-    }, []);
-
     const getRequeriments = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/requeriments/enrollment`)
-            const { data } = response;
+            const response = await api.get(`/requeriments/enrollment`, {
+                params: {
+                    year: filters?.year,
+                    semestre: filters?.semestre,
+                    status: filters?.status,
+                    name: filters?.name,
+                    page: page || 0, // exemplo
+                    limit: limit || 20,    // exemplo
+                }
+            })
+            const { data, total, totalPages, currentPage } = response.data
+            console.log(data)
             setRequeriments(data)
         } catch (error) {
             console.log(error)
@@ -71,19 +66,21 @@ export default function RequerimentList(props) {
     }
 
 
-    const menuUserStudent = [
-        { id: '01', icon: '/icons/folder_icon.png', text: 'Meu Prontuário', to: '', query: true },
-        {
-            id: '02', icon: '/icons/folder_icon.png', text: 'Requerimento de Matrícula', to: `/documents/requerimentEnrollment?userId=2&classId=10&moduleEnrollment=1&courseId=5`,
-            query: true
-        },
-
+    const groupMonths = [
+        { label: '1º Semestre', value: '1º Semestre' },
+        { label: '2º Semestre', value: '2º Semestre' },
     ]
 
-    const menusFilters = [
-        { id: '01', text: 'Em andamento', value: 'Em andamento' },
-        { id: '02', text: 'Aprovados', value: 'Aprovados' },
-        { id: '03', text: 'Reprovado', value: 'Reprovados' },
+    const groupReenrollment = [
+        { label: 'Matrícula', value: 'Matrícula' },
+        { label: 'Rematrícula', value: 'Rematrícula' },
+    ]
+
+    const groupStatus = [
+        { label: 'Todos', value: 'todos' },
+        { label: 'Em andamento', value: 'Em andamento' },
+        { label: 'Aprovados', value: 'Aprovados' },
+        { label: 'Reprovado', value: 'Reprovado' },
     ]
 
 
@@ -97,51 +94,66 @@ export default function RequerimentList(props) {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, justifyContent: 'flex-start' }}>
             <SectionHeader
-                title={`Requerimentos de Matrícula (${requeriments?.filter(filter)?.length})`}
+                title={`Requerimentos de Matrícula (${requeriments?.length})`}
             />
 
-            <Box sx={{ display: 'flex', alignItems: 'end' }}>
-                <Text light style={{ marginRight: 10 }}>Visualizar por:</Text>
-                {menusFilters?.map((item, index) => {
-                    const menu = item?.value === menuSelected;
-                    return (
-                        <Box key={index} sx={{
-                            display: 'flex',
-                            padding: '5px 28px',
-                            backgroundColor: menu ? colorPalette.buttonColor : colorPalette.primary,
-                            borderTop: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
-                            borderRight: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
-                            borderLeft: `1px solid ${!menu && (!theme ? colorPalette.secondary : 'lightgray')}`,
-                            // transition: 'border-bottom 0.1s ease-in-out',
-                            transition: 'backdround-color 0.1s ease-in-out',
-                            "&:hover": {
-                                opacity: !menu && 0.8,
-                                cursor: 'pointer'
-                            },
-                            borderRadius: '5px 5px 0px 0px',
-                            boxShadow: `rgba(149, 157, 165, 0.17) 0px 6px 24px`,
-                            position: 'relative'
-                        }} onClick={() => {
-                            setMenuSelected(item?.value)
-                        }}>
-                            <Text large style={{ color: menu ? '#fff' : colorPalette.textColor }}>{item?.text}</Text>
-                        </Box>
-                    )
-                })}
-            </Box>
+            {loadingData &&
+                <Box sx={styles.loadingContainer}>
+                    <CircularProgress />
+                </Box>}
 
-            <TextInput InputProps={{
-                style: {
-                    backgroundColor: colorPalette?.secondary,
-                    maxWidth: '800px'
-                }
-            }}
-                placeholder="Buscar pelo nome" name='filterData' type="search" onChange={(event) => setFilterData(event.target.value)} value={filterData} sx={{ flex: 1 }} />
+            <Box>
+                <Box sx={{
+                    ...styles.filterSection, gap: 1, width: 'auto'
+                }}>
+
+                    <TextInput
+                    fullWidth
+                        InputProps={{
+                            style: { backgroundColor: colorPalette?.secondary, }
+                        }}
+                        placeholder="Buscar pelo nome"
+                        name='filterData'
+                        type="search"
+                        onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+                        value={filters?.name || ''}
+                    />
+
+                    <TextInput label="Ano:" name='year' onChange={(e) => setFilters({ ...filters, year: e.target.value })} type="number" value={filters?.year || ''} sx={{ maxWidth: 200 }}
+                        InputProps={{
+                            style: {
+                                backgroundColor: colorPalette?.secondary,
+                                boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                            }
+                        }} />
+
+                    <SelectList clean={false} data={groupMonths} valueSelection={filters?.semestre} onSelect={(value) => setFilters({ ...filters, semestre: value })}
+                        title="Semestre:" filterOpition="value"
+                        sx={{
+                            backgroundColor: colorPalette?.secondary,
+                            boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                            color: colorPalette.textColor, maxWidth: 280
+                        }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
+                    <SelectList clean={false} data={groupStatus} valueSelection={filters?.status} onSelect={(value) => setFilters({ ...filters, status: value })}
+                        title="Status:" filterOpition="value"
+                        sx={{
+                            backgroundColor: colorPalette?.secondary,
+                            boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                            color: colorPalette.textColor, maxWidth: 280
+                        }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
+
+                    <Button text="Buscar" style={{ borderRadius: 2, width: 130 }} onClick={() => handleFiltered()} />
+                </Box>
+            </Box >
 
 
-            {requeriments?.filter(filter)?.length > 0 ?
-                <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', maxWidth: 800, justifyContent: 'flex-start' }}>
-                    {requeriments?.filter(filter)?.map((item, index) => {
+            {requeriments?.length > 0 ?
+                <Box sx={{ display: 'flex', gap: 3, flexDirection: 'column', justifyContent: 'flex-start' }}>
+                    {requeriments?.map((item, index) => {
                         const title = `#${item?.id_req_matricula} Requerimento - ${item?.nome}. ${item?.nome_curso}-${item?.modalidade_curso}${item?.nome_turma}_${item?.modulo_matricula}`;
 
                         return (
@@ -195,7 +207,14 @@ export default function RequerimentList(props) {
                     }
                 </Box>
                 :
-                <Text light>Não foi possível encontrar requerimentos cadastrados.</Text>}
+                <Box sx={{ display: 'flex', justifyContent: 'center', opacity: loadingData ? .6 : 1 }}>
+                    <Box sx={styles.emptyData}>
+                        <Text bold small light>Nenhum Dados.</Text>
+                        <Text light large>Não foi possível encontrar requerimentos cadastrados.</Text>
+                        <Box sx={styles.noResultsImage} />
+                    </Box>
+                </Box>
+            }
         </Box>
     )
 }
@@ -215,4 +234,37 @@ const styles = {
         width: 15,
         height: 15,
     },
+    filterSection: {
+        display: 'flex',
+        justifyContent: 'flex-start',
+        gap: 1.8,
+        flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
+    },
+    emptyData: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        marginTop: 4,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    noResultsImage: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 350, height: 250,
+        backgroundImage: `url('/background/no_results.png')`,
+    },
+    loadingContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        heigth: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
+    }
 }
