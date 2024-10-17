@@ -4232,12 +4232,12 @@ export default function EditUser() {
                                                                     transition: '.3s',
                                                                     backgroundColor: subscription?.status_processo_sel === 'Classificado' ? 'green' : 'trasnparent', borderRadius: 2,
                                                                     "&:hover": {
-                                                                        opacity: !subscription?.forma_ingresso === 'Redação Online' && 0.8,
-                                                                        cursor: !subscription?.forma_ingresso === 'Redação Online' && 'pointer',
-                                                                        transform: !subscription?.forma_ingresso === 'Redação Online' && 'scale(1.03, 1.03)'
+                                                                        opacity: subscription?.forma_ingresso != 'Redação Online' && 0.8,
+                                                                        cursor: subscription?.forma_ingresso != 'Redação Online' && 'pointer',
+                                                                        transform: subscription?.forma_ingresso != 'Redação Online' && 'scale(1.03, 1.03)'
                                                                     },
                                                                 }} onClick={() => {
-                                                                    if (!subscription?.forma_ingresso === 'Redação Online') {
+                                                                    if (subscription?.forma_ingresso != 'Redação Online') {
                                                                         if (subscription?.status_processo_sel !== 'Classificado') {
                                                                             handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value: 'Classificado' })
                                                                         }
@@ -4254,12 +4254,12 @@ export default function EditUser() {
                                                                     backgroundColor: subscription?.status_processo_sel === 'Desclassificado' ? 'red' : 'trasnparent', borderRadius: 2,
                                                                     transition: '.3s',
                                                                     "&:hover": {
-                                                                        opacity: !subscription?.forma_ingresso === 'Redação Online' && 0.8,
-                                                                        cursor: !subscription?.forma_ingresso === 'Redação Online' && 'pointer',
-                                                                        transform: !subscription?.forma_ingresso === 'Redação Online' && 'scale(1.03, 1.03)'
+                                                                        opacity: subscription?.forma_ingresso != 'Redação Online' && 0.8,
+                                                                        cursor: subscription?.forma_ingresso != 'Redação Online' && 'pointer',
+                                                                        transform: subscription?.forma_ingresso != 'Redação Online' && 'scale(1.03, 1.03)'
                                                                     },
                                                                 }} onClick={() => {
-                                                                    if (!subscription?.forma_ingresso === 'Redação Online') {
+                                                                    if (subscription?.forma_ingresso != 'Redação Online') {
                                                                         if (subscription?.status_processo_sel !== 'Desclassificado') {
                                                                             handleChangeSubscriptionData({ interestId: interest?.id_interesse, field: 'status_processo_sel', value: 'Desclassificado' })
                                                                         }
