@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import { Avatar, Backdrop, useMediaQuery, useTheme, Tooltip } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField, FileInput, Divider } from "../../../atoms"
+import { Box, ContentContainer, TextInput, Text, Button, PhoneInputField, FileInput, Divider, ButtonIcon } from "../../../atoms"
 import { CheckBoxComponent, CustomDropzone, RadioItem, SectionHeader, TableOfficeHours, Table_V1 } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { icons } from "../../../organisms/layout/Colors"
@@ -152,6 +152,7 @@ export default function EditUser() {
     const [showEnrollment, setShowEnrollment] = useState(true)
     const [showEnrollmentAdd, setShowEnrollmentAdd] = useState(false)
     const [showSelectiveProcess, setShowSelectiveProcess] = useState(true)
+    const [showEditPaymentResponsible, setShowEditPaymentResponsible] = useState(false)
     const [selectiveProcessData, setSelectiveProcessData] = useState({
         agendamento_processo: '',
         nota_processo: '',
@@ -483,6 +484,16 @@ export default function EditUser() {
         })();
     }, [id])
 
+    const handleBlurCEP = (event) => {
+        const { value } = event.target;
+        findCEP(value);
+    };
+
+    const handleBlurCEPResp = (event) => {
+        const { value } = event.target;
+        findCEPResp(value);
+    };
+
     async function findCEP(cep) {
         setLoading(true)
         try {
@@ -500,7 +511,25 @@ export default function EditUser() {
         } finally {
             setLoading(false)
         }
+    }
 
+    async function findCEPResp(cep) {
+        setLoading(true)
+        try {
+            const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+            const { data } = response;
+
+            setResponsiblePayerData((prevValues) => ({
+                ...prevValues,
+                end_resp: data.logradouro,
+                cidade_resp: data.localidade,
+                uf_resp: data.uf,
+                bairro_resp: data.bairro,
+            }))
+        } catch (error) {
+        } finally {
+            setLoading(false)
+        }
     }
 
     async function findCountries() {
@@ -665,10 +694,7 @@ export default function EditUser() {
         }
     }
 
-    const handleBlurCEP = (event) => {
-        const { value } = event.target;
-        findCEP(value);
-    };
+
 
     const handleEnrollments = async () => {
         try {
@@ -1890,6 +1916,49 @@ export default function EditUser() {
         } else {
             alert.info('Preencha o campo de Nota e Status da redação antes de enviar.')
         }
+    }
+
+
+    const handleUpdateResponsible = async () => {
+        setLoading(true)
+        try {
+            const response = await api.patch(`/responsible/update/${responsiblePayerData?.id_resp_pag}`, { responsiblePayerData })
+            if (response?.status === 200) {
+                alert.success('Dados do responsável atualizados.')
+                setShowEditPaymentResponsible(false)
+                handleResponsible()
+            }
+        } catch (error) {
+            console.log(error)
+            return error
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    const handleChangeResponsibleData = (event) => {
+
+        if (event.target.name == 'cpf_resp') {
+            let str = event.target.value;
+            event.target.value = formatCPF(str)
+        }
+
+        if (event.target.name == 'rg_resp') {
+            let str = event.target.value;
+            event.target.value = formatRg(str)
+        }
+
+        if (event.target.name == 'cep_resp') {
+            let str = event.target.value;
+            event.target.value = formatCEP(str)
+        }
+
+        setResponsiblePayerData((prevValues) => ({
+            ...prevValues,
+            [event.target.name]: event.target.value,
+        }));
+
     }
 
 
@@ -5051,6 +5120,10 @@ export default function EditUser() {
                                     </Box>
                                 </Box>
                             </Box>
+
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Button text="Editar" onClick={() => setShowEditPaymentResponsible(true)} />
+                            </Box>
                         </Box>
                     </ContentContainer>
 
@@ -5085,6 +5158,70 @@ export default function EditUser() {
                         </ContentContainer>}
                 </>
             }
+
+
+            <Backdrop open={showEditPaymentResponsible} sx={{ zIndex: 99999, }}>
+                <ContentContainer style={{
+                    maxWidth: { md: '800px', lg: '1980px' }, maxHeight: { md: '180px', lg: '1280px' }, marginLeft: { md: '180px', lg: '280px' },
+                    margin: { xs: '0px 10px', md: '0px', lg: '0px' }, overflowY: matches && 'auto',
+                }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999 }}>
+                        <Text bold large>Responsável Financeiro</Text>
+                        <Box sx={{
+                            ...styles.menuIcon,
+                            backgroundImage: `url(${icons.gray_close})`,
+                            transition: '.3s',
+                            zIndex: 999999999,
+                            "&:hover": {
+                                opacity: 0.8,
+                                cursor: 'pointer'
+                            }
+                        }} onClick={() => setShowEditPaymentResponsible(false)} />
+                    </Box>
+                    <Divider padding={0} />
+                    <ContentContainer style={{ boxShadow: 'none', overflowY: matches && 'auto', }}>
+
+                        <Box sx={{ display: 'flex', gap: 1.8, flexDirection: 'column' }}>
+
+                            <Box sx={{ ...styles.inputSection }}>
+                                <TextInput placeholder='Nome/Razão Social' id="field-1" name='nome_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.nome_resp || ''} label='Nome/Razão Social *' sx={{ flex: 1, }} />
+                                <PhoneInputField
+                                    label='Telefone *'
+                                    name='telefone_resp'
+                                    onChange={(phone) => setResponsiblePayerData({ ...responsiblePayerData, telefone_resp: phone })}
+                                    value={responsiblePayerData?.telefone_resp}
+                                    sx={{ flex: 1, }}
+                                />
+                            </Box>
+                            <TextInput placeholder='E-mail' name='email_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.email_resp || ''} label='E-mail *' sx={{ flex: 1, }} />
+                            <Box sx={{ ...styles.inputSection }}>
+                                <TextInput placeholder='CPF/CNPJ' name='cpf_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.cpf_resp || ''} label='CPF/CNPJ *' sx={{ flex: 1, }} />
+                                <TextInput placeholder='RG' name='rg_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.rg_resp || ''} label='RG *' sx={{ flex: 1, }} />
+                            </Box>
+                            <TextInput placeholder='CEP' name='cep_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.cep_resp || ''} onBlur={handleBlurCEPResp} label='CEP *' sx={{ flex: 1, }} />
+
+                            <Box sx={{ ...styles.inputSection }}>
+                                <TextInput placeholder='Endereço' name='end_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.end_resp || ''} label='Endereço *' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Nº' name='numero_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.numero_resp || ''} label='Nº *' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={{ ...styles.inputSection }}>
+                                <TextInput placeholder='Cidade' name='cidade_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.cidade_resp || ''} label='Cidade *' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Estado' name='estado_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.estado_resp || ''} label='Estado *' sx={{ flex: 1, }} />
+                                <TextInput placeholder='UF' name='uf_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.uf_resp || ''} label='UF *' sx={{ flex: 1, }} />
+                            </Box>
+                            <Box sx={{ ...styles.inputSection }}>
+                                <TextInput placeholder='Bairro' name='bairro_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.bairro_resp || ''} label='Bairro *' sx={{ flex: 1, }} />
+                                <TextInput placeholder='Complemento' name='compl_resp' onChange={handleChangeResponsibleData} value={responsiblePayerData?.compl_resp || ''} label='Complemento' sx={{ flex: 1, }} />
+                            </Box>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Button text="Salvar" onClick={() => handleUpdateResponsible()}/>
+                            <Button cancel text="Cancelar" onClick={() => setShowEditPaymentResponsible(false)} />
+                        </Box>
+                    </ContentContainer>
+                </ContentContainer>
+            </Backdrop>
 
 
 
