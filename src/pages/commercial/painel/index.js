@@ -14,8 +14,8 @@ export default function CommercialPainel(props) {
 
     const { user, colorPalette, theme, setLoading, alert, notificationUser, permissionTop15 } = useAppContext()
     const [filters, setFilters] = useState({
-        year: 2024,
-        semestre: '2º Semestre',
+        year: 2025,
+        semestre: '1º Semestre',
         buscar_por: 'Matrícula',
         classId: 'todos',
         status: 'todos'
@@ -322,6 +322,7 @@ const TableIndicatorClasses = ({ data = [], title, reportIndicators }) => {
                 <thead>
                     <tr style={{ borderBottom: `1px solid ${colorPalette.primary}`, backgroundColor: colorPalette?.primary + '77' }}>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Turma</Text></th>
+                        <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Em Processo</Text></th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Aguardando Assinatura</Text></th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Aguardando Inicio</Text></th>
                         <th style={{ padding: '8px 0px', minWidth: '100px' }}><Text bold>Em Andamento</Text></th>
@@ -349,6 +350,11 @@ const TableIndicatorClasses = ({ data = [], title, reportIndicators }) => {
                                 </td>
                                 <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                                     <Text light small>
+                                        {item?.emProcesso ? parseInt(item?.emProcesso) : 0}
+                                    </Text>
+                                </td>
+                                <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                                    <Text light small>
                                         {parseInt(item?.aguardandoAssinatura)}
                                     </Text>
                                 </td>
@@ -369,6 +375,11 @@ const TableIndicatorClasses = ({ data = [], title, reportIndicators }) => {
                         <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
                             <Text bold >
                                 Total:
+                            </Text>
+                        </td>
+                        <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
+                            <Text bold >
+                                {reportIndicators?.emProcessoDeRequerimento || 0}
                             </Text>
                         </td>
                         <td style={{ textAlign: 'center', padding: '5px 12px', borderBottom: `1px solid ${colorPalette.primary}` }}>
