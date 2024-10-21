@@ -16,12 +16,25 @@ export default function EssayWritingList(props) {
     const [menuSelected, setMenuSelected] = useState('Em andamento')
     const [showEditWritingGrade, setShowEditWritingGrade] = useState({ active: false, writing: {} })
     const [essayWritingData, setEssayWritingData] = useState({})
+    const [counts, setCounts] = useState({
+        pendentecorrecao: 0,
+        emandamento: 0,
+        classificados: 0,
+        desclassificados: 0
+    });
+    const [filters, setFilters] = useState({
+        year: 2025,
+        semestre: '1º Semestre',
+        classId: 'todos',
+        status: 'todos',
+        name: ''
+    })
     const { setLoading, colorPalette, user, theme, alert } = useAppContext()
     const router = useRouter()
     const pathname = router.pathname === '/' ? null : router.asPath.split('/')[2]
     const filterFunctions = {
         writingsVizualization: (item) => {
-           
+
             if (menuSelected === 'Pendente de Correção') {
                 const isData = item?.corrigido == 0 && item?.dt_realizacao
                 return isData;
@@ -42,26 +55,44 @@ export default function EssayWritingList(props) {
     }
 
 
-
-
     const filter = (item) => {
 
         return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
     };
 
+    const updateCounts = (data) => {
+        const pendentecorrecao = data.filter(item => item?.corrigido == 0 && item?.dt_realizacao).length;
+        const emandamento = data.filter(item => !item?.dt_realizacao && item?.corrigido != 1 && parseInt(item?.aprovado) != 1).length;
+        const classificados = data.filter(item => item?.corrigido === 1 && parseInt(item?.aprovado) === 1).length;
+        const desclassificados = data.filter(item => item?.corrigido === 1 && parseInt(item?.aprovado) < 1).length;
 
-
+        setCounts({
+            pendentecorrecao,
+            emandamento,
+            classificados,
+            desclassificados
+        });
+    };
 
     useEffect(() => {
-        gerWritings();
-    }, []);
+        gerWritings()
+    }, [])
+
 
     const gerWritings = async () => {
         setLoading(true)
         try {
-            const response = await api.get(`/redacao-online`)
+            const response = await api.get(`/redacao-online/filtered`, {
+                params: {
+                    year: filters?.year,
+                    semestre: filters?.semestre,
+                    name: filters?.name
+                }
+            })
             const { data } = response;
+
             setWritings(data)
+            updateCounts(data)
         } catch (error) {
             console.log(error)
         } finally {
@@ -101,7 +132,21 @@ export default function EssayWritingList(props) {
         }
     }
 
-
+    const handleFiltered = async () => {
+        if (filters?.year && filters?.semestre) {
+            try {
+                // setLoadingData(true)
+                await gerWritings()
+            } catch (error) {
+                console.log(error)
+                return error
+            } finally {
+                // setLoadingData(false)
+            }
+        } else {
+            alert.info('Preencha o Ano e Semestre, antes de buscar.')
+        }
+    }
 
     const handleChange = (value) => {
 
@@ -135,6 +180,23 @@ export default function EssayWritingList(props) {
         { label: 'Pendente', value: 'Pendente' },
     ]
 
+    const groupMonths = [
+        { label: '1º Semestre', value: '1º Semestre' },
+        { label: '2º Semestre', value: '2º Semestre' },
+    ]
+
+    const groupReenrollment = [
+        { label: 'Matrícula', value: 'Matrícula' },
+        { label: 'Rematrícula', value: 'Rematrícula' },
+    ]
+
+    const groupStatus = [
+        { label: 'Todos', value: 'todos' },
+        { label: 'Em andamento', value: 'Em andamento' },
+        { label: 'Aprovados', value: 'Aprovados' },
+        { label: 'Reprovado', value: 'Reprovado' },
+    ]
+
 
     const statusColor = (data) => ((data === 'Enviado para o aluno' && '#ffcc00') ||
         (data?.includes('Aguardando aprovação') && '#00008b') ||
@@ -165,8 +227,12 @@ export default function EssayWritingList(props) {
             <Box sx={{ display: 'flex', alignItems: 'end' }}>
                 <Text light style={{ marginRight: 10 }}>visualizar por:</Text>
                 {menusFilters?.map((item, index) => {
-                  
+
                     const menu = item?.value === menuSelected;
+                    console.log('value formatado: ', item?.value?.toLowerCase()?.replace(/\s/g, ''))
+                    console.log('value formatado: ', counts[item?.value?.toLowerCase()?.replace(/\s/g, '')])
+                    const count = counts[item?.value?.toLowerCase()?.replace(/\s/g, '')] || 0
+
                     return (
                         <Box key={index} sx={{
                             display: 'flex',
@@ -187,16 +253,61 @@ export default function EssayWritingList(props) {
                         }} onClick={() => {
                             setMenuSelected(item?.value)
                         }}>
-                            <Text large style={{ color: menu ? '#fff' : colorPalette.textColor }}>{item?.text}</Text>
+                            <Text large style={{ color: menu ? '#fff' : colorPalette.textColor }}>{item?.text} ({count})</Text>
                         </Box>
                     )
                 })}
             </Box>
 
+
+            <Box>
+                <Box sx={{
+                    ...styles.filterSection, gap: 1, width: 'auto'
+                }}>
+
+                    <TextInput
+                        fullWidth
+                        InputProps={{
+                            style: { backgroundColor: colorPalette?.secondary, }
+                        }}
+                        placeholder="Buscar pelo nome"
+                        name='filterData'
+                        type="search"
+                        onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+                        value={filters?.name || ''}
+                    />
+
+                    <TextInput label="Ano:" name='year' onChange={(e) => setFilters({ ...filters, year: e.target.value })} type="number" value={filters?.year || ''} sx={{ maxWidth: 200 }}
+                        InputProps={{
+                            style: {
+                                backgroundColor: colorPalette?.secondary,
+                                boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                            }
+                        }} />
+
+                    <SelectList clean={false} data={groupMonths} valueSelection={filters?.semestre} onSelect={(value) => setFilters({ ...filters, semestre: value })}
+                        title="Semestre:" filterOpition="value"
+                        sx={{
+                            backgroundColor: colorPalette?.secondary,
+                            boxShadow: theme ? `rgba(149, 157, 165, 0.27) 0px 6px 24px` : `0px 2px 8px rgba(255, 255, 255, 0.05)`,
+                            color: colorPalette.textColor, maxWidth: 280
+                        }}
+                        inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
+                    />
+
+                    <Button text="Buscar" style={{ borderRadius: 2, width: 130 }} onClick={() => handleFiltered()} />
+                </Box>
+            </Box >
+
             {writings?.filter(filter)?.length > 0 ?
-                <TableEssayWritings data={writings?.filter(filter)?.sort((a, b) => new Date(b.dt_realizacao) - new Date(a.dt_realizacao))} setShowEditWritingGrade={setShowEditWritingGrade} showEditWritingGrade={showEditWritingGrade} />
+                <TableEssayWritings data={writings?.filter(filter)} setShowEditWritingGrade={setShowEditWritingGrade} showEditWritingGrade={showEditWritingGrade} />
                 :
-                <Text light>Não foi possível encontrar Redações cadastradas.</Text>}
+                <Box sx={styles.emptyData}>
+                    <Text bold small light>Nenhum Dados.</Text>
+                    <Text light large>Não foi possível encontrar Redações cadastradas.</Text>
+                    <Box sx={styles.noResultsImage} />
+                </Box>
+            }
 
 
             <Backdrop open={showEditWritingGrade?.active} sx={{ zIndex: 999, overflow: 'auto', }}>
@@ -327,6 +438,10 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                     <TableBody sx={{ flex: 1, padding: 5, backgroundColor: colorPalette.secondary }}>
                         {
                             data?.map((item, index) => {
+
+                                const isData = !item?.dt_realizacao
+                                const inProcess = isData && item?.corrigido != 1 && parseInt(item?.aprovado) != 1;
+
                                 return (
                                     <TableRow key={`${item}-${index}`}>
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
@@ -373,27 +488,30 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                         <TableCell sx={{ padding: '8px 10px', textAlign: 'center' }}>
                                             <Box sx={{ display: 'flex', gap: 2, }}>
 
-                                                <Link href={`${process.env.NEXT_PUBLIC_REDACAO_URL}?key_writing_user=${item?.id_redacao}&user_resp_avaliation=${user?.id}`} target="_blank">
-                                                    <Box sx={{
-                                                        display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
-                                                        padding: '6px 12px', borderRadius: 2, border: `1px solid ${colorPalette?.buttonColor}`,
-                                                        transition: '.3s',
-                                                        '&:hover': {
-                                                            opacity: .7,
-                                                            transform: 'scale(1.03, 1.03)'
-                                                        }
-                                                    }}>
+                                                {inProcess ? (
+                                                    <Text>Redação em andamento...</Text>
+                                                ) : (
+                                                    <Link href={`${process.env.NEXT_PUBLIC_REDACAO_URL}?key_writing_user=${item?.id_redacao}&user_resp_avaliation=${user?.id}`} target="_blank">
                                                         <Box sx={{
-                                                            ...styles.menuIcon,
-                                                            width: 22, height: 22, aspectRatio: '1/1',
-                                                            backgroundImage: `url('/icons/test_icon.png')`,
+                                                            display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
+                                                            padding: '6px 12px', borderRadius: 2, border: `1px solid ${colorPalette?.buttonColor}`,
                                                             transition: '.3s',
-                                                        }} />
-                                                        <Text small bold style={{ color: colorPalette?.buttonColor }}>Ver prova</Text>
-                                                    </Box>
-                                                </Link>
+                                                            '&:hover': {
+                                                                opacity: .7,
+                                                                transform: 'scale(1.03, 1.03)'
+                                                            }
+                                                        }}>
+                                                            <Box sx={{
+                                                                ...styles.menuIcon,
+                                                                width: 22, height: 22, aspectRatio: '1/1',
+                                                                backgroundImage: `url('/icons/test_icon.png')`,
+                                                                transition: '.3s',
+                                                            }} />
+                                                            <Text small bold style={{ color: colorPalette?.buttonColor }}>Ver prova</Text>
+                                                        </Box>
+                                                    </Link>)}
 
-                                                {item?.corrigido === 1 ?
+                                                {item?.corrigido === 1 ? (
                                                     <Box sx={{
                                                         display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
                                                         padding: '6px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
@@ -413,7 +531,8 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                                         <Text small bold style={{ color: '#fff' }}>Visualizar nota</Text>
                                                     </Box>
 
-                                                    : <Box sx={{
+                                                ) : (!inProcess &&
+                                                    <Box sx={{
                                                         display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center',
                                                         padding: '6px 12px', borderRadius: 2, backgroundColor: colorPalette?.buttonColor,
                                                         transition: '.3s',
@@ -430,7 +549,8 @@ const TableEssayWritings = ({ data = [], filters = [], onPress = () => { },
                                                             transition: '.3s',
                                                         }} />
                                                         <Text small bold style={{ color: '#fff' }}>Dar nota</Text>
-                                                    </Box>}
+                                                    </Box>
+                                                )}
 
                                             </Box>
                                         </TableCell>
@@ -461,5 +581,38 @@ const styles = {
         width: 15,
         height: 15,
     },
+    filterSection: {
+        display: 'flex',
+        justifyContent: 'flex-start',
+        gap: 1.8,
+        flexDirection: { xs: 'column', sm: 'column', md: 'row', lg: 'row' }
+    },
+    emptyData: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        marginTop: 4,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    noResultsImage: {
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: 350, height: 250,
+        backgroundImage: `url('/background/no_results.png')`,
+    },
+    loadingContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        heigth: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
+    }
 
 }
