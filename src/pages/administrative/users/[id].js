@@ -1169,6 +1169,11 @@ export default function EditUser() {
             return false
         }
 
+        if (userData?.complemento !== '' && userData?.complemento?.length > 30) {
+            alert?.error('O complemento não pode ser superior a 30 caractéres.')
+            return false
+        }
+
         return true
     }
 
@@ -1920,6 +1925,9 @@ export default function EditUser() {
 
 
     const handleUpdateResponsible = async () => {
+        if (responsiblePayerData?.compl_resp !== '' && responsiblePayerData?.compl_resp.length > 30) {
+            return alert.info('O complemento não pode ser superior a 30 caractéres.')
+        }
         setLoading(true)
         try {
             const response = await api.patch(`/responsible/update/${responsiblePayerData?.id_resp_pag}`, { responsiblePayerData })
@@ -5022,7 +5030,7 @@ export default function EditUser() {
 
 
             {
-                (userData.perfil && userData.perfil.includes('aluno') && menuView === 'paymentPerfil') &&
+                (userData.perfil && userData.perfil.includes('aluno') && menuView === 'paymentPerfil') && responsiblePayerData?.nome_resp &&
                 <>
                     <ContentContainer style={{ ...styles.containerContract, padding: '40px' }}>
                         <Box sx={{
@@ -5121,9 +5129,9 @@ export default function EditUser() {
                                 </Box>
                             </Box>
 
-                            <Box sx={{ display: 'flex', gap: 2 }}>
+                            {responsiblePayerData?.nome_resp && <Box sx={{ display: 'flex', gap: 2 }}>
                                 <Button text="Editar" onClick={() => setShowEditPaymentResponsible(true)} />
-                            </Box>
+                            </Box>}
                         </Box>
                     </ContentContainer>
 
@@ -5216,7 +5224,7 @@ export default function EditUser() {
                         </Box>
 
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button text="Salvar" onClick={() => handleUpdateResponsible()}/>
+                            <Button text="Salvar" onClick={() => handleUpdateResponsible()} />
                             <Button cancel text="Cancelar" onClick={() => setShowEditPaymentResponsible(false)} />
                         </Box>
                     </ContentContainer>
