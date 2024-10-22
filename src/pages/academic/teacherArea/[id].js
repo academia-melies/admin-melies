@@ -113,8 +113,8 @@ export default function StudentData(props) {
     const getFrequency = async (turma_id, moduleStudent) => {
         try {
             const response = await api.get(`/frequency/student/${id}/${turma_id}/${moduleStudent}`)
-            const { data } = response
-            setFrequency(data)
+            const { frequencyData, calculation } = response?.data
+            setFrequency(calculation)
         } catch (error) {
             console.log(error)
             return error
