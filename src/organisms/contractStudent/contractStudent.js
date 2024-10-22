@@ -136,8 +136,8 @@ export const ContractStudentComponent = (props) => {
 
                         <ParagraphContainer>
                             <ParagraphBody title text="2 - DO PAGAMENTO E DO REAJUSTE" />
-                            <ParagraphBody text="2.1 Como contrapartida pelos serviços que serão prestados pela CONTRATADA, o CONTRATANTE pagará o valor total do curso, da maneira que foi por ele escolhida no ato da contratação dos serviços." />
-                            <ParagraphBody text="2.2 As mensalidades serão reajustadas a cada 12 meses, a contar da data da contratação dos serviços, e o índice a ser utilizado será estipulado anualmente pela faculdade, não ultrapassando 12%." />
+                            <ParagraphBody text="2.1 - Como contrapartida pelos serviços que serão prestados pela CONTRATADA, o CONTRATANTE pagará o valor total do curso, da maneira que foi por ele escolhida no ato da contratação dos serviços." />
+                            <ParagraphBody text="2.2 - As mensalidades serão reajustadas a cada 12 meses, a contar da data da contratação dos serviços, e o índice a ser utilizado será estipulado anualmente pela faculdade, não ultrapassando 12%." />
                         </ParagraphContainer>
 
 
@@ -190,11 +190,11 @@ O Contratante se compromete não só com a aquisição, mas também com a parte 
                             <ParagraphBody text="7.2 - O CONTRATANTE autoriza o repasse dos seus dados cadastrais e acadêmicos à certificadora, ao término do curso, para fins de registro do diploma." />
                             <ParagraphBody text="7.3 - O CONTRATANTE se compromete a não ceder, emprestar ou repassar o login e senha de acesso e/ou conteúdo do curso a terceiros, sob pena de incorrer nas penalidades cíveis e criminais da legislação vigente." />
                             <ParagraphBody text="7.4 - É vedado ao Aluno/ Contratante reproduzir, divulgar, vender, ceder, emprestar transmitir quaisquer informações, material didático ou paradidático a terceiros sem o prévio consentimento da Contratada, sob pena de responder judicialmente por tais práticas." />
-                            <ParagraphBody text="7.5 - O CONTRATANTE fica ciente também que as aulas não poderão ser gravadas, tanto na modalidade Ead quanto presencial." />
-                            <ParagraphBody text="7.6 - O CONTRATANTE fica ciente também que as aulas não poderão ser gravadas, tanto na modalidade Ead quanto presencial." />
-                            <ParagraphBody text="7.7 - Os projetos  feitos na Melies são do aluno, porém é autorizado somente para divulgação em web e festivais. Projetos comerciais, devem ser previamente autorizados pelo coordenador do curso e são 100% propriedade do autor." />
+                            <ParagraphBody text="7.5 - O CONTRATANTE fica ciente também que as aulas não poderão ser gravadas, tanto na modalidade Ead quanto presencial." />
+                            <ParagraphBody text="7.6 - O CONTRATANTE autoriza de forma expressa e não onerosa, a fazer uso da imagem do aluno, assim como dos projetos produzidos por ele, para qualquer fim legalmente previsto, como: ações comerciais, de marketing, promocionais, etc. Ciente de que algumas ações de marketing, comunicação, realizam pequenas modificações, manipulações na imagem original." />
+                            <ParagraphBody text="7.7 - Os projetos feitos na Melies são do aluno, porém é autorizado somente para divulgação em web e festivais. Projetos comerciais, devem ser previamente autorizados pelo coordenador do curso e são 100% propriedade do autor." />
 
-                            <ParagraphBody text="7.7.1 - Obras e Projetos com potencial comercial, ou seja, aqueles que o aluno deseja desenvolver e/ou se beneficiar economicamente no futuro devem ser previamente informados pelo CONTRATANTE aos coordenadores do curso em questão e serão de propriedade e titularidade de seus autores, assim indicados pelo CONTRATANTE (aluno) no momento da apresentação da Obra e/ou projeto aos coordenadores." />
+                            <ParagraphBody text="7.7.1 - Obras e Projetos com potencial comercial, ou seja, aqueles que o aluno deseja desenvolver e/ou se beneficiar economicamente no futuro devem ser previamente informados pelo CONTRATANTE aos coordenadores do curso em questão e serão de propriedade e titularidade de seus autores, assim indicados pelo CONTRATANTE (aluno) no momento da apresentação da Obra e/ou projeto aos coordenadores." />
                             <ParagraphBody text="7.7.2 - O CONTRATANTE (aluno)  declara e garante que os projetos apresentados serão integralmente originais, não sendo copiados, em parte ou no todo, de qualquer obra de terceiros, com a ressalva de conteúdo em domínio público e/ou cuja utilização caia dentro do conceito de “fair use”, não violando nenhum direito autoral pertencente a quaisquer terceiros; sendo livre e desembaraçados;" />
                             <ParagraphBody text="7.7.3 - O CONTRATANTE manterá a CONTRATADA indene de quaisquer perdas, danos e/ou custos causados por reclamação de terceiros decorrentes de falhas nas garantias aqui prestadas a respeito da titularidade e autoria das Obras utilizadas nos projetos citados acima." />
                         </ParagraphContainer>
