@@ -208,11 +208,11 @@ export default function EssayWritingList(props) {
 
         let nota = event.target.value;
 
-        if (nota > 50) {
+        if (nota >= 50) {
             setEssayWritingData({ ...essayWritingData, status_processo_sel: 'Classificado' })
             return
         }
-        if (nota <= 50) {
+        if (nota < 50) {
             setEssayWritingData({ ...essayWritingData, status_processo_sel: 'Desclassificado' })
             return
         }
