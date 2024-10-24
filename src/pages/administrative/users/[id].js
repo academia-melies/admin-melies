@@ -1670,20 +1670,24 @@ export default function EditUser() {
 
 
     const handleSendRequeriment = async ({ classId, courseId, entryForm = null, moduleCourse = 1 }) => {
-        setLoading(true)
-        try {
-            const response = await api.post(`/requeriment/subscription/create`, { classId, courseId, entryForm, userData, moduleEnrollment: moduleCourse, userResp: user?.id })
-            if (response?.status === 201) {
-                alert.success('Requerimento enviado com sucesso.')
-                await handleEditUser()
-            } else {
-                alert.error('Ocorreu um erro interno ao enviar o requerimento. Tente novamente ou consulte o Suporte.')
+        if (userData?.cep) {
+            setLoading(true)
+            try {
+                const response = await api.post(`/requeriment/subscription/create`, { classId, courseId, entryForm, userData, moduleEnrollment: moduleCourse, userResp: user?.id })
+                if (response?.status === 201) {
+                    alert.success('Requerimento enviado com sucesso.')
+                    await handleEditUser()
+                } else {
+                    alert.error('Ocorreu um erro interno ao enviar o requerimento. Tente novamente ou consulte o Suporte.')
+                }
+            } catch (error) {
+                console.log(error)
+                return error
+            } finally {
+                setLoading(false)
             }
-        } catch (error) {
-            console.log(error)
-            return error
-        } finally {
-            setLoading(false)
+        } else {
+            alert.info('Preencha primeiramente o endereço completo do usuario, antes de prosseguir.')
         }
 
     }
