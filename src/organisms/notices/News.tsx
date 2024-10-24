@@ -1,5 +1,5 @@
 import { useAppContext } from "../../context/AppContext";
-import { Box, Text } from "../../atoms";
+import { Box, Button, Text } from "../../atoms";
 import { formatTimeStamp } from "../../helpers";
 import { icons } from "../layout/Colors";
 import { Navigation, Pagination, Scrollbar, A11y, Autoplay } from 'swiper/modules';
@@ -8,27 +8,30 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
+import Link from "next/link";
 
 export const News = () => {
     const { setLoading, colorPalette, theme, user } = useAppContext()
 
     const newsData = [
+
+        {
+            imagem: '/background/seguranca_guia.jpg', area: 'Suporte', title: 'Guia de Boas Práticas de Segurança Digital.',
+            date: '2024-10-24',
+            link: 'https://academiamelies-my.sharepoint.com/:p:/r/personal/karine_martinez_melies_com_br/Documents/INFORMA%C3%87%C3%95ES%20IMPORTANTES/Manuais%20e%20Regras/Guias%20e%20Tutoriais%20T.I/Guia%20Basico%20Seguran%C3%A7a%20Digital.pptx?d=we1ff4938af084791809e8d916e7485e3&csf=1&web=1&e=IscKIK',
+            new: true,
+            description: 'Workchat fora do ar! O workchat está dora do ar temporáriamente, para realizar eventuais correções. Agradeçemos e pedirmos para que continue nos dando dê seu feedback através no chamado ou via Teams, para continuarmos melhorando!'
+        },
         {
             imagem: '/background/chat-image.jpg', area: 'Suporte', title: 'WorkChat fora do ar temporáriamente!',
             date: '2024-09-19',
-            new: true,
+            new: false,
             description: 'Workchat fora do ar! O workchat está dora do ar temporáriamente, para realizar eventuais correções. Agradeçemos e pedirmos para que continue nos dando dê seu feedback através no chamado ou via Teams, para continuarmos melhorando!'
         },
         {
             imagem: '/background/aviso-4.jpg', area: 'Suporte', title: 'Atualizações Painel Administrativo',
             date: '2024-08-15', new: false,
             description: 'O Painel administrativo está passando por novas atualizações constantemente, para melhorar sua experiência.'
-        },
-        {
-            imagem: '/background/aviso-6.jpg',
-            new: false,
-            area: 'Suporte', title: 'Em Breve: Guia de Boas Práticas de Segurança Digital', date: '2024-08-15',
-            description: 'Em breve, disponibilizaremos um Guia de Boas Práticas de Segurança Digital desenvolvido especialmente para todos os funcionários da Melies. Este guia oferecerá dicas valiosas sobre como proteger seus dados e dispositivos no ambiente digital, ajudando a manter nossa faculdade segura.'
         },
         {
             imagem: '/background/aviso-7.jpeg', area: 'Suporte',
@@ -49,20 +52,6 @@ export const News = () => {
                 <Text light>Veja os últimos avisos e atualizações</Text>
             </Box>
 
-            <Box sx={{ position: 'absolute', top: 25, right: 35 }}>
-                <Box sx={{
-                    ...styles.menuIcon,
-                    width: 20, height: 20,
-                    backgroundImage: `url(${icons.gray_close})`,
-                    transition: '.3s',
-
-                    "&:hover": {
-                        opacity: 0.8,
-                        cursor: 'pointer'
-                    }
-                }} />
-            </Box>
-
             <Box sx={{ display: 'flex', gap: 2, width: '100%', alignItems: 'center', }}>
                 <Swiper
                     modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay]}
@@ -70,7 +59,7 @@ export const News = () => {
                     slidesPerView={1}
                     navigation
                     pagination={{ clickable: true }}
-                    autoplay={{ delay: 7000, disableOnInteraction: false }}
+                    autoplay={{ delay: 10000, disableOnInteraction: false }}
                     style={{ width: '100%' }}
                 >
                     {newsData.map((item, index) => (
@@ -95,7 +84,7 @@ export const News = () => {
                                         <Text bold xsmall>{item?.area}</Text>
                                     </Box>
 
-                                    {item.new && <Box sx={{ display: 'flex',  zIndex: 999999999, padding: '5px 12px', borderRadius: 5, backgroundColor: colorPalette.buttonColor }}>
+                                    {item.new && <Box sx={{ display: 'flex', zIndex: 999999999, padding: '5px 12px', borderRadius: 5, backgroundColor: colorPalette.buttonColor }}>
                                         <Text bold large style={{ color: '#fff' }}>Novo</Text>
                                     </Box>}
                                 </Box>
@@ -104,6 +93,14 @@ export const News = () => {
                                     <Text bold large>{item?.title}</Text>
                                     <Text light>{item?.description}</Text>
                                 </Box>
+
+                                {item?.link &&
+                                    <Box sx={{ display: 'flex', padding: '5px', width: '100%', marginBottom: 2}}>
+                                        <Link href={item?.link || ''} target="_blank" style={{ display: 'flex', width: '100%' }}>
+                                            <Button text="Visualizar" style={{ width: '100%' }} />
+                                        </Link>
+                                    </Box>
+                                }
                             </Box>
                         </SwiperSlide>
                     ))}

@@ -1,9 +1,9 @@
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
-import { Avatar, Backdrop, useMediaQuery, useTheme } from "@mui/material"
+import { useCallback, useEffect, useState } from "react"
+import { Avatar, Backdrop, Tooltip, useMediaQuery, useTheme } from "@mui/material"
 import { api } from "../../../api/api"
-import { Box, ContentContainer, TextInput, Text, Button, Divider } from "../../../atoms"
-import { ContainDropzone, RadioItem, SectionHeader } from "../../../organisms"
+import { Box, ContentContainer, TextInput, Text, Button, Divider, ButtonIcon } from "../../../atoms"
+import { ContainDropzone, SectionHeader } from "../../../organisms"
 import { useAppContext } from "../../../context/AppContext"
 import { SelectList } from "../../../organisms/select/SelectList"
 import { formatTimeStamp, getRandomInt } from "../../../helpers"
@@ -13,37 +13,35 @@ import { Forbidden } from "../../../forbiddenPage/forbiddenPage"
 import { checkUserPermissions } from "../../../validators/checkPermissionUser"
 import Dropzone from "react-dropzone"
 
-export default function EditTask(props) {
+export default function EditTask() {
     const { setLoading, alert, colorPalette, user, setShowConfirmationDialog, userPermissions, menuItemsList, theme } = useAppContext()
     const userId = user?.id;
     const router = useRouter()
-    const { id, slug } = router.query;
+    const { id } = router.query;
     const newTask = id === 'new';
     const [responsibles, setResponsibles] = useState([])
-    const [responsibleList, setResponsibleList] = useState([])
     const [usersList, setUsersList] = useState([])
     const [taskData, setTaskData] = useState({
         status_chamado: '',
         responsavel_chamado: null,
         autor_chamado: user?.id,
     })
+    const [taskBeforeData, setTaskBeforeData] = useState({})
     const [filesDrop, setFilesDrop] = useState([])
-    const [alterationTask, setAlterationTask] = useState(false)
     const [showPriorityAltern, setShowPriorityAltern] = useState(false)
     const [showAlternUsers, setShowAlternUsers] = useState({
         responsible: false,
         participant: false
     })
-    const [filterData, setFilterData] = useState('')
-    const [statusAlteration, setStatusAlteration] = useState({ finalizado: false, reaberto: false, analise: false, area: false })
     const [filesTask, setFilesTask] = useState([])
-    const [filesInterationTask, setFilesInterationTask] = useState([])
     const [newInteration, setNewInteration] = useState({ descr_interacao: '' })
     const [interationsTask, setInterationsTask] = useState([])
     const [participantsTask, setParticipantsTask] = useState([])
+    const [taskInterationMsg, setTaskInterationMsg] = useState('')
+    const [newParticipant, setNewParticipant] = useState([])
+
     const themeApp = useTheme()
     const [isPermissionEdit, setIsPermissionEdit] = useState(false)
-    const [avaliationClient, setAvaliationClient] = useState(0)
     const [showAvaliation, setShowAvaliation] = useState(false)
     const [showInterations, setShowInterations] = useState(false)
     const [filters, setFilters] = useState({
@@ -82,7 +80,6 @@ export default function EditTask(props) {
         return Object.values(filterFunctions).every(filterFunction => filterFunction(item));
     };
 
-    const mobile = useMediaQuery(themeApp.breakpoints.down('sm'))
     const priorityColor = (data) => ((data === 'Alta' && 'yellow') ||
         (data === 'Urgente' && 'red') ||
         (data === 'Média' && 'green') ||
@@ -99,6 +96,7 @@ export default function EditTask(props) {
             const { data } = response
             if (response?.status === 200) {
                 setTaskData(data)
+                setTaskBeforeData(data)
                 return data
             }
             return false
@@ -176,20 +174,13 @@ export default function EditTask(props) {
             return
         }
         setTaskData({ ...taskData, autor_chamado: user?.id, status_chamado: 'Em aberto' })
-        setStatusAlteration({ finalizado: false, reaberto: false, analise: false })
     }, [id]);
 
     useEffect(() => {
         fetchPermissions()
         listUsers()
+        setTaskInterationMsg('')
     }, [])
-
-    useEffect(() => {
-        if (taskData?.status_chamado !== '' && alterationTask) {
-            handleEditTask(statusAlteration)
-        }
-    }, [taskData?.status_chamado, taskData?.area])
-
 
     const handleItems = async () => {
         setLoading(true)
@@ -200,13 +191,8 @@ export default function EditTask(props) {
                 await getInterationsTask()
                 await getParticipantsTask()
                 await getTaskFiles()
-                await setAlterationTask(false)
                 if (task?.status_chamado === 'Finalizado' && !task?.avaliacao_nota && user?.id === task?.autor_chamado) { setShowAvaliation(true) }
-                setStatusAlteration({ finalizado: false, reaberto: false, analise: false })
             }
-            // if (serviceResponse) {
-            //     await getContracts(serviceResponse.tipo_servico)
-            // }
         } catch (error) {
             alert.error('Ocorreu um arro ao carregar serviço')
         } finally {
@@ -272,21 +258,27 @@ export default function EditTask(props) {
         }
     }
 
-    const handleEditTask = async ({ finalizado = false, reaberto = false, analise = false, priority = false, responsible = false, area = false }) => {
+    const handleEditTask = async () => {
         setLoading(true)
-        let status = (finalizado && 'atualizado para "finalizada"') || (reaberto && 'atualizado para "re-aberta"') || (analise && 'atualizado para "Em análise"') || `atualizado para ${taskData?.status_chamado}` || false
-        if (priority) { taskData.prioridade_chamado = priority }
-        if (responsible) { taskData.responsavel_chamado = responsible }
-        if (area) {
-            taskData.area = area
-            status = false
-        }
-
         try {
-            const response = await api.patch(`/task/update/${id}`, { taskData, status, newInteration, userName: user?.nome, area })
-            if (response?.status === 201) {
+            const interationChanges = await handleUpdateChangeTaskMsg()
+            const response = await api.patch(`/task/update/${id}`, { taskData, newInteration, interationChanges })
+            if (response?.status === 200) {
+
+                if (newParticipant.length > 0) {
+                    for (let participant of newParticipant) {
+                        await api.post(`/task/participant/create/${id}`,
+                            {
+                                participante_id: participant,
+                                usuario_id: taskData?.responsavel_chamado
+                            })
+                    }
+                }
+
                 alert.success('Tarefa atualizada com sucesso.');
                 setNewInteration({ ...newInteration, descr_interacao: '' })
+                setTaskInterationMsg('')
+                setNewParticipant([])
                 handleItems()
                 return
             }
@@ -298,14 +290,72 @@ export default function EditTask(props) {
         }
     }
 
-    const handleAddInteration = async (description) => {
+    const handleUpdateChangeTaskMsg = async () => {
+        let description = taskInterationMsg; // Começar com a mensagem existente
+
+        // Verifica alterações de área
+        if (taskBeforeData?.area !== taskData?.area) {
+            description += `\nA tarefa foi alterada/encaminhada para a área "${taskData?.area}", por ${user?.nome}.`;
+            description += '\n'
+        }
+
+        // Verifica alterações de participantes
+        if (newParticipant.length > 0) {
+            participantsTask?.forEach((item) => {
+                if (!item?.id_participante_ch && newParticipant.includes(item?.participante_id)) {
+                    description += `\n${user?.nome} adicionou ${item.nome} a esta tarefa.`;
+                    description += '\n'
+                }
+            });
+        }
+
+        // Verifica alterações de status
+        if (taskBeforeData?.status_chamado !== taskData?.status_chamado) {
+            let statusDescription = '';
+            switch (taskData?.status_chamado) {
+                case 'Finalizado':
+                    statusDescription = 'finalizada';
+                    break;
+                case 'Em aberto':
+                    statusDescription = 're-aberta';
+                    break;
+                case 'Em análise':
+                    statusDescription = 'em análise';
+                    break;
+                default:
+                    statusDescription = taskData?.status_chamado;
+            }
+            description += `\nA tarefa foi atualizada para "${statusDescription}" por ${user?.nome}.`;
+            description += '\n'
+        }
+
+        // Verifica alterações de responsável
+        if (taskBeforeData?.responsavel_chamado !== taskData?.responsavel_chamado) {
+            const responsibleName = usersList?.filter(item => item?.value === taskData?.responsavel_chamado)[0]
+            description += `\n${user?.nome} alterou o responsável para ${responsibleName?.label || taskData?.responsavel_chamado}.`;
+            description += '\n'
+        }
+
+        // Verifica alterações de prioridade
+        if (taskBeforeData?.prioridade_chamado !== taskData?.prioridade_chamado) {
+            description += `\nA prioridade da tarefa foi alterada para "${taskData?.prioridade_chamado}" por ${user?.nome}.`;
+            description += '\n'
+        }
+
+        // Atualiza o estado com a nova descrição
+        setTaskInterationMsg(description);
+        return description
+    };
+
+    const handleAddInteration = async () => {
         setLoading(true)
-        if (description) { newInteration.descr_interacao = description }
         try {
+
+            let success = false
             const response = await api.post(`/task/interation/create`, { newInteration });
             if (response?.status === 201) {
                 const { interationId } = response?.data
-
+                success = true
                 if (filesDrop?.length > 0) {
                     for (const uploadedFile of filesDrop) {
                         const formData = new FormData();
@@ -319,11 +369,42 @@ export default function EditTask(props) {
                         }
                     }
                 }
+                const changeTaskMessage = await handleUpdateChangeTaskMsg()
+                if (changeTaskMessage && changeTaskMessage !== '') {
+                    const interationMsgResponse = await api.post(`/task/interation/create`, {
+                        newInteration: {
+                            chamado_id: id,
+                            usuario_id: userId,
+                            descr_interacao: changeTaskMessage,
+                        }
+                    });
 
-                alert.success('Interação adicionada com sucesso.');
-                setNewInteration({ ...newInteration, descr_interacao: '' })
-                handleItems()
-                setFilesDrop([]);
+                    if (interationMsgResponse.status != 201) success = false
+                }
+
+                if (newParticipant.length > 0) {
+                    for (let participant in newParticipant) {
+                        await api.post(`/task/participant/create/${id}`,
+                            {
+                                participante_id: participant,
+                                usuario_id: taskData?.responsavel_chamado
+                            })
+                    }
+                }
+
+                if (success) {
+
+                    alert.success('Interação adicionada com sucesso.');
+                    setNewInteration({ ...newInteration, descr_interacao: '' })
+                    setTaskInterationMsg('')
+                    setNewParticipant([])
+                    handleItems()
+                    setFilesDrop([]);
+
+                } else {
+                    alert.error('Tivemos um problema ao criar a interação.');
+                    await handleItems()
+                }
             }
         } catch (error) {
             alert.error('Tivemos um problema ao criar a Tarefa.');
@@ -344,9 +425,9 @@ export default function EditTask(props) {
             if (value) {
                 setTaskData({ ...taskData, prioridade_chamado: value })
             }
-            let description = `A prioridade da tarefa foi alterada para ${value}.`
-            await handleEditTask({ finalizado: false, reaberto: false, priority: value })
-            await handleAddInteration(description)
+            // let description = `A prioridade da tarefa foi alterada para ${value}.`
+            // description = taskInterationMsg + '\n' + description
+            // setTaskInterationMsg(description)
             setShowPriorityAltern(false)
         } catch (error) {
             console.log(error)
@@ -361,20 +442,6 @@ export default function EditTask(props) {
             if (value) {
                 setTaskData({ ...taskData, responsavel_chamado: value })
             }
-            let description;
-            if (label) {
-                description = `${user?.nome} alterou o responsável para ${label}.`
-            } else {
-                description = `${user?.nome} se tornou responsável por atender esse chamado.`
-
-            }
-            const response = await api.patch(`/task/responsible/update/${id}`, { responsibleId: value })
-            if (response?.status === 200) {
-                await handleAddInteration(description)
-                handleItems()
-            } else {
-                alert.error('Tivemos um problema ao atualizar a Tarefa.');
-            }
 
             setShowAlternUsers({ responsible: false, participant: false })
         } catch (error) {
@@ -385,30 +452,48 @@ export default function EditTask(props) {
         }
     }
 
-    const handleAddParticipant = async (value, label) => {
-        setLoading(true)
-        try {
-            const response = await api.post(`/task/participant/create/${id}`, { participante_id: value, usuario_id: taskData?.usuario_id })
-            if (response?.status === 201) {
-                let description = `${user?.nome} adicionou ${label} á esta tarefa.`
-                await handleAddInteration(description)
-            }
-            setShowAlternUsers({ responsible: false, participant: false })
-        } catch (error) {
-            console.log(error)
-            return error
-        } finally {
-            setLoading(false)
+    const handleAddParticipant = (value, label) => {
+
+        newParticipant.push(value)
+
+        let newParticipantData = {
+            id_participante_ch: null,
+            chamado_id: id,
+            participante_id: value,
+            nome: label,
+            email: null
         }
+
+        setParticipantsTask(prevParticipants => [...prevParticipants, newParticipantData]);
+        setShowAlternUsers({ responsible: false, participant: false })
     }
 
-    const handleDeleteParticipant = async (value, label) => {
+    const handleChangeArea = (value) => {
+        setTaskData({ ...taskData, area: value })
+        setShowList({ ...showList, area: false })
+    }
+
+    const handleChangeStatus = (value) => {
+        setTaskData({ ...taskData, status_chamado: value })
+        setShowList({ ...showList, status: false })
+    }
+
+    const handleDeleteParticipant = async (value, label, participantId) => {
         setLoading(true)
         try {
-            const response = await api.delete(`/task/participant/delete/${value}`)
-            if (response?.status === 200) {
-                let description = `${user?.nome} removeu ${label} desta tarefa.`
-                await handleAddInteration(description)
+            if (value) {
+                const response = await api.delete(`/task/participant/delete/${value}`)
+                if (response?.status === 200) {
+                    let description = `${user?.nome} removeu ${label} desta tarefa.`
+                    newInteration.descr_interacao = description
+                    await api.post(`/task/interation/create`, { newInteration });
+                    alert.success('Participante removido.')
+                    setNewInteration({ descr_interacao: '' })
+                    await handleItems()
+                }
+            } else if (participantId) {
+                setParticipantsTask((prevValues) => prevValues.filter((item) => item.participante_id !== participantId))
+                alert.success('Participante removido.')
             }
             setShowAlternUsers({ responsible: false, participant: false })
         } catch (error) {
@@ -462,12 +547,12 @@ export default function EditTask(props) {
     };
 
 
-    const handleChangeInteration = (event) => {
-        setNewInteration((prevValues) => ({
-            ...prevValues,
-            [event.target.name]: event.target.value,
-        }))
-    };
+    const handleChangeInteration = useCallback((e) => {
+        setNewInteration((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value,
+        }));
+    }, []);
 
     const handleChangeFiles = (fileId, filePreview) => {
         setFilesTask((prevClassDays) => [
@@ -479,11 +564,6 @@ export default function EditTask(props) {
             }
         ]);
     };
-
-    const groupStatus = [
-        { label: 'ativo', value: 1 },
-        { label: 'inativo', value: 0 },
-    ]
 
     const groupContract = [
         { label: 'Solicitação', value: 'Solicitação' },
@@ -528,22 +608,18 @@ export default function EditTask(props) {
 
     ]
 
-    const formatter = new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-    });
-
 
     return (
         <>
 
             {!taskData && <Forbidden />}
-            {taskData && <> <SectionHeader
-                perfil={taskData?.tipo_chamado}
-                title={taskData?.titulo_chamado ? (`Ticket (#${taskData?.id_chamado || 'ID'}).${taskData?.titulo_chamado}`) : `Novo Chamado`}
-                saveButton={newTask && true}
-                saveButtonAction={newTask && handleCreateTask}
-            />
+            {taskData && <>
+                <SectionHeader
+                    perfil={taskData?.tipo_chamado}
+                    title={taskData?.titulo_chamado ? (`Ticket (#${taskData?.id_chamado || 'ID'}).${taskData?.titulo_chamado}`) : `Novo Chamado`}
+                    saveButton={newTask && true}
+                    saveButtonAction={newTask && handleCreateTask}
+                />
                 <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
                     {newTask ?
                         (<>
@@ -565,8 +641,8 @@ export default function EditTask(props) {
                                         title="Autor *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />}
-                                    {user?.area === 'TI - Suporte' && <SelectList 
-                                    onFilter filterValue="label" fullWidth data={usersList} valueSelection={taskData?.responsavel_chamado} onSelect={(value) => setTaskData({ ...taskData, responsavel_chamado: value })}
+                                    {user?.area === 'TI - Suporte' && <SelectList
+                                        onFilter filterValue="label" fullWidth data={usersList} valueSelection={taskData?.responsavel_chamado} onSelect={(value) => setTaskData({ ...taskData, responsavel_chamado: value })}
                                         title="Responsável *" filterOpition="value" sx={{ color: colorPalette.textColor, flex: 1 }}
                                         inputStyle={{ color: colorPalette.textColor, fontSize: '15px', fontFamily: 'MetropolisBold' }}
                                     />}
@@ -775,6 +851,7 @@ export default function EditTask(props) {
                                 <ContentContainer sx={{
                                     display: 'flex', flexDirection: 'column', minWidth: { xs: `0px`, xm: `300px`, md: `300px`, lg: `300px` },
                                 }}>
+
                                     <Box sx={{ display: 'flex', flexDirection: 'column', position: 'relative', }}>
                                         <Text bold>Aberto para área:</Text>
                                         {!isPermissionEdit && <Text>{taskData?.area}</Text>}
@@ -828,14 +905,7 @@ export default function EditTask(props) {
                                                                 opacity: 0.7,
                                                                 cursor: 'pointer',
                                                             }
-                                                        }} onClick={() => {
-                                                            setTaskData({ ...taskData, area: item?.value })
-                                                            setStatusAlteration({
-                                                                area: item?.value
-                                                            })
-                                                            setAlterationTask(true)
-                                                            setShowList({ ...showList, area: false })
-                                                        }}>
+                                                        }} onClick={() => handleChangeArea(item?.value)}>
                                                             <Text bold>{item?.label}</Text>
                                                         </Box>
                                                     )
@@ -876,6 +946,8 @@ export default function EditTask(props) {
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: .5 }}>
                                         <Text bold>Participantes:</Text>
                                         {participantsTask?.map((item, index) => {
+
+                                            if (!item?.participante_id) return <></>
                                             return (
                                                 <Box key={index} sx={{ display: 'flex', gap: 1, backgroundColor: colorPalette.primary, padding: '5px 12px', borderRadius: 2, alignItems: 'center', justifyContent: 'space-between' }} >
                                                     <Text small>{item?.nome}</Text>
@@ -891,7 +963,7 @@ export default function EditTask(props) {
                                                             opacity: 0.8,
                                                             cursor: 'pointer'
                                                         }
-                                                    }} onClick={() => handleDeleteParticipant(item?.id_participante_ch, item?.nome)} />}
+                                                    }} onClick={() => handleDeleteParticipant(item?.id_participante_ch, item?.nome, item?.participante_id)} />}
 
                                                 </Box>
 
@@ -947,16 +1019,9 @@ export default function EditTask(props) {
                                                                 opacity: 0.7,
                                                                 cursor: 'pointer',
                                                             }
-                                                        }} onClick={() => {
-                                                            setTaskData({ ...taskData, status_chamado: item?.value })
-                                                            setStatusAlteration({
-                                                                finalizado: item?.value === 'Finalizado' ? true : false,
-                                                                reaberto: item?.value === 'Em aberto' ? true : false,
-                                                                analise: item?.value === 'Em análise' ? true : false
-                                                            })
-                                                            setAlterationTask(true)
-                                                            setShowList({ ...showList, status: false })
-                                                        }}>
+                                                        }} onClick={() =>
+                                                            handleChangeStatus(item?.value)
+                                                        }>
                                                             <Box sx={{ display: 'flex', backgroundColor: statusColor(item?.value), padding: '0px 5px', height: '100%', borderRadius: '8px 0px 0px 8px' }} />
                                                             <Text bold>{item?.label}</Text>
                                                         </Box>
@@ -1022,29 +1087,85 @@ export default function EditTask(props) {
                                             })}
                                         </Box>
                                     </Box>
-                                    {taskData?.status_chamado !== 'Finalizado' && <Button text="Finalizar Tarefa" small style={{ height: 35 }} onClick={() => {
-                                        setTaskData({ ...taskData, status_chamado: 'Finalizado' })
-                                        setStatusAlteration({ finalizado: true, reaberto: false, analise: false })
-                                        setAlterationTask(true)
-                                    }} />}
-                                    {taskData?.status_chamado === 'Finalizado' && <Button text="Reabrir Tarefa" small style={{ height: 35 }} onClick={() => {
-                                        setTaskData({ ...taskData, status_chamado: 'Em aberto' })
-                                        setStatusAlteration({ finalizado: false, reaberto: true, analise: false })
-                                        setAlterationTask(true)
-                                    }} />}
-                                    {!taskData?.responsavel_chamado && <Button disabled={!isPermissionEdit && true} secondary text="Tornar-se Responsável" small style={{ height: 35 }} onClick={() => {
-                                        handleChangeResponsible(user?.id)
-                                    }} />}
-                                    <Button disabled={!isPermissionEdit && true} secondary text="Alterar Prioridade" small style={{ height: 35 }} onClick={() => setShowPriorityAltern(true)} />
-                                    <Button disabled={!isPermissionEdit && true} secondary text="Alterar Responsável" small style={{ height: 35 }} onClick={() => setShowAlternUsers({ participant: false, responsible: true })} />
-                                    <Button disabled={!isPermissionEdit && true} secondary text="Adicionar Participante" small style={{ height: 35 }} onClick={() => setShowAlternUsers({ responsible: false, participant: true })} />
-                                    <Button disabled={!isPermissionEdit && true} text="Excluir Tarefa" small style={{ height: 35 }}
-                                        onClick={(event) => setShowConfirmationDialog({ active: true, event, acceptAction: handleDeleteTask })} />
+
+                                    <Tooltip title={JSON.stringify(taskData) === JSON.stringify(taskBeforeData) && `Botão ficará disponível, assim que houver alterações.`}>
+                                        <div>
+
+                                            <ButtonIcon
+                                                disabled={JSON.stringify(taskData) === JSON.stringify(taskBeforeData)}
+                                                text="Salvar"
+                                                color="#fff"
+                                                icon={'/icons/download.png'}
+                                                gap={3}
+                                                iconLarge
+                                                style={{ justifyContent: 'space-between', padding: '8px 30px', flexDirection: 'row-reverse' }}
+                                                onClick={(event) => setShowConfirmationDialog({
+                                                    active: true,
+                                                    event,
+                                                    acceptAction: handleEditTask,
+                                                    title: 'Salvar alteraçoes',
+                                                    message: 'Tem certeza que deseja salvar as alterações realizadas?',
+                                                })}
+                                            />
+
+                                        </div>
+                                    </Tooltip>
+
+                                    {!taskData?.responsavel_chamado && <ButtonIcon
+                                        disabled={!isPermissionEdit && true}
+                                        text="Tornar-se Responsável"
+                                        color="#fff"
+                                        icon={'/icons/check-icon.png'}
+                                        gap={3}
+                                        iconLarge
+                                        style={{ justifyContent: 'space-between', padding: '8px 30px', flexDirection: 'row-reverse' }}
+                                        onClick={() => handleChangeResponsible(user?.id)}
+                                    />}
+
+                                    <ButtonIcon
+                                        style={{ justifyContent: 'space-between', padding: '8px 30px', flexDirection: 'row-reverse' }}
+                                        iconLarge
+                                        secondary disabled={!isPermissionEdit && true}
+                                        text="Alterar Prioridade"
+                                        icon={'/icons/priority.png'} gap={2} onClick={() => setShowPriorityAltern(true)}
+                                    />
+
+                                    <ButtonIcon
+                                        iconLarge
+                                        style={{ justifyContent: 'space-between', padding: '8px 30px', flexDirection: 'row-reverse' }}
+                                        secondary disabled={!isPermissionEdit && true}
+                                        text="Alterar Responsável"
+                                        icon={'/icons/change_user.png'} gap={2} onClick={() => setShowAlternUsers({ participant: false, responsible: true })}
+                                    />
+
+                                    <ButtonIcon
+                                        iconLarge
+                                        style={{ justifyContent: 'space-between', padding: '8px 30px', flexDirection: 'row-reverse' }}
+                                        secondary disabled={!isPermissionEdit && true}
+                                        text="Adicionar Participante"
+                                        icon={'/icons/add_participant.png'} gap={2} onClick={() => setShowAlternUsers({ responsible: false, participant: true })}
+                                    />
+
+                                    <ButtonIcon
+                                        iconLarge
+                                        style={{ justifyContent: 'space-between', padding: '8px 30px', flexDirection: 'row-reverse' }}
+                                        disabled={!isPermissionEdit && true}
+                                        text="Excluir Tarefa"
+                                        color="#fff"
+                                        icon={'/icons/exclude_icon.png'} gap={3} onClick={(event) => setShowConfirmationDialog({
+                                            active: true,
+                                            event,
+                                            acceptAction: handleDeleteTask,
+                                            title: 'Excluir Tarefa',
+                                            message: 'Tem certeza que deseja excluir a tarefa?',
+                                        })}
+                                    />
 
                                 </ContentContainer>
                             </Box>
                         )
                     }
+
                     <Backdrop open={showPriorityAltern} sx={{ zIndex: 999999 }}>
                         <ContentContainer>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', zIndex: 999999999, gap: 4, alignItems: 'center' }}>
@@ -1266,14 +1387,14 @@ const DropZoneTasks = ({ filesDrop, setFilesDrop, children }) => {
 
     return (
         <Dropzone
-        accept={{
-            'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'],
-            'image/png': ['.png', '.PNG'],
-            'application/pdf': ['.pdf'],
-            'text/csv': ['.csv'], // Adicionando suporte para arquivos CSV
-            'application/vnd.ms-excel': ['.xls'], // Adicionando suporte para arquivos XLS
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] // Adicionando suporte para arquivos XLSX
-        }}
+            accept={{
+                'image/jpeg': ['.jpeg', '.JPEG', '.jpg', '.JPG'],
+                'image/png': ['.png', '.PNG'],
+                'application/pdf': ['.pdf'],
+                'text/csv': ['.csv'], // Adicionando suporte para arquivos CSV
+                'application/vnd.ms-excel': ['.xls'], // Adicionando suporte para arquivos XLS
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] // Adicionando suporte para arquivos XLSX
+            }}
             onDrop={onDropFiles}
             addRemoveLinks={true}
             removeLink={(file) => handleRemoveFile(file)}
